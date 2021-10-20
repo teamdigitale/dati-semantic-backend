@@ -1,0 +1,6 @@
+#!/bin/bash
+[[ -n "${TALISMAN_DEBUG}" ]] && DEBUG_OPTS="-d"
+CMD=".git/hooks/bin/talisman ${DEBUG_OPTS} --githook pre-commit"
+[[ -n "${TALISMAN_DEBUG}" ]] && echo "ARGS are $@"
+[[ -n "${TALISMAN_DEBUG}" ]] && echo "Executing: ${CMD}"
+${CMD}

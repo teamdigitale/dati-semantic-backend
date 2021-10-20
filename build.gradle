@@ -111,6 +111,13 @@ dependencyCheck {
 //    suppressionFile = 'tools/dependency-check/dependency-check-known-issues.xml'
 }
 
+task copyTalismanHook(type: Exec) {
+    workingDir "$projectDir"
+    commandLine 'sh', 'tools/talisman/talisman-precommit.sh'
+}
+
+build.finalizedBy copyTalismanHook
+
 gradle.taskGraph.whenReady { graph ->
     if (graph.hasTask(build)) {
         spotbugsMain.enabled = false
