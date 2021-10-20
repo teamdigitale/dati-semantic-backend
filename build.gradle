@@ -1,0 +1,121 @@
+import java.time.LocalDate
+
+plugins {
+    id 'org.springframework.boot' version '2.5.5'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'java'
+    id 'com.google.cloud.tools.jib' version '3.1.4'
+    id 'checkstyle'
+    id 'jacoco'
+    id "org.owasp.dependencycheck" version "6.1.6"
+    id "com.github.spotbugs" version "4.5.1"
+}
+
+group = 'it.team-digitale'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jib {
+    to {
+        image = "some-registry.com/" + project.name
+        def commitId = 'git rev-parse --short HEAD'.execute().text.trim()
+        tags = ["""${LocalDate.now().toString()}_$commitId"""]
+    }
+}
+
+checkstyle {
+    toolVersion = '8.31'
+    configDirectory = file("${rootProject.projectDir}/tools/checkstyle")
+}
+
+jacocoTestReport {
+    reports {
+        xml.required = false
+        csv.required = false
+        html.required = true
+    }
+}
+
+jacocoTestCoverageVerification {
+    violationRules {
+
+        rule {
+            element = 'CLASS'
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.9
+            }
+            excludes = [
+                    'it.teamdigitale.ndc.Application',
+            ]
+        }
+    }
+
+}
+
+test.finalizedBy jacocoTestReport
+check.dependsOn jacocoTestCoverageVerification
+
+spotbugsMain {
+    reports {
+        html {
+            enabled = true
+            destination = file("$buildDir/reports/spotbugs/main/spotbugs.html")
+            stylesheet = 'fancy-hist.xsl'
+        }
+    }
+}
+
+spotbugsTest {
+    reports {
+        html {
+            enabled = true
+            destination = file("$buildDir/reports/spotbugs/test/spotbugs.html")
+            stylesheet = 'fancy-hist.xsl'
+        }
+    }
+}
+
+dependencyCheck {
+//set up a quality gate for vulnerabilities with high severity level:
+//let's consider that a vulnerability has a high severity level if its CVSS score is higher than 7
+//the build is going to fail if vulnerabilities with high severity level found
+    failBuildOnCVSS = 7
+
+//specify a list of known issues which contain:
+//false-positives
+//confirmed vulnerabilities which are not fixed yet, but we have a ticket for that
+//    suppressionFile = 'tools/dependency-check/dependency-check-known-issues.xml'
+}
+
+gradle.taskGraph.whenReady { graph ->
+    if (graph.hasTask(build)) {
+        spotbugsMain.enabled = false
+        dependencyCheckAnalyze.enabled = false
+        spotbugsTest.enabled = false
+
+    }
+}

@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE suppressions PUBLIC
+        "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
+        "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+
+<suppressions>
+    <suppress checks="WhitespaceAround" files="[\\/]api[\\/]"/>
+    <suppress checks="WhitespaceAfter" files="[\\/]api[\\/]"/>
+    <suppress checks="SingleSpaceSeparator" files="[\\/]api[\\/]"/>
+    <suppress checks="NoWhitespaceBefore" files="[\\/]api[\\/]"/>
+    <suppress checks="NoWhitespaceAfter" files="[\\/]api[\\/]"/>
+    <suppress checks="GenericWhitespace" files="[\\/]api[\\/]"/>
+</suppressions>
