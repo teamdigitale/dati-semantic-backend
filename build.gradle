@@ -108,7 +108,7 @@ dependencyCheck {
 //specify a list of known issues which contain:
 //false-positives
 //confirmed vulnerabilities which are not fixed yet, but we have a ticket for that
-//    suppressionFile = 'tools/dependency-check/dependency-check-known-issues.xml'
+    suppressionFile = 'tools/dependency-check/dependency-check-known-issues.xml'
 }
 
 task copyTalismanHook(type: Exec) {

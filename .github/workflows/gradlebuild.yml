@@ -1,0 +1,41 @@
+name: Build
+
+on:
+  push:
+    # Publish `master` as Docker `latest` image.
+    branches:
+      - main
+
+    # Publish `v1.2.3` tags as releases.
+    tags:
+      - v*
+
+  # Run tests for any PRs.
+  pull_request:
+
+env:
+  GITHUB_WORKFLOW: dati-semantic-backend
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: caching
+        uses: actions/cache@v1
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+      - name: Create Build Artifact
+        run: ./gradlew clean build
+
+      - name: Dependency Check
+        run: ./gradlew dependencyCheckAnalyze
+
+      - name: SpotBugs Check
+        run: ./gradlew spotbugsMain spotbugsTest
