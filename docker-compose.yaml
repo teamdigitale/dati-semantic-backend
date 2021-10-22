@@ -1,0 +1,39 @@
+#
+# Minimal docker-compose file for development.
+#
+# Lint code using:
+#   docker-compose up super-linter
+#
+version: "3.0"
+services:
+  # Basic development container.
+  dev:
+    # user: "${UID}:${GID}"
+    image: openjdk:11
+    volumes:
+    - .:/code
+    entrypoint: ["/usr/bin/tail", "-f", "/etc/hosts"]
+
+  test:
+    image: openjdk:11
+    volumes:
+    - .:/code
+    working_dir: /code
+    entrypoint: ["/code/gradlew"]
+    command:
+    - clean
+    - build
+    - dependencyCheckAnalyze
+    - spotbugsMain
+    - spotbugsTest
+
+  # Basic linting.
+  super-linter:
+    image: github/super-linter
+    environment:
+    - RUN_LOCAL=true
+    - VALIDATE_MARKDOWN=false
+    - IGNORE_GITIGNORED_FILES=true
+    - VALIDATE_BASH=false
+    volumes:
+    - .:/tmp/lint
