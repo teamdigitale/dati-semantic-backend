@@ -39,11 +39,11 @@
 
 ### Segnalazione bug e richieste di aiuto
 
-# Manutenzione 
+# Manutenzione
 
-# Licenza 
+# Licenza
 
-## Licenza generale 
+## Licenza generale
 
 ## Autori e Copyright
 
