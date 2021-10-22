@@ -9,6 +9,7 @@ plugins {
     id 'jacoco'
     id "org.owasp.dependencycheck" version "6.1.6"
     id "com.github.spotbugs" version "4.5.1"
+    id "com.diffplug.spotless" version "5.17.0"
 }
 
 group = 'it.team-digitale'
@@ -125,4 +126,30 @@ gradle.taskGraph.whenReady { graph ->
         spotbugsTest.enabled = false
 
     }
+}
+
+// Spotless
+spotless {
+  // optional: limit format enforcement to just the files changed by this feature branch
+  ratchetFrom 'origin/main'
+
+  format 'misc', {
+    // define the files to apply `misc` to
+    target '*.gradle', '*.md', '.gitignore'
+
+    // define the steps to apply to those files
+    trimTrailingWhitespace()
+    indentWithSpaces() // or spaces. Takes an integer argument if you don't like 4
+    endWithNewline()
+  }
+  java {
+    // don't need to set target, it is inferred from java
+
+    // apply a specific flavor of google-java-format
+    googleJavaFormat('1.8').aosp().reflowLongStrings()
+    // make sure every file has the following copyright header.
+    // optionally, Spotless can set copyright years by digging
+    // through git history (see "license" section below)
+    licenseHeader '/* (C)$YEAR */'
+  }
 }
