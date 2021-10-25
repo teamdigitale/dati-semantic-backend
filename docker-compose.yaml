@@ -4,22 +4,22 @@
 # Lint code using:
 #   docker-compose up super-linter
 #
-version: "3.0"
+version: "3.8"
 services:
   # Basic development container.
   dev:
     # user: "${UID}:${GID}"
-    image: openjdk:11
+    image: gcr.io/distroless/java:11-debug-nonroot
     volumes:
     - .:/code
-    entrypoint: ["/usr/bin/tail", "-f", "/etc/hosts"]
+    entrypoint: ["tail", "-f", "/etc/hosts"]
 
   test:
-    image: openjdk:11
+    image: gcr.io/distroless/java:11-debug-nonroot
     volumes:
     - .:/code
     working_dir: /code
-    entrypoint: ["/code/gradlew"]
+    entrypoint: ["sh", "/code/gradlew"]
     command:
     - clean
     - build
