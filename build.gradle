@@ -42,7 +42,7 @@ jib {
         image = 'gcr.io/distroless/java:11-nonroot'
     }
     to {
-        image = "some-registry.com/" + project.name
+        image = "ghcr.io/teamdigitale/" + project.name
         tags = ["""${LocalDate.now().toString()}"""]
     }
 }
