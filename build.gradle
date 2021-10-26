@@ -48,8 +48,10 @@ jib {
 }
 
 checkstyle {
-    toolVersion = '8.31'
-    configDirectory = file("${rootProject.projectDir}/tools/checkstyle")
+    toolVersion = '9.0.1'
+    maxWarnings = 0
+    ignoreFailures false
+    configDirectory = file("${rootProject.projectDir}/config/checkstyle")
 }
 
 jacocoTestReport {
@@ -110,15 +112,15 @@ dependencyCheck {
 //specify a list of known issues which contain:
 //false-positives
 //confirmed vulnerabilities which are not fixed yet, but we have a ticket for that
-    suppressionFile = 'tools/dependency-check/dependency-check-known-issues.xml'
+    suppressionFile = 'config/dependency-check/dependency-check-known-issues.xml'
 }
 
-task copyTalismanHook(type: Exec) {
+task copyPrecommitHooks(type: Exec) {
     workingDir "$projectDir"
-    commandLine 'sh', 'tools/talisman/talisman-precommit.sh'
+    commandLine 'sh', 'config/hooks/copy-precommit-hooks.sh'
 }
 
-build.finalizedBy copyTalismanHook
+build.finalizedBy copyPrecommitHooks
 
 gradle.taskGraph.whenReady { graph ->
     if (graph.hasTask(build)) {
