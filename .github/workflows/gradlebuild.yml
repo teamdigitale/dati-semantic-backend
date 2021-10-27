@@ -68,5 +68,8 @@ jobs:
       - name: build and push image
         run: |
           IMAGE=$REGISTRY/$IMAGE_NAME
-          TAG=$(date +%F)_${{github.run_number}}_$(git rev-parse --short HEAD)
-          ./gradlew jib --image=$IMAGE:$TAG
+          TAG=$(date +'%Y%m%d')-${{github.run_number}}-$(git rev-parse --short HEAD)
+          SOURCE_LABEL="org.opencontainers.image.source=${{github.server_url}}/$IMAGE_NAME"
+          BRANCH_LABEL="org.opencontainers.image.source.branch=$(git rev-parse --abbrev-ref HEAD)"
+          TITLE_LABEL="org.opencontainers.image.title=dati-semantic-backend"
+          ./gradlew jib --image=$IMAGE:$TAG -Djib.container.labels=$SOURCE_LABEL,$BRANCH_LABEL,$TITLE_LABEL
