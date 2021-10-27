@@ -58,13 +58,6 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v3
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=raw,value={{date 'YYYYMMDD'}}-${{github.run_number}}-{{sha}}
       - name: caching
         uses: actions/cache@v1
         with:
@@ -73,4 +66,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
       - name: build and push image
-        run: ./gradlew jib --image=${{ steps.meta.outputs.images }}:${{ steps.meta.outputs.tags }}
+        run: |
+        IMAGE=$REGISTRY/$IMAGE_NAME
+        TAG=$(date +%F)_${{github.run_number}}_$(git rev-parse --short HEAD)
+        ./gradlew jib --image=$IMAGE:$TAG
