@@ -15,6 +15,8 @@ on:
 
 env:
   GITHUB_WORKFLOW: dati-semantic-backend
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build:
@@ -39,3 +41,32 @@ jobs:
 
       - name: SpotBugs Check
         run: ./gradlew spotbugsMain spotbugsTest
+
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    needs:
+      - build
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Log in to the Github Container registry
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: caching
+        uses: actions/cache@v1
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+      - name: build and push image
+        run: |
+          IMAGE=$REGISTRY/$IMAGE_NAME
+          TAG=$(date +%F)_${{github.run_number}}_$(git rev-parse --short HEAD)
+          ./gradlew jib --image=$IMAGE:$TAG
