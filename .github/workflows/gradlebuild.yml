@@ -67,6 +67,6 @@ jobs:
             ${{ runner.os }}-gradle-
       - name: build and push image
         run: |
-        IMAGE=$REGISTRY/$IMAGE_NAME
-        TAG=$(date +%F)_${{github.run_number}}_$(git rev-parse --short HEAD)
-        ./gradlew jib --image=$IMAGE:$TAG
+          IMAGE=$REGISTRY/$IMAGE_NAME
+          TAG=$(date +%F)_${{github.run_number}}_$(git rev-parse --short HEAD)
+          ./gradlew jib --image=$IMAGE:$TAG
