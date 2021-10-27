@@ -41,10 +41,6 @@ jib {
     from {
         image = 'gcr.io/distroless/java:11-nonroot'
     }
-    to {
-        image = "ghcr.io/teamdigitale/" + project.name
-        tags = ["""${LocalDate.now().toString()}"""]
-    }
 }
 
 checkstyle {

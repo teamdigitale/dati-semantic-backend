@@ -63,6 +63,8 @@ jobs:
         uses: docker/metadata-action@v3
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value={{date 'YYYYMMDD'}}-${{github.run_number}}-{{sha}}
       - name: caching
         uses: actions/cache@v1
         with:
@@ -71,4 +73,4 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
       - name: build and push image
-        run: ./gradlew jib
+        run: ./gradlew jib --image=${{ steps.meta.outputs.images }}:${{ steps.meta.outputs.tags }}
