@@ -7,7 +7,7 @@ Date: 2021-10-28
 Accepted
 
 ## Context
-We pan to ship our application code in the containers. This requires us to create artifacts in container images.
+We plan to ship our application code in the containers. This requires us to create artifacts in container images.
 We need to decide the way for creating the container images.
 Below 3 different options were discussed
 1. Dockerfile - using docker daemon
