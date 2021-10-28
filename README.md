@@ -1,14 +1,12 @@
-:warning: [removeme] Questo file è stato creato seguendo il  [README starter kit](https://github.com/italia/readme-starterkit) [removeme] :warning:
-
 [![License](https://img.shields.io/github/license/italia/bootstrap-italia.svg)](https://github.com/italia/bootstrap-italia/blob/master/LICENSE)
 [![GitHub issues](https://img.shields.io/github/issues/italia/bootstrap-italia.svg)](https://github.com/italia/bootstrap-italia/issues)
 [![Join the #design channel](https://img.shields.io/badge/Slack%20channel-%23design-blue.svg)](https://developersitalia.slack.com/messages/C7VPAUVB3/)
 [![Get invited](https://slack.developers.italia.it/badge.svg)](https://slack.developers.italia.it/)
 [![18app on forum.italia.it](https://img.shields.io/badge/Forum-18app-blue.svg)](https://forum.italia.it/c/18app-carta-docente)
 
-# Titolo
+# Dati Semantic Backend
 
-> Sottotitolo / Slogan / Descrizione breve
+> Backend application with Spring Boot, gradle
 
 *Read this in other languages: [English](README.EN.md).*
 
@@ -26,6 +24,11 @@
 # Come iniziare
 
 ## Come installare
+
+- Install JDK 11 in your machine
+- Run  `mkdir .git/hooks`
+- Build service using `./gradlew clean build`
+- Start service using `./gradlew clean bootRun`
 
 ## Documentazione
 
