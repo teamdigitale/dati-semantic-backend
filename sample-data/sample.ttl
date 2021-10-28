@@ -1,0 +1,71 @@
+PREFIX : <http://looneytunes-graph.com/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+# Bugs Bunny
+:Bugs_Bunny a :Looney_Tunes_Character ;
+  :name "Bugs Bunny" ;
+  :species "Hare" ;
+  :gender "Male" ;
+  :made_debut_appearance_in :A_Wild_Hare ;
+  :created_by :Tex_Avery ;
+  :personality_trait "Cunning" , "Charismatic" , "Smart" ;
+  :known_for_catchphrase "What's up, doc?" .
+# A Wild Hare
+:A_Wild_Hare a :Short ;
+  :release_date "1940-07-27"^^xsd:date .
+# Tex Avery
+:Tex_Avery a :Person ;
+  :name "Frederick Bean Avery" ;
+  :born_on "1908-02-26"^^xsd:date ;
+  :died_on "1980-08-26"^^xsd:date .
+
+# Daffy Duck
+:Daffy_Duck a :Looney_Tunes_Character ;
+  :name "Daffy Damas Duck" ;
+  :species "American Black Duck" ;
+  :gender "Male" ;
+  :made_debut_appearance_in :Porkys_Duck_Hunt ;
+  :created_by :Tex_Avery ;
+  :personality_trait "Assertive" , "Unrestrained" , "Combative" ;
+  :known_for_catchphrase "You're despicable!" .
+# Porky's Duck Hunt
+:Porkys_Duck_Hunt a :Short ;
+  :release_date "1937-04-17"^^xsd:date .
+# Sylvester
+:Sylvester a :Looney_Tunes_Character ;
+  :name "Sylvester James Pussycat, Sr." ;
+  :species "Tuxedo Cat" ;
+  :gender "Male" ;
+  :made_debut_appearance_in :Life_With_Feathers ;
+  :created_by :Friz_Freleng ;
+  :personality_trait "Proud" , "Persistent" , "Loser" ;
+  :known_for_catchphrase "Sufferin' Succotash" .
+# Life With Feathers
+:Life_With_Feathers a :Short ;
+  :release_date "1945-03-24"^^xsd:date .
+# Friz Frelang
+:Friz_Freleng a :Person ;
+  :name "Isadore Freleng" ;
+  :born_on "1905-08-21"^^xsd:date ;
+  :died_on "1995-05-26"^^xsd:date .
+# Taz
+:Taz a :Looney_Tunes_Character ;
+  :name "Tasmanian Devil" ;
+  :gender "Male" ;
+  :species "Tasmanian Devil" ;
+  :made_debut_appearance_in :Devil_May_Hare ;
+  :created_by :Robert_McKimson , :Sid_Marcus ;
+  :personality_trait "Dim-witted" , "Short-tempered" , "Impatient" .
+# Devil May Hare
+:Devil_May_Hare a :Short ;
+  :release_date "1954-06-19"^^xsd:date .
+# Robert McKimson
+:Robert_McKimson a :Person ;
+  :name "Robert Porter McKimson, Sr." ;
+  :born_on "1910-10-13"^^xsd:date ;
+  :died_on "1977-09-29"^^xsd:date .
+# Sid Marcus
+:Sid_Marcus a :Person ;
+  :name "Sidney Marcus" ;
+  :born_on "1877-10-14"^^xsd:date ;
+  :died_on "1979-01-31"^^xsd:date .
