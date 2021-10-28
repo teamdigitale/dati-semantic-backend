@@ -69,3 +69,7 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
   :name "Sidney Marcus" ;
   :born_on "1877-10-14"^^xsd:date ;
   :died_on "1979-01-31"^^xsd:date .
+
+:Bugs_Bunny :enemy_of :Daffy_Duck.
+
+:Daffy_Duck :rival_of :Taz.

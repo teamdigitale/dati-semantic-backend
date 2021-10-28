@@ -1,5 +1,6 @@
 package it.teamdigitale.ndc;
 
+import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
@@ -16,11 +17,10 @@ public class Runner {
 
         RDFConnection conn = RDFConnectionFactory.connect(url);
         //delete whole graph
-        conn.delete("http://ndc.com/jena");
-        //dump local ttl file in named graph
-        conn.load("http://ndc.com/jena",
-            "/Users/ashayt/dev/projects/team-digitale"
-                + "/dati-semantic-backend/sample-data/sample.ttl");
+//        conn.delete("http://ndc.com/jena");
+//        //dump local ttl file in named graph
+//        conn.load("http://ndc.com/jena",
+//            "./sample-data/sample.ttl");
 
         //simple select query
         Query build = new SelectBuilder()
@@ -55,19 +55,34 @@ public class Runner {
 
         //SELECT ?age WHERE { :Tex_Avery :born_on ?b ; :died_on ?d . BIND (year(?b) AS ?bYear)
         // BIND (year(?d) AS ?dYear) BIND (?dYear - ?bYear AS ?age) }
-        Query bind = new SelectBuilder()
-            .addPrefix("lnt", "http://looneytunes-graph.com/")
-            .addVar("?age")
-            .addWhere("lnt:Tex_Avery", "lnt:born_on", "?b")
-            .addWhere("lnt:Tex_Avery", "lnt:died_on", "?d")
-            .addBind("year(?b)", "?bYear")
-            .addBind("year(?d)", "?dYear")
-            .addBind("?dYear - ?bYear", "?age")
-            .build();
-
+        SelectBuilder builder = new SelectBuilder()
+                .addPrefix("lnt", "http://looneytunes-graph.com/");
+        ExprFactory exprFactory=builder.getExprFactory();
+        Query bind = builder.addVar("?age")
+                .addWhere("lnt:Tex_Avery", "lnt:born_on", "?b")
+                .addWhere("lnt:Tex_Avery", "lnt:died_on", "?d")
+                .addBind(exprFactory.year("?b"), "?bYear")
+                .addBind(exprFactory.year("?d"), "?dYear")
+                .addBind(exprFactory.subtract("?dYear","?bYear") , "?age")
+                .build()  ;
         System.out.println("============BIND===============");
         System.out.println(bind.toString());
         conn.querySelect(bind, s -> System.out.println(s.get("age").asLiteral().getInt()));
         System.out.println("==============BIND=============");
+
+//        SELECT ?c1 ?c2
+//        WHERE
+//        {
+//?c1 :enemy_of/:rival_of ?c2
+//        }
+        Query sequencePathQuery = new SelectBuilder()
+                .addPrefix("lnt", "http://looneytunes-graph.com/")
+                .addVar("?c1")
+                .addVar("?c2")
+                .addWhere("?c1", "lnt:enemy_of/lnt:rival_of", "?c2")
+                .build();
+        System.out.println("============sequencePathQuery===============");
+        conn.querySelect(sequencePathQuery, querySolution -> System.out.println(querySolution.get("c1")+" "+querySolution.get("c2")));
+        System.out.println("============sequencePathQuery===============");
     }
 }
