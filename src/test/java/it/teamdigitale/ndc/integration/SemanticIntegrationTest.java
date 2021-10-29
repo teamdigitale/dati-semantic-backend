@@ -1,13 +1,11 @@
 package it.teamdigitale.ndc.integration;
 
-import static org.eclipse.rdf4j.sparqlbuilder.core.SparqlBuilder.var;
-import static org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatterns.tp;
 import static org.testcontainers.utility.DockerImageName.parse;
 
-import org.eclipse.rdf4j.query.TupleQueryResult;
-import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
-import org.eclipse.rdf4j.repository.sparql.query.SPARQLTupleQuery;
-import org.eclipse.rdf4j.sparqlbuilder.core.query.Queries;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryExecutionFactory;
+import org.apache.jena.query.ResultSet;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -25,17 +23,18 @@ public class SemanticIntegrationTest {
     void shouldExecuteSparqlOnVirtuosoTestcontainer() {
         String sparqlUrl = "http://localhost:" + virtuoso.getMappedPort(8890) + "/sparql";
 
-        SPARQLRepository sparqlRepository = new SPARQLRepository(sparqlUrl);
+        Query selectQuery = new SelectBuilder()
+            .addVar("?s").addVar("?p").addVar("?o")
+            .addWhere("?s", "?p", "?o")
+            .setLimit(10)
+            .build();
 
-        String selectAll = Queries.SELECT()
-            .where(tp(var("s"), var("p"), var("o")))
-            .getQueryString();
+        ResultSet resultSet =
+            QueryExecutionFactory.sparqlService(sparqlUrl, selectQuery)
+                .execSelect();
 
-        TupleQueryResult result = ((SPARQLTupleQuery) sparqlRepository.getConnection()
-            .prepareQuery(selectAll)).evaluate();
-
-        result.stream().forEach(statement ->
-            System.out.println(statement.getValue("s"))
-        );
+        resultSet.forEachRemaining(result -> {
+            System.out.println(result.get("s") + " " + result.get("p") + " " + result.get("o"));
+        });
     }
 }
