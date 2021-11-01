@@ -11,8 +11,8 @@ services:
     # user: "${UID}:${GID}"
     image: gcr.io/distroless/java:11-debug-nonroot
     volumes:
-    - .:/code
-    entrypoint: ["tail", "-f", "/etc/hosts"]
+      - .:/code
+    entrypoint: [ "tail", "-f", "/etc/hosts" ]
 
   virtuoso:
     image: tenforce/virtuoso
@@ -22,3 +22,19 @@ services:
       - DBA_PASSWORD=myDbaPassword
       - SPARQL_UPDATE=true
       - DEFAULT_GRAPH=http://www.ndc.com/test-graph
+    networks:
+      - backendApp
+
+  backend:
+    container_name: backend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+    networks:
+      - backendApp
+
+networks:
+  backendApp:
+    driver: bridge
