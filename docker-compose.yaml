@@ -13,3 +13,12 @@ services:
     volumes:
     - .:/code
     entrypoint: ["tail", "-f", "/etc/hosts"]
+
+  virtuoso:
+    image: tenforce/virtuoso
+    ports:
+      - 8890:8890
+    environment:
+      - DBA_PASSWORD=myDbaPassword
+      - SPARQL_UPDATE=true
+      - DEFAULT_GRAPH=http://www.ndc.com/test-graph
