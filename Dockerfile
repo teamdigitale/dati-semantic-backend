@@ -1,7 +1,7 @@
-FROM adoptopenjdk/openjdk11:jre-11.0.6_10-alpine
+FROM adoptopenjdk/openjdk11:alpine-slim
 
 WORKDIR /app
 
 COPY . .
 
-RUN "./gradlew bootRun"
+RUN ./gradlew bootRun
