@@ -1,0 +1,20 @@
+#
+# docker-compose file for running tests in local
+#
+# Lint code using:
+#   docker-compose -f docker-compose-test.yaml up super-linter
+#
+version: "3.8"
+services:
+  test:
+    image: gcr.io/distroless/java:11-debug-nonroot
+    volumes:
+    - .:/code
+    working_dir: /code
+    entrypoint: ["sh", "/code/gradlew"]
+    command:
+    - clean
+    - build
+    - dependencyCheckAnalyze
+    - spotbugsMain
+    - spotbugsTest

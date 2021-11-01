@@ -28,6 +28,7 @@
 - Install JDK 11 in your machine
 - Run  `mkdir .git/hooks`
 - Build service using `./gradlew clean build`
+OR Run tests locally using `docker-compose -f docker-compose-test.yaml up`   
 - Start service using `./gradlew clean bootRun`
 
 ## Documentazione

@@ -1,8 +1,8 @@
 #
 # Minimal docker-compose file for development.
 #
-# Lint code using:
-#   docker-compose up super-linter
+# Bring up service using:
+#   docker-compose up
 #
 version: "3.8"
 services:
@@ -13,16 +13,3 @@ services:
     volumes:
     - .:/code
     entrypoint: ["tail", "-f", "/etc/hosts"]
-
-  test:
-    image: gcr.io/distroless/java:11-debug-nonroot
-    volumes:
-    - .:/code
-    working_dir: /code
-    entrypoint: ["sh", "/code/gradlew"]
-    command:
-    - clean
-    - build
-    - dependencyCheckAnalyze
-    - spotbugsMain
-    - spotbugsTest
