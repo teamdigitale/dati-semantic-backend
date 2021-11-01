@@ -18,3 +18,16 @@ services:
     - dependencyCheckAnalyze
     - spotbugsMain
     - spotbugsTest
+
+  super-linter:
+    working_dir: /tmp/lint
+    environment:
+      - RUN_LOCAL=true
+      - VALIDATE_MARKDOWN=false
+      - IGNORE_GITIGNORED_FILES=true
+      - VALIDATE_BASH=false
+      - VALIDATE_JAVA=false
+      - VALIDATE_GOOGLE_JAVA_FORMAT=false
+    volumes:
+      - .:/tmp/lint
+    image: 'github/super-linter:slim-v4'
