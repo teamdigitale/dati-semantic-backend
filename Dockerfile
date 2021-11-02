@@ -4,4 +4,6 @@ WORKDIR /app
 
 COPY . .
 
+EXPOSE 8080
+
 RUN ./gradlew bootRun

@@ -22,19 +22,14 @@ services:
       - DBA_PASSWORD=myDbaPassword
       - SPARQL_UPDATE=true
       - DEFAULT_GRAPH=http://www.ndc.com/test-graph
-    networks:
-      - backendApp
 
   backend:
-    container_name: backend
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: gcr.io/distroless/java:11-debug-nonroot
+    volumes:
+      - .:/app
+    working_dir: /app
+    entrypoint: [ "sh", "/app/gradlew" ]
+    command:
+      - bootRun
     ports:
       - 8080:8080
-    networks:
-      - backendApp
-
-networks:
-  backendApp:
-    driver: bridge
