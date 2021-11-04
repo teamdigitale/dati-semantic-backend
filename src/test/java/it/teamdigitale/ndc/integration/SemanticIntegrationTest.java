@@ -17,9 +17,11 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 public class SemanticIntegrationTest {
 
+    private static final int VIRTUOSO_PORT = 8890;
+
     private static GenericContainer virtuoso = new GenericContainer(parse("tenforce/virtuoso"))
         .withReuse(true)
-        .withExposedPorts(8890)
+        .withExposedPorts(VIRTUOSO_PORT)
         .withEnv("DBA_PASSWORD", "dba")
         .withEnv("SPARQL_UPDATE", "true");
 
@@ -31,7 +33,7 @@ public class SemanticIntegrationTest {
     @Test
     void shouldExecuteSparqlOnVirtuosoTestcontainer() {
         // given
-        String sparqlUrl = "http://localhost:" + virtuoso.getMappedPort(8890) + "/sparql";
+        String sparqlUrl = "http://localhost:" + virtuoso.getMappedPort(VIRTUOSO_PORT) + "/sparql";
         insertSampleData(sparqlUrl);
 
         // when
