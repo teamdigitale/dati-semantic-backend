@@ -1,28 +1,27 @@
 #
 # Minimal docker-compose file for development.
 #
-# Lint code using:
-#   docker-compose up super-linter
+# Bring up service using:
+#   docker-compose up
 #
 version: "3.8"
 services:
-  # Basic development container.
-  dev:
-    # user: "${UID}:${GID}"
-    image: gcr.io/distroless/java:11-debug-nonroot
-    volumes:
-    - .:/code
-    entrypoint: ["tail", "-f", "/etc/hosts"]
+  virtuoso:
+    image: tenforce/virtuoso
+    ports:
+      - 8890:8890
+    environment:
+      - DBA_PASSWORD=myDbaPassword
+      - SPARQL_UPDATE=true
+      - DEFAULT_GRAPH=http://www.ndc.com/test-graph
 
-  test:
+  backend:
     image: gcr.io/distroless/java:11-debug-nonroot
     volumes:
-    - .:/code
-    working_dir: /code
-    entrypoint: ["sh", "/code/gradlew"]
+      - .:/app
+    working_dir: /app
+    entrypoint: [ "sh", "/app/gradlew" ]
     command:
-    - clean
-    - build
-    - dependencyCheckAnalyze
-    - spotbugsMain
-    - spotbugsTest
+      - bootRun
+    ports:
+      - 8080:8080

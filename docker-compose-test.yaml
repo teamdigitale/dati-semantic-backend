@@ -1,0 +1,36 @@
+# Lint code using:
+#   docker-compose -f docker-compose-test.yaml up super-linter
+
+version: "3.8"
+services:
+  dev:
+    image: gcr.io/distroless/java:11-debug-nonroot
+    volumes:
+      - .:/code
+    entrypoint: [ "tail", "-f", "/etc/hosts" ]
+
+  test:
+    image: gcr.io/distroless/java:11-debug-nonroot
+    volumes:
+    - .:/code
+    working_dir: /code
+    entrypoint: ["sh", "/code/gradlew"]
+    command:
+    - clean
+    - build
+    - dependencyCheckAnalyze
+    - spotbugsMain
+    - spotbugsTest
+
+  super-linter:
+    working_dir: /tmp/lint
+    environment:
+      - RUN_LOCAL=true
+      - VALIDATE_MARKDOWN=false
+      - IGNORE_GITIGNORED_FILES=true
+      - VALIDATE_BASH=false
+      - VALIDATE_JAVA=false
+      - VALIDATE_GOOGLE_JAVA_FORMAT=false
+    volumes:
+      - .:/tmp/lint
+    image: 'github/super-linter:slim-v4'
