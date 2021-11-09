@@ -26,6 +26,7 @@ repositories {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation group: 'org.springframework.data', name: 'spring-data-elasticsearch', version: '4.2.6'
     implementation 'org.apache.jena:apache-jena-libs:4.2.0'
     implementation 'org.apache.jena:jena-querybuilder:4.2.0'
     compileOnly 'org.projectlombok:lombok'
@@ -72,6 +73,7 @@ jacocoTestCoverageVerification {
                 minimum = 0.9
             }
             excludes = [
+                    'it.teamdigitale.ndc.config.ElasticsearchClientConfig',
                     'it.teamdigitale.ndc.Application',
             ]
         }
