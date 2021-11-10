@@ -10,7 +10,7 @@ services:
     entrypoint: [ "tail", "-f", "/etc/hosts" ]
 
   test:
-    image: gcr.io/distroless/java:11-debug-nonroot
+    image: registry.redhat.io/openjdk/openjdk-11-rhel7
     volumes:
     - .:/code
     working_dir: /code

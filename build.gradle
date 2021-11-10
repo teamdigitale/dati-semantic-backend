@@ -42,7 +42,7 @@ test {
 
 jib {
     from {
-        image = 'gcr.io/distroless/java:11-nonroot'
+        image = 'registry.redhat.io/openjdk/openjdk-11-rhel7'
     }
 }
 

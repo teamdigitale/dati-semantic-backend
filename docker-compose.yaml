@@ -16,7 +16,7 @@ services:
       - DEFAULT_GRAPH=http://www.ndc.com/test-graph
 
   backend:
-    image: gcr.io/distroless/java:11-debug-nonroot
+    image: registry.redhat.io/openjdk/openjdk-11-rhel7
     volumes:
       - .:/app
     working_dir: /app
