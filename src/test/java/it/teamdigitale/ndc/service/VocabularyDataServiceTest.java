@@ -1,6 +1,7 @@
 package it.teamdigitale.ndc.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -43,13 +44,42 @@ public class VocabularyDataServiceTest {
                 eq(JSONObject.class),
                 any(IndexCoordinates.class)))
                 .thenReturn(searchHits);
-        List<JSONObject> actual = vocabularyDataService.getData(expectedIndex);
+        List<JSONObject> actual = vocabularyDataService.getData(expectedIndex, 0, 10);
         ArgumentCaptor<IndexCoordinates> indexCaptor = ArgumentCaptor.forClass(IndexCoordinates.class);
-        verify(elasticsearchOperations).search(any(NativeSearchQuery.class),
+        ArgumentCaptor<NativeSearchQuery> nativeSearchQueryArgumentCaptor = ArgumentCaptor.forClass(NativeSearchQuery.class);
+        verify(elasticsearchOperations).search(nativeSearchQueryArgumentCaptor.capture(),
                 eq(JSONObject.class),
                 indexCaptor.capture());
         String actualIndex = indexCaptor.getValue().getIndexName();
 
+        assertEquals(nativeSearchQueryArgumentCaptor.getValue().getPageable().getPageNumber(), 0);
+        assertEquals(nativeSearchQueryArgumentCaptor.getValue().getPageable().getPageSize(), 10);
+        assertEquals(expectedIndex, actualIndex);
+        assertEquals(Arrays.asList(data), actual);
+    }
+
+    @Test
+    void shouldFetchDataWithoutPagintaion() {
+        JSONObject data = new JSONObject();
+        SearchHits<JSONObject> searchHits = mock(SearchHits.class);
+        SearchHit searchHit = mock(SearchHit.class);
+        String expectedIndex = "person-title";
+
+        when(searchHits.getSearchHits()).thenReturn(Arrays.asList(searchHit));
+        when(searchHit.getContent()).thenReturn(data);
+        when(elasticsearchOperations.search(any(NativeSearchQuery.class),
+                eq(JSONObject.class),
+                any(IndexCoordinates.class)))
+                .thenReturn(searchHits);
+        List<JSONObject> actual = vocabularyDataService.getData(expectedIndex, null, null);
+        ArgumentCaptor<IndexCoordinates> indexCaptor = ArgumentCaptor.forClass(IndexCoordinates.class);
+        ArgumentCaptor<NativeSearchQuery> nativeSearchQueryArgumentCaptor = ArgumentCaptor.forClass(NativeSearchQuery.class);
+        verify(elasticsearchOperations).search(nativeSearchQueryArgumentCaptor.capture(),
+                eq(JSONObject.class),
+                indexCaptor.capture());
+        String actualIndex = indexCaptor.getValue().getIndexName();
+
+        assertTrue(nativeSearchQueryArgumentCaptor.getValue().getPageable().isUnpaged());
         assertEquals(expectedIndex, actualIndex);
         assertEquals(Arrays.asList(data), actual);
     }

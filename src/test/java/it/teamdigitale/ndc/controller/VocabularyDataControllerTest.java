@@ -24,9 +24,26 @@ public class VocabularyDataControllerTest {
     @Test
     void shouldReturnControlledVocabulary() {
         String indexName = "person-title";
+        final int pageNumber = 1;
+        final int pageSize = 2;
         List expected = Arrays.asList(mock(JSONObject.class));
-        when(vocabularyDataService.getData(indexName)).thenReturn(expected);
-        List<JSONObject> actual = vocabularyDataController.fetchControlledVocabularyData("agid", indexName);
+        when(vocabularyDataService.getData(indexName, pageNumber, pageSize)).thenReturn(expected);
+
+        List<JSONObject> actual = vocabularyDataController.fetchControlledVocabularyData("agid",
+                indexName,
+                pageNumber,
+                pageSize);
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void shouldReturnControlledVocabularyWhenPageNumberAndPageSizeIsNotGiven() {
+        String indexName = "person-title";
+        List expected = Arrays.asList(mock(JSONObject.class));
+        when(vocabularyDataService.getData(indexName, null, null)).thenReturn(expected);
+
+        List<JSONObject> actual = vocabularyDataController.fetchControlledVocabularyData("agid", indexName, null, null);
 
         assertEquals(expected, actual);
     }
