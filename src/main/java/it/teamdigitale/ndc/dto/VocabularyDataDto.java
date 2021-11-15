@@ -1,7 +1,6 @@
 package it.teamdigitale.ndc.dto;
 
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -14,12 +13,12 @@ import org.json.simple.JSONObject;
 @Builder
 @EqualsAndHashCode
 public class VocabularyDataDto {
-    Long totalRows;
+    Long totalResults;
     Integer pageNumber;
     List<JSONObject> data;
 
-    public VocabularyDataDto(Long totalRows, Integer pageNumber, List<JSONObject> data) {
-        this.totalRows = totalRows;
+    public VocabularyDataDto(Long totalResults, Integer pageNumber, List<JSONObject> data) {
+        this.totalResults = totalResults;
         this.pageNumber = pageNumber + 1;
         this.data = data;
     }

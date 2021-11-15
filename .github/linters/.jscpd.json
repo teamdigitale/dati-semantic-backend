@@ -1,0 +1,16 @@
+{
+  "threshold": 0,
+  "reporters": [
+    "html",
+    "markdown"
+  ],
+  "ignore": [
+    "**/test/**",
+    "**/.git/**",
+    "**/*.yaml",
+    "**/*.yml",
+    "**/*.md",
+    "**/*.html",
+    "**/*.xml"
+  ]
+}
