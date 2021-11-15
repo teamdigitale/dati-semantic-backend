@@ -8,14 +8,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.elasticsearch.client.ClientConfiguration;
 import org.springframework.data.elasticsearch.client.RestClients;
 import org.springframework.data.elasticsearch.config.AbstractElasticsearchConfiguration;
-import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
-import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
 
 @Configuration
-@EnableElasticsearchRepositories(basePackages
-        = "it.teamdigitale.ndc.data.elasticsearch.repositories")
-@ComponentScan(basePackages = {"it.teamdigitale.ndc.data.elasticsearch"})
+@EnableElasticsearchRepositories(basePackages = "it.teamdigitale.ndc")
+@ComponentScan(basePackages = {"it.teamdigitale.ndc"})
 public class ElasticsearchClientConfig extends AbstractElasticsearchConfiguration {
     @Value("${elasticsearch.host:localhost}")
     private String host;

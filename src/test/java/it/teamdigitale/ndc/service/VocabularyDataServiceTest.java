@@ -10,6 +10,8 @@ import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.List;
+
+import it.teamdigitale.ndc.dto.VocabularyDataDto;
 import org.json.simple.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,7 +46,7 @@ public class VocabularyDataServiceTest {
                 eq(JSONObject.class),
                 any(IndexCoordinates.class)))
                 .thenReturn(searchHits);
-        List<JSONObject> actual = vocabularyDataService.getData(expectedIndex, 0, 10);
+        VocabularyDataDto actual = vocabularyDataService.getData(expectedIndex, 0, 10);
         ArgumentCaptor<IndexCoordinates> indexCaptor = ArgumentCaptor.forClass(IndexCoordinates.class);
         ArgumentCaptor<NativeSearchQuery> nativeSearchQueryArgumentCaptor = ArgumentCaptor.forClass(NativeSearchQuery.class);
         verify(elasticsearchOperations).search(nativeSearchQueryArgumentCaptor.capture(),
@@ -55,11 +57,11 @@ public class VocabularyDataServiceTest {
         assertEquals(nativeSearchQueryArgumentCaptor.getValue().getPageable().getPageNumber(), 0);
         assertEquals(nativeSearchQueryArgumentCaptor.getValue().getPageable().getPageSize(), 10);
         assertEquals(expectedIndex, actualIndex);
-        assertEquals(Arrays.asList(data), actual);
+        assertEquals(Arrays.asList(data), actual.getData());
     }
 
     @Test
-    void shouldFetchDataWithoutPagintaion() {
+    void shouldFetchDataWithoutPagination() {
         JSONObject data = new JSONObject();
         SearchHits<JSONObject> searchHits = mock(SearchHits.class);
         SearchHit searchHit = mock(SearchHit.class);
@@ -71,7 +73,7 @@ public class VocabularyDataServiceTest {
                 eq(JSONObject.class),
                 any(IndexCoordinates.class)))
                 .thenReturn(searchHits);
-        List<JSONObject> actual = vocabularyDataService.getData(expectedIndex, null, null);
+        VocabularyDataDto actual = vocabularyDataService.getData(expectedIndex, null, null);
         ArgumentCaptor<IndexCoordinates> indexCaptor = ArgumentCaptor.forClass(IndexCoordinates.class);
         ArgumentCaptor<NativeSearchQuery> nativeSearchQueryArgumentCaptor = ArgumentCaptor.forClass(NativeSearchQuery.class);
         verify(elasticsearchOperations).search(nativeSearchQueryArgumentCaptor.capture(),
@@ -81,6 +83,6 @@ public class VocabularyDataServiceTest {
 
         assertTrue(nativeSearchQueryArgumentCaptor.getValue().getPageable().isUnpaged());
         assertEquals(expectedIndex, actualIndex);
-        assertEquals(Arrays.asList(data), actual);
+        assertEquals(Arrays.asList(data), actual.getData());
     }
 }
