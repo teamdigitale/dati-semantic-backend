@@ -59,30 +59,4 @@ public class VocabularyDataServiceTest {
         assertEquals(expectedIndex, actualIndex);
         assertEquals(Arrays.asList(data), actual.getData());
     }
-
-    @Test
-    void shouldFetchDataWithoutPagination() {
-        JSONObject data = new JSONObject();
-        SearchHits<JSONObject> searchHits = mock(SearchHits.class);
-        SearchHit searchHit = mock(SearchHit.class);
-        String expectedIndex = "person-title";
-
-        when(searchHits.getSearchHits()).thenReturn(Arrays.asList(searchHit));
-        when(searchHit.getContent()).thenReturn(data);
-        when(elasticsearchOperations.search(any(NativeSearchQuery.class),
-                eq(JSONObject.class),
-                any(IndexCoordinates.class)))
-                .thenReturn(searchHits);
-        VocabularyDataDto actual = vocabularyDataService.getData(expectedIndex, null, null);
-        ArgumentCaptor<IndexCoordinates> indexCaptor = ArgumentCaptor.forClass(IndexCoordinates.class);
-        ArgumentCaptor<NativeSearchQuery> nativeSearchQueryArgumentCaptor = ArgumentCaptor.forClass(NativeSearchQuery.class);
-        verify(elasticsearchOperations).search(nativeSearchQueryArgumentCaptor.capture(),
-                eq(JSONObject.class),
-                indexCaptor.capture());
-        String actualIndex = indexCaptor.getValue().getIndexName();
-
-        assertTrue(nativeSearchQueryArgumentCaptor.getValue().getPageable().isUnpaged());
-        assertEquals(expectedIndex, actualIndex);
-        assertEquals(Arrays.asList(data), actual.getData());
-    }
 }

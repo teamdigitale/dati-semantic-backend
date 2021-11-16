@@ -30,7 +30,7 @@ public class VocabularyDataController {
             @RequestParam(name = "page-size", required = false, defaultValue = "10")
             @Min(1) @Max(200) Integer pageSize) {
 
-        int pageNumberForElasticsearch = pageNumber - 1;
-        return vocabularyDataService.getData(vocabularyId, pageNumberForElasticsearch, pageSize);
+        int pageIndexForElasticsearch = pageNumber - 1;
+        return vocabularyDataService.getData(vocabularyId, pageIndexForElasticsearch, pageSize);
     }
 }

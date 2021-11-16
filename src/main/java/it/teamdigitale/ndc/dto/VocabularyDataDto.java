@@ -17,9 +17,9 @@ public class VocabularyDataDto {
     Integer pageNumber;
     List<JSONObject> data;
 
-    public VocabularyDataDto(Long totalResults, Integer pageNumber, List<JSONObject> data) {
+    public VocabularyDataDto(Long totalResults, Integer pageIndex, List<JSONObject> data) {
         this.totalResults = totalResults;
-        this.pageNumber = pageNumber + 1;
+        this.pageNumber = pageIndex + 1;
         this.data = data;
     }
 }
