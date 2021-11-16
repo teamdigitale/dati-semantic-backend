@@ -20,10 +20,11 @@ public class VocabularyDataService {
     @Autowired
     private ElasticsearchOperations elasticsearchOperations;
 
-    public VocabularyDataDto getData(String index, Integer pageIndex, Integer pageSize) {
+    public VocabularyDataDto getData(String agencyId, String vocabularyName, Integer pageIndex, Integer pageSize) {
         NativeSearchQuery query = new NativeSearchQueryBuilder().build();
         query.setPageable(PageRequest.of(pageIndex, pageSize));
 
+        String index = String.join("-", agencyId, vocabularyName);
         SearchHits<JSONObject> results = elasticsearchOperations.search(query,
                 JSONObject.class, IndexCoordinates.of(index));
 
@@ -32,5 +33,4 @@ public class VocabularyDataService {
                 .collect(Collectors.toList());
         return new VocabularyDataDto(results.getTotalHits(), pageIndex, data);
     }
-
 }

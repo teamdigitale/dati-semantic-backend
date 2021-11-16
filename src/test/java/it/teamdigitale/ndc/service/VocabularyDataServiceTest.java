@@ -9,7 +9,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
-import java.util.List;
 
 import it.teamdigitale.ndc.dto.VocabularyDataDto;
 import org.json.simple.JSONObject;
@@ -39,6 +38,7 @@ public class VocabularyDataServiceTest {
         SearchHits<JSONObject> searchHits = mock(SearchHits.class);
         SearchHit searchHit = mock(SearchHit.class);
         String expectedIndex = "person-title";
+        String agencyId = "agid";
 
         when(searchHits.getSearchHits()).thenReturn(Arrays.asList(searchHit));
         when(searchHit.getContent()).thenReturn(data);
@@ -46,7 +46,7 @@ public class VocabularyDataServiceTest {
                 eq(JSONObject.class),
                 any(IndexCoordinates.class)))
                 .thenReturn(searchHits);
-        VocabularyDataDto actual = vocabularyDataService.getData(expectedIndex, 0, 10);
+        VocabularyDataDto actual = vocabularyDataService.getData(agencyId, expectedIndex, 0, 10);
         ArgumentCaptor<IndexCoordinates> indexCaptor = ArgumentCaptor.forClass(IndexCoordinates.class);
         ArgumentCaptor<NativeSearchQuery> nativeSearchQueryArgumentCaptor = ArgumentCaptor.forClass(NativeSearchQuery.class);
         verify(elasticsearchOperations).search(nativeSearchQueryArgumentCaptor.capture(),
@@ -56,7 +56,7 @@ public class VocabularyDataServiceTest {
 
         assertEquals(nativeSearchQueryArgumentCaptor.getValue().getPageable().getPageNumber(), 0);
         assertEquals(nativeSearchQueryArgumentCaptor.getValue().getPageable().getPageSize(), 10);
-        assertEquals(expectedIndex, actualIndex);
+        assertEquals("agid-" + expectedIndex, actualIndex);
         assertEquals(Arrays.asList(data), actual.getData());
     }
 }

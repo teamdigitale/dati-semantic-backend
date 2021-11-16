@@ -20,7 +20,6 @@ import javax.validation.constraints.Min;
 public class VocabularyDataController {
     @Autowired VocabularyDataService vocabularyDataService;
 
-    @SneakyThrows
     @GetMapping("vocabularies/{agency_id}/{vocabulary_id}")
     public VocabularyDataDto fetchVocabularyData(
             @PathVariable("agency_id") String agencyId,
@@ -31,6 +30,6 @@ public class VocabularyDataController {
             @Min(1) @Max(200) Integer pageSize) {
 
         int pageIndexForElasticsearch = pageNumber - 1;
-        return vocabularyDataService.getData(vocabularyId, pageIndexForElasticsearch, pageSize);
+        return vocabularyDataService.getData(agencyId, vocabularyId, pageIndexForElasticsearch, pageSize);
     }
 }
