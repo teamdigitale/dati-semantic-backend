@@ -33,7 +33,8 @@ After discussing with [Roberto](https://github.com/ioggstream), we have agreed o
   single OAS file that will look at lot
   like [this one](https://editor.swagger.io/?url=https%3A%2F%2Fraw.githubusercontent.com%2Fioggstream%2Fjson-semantic-playground%2Fmaster%2Fopenapi%2Fvocabularies.yaml)
   , with these differences:
-    * Instead of `vocabulary_id` we will have the pair `<agency_id, core_vocab_concept>`
+    * Instead of `vocabulary_id` we will have a pair of properties to identify the Data Provider (/repository) and the
+      Vocabulary (e.g. something like `<agency_id, core_vocab_concept>` or equivalent)
     * Pagination is supported over there, but we will support it
 
 ## Consequences
