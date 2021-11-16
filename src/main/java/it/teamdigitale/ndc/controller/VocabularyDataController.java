@@ -25,9 +25,9 @@ public class VocabularyDataController {
     public VocabularyDataDto fetchVocabularyData(
             @PathVariable("agency_id") String agencyId,
             @PathVariable("vocabulary_id") String vocabularyId,
-            @RequestParam(name = "page-number", required = false, defaultValue = "1")
+            @RequestParam(name = "page_number", required = false, defaultValue = "1")
             @Min(1) Integer pageNumber,
-            @RequestParam(name = "page-size", required = false, defaultValue = "10")
+            @RequestParam(name = "page_size", required = false, defaultValue = "10")
             @Min(1) @Max(200) Integer pageSize) {
 
         int pageIndexForElasticsearch = pageNumber - 1;
