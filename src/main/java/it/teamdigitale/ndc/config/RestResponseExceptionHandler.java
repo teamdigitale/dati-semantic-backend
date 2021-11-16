@@ -14,7 +14,7 @@ import javax.validation.ConstraintViolationException;
 public class RestResponseExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = {ConstraintViolationException.class})
-    protected ResponseEntity<Object> handleConflict(RuntimeException ex, WebRequest request) {
+    protected ResponseEntity<Object> handleValidationFailures(RuntimeException ex, WebRequest request) {
         String bodyOfResponse = "Validation for parameter failed " + ex.getMessage();
         return handleExceptionInternal(
                 ex, bodyOfResponse, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
