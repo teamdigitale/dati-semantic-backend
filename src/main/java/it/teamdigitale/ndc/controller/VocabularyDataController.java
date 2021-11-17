@@ -2,7 +2,6 @@ package it.teamdigitale.ndc.controller;
 
 import it.teamdigitale.ndc.dto.VocabularyDataDto;
 import it.teamdigitale.ndc.service.VocabularyDataService;
-import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
