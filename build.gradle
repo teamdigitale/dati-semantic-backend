@@ -26,14 +26,21 @@ repositories {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation group: 'org.springframework.data', name: 'spring-data-elasticsearch', version: '4.2.6'
     implementation 'org.apache.jena:apache-jena-libs:4.2.0'
     implementation 'org.apache.jena:jena-querybuilder:4.2.0'
+    implementation 'org.hibernate.validator:hibernate-validator:6.0.10.Final'
+    implementation 'org.springdoc:springdoc-openapi-ui:1.5.12'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1'
 
     testImplementation "org.testcontainers:testcontainers:1.16.0"
     testImplementation "org.testcontainers:junit-jupiter:1.16.0"
+    testImplementation "org.testcontainers:elasticsearch:1.16.2"
+    testImplementation 'io.rest-assured:rest-assured:4.0.0'
+    testImplementation 'io.rest-assured:json-path:4.0.0'
 }
 
 test {
@@ -69,9 +76,10 @@ jacocoTestCoverageVerification {
             limit {
                 counter = 'LINE'
                 value = 'COVEREDRATIO'
-                minimum = 0.9
+                minimum = 0.7 //change once Vocabulary Data Contoller integration test is added
             }
             excludes = [
+                    'it.teamdigitale.ndc.config.*',
                     'it.teamdigitale.ndc.Application',
             ]
         }
