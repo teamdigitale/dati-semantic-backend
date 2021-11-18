@@ -1,11 +1,12 @@
 package it.teamdigitale.ndc.integration;
 
-import com.github.dockerjava.api.model.ExposedPort;
-import com.github.dockerjava.api.model.HostConfig;
-import com.github.dockerjava.api.model.PortBinding;
-import com.github.dockerjava.api.model.Ports;
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.testcontainers.utility.DockerImageName.parse;
+
 import io.restassured.response.Response;
 import it.teamdigitale.ndc.config.ElasticsearchClientConfig;
+import java.io.IOException;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.entity.ContentType;
@@ -13,23 +14,17 @@ import org.apache.http.nio.entity.NStringEntity;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.RestClient;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
-
-import java.io.IOException;
-
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.testcontainers.utility.DockerImageName.parse;
 
 @Testcontainers
 @ExtendWith(SpringExtension.class)
@@ -48,18 +43,21 @@ public class VocabularyDataIntegrationTest {
     @Autowired
     ElasticsearchClientConfig clientConfig;
 
-    @Container
     private static ElasticsearchContainer elasticsearchContainer = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)
         .withReuse(true)
         .withExposedPorts(ELASTICSEARCH_PORT)
         .withEnv("discovery.type", "single-node")
-        .withEnv(CLUSTER_NAME, "elasticsearch")
-        .withCreateContainerCmdModifier(cmd -> cmd.withHostConfig(
-                new HostConfig().withPortBindings(new PortBinding(Ports.Binding.bindPort(9200), new ExposedPort(9200)))
-        ));
+        .withEnv(CLUSTER_NAME, "elasticsearch");
+
+    @DynamicPropertySource
+    static void updateTestcontainersProperties(DynamicPropertyRegistry registry) {
+        registry.add("elasticsearch.port",
+            () -> elasticsearchContainer.getMappedPort(ELASTICSEARCH_PORT));
+    }
 
     @BeforeAll
     private static void setup() throws IOException {
+        elasticsearchContainer.start();
         setupIndexData();
     }
 
@@ -119,6 +117,14 @@ public class VocabularyDataIntegrationTest {
 
     private static void setupIndexData() throws IOException {
         RestClient client = RestClient.builder(HttpHost.create(elasticsearchContainer.getHttpHostAddress())).build();
+
+        //delete index
+        Request deleteRequest = new Request("DELETE", "/" + indexName);
+        try {
+            client.performRequest(deleteRequest);
+        } catch (Exception ignored) {
+            System.out.println("Index does not exist");
+        }
 
         //create index
         Request request = new Request("PUT", "/" + indexName);
