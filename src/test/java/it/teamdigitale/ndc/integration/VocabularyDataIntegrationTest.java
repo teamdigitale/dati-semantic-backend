@@ -40,7 +40,7 @@ public class VocabularyDataIntegrationTest {
     private static final String CLUSTER_NAME = "cluster.name";
     public static final String indexName = "agency-vocab";
     private static final DockerImageName ELASTICSEARCH_IMAGE = parse("docker.elastic.co/elasticsearch/elasticsearch")
-            .withTag("7.10.0");
+            .withTag("7.12.0");
 
     @LocalServerPort
     private int port;
