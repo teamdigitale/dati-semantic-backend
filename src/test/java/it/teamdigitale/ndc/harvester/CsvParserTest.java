@@ -1,15 +1,15 @@
 package it.teamdigitale.ndc.harvester;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertThrows;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 public class CsvParserTest {
     @Test
-    void shouldConvertCsvToJson() throws IOException {
+    void shouldConvertCsvToJson() {
         String testCsvFile = "src/test/resources/testdata/test.csv";
         CsvParser csvParser = new CsvParser();
 
@@ -23,5 +23,13 @@ public class CsvParserTest {
         Map<String, String> secondRecord = json.get(1);
         assertThat(secondRecord.get("code_level_1")).isEqualTo("3S");
         assertThat(secondRecord.get("label_level_1")).isEqualTo("3 stelle superior");
+    }
+
+    @Test
+    void shouldReThrowRuntimeException() {
+        String testCsvFile = "invalid-path.csv";
+        CsvParser csvParser = new CsvParser();
+
+        assertThrows(RuntimeException.class, () -> csvParser.convertCsvToJson(testCsvFile));
     }
 }
