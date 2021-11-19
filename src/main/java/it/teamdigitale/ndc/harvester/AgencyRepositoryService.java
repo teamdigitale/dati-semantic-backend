@@ -1,12 +1,12 @@
 package it.teamdigitale.ndc.harvester;
 
 import it.teamdigitale.ndc.harvester.model.CvPath;
+import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
 import it.teamdigitale.ndc.harvester.util.FileUtils;
 import it.teamdigitale.ndc.harvester.util.GitUtils;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import lombok.SneakyThrows;
@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 public class AgencyRepositoryService {
     public static final String TEMP_DIR_PREFIX = "ndc-";
     public static final String CV_FOLDER = "VocabolariControllati";
+    public static final String ONTOLOGY_FOLDER = "Ontologie";
     private final FileUtils fileUtils;
     private final GitUtils gitUtils;
 
@@ -38,19 +39,29 @@ public class AgencyRepositoryService {
         Path cvFolder = Path.of(clonedRepo.toString(), CV_FOLDER);
         if (!fileUtils.folderExists(cvFolder)) {
             log.warn("No controlled vocabulary folder found in {}", clonedRepo);
-            return Collections.emptyList();
+            return List.of();
         }
-        return createCvPaths(cvFolder);
+        return (List<CvPath>) (List<?>) createSemanticAssetPaths(cvFolder);
+    }
+
+    public List<SemanticAssetPath> getOntologyPaths(Path clonedRepo) {
+        Path ontologyFolder = Path.of(clonedRepo.toString(), ONTOLOGY_FOLDER);
+        if (!fileUtils.folderExists(ontologyFolder)) {
+            log.warn("No ontology folder found in {}", clonedRepo);
+            return List.of();
+        }
+
+        return createSemanticAssetPaths(ontologyFolder);
     }
 
     @SneakyThrows
-    private List<CvPath> createCvPaths(Path dir) {
-        List<CvPath> accumulator = new ArrayList<>();
+    private List<SemanticAssetPath> createSemanticAssetPaths(Path dir) {
+        List<SemanticAssetPath> accumulator = new ArrayList<>();
         boolean hasSubDir =
             fileUtils.listContents(dir).stream().anyMatch(fileUtils::isDirectory);
         if (hasSubDir) {
-            List<CvPath> subDirCvPaths = fileUtils.listContents(dir).stream()
-                .map(this::createCvPaths)
+            List<SemanticAssetPath> subDirCvPaths = fileUtils.listContents(dir).stream()
+                .map(this::createSemanticAssetPaths)
                 .reduce(new ArrayList<>(), (acc, cvPaths) -> {
                     acc.addAll(cvPaths);
                     return acc;
@@ -61,12 +72,15 @@ public class AgencyRepositoryService {
                 .filter(path -> path.toString().endsWith(".csv"))
                 .findFirst();
 
+            //filter out all alignment ttls
             Optional<Path> ttl = fileUtils.listContents(dir).stream()
                 .filter(path -> path.toString().endsWith(".ttl"))
                 .findFirst();
 
             if (ttl.isPresent() && csv.isPresent()) {
                 accumulator.add(CvPath.of(csv.get().toString(), ttl.get().toString()));
+            } else {
+                ttl.ifPresent(path -> accumulator.add(new SemanticAssetPath(path.toString())));
             }
         }
 

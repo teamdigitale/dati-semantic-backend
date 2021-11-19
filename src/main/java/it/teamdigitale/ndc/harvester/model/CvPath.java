@@ -5,13 +5,12 @@ import lombok.Getter;
 
 @Getter
 @EqualsAndHashCode
-public class CvPath {
+public class CvPath extends SemanticAssetPath {
     private final String csvPath;
-    private final String ttlPath;
 
     public CvPath(String csvPath, String ttlPath) {
+        super(ttlPath);
         this.csvPath = csvPath;
-        this.ttlPath = ttlPath;
     }
 
     public static CvPath of(String csvPath, String ttlPath) {
