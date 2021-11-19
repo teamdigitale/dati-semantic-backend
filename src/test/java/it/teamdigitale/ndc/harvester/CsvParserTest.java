@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 public class CsvParserTest {
     @Test
     void shouldConvertCsvToJson() {
-        String testCsvFile = "src/test/resources/testdata/test.csv";
+        String testCsvFile = "src/test/resources/testdata/cv.csv";
         CsvParser csvParser = new CsvParser();
 
         List<Map<String, String>> json = csvParser.convertCsvToJson(testCsvFile);

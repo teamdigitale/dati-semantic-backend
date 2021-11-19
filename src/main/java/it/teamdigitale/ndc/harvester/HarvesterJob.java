@@ -1,8 +1,7 @@
 package it.teamdigitale.ndc.harvester;
 
-import java.io.IOException;
 import java.util.List;
-import org.eclipse.jgit.api.errors.GitAPIException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +10,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 @Configuration
 @EnableScheduling
+@Slf4j
 public class HarvesterJob {
 
     private final HarvesterService harvesterService;
@@ -25,9 +25,13 @@ public class HarvesterJob {
     }
 
     @Scheduled(cron = "0 0 22 ? * *")
-    public void harvest() throws GitAPIException, IOException {
+    public void harvest() {
         for (String repo : repos) {
-            harvesterService.harvest(repo);
+            try {
+                harvesterService.harvest(repo);
+            } catch (Exception e) {
+                log.error("Unable to process {}", repo, e);
+            }
         }
     }
 }

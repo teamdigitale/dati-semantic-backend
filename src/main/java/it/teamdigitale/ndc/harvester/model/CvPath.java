@@ -1,7 +1,9 @@
 package it.teamdigitale.ndc.harvester.model;
 
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
+@Getter
 @EqualsAndHashCode
 public class CvPath {
     private final String csvPath;

@@ -1,0 +1,210 @@
+@prefix dct:     <http://purl.org/dc/terms/> .
+@prefix adms:    <http://www.w3.org/ns/adms#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix dc:      <http://purl.org/dc/elements/1.1/> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix accoapit: <https://w3id.org/italia/onto/ACCO/> .
+@prefix xkos:    <http://rdf-vocabulary.ddialliance.org/xkos#> .
+@prefix clvapit: <https://w3id.org/italia/onto/CLV/> .
+@prefix dcatapit: <http://dati.gov.it/onto/dcatapit#> .
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix vcard: <http://www.w3.org/2006/vcard/ns#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+skos:ConceptScheme
+      a       rdfs:Class .
+
+skos:Concept
+      a       rdfs:Class .
+
+accoapit:AccommodationStarRating
+      a       rdfs:Class .
+
+dcatapit:Dataset
+      a       rdfs:Class .
+
+dcatapit:Distribution
+      a       rdfs:Class .
+
+dcatapit:Standard
+      a        rdfs:Class .
+
+dcatapit:Organization
+      a        rdfs:Class .
+
+vcard:Organization
+      a        rdfs:Class .
+
+vcard:Kind
+      a        rdfs:Class .
+
+dcatapit:Agent
+      a       rdfs:Class .
+
+foaf:Agent
+      a       rdfs:Class .
+
+dct:Standard
+      a       rdfs:Class .
+
+skos:prefLabel
+      a       rdfs:Property .
+
+skos:notation
+      a       rdfs:Property .
+
+skos:inScheme
+      a       rdfs:Property .
+
+skos:narrower
+	  a 	  rdfs:Property .
+
+skos:broader
+	  a		  rdfs:Property .
+
+skos:broaderTransitive
+      a 	  rdfs:Property .
+
+skos:narrowerTransitive
+      a       rdfs:Property .
+
+skos:definition
+	  a		  rdfs:Property .
+
+dct:identifier
+	  a       rdfs:Property .
+
+dct:title
+    a       rdfs:Property .
+
+dct:type
+    a       rdfs:Property .
+
+dct:description
+    a       rdfs:Property .
+
+dct:creator
+    a       rdfs:Property .
+
+dct:publisher
+    a       rdfs:Property .
+
+dct:rightsHolder
+    a       rdfs:Property .
+
+dct:conformsTo
+    a       rdfs:Property .
+
+dct:subject
+    a       rdfs:Property .
+
+dct:accrualPeriodicity
+    a       rdfs:Property .
+
+dct:language
+    a       rdfs:Property .
+
+dct:format
+    a       rdfs:Property .
+
+dct:issued
+    a       rdfs:Property .
+
+dct:modified
+    a       rdfs:Property .
+
+dct:license
+    a       rdfs:Property .
+
+xkos:numberOfLevels
+    a     rdfs:Property .
+
+clvapit:hasRankOrder
+    a     rdfs:Property .
+
+accoapit:accoStarRatingID
+    a       rdfs:Property .
+
+accoapit:accoStarRatingLabel
+    a       rdfs:Property .
+
+dcat:theme
+    a     rdfs:Property .
+
+dcat:distribution
+    a     rdfs:Property .
+
+foaf:name
+    a     rdfs:Property .
+
+dcat:keyword
+    a     rdfs:Property .
+
+dcat:contactPoint
+    a     rdfs:Property .
+
+dcat:accessURL
+    a     rdfs:Property .
+
+dcat:downloadURL
+    a     rdfs:Property .
+
+owl:versionInfo
+    a     rdfs:Property .
+
+adms:representationTechnique
+    a     rdfs:Property .
+
+vcard:fn
+    a     rdfs:Property .
+
+vcard:hasEmail
+    a     rdfs:Property .
+
+<https://w3id.org/italia/controlled-vocabulary/classifications-for-accommodation-facilities/accommodation-star-rating1>
+      a       skos:ConceptScheme , adms:Asset , dcatapit:Dataset .
+
+<https://w3id.org/italia/controlled-vocabulary/classifications-for-accommodation-facilities/accommodation-star-rating>
+      a       skos:ConceptScheme , adms:Asset , dcatapit:Dataset ;
+      dct:title "Accommodation Star Rating Classification"@en , "Classificazione a stelle delle strutture ricettive"@it ;
+      dct:description "Controlled Vocabulary on the classification of the star ratings for accommodations."@en , "Vocabolario controllato della classificazione a stelle per le strutture ricettive"@it ;
+      rdfs:comment "Classification of the star ratings for the accommodations."@en , "Vocabolario controllato sulla classificazione a stelle per le strutture ricettive"@it ;
+      rdfs:label "Accommodation Star Rating Classification"@en ,  "Classificazione a stelle delle strutture ricettive"@it ;
+      dct:type <http://purl.org/adms/assettype/Taxonomy> ;
+      xkos:numberOfLevels "1";
+      adms:representationTechnique <http://purl.org/adms/representationtechnique/SKOS> ;
+      dct:identifier "agid:D.3" ;
+      dct:rightsHolder <http://spcdata.digitpa.gov.it/browse/page/Amministrazione/agid> ;
+      dct:creator <http://spcdata.digitpa.gov.it/browse/page/Amministrazione/agid>  , <http://dati.gov.it/data/resource/Amministrazione/td_PCM> ;
+      dct:publisher <http://spcdata.digitpa.gov.it/browse/page/Amministrazione/agid>  ;
+      dcat:theme <http://publications.europa.eu/resource/authority/data-theme/EDUC> ;
+      dct:subject <http://eurovoc.europa.eu/251915> , <http://eurovoc.europa.eu/251794> , <http://eurovoc.europa.eu/251889> ;
+      rdfs:isDefinedBy <https://w3id.org/italia/controlled-vocabulary/classifications-for-accommodation-facilities/accommodation-star-rating> ;
+      dct:conformsTo  <http://dati.gov.it/data/resource/Standard/SKOS> ;
+      dct:language <http://publications.europa.eu/resource/authority/language/ITA> , <http://publications.europa.eu/resource/authority/language/ENG> ;
+      dct:accrualPeriodicity <http://publications.europa.eu/resource/authority/frequency/IRREG> ;
+      dcat:keyword "Struttura ricettiva"@it, "Stelle"@it , "Categoria struttura ricettiva"@it, "Accommodation Facility"@en, "Star rating"@en , "Accommodation Facility Category"@en ;
+      dcat:distribution <http://dati.gov.it/data/resource/Distribution/AccoStarRating_RDF_Turtle> , <http://dati.gov.it/data/resource/Distribution/AccoStarRating_RDF_XML> , <http://dati.gov.it/data/resource/Distribution/AccoStarRating_JSON_LD> , <http://dati.gov.it/data/resource/Distribution/AccoStarRating_CSV> ,
+      <http://dati.gov.it/data/resource/Distribution/AccoStarRating_XLSX> ;
+      dcat:contactPoint <http://dati.gov.it/data/resource/ContactPoint/voc_AgID> ;
+      skos:hasTopConcept <https://w3id.org/italia/controlled-vocabulary/classifications-for-accommodation-facilities/accommodation-star-rating/0> ,
+      <https://w3id.org/italia/controlled-vocabulary/classifications-for-accommodation-facilities/accommodation-star-rating/1> ,
+      <https://w3id.org/italia/controlled-vocabulary/classifications-for-accommodation-facilities/accommodation-star-rating/2> ,
+      <https://w3id.org/italia/controlled-vocabulary/classifications-for-accommodation-facilities/accommodation-star-rating/3> ,
+      <https://w3id.org/italia/controlled-vocabulary/classifications-for-accommodation-facilities/accommodation-star-rating/3S> ,
+      <https://w3id.org/italia/controlled-vocabulary/classifications-for-accommodation-facilities/accommodation-star-rating/4> ,
+      <https://w3id.org/italia/controlled-vocabulary/classifications-for-accommodation-facilities/accommodation-star-rating/4S> ,
+      <https://w3id.org/italia/controlled-vocabulary/classifications-for-accommodation-facilities/accommodation-star-rating/5> ,
+      <https://w3id.org/italia/controlled-vocabulary/classifications-for-accommodation-facilities/accommodation-star-rating/5L> ;
+      dct:issued "2017-10-20"^^xsd:date ;
+      dct:modified "2018-02-11"^^xsd:date ;
+      owl:versionInfo "0.1" .
+
+<http://spcdata.digitpa.gov.it/browse/page/Amministrazione/agid>
+      a dcatapit:Agent, foaf:Agent ;
+      dct:identifier "agid" ;
+      foaf:name "Agenzia per l'Italia Digitale"@it , "Italian Digital Agency"@en .
