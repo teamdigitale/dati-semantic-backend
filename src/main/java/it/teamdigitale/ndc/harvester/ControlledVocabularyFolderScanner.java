@@ -23,32 +23,37 @@ public class ControlledVocabularyFolderScanner implements FolderScanner<CvPath> 
 
     @Override
     public List<CvPath> scanFolder(Path folder) throws IOException {
-        List<Path> ttl = fileUtils.listContents(folder).stream()
-                .filter(path -> path.toString().toLowerCase(Locale.ROOT).endsWith(TURTLE_FILE_EXTENSION))
-                .limit(2)
-                .collect(Collectors.toList());
+        Optional<Path> maybeTtl = findAtMostOne(folder, TURTLE_FILE_EXTENSION, "turtle controlled vocabulary");
 
-        if (ttl.isEmpty()) {
+        if (maybeTtl.isEmpty()) {
             log.warn("Controlled vocabulary folder '{}' does not contain any TTL file", folder.toString());
             return Collections.emptyList();
         }
 
-        if (ttl.size() > 1) {
-            log.error("Folder {} contains more than one controlled vocabulary", folder.toString());
-            throw new InvalidAssetFolderException(String.format("Folder '%s' has more than one Controlled Vocabulary", folder));
-        }
+        String ttlPath = maybeTtl.get().toString();
 
-        String ttlPath = ttl.get(0).toString();
+        Optional<Path> maybeCsv = findAtMostOne(folder, ".csv", "flattened controlled vocabulary");
 
-        Optional<Path> csv = fileUtils.listContents(folder).stream()
-                .filter(path -> path.toString().toLowerCase(Locale.ROOT).endsWith(".csv"))
-                .findFirst();
-
-        if (csv.isPresent()) {
-            return List.of(CvPath.of(ttlPath, csv.get().toString()));
+        if (maybeCsv.isPresent()) {
+            return List.of(CvPath.of(ttlPath, maybeCsv.get().toString()));
         } else {
             log.info("No CSV file associated to {} in {}", ttlPath, folder);
             return List.of(CvPath.of(ttlPath, null));
         }
+    }
+
+    private Optional<Path> findAtMostOne(Path parent, String extension, String fileTypeDescription) throws IOException {
+        List<Path> hits = fileUtils.listContents(parent).stream()
+                .filter(path -> path.toString().toLowerCase(Locale.ROOT).endsWith(extension))
+                .limit(2)
+                .collect(Collectors.toList());
+
+        if (hits.size() > 1) {
+            log.error("Folder '{}' contains more than one {}", parent.toString(), fileTypeDescription);
+            throw new InvalidAssetFolderException(String.format("Folder '%s' has more than one %s",
+                    parent, fileTypeDescription));
+        }
+
+        return hits.isEmpty() ? Optional.empty() : Optional.of(hits.get(0));
     }
 }

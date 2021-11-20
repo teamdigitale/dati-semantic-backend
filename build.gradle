@@ -34,6 +34,7 @@ dependencies {
     implementation 'org.eclipse.jgit:org.eclipse.jgit:5.13.0.202109080827-r'
 
     compileOnly 'org.projectlombok:lombok'
+    testCompileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation "org.testcontainers:testcontainers:1.16.0"
