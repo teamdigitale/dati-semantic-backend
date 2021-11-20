@@ -2,9 +2,11 @@ package it.teamdigitale.ndc.harvester.model;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
 @EqualsAndHashCode
+@ToString
 public class CvPath extends SemanticAssetPath {
     private final String csvPath;
 

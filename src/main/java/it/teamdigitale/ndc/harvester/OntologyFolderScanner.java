@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -18,10 +19,10 @@ public class OntologyFolderScanner implements FolderScanner<SemanticAssetPath> {
 
     @Override
     public List<SemanticAssetPath> scanFolder(Path folder) throws IOException {
-        //filter out all alignment ttls
         Optional<Path> ttl = fileUtils.listContents(folder).stream()
                 .filter(path -> path.toString().endsWith(".ttl"))
-                .findFirst();
+                // let's consider the shortest file name as the "main" one, whereas others might be aligns
+                .min(Comparator.comparingInt(p -> p.toString().length()));
 
         return ttl
                 .map(path -> new SemanticAssetPath(path.toString()))
