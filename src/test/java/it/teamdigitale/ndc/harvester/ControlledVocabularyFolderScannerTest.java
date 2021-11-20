@@ -4,6 +4,8 @@ import it.teamdigitale.ndc.harvester.model.CvPath;
 import it.teamdigitale.ndc.harvester.util.FileUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -45,5 +47,18 @@ class ControlledVocabularyFolderScannerTest {
 
         assertThat(cvPaths).hasSize(1);
         assertThat(cvPaths).contains(new CvPath("cv.ttl", null));
+    }
+
+    @ParameterizedTest
+    @CsvSource({"cv.ttl,cv.csv", "cv.TTL,cv.CSV", "cv.ttl,cv.CSV", "cv.TTL,cv.csv"})
+    void shouldFindOntologiesByCaseInsensitiveExtension(String ttlFileName, String csvFileName) throws IOException {
+        Path folder = Path.of("/tmp/fake");
+        when(fileUtils.listContents(folder))
+                .thenReturn(List.of(Path.of(ttlFileName), Path.of(csvFileName)));
+
+        List<CvPath> cvPaths = scanner.scanFolder(folder);
+
+        assertThat(cvPaths).hasSize(1);
+        assertThat(cvPaths).contains(new CvPath(ttlFileName, csvFileName));
     }
 }

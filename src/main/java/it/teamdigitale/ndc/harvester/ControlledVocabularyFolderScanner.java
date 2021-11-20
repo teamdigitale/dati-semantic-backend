@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 @Component
@@ -21,7 +22,7 @@ public class ControlledVocabularyFolderScanner implements FolderScanner<CvPath> 
     @Override
     public List<CvPath> scanFolder(Path folder) throws IOException {
         Optional<Path> ttl = fileUtils.listContents(folder).stream()
-                .filter(path -> path.toString().endsWith(TURTLE_FILE_EXTENSION))
+                .filter(path -> path.toString().toLowerCase(Locale.ROOT).endsWith(TURTLE_FILE_EXTENSION))
                 .findFirst();
 
         if (ttl.isEmpty()) {
@@ -32,7 +33,7 @@ public class ControlledVocabularyFolderScanner implements FolderScanner<CvPath> 
         String ttlPath = ttl.get().toString();
 
         Optional<Path> csv = fileUtils.listContents(folder).stream()
-                .filter(path -> path.toString().endsWith(".csv"))
+                .filter(path -> path.toString().toLowerCase(Locale.ROOT).endsWith(".csv"))
                 .findFirst();
 
         if (csv.isPresent()) {
