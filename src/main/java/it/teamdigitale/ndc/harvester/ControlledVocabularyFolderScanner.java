@@ -1,7 +1,6 @@
 package it.teamdigitale.ndc.harvester;
 
 import it.teamdigitale.ndc.harvester.model.CvPath;
-import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
 import it.teamdigitale.ndc.harvester.util.FileUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +11,6 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -38,10 +36,10 @@ public class ControlledVocabularyFolderScanner implements FolderScanner<CvPath> 
                 .findFirst();
 
         if (csv.isPresent()) {
-            return List.of(CvPath.of(csv.get().toString(), ttlPath));
+            return List.of(CvPath.of(ttlPath, csv.get().toString()));
         } else {
             log.info("No CSV file associated to {} in {}", ttlPath, folder);
-            return List.of(CvPath.of(null, ttlPath));
+            return List.of(CvPath.of(ttlPath, null));
         }
     }
 }

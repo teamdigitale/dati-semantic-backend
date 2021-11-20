@@ -20,6 +20,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class OntologyFolderScannerTest {
+    private final Path folder = Path.of("/tmp/fake");
 
     @Mock
     FileUtils fileUtils;
@@ -29,7 +30,6 @@ class OntologyFolderScannerTest {
 
     @Test
     void shouldFindAllOntologiesAndIgnoreCsvs() throws IOException {
-        Path folder = Path.of("/tmp/fake");
         when(fileUtils.listContents(folder))
                 .thenReturn(List.of(Path.of("onto.ttl"), Path.of("onto.csv")));
 

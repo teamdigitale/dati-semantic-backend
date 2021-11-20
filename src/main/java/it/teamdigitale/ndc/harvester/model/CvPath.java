@@ -1,21 +1,25 @@
 package it.teamdigitale.ndc.harvester.model;
 
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.ToString;
 
-@Getter
+import java.util.Optional;
+
 @EqualsAndHashCode
 @ToString
 public class CvPath extends SemanticAssetPath {
     private final String csvPath;
 
-    public CvPath(String csvPath, String ttlPath) {
+    public CvPath(String ttlPath, String csvPath) {
         super(ttlPath);
         this.csvPath = csvPath;
     }
 
-    public static CvPath of(String csvPath, String ttlPath) {
-        return new CvPath(csvPath, ttlPath);
+    public Optional<String> getCsvPath() {
+        return Optional.ofNullable(csvPath);
+    }
+
+    public static CvPath of(String ttlPath, String csvPath) {
+        return new CvPath(ttlPath, csvPath);
     }
 }

@@ -57,11 +57,16 @@ public class HarvesterService {
                     semanticAssetsParser.getControlledVocabulary(cvPath.getTtlPath());
             String vocabularyId = semanticAssetsParser.getKeyConcept(controlledVocabulary);
             String rightsHolderId = semanticAssetsParser.getRightsHolderId(controlledVocabulary);
-            List<Map<String, String>> flatData = csvParser.convertCsvToJson(cvPath.getCsvPath());
-            vocabularyDataService.indexData(rightsHolderId, vocabularyId, flatData);
+
+            cvPath.getCsvPath().ifPresent(p -> parseAndIndexCsv(vocabularyId, rightsHolderId, p));
 
             // store the metadata into Elasticsearch main index
             // store the resource into Virtuoso
         }
+    }
+
+    private void parseAndIndexCsv(String vocabularyId, String rightsHolderId, String csvPath) {
+        List<Map<String, String>> flatData = csvParser.convertCsvToJson(csvPath);
+        vocabularyDataService.indexData(rightsHolderId, vocabularyId, flatData);
     }
 }

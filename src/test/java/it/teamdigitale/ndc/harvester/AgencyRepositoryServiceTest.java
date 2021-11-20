@@ -17,16 +17,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.MethodSource;
 
 public class AgencyRepositoryServiceTest {
     FileUtils fileUtils;
@@ -68,8 +62,8 @@ public class AgencyRepositoryServiceTest {
      */
     @Test
     void shouldFindAllControlledVocabularies() throws IOException {
-        CvPath expected1 = CvPath.of("test1.csv", "test1.ttl");
-        CvPath expected2 = CvPath.of("test2.csv", "test2.ttl");
+        CvPath expected1 = CvPath.of("test1.ttl", "test1.csv");
+        CvPath expected2 = CvPath.of("test2.ttl", "test2.csv");
         Path cvFolder = Path.of("/temp/ndc-1", CV_FOLDER);
 
         when(fileUtils.folderExists(cvFolder)).thenReturn(true);

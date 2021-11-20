@@ -43,7 +43,7 @@ public class HarvesterServiceTest {
 
         when(agencyRepoService.cloneRepo(repoUrl)).thenReturn(clonedRepo.toPath());
         when(agencyRepoService.getControlledVocabularyPaths(clonedRepo.toPath()))
-                .thenReturn(List.of(CvPath.of("test.csv", "test.ttl"), CvPath.of("test.csv", "test.ttl")));
+                .thenReturn(List.of(CvPath.of("test.ttl", "test.csv"), CvPath.of("test.ttl", "test.csv")));
         when(semanticAssetsParser.getControlledVocabulary("test.ttl")).thenReturn(controlledVocabulary);
         when(semanticAssetsParser.getKeyConcept(controlledVocabulary)).thenReturn("keyConcept");
         when(semanticAssetsParser.getRightsHolderId(controlledVocabulary)).thenReturn("rightsHolderId");
