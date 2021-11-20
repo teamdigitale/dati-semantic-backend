@@ -4,6 +4,7 @@ import it.teamdigitale.ndc.harvester.model.CvPath;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
 import it.teamdigitale.ndc.harvester.util.FileUtils;
 import it.teamdigitale.ndc.harvester.util.GitUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -17,17 +18,15 @@ import java.util.stream.Collectors;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class AgencyRepositoryService {
     public static final String TEMP_DIR_PREFIX = "ndc-";
     public static final String CV_FOLDER = "VocabolariControllati";
     public static final String ONTOLOGY_FOLDER = "Ontologie";
     private final FileUtils fileUtils;
     private final GitUtils gitUtils;
-
-    public AgencyRepositoryService(FileUtils fileUtils, GitUtils gitUtils) {
-        this.fileUtils = fileUtils;
-        this.gitUtils = gitUtils;
-    }
+    private final OntologyFolderScanner ontologyFolderScanner;
+    private final ControlledVocabularyFolderScanner controlledVocabularyFolderScanner;
 
     public Path cloneRepo(String repoUrl) throws IOException, GitAPIException {
         Path cloneDir = fileUtils.createTempDirectory(TEMP_DIR_PREFIX);
@@ -42,7 +41,8 @@ public class AgencyRepositoryService {
             log.warn("No controlled vocabulary folder found in {}", clonedRepo);
             return List.of();
         }
-        return (List<CvPath>) (List<?>) createSemanticAssetPaths(cvFolder);
+
+        return createSemanticAssetPaths(cvFolder, controlledVocabularyFolderScanner);
     }
 
     public List<SemanticAssetPath> getOntologyPaths(Path clonedRepo) {
@@ -52,34 +52,19 @@ public class AgencyRepositoryService {
             return List.of();
         }
 
-        return createSemanticAssetPaths(ontologyFolder);
+        return createSemanticAssetPaths(ontologyFolder, ontologyFolderScanner);
     }
 
     @SneakyThrows
-    private List<SemanticAssetPath> createSemanticAssetPaths(Path dir) {
+    private <P extends SemanticAssetPath> List<P> createSemanticAssetPaths(Path dir, FolderScanner<P> scanner) {
         boolean hasSubDir =
                 fileUtils.listContents(dir).stream().anyMatch(fileUtils::isDirectory);
         if (hasSubDir) {
             return fileUtils.listContents(dir).stream()
-                    .flatMap(subDir -> createSemanticAssetPaths(subDir).stream())
+                    .flatMap(subDir -> createSemanticAssetPaths(subDir, scanner).stream())
                     .collect(Collectors.toList());
         } else {
-            Optional<Path> csv = fileUtils.listContents(dir).stream()
-                    .filter(path -> path.toString().endsWith(".csv"))
-                    .findFirst();
-
-            //filter out all alignment ttls
-            Optional<Path> ttl = fileUtils.listContents(dir).stream()
-                    .filter(path -> path.toString().endsWith(".ttl"))
-                    .findFirst();
-
-            if (ttl.isPresent() && csv.isPresent()) {
-                return List.of(CvPath.of(csv.get().toString(), ttl.get().toString()));
-            } else {
-                return ttl
-                        .map(path -> new SemanticAssetPath(path.toString()))
-                        .stream().collect(Collectors.toList());
-            }
+            return scanner.scanFolder(dir);
         }
     }
 }

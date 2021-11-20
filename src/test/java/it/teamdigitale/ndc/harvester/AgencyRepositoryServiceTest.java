@@ -27,12 +27,16 @@ public class AgencyRepositoryServiceTest {
     FileUtils fileUtils;
     GitUtils gitUtils;
     AgencyRepositoryService agencyRepoService;
+    private OntologyFolderScanner ontologyScanner;
+    private ControlledVocabularyFolderScanner cvScanner;
 
     @BeforeEach
     public void setup() {
         fileUtils = mock(FileUtils.class);
         gitUtils = mock(GitUtils.class);
-        agencyRepoService = new AgencyRepositoryService(fileUtils, gitUtils);
+        ontologyScanner = new OntologyFolderScanner(fileUtils);
+        cvScanner = new ControlledVocabularyFolderScanner(fileUtils);
+        agencyRepoService = new AgencyRepositoryService(fileUtils, gitUtils, ontologyScanner, cvScanner);
     }
 
     @Test
@@ -128,6 +132,50 @@ public class AgencyRepositoryServiceTest {
 
         when(fileUtils.listContents(Path.of("ot2")))
                 .thenReturn(List.of(Path.of(ontology2)));
+
+        when(fileUtils.listContents(Path.of("ot1")))
+                .thenReturn(List.of(Path.of(ontology1)));
+
+        List<SemanticAssetPath> ontologyPaths =
+                agencyRepoService.getOntologyPaths(Path.of("/temp/ndc-1"));
+
+        assertThat(ontologyPaths).hasSize(2);
+        assertThat(ontologyPaths).containsAll(List.of(new SemanticAssetPath(ontology1), new SemanticAssetPath(ontology2)));
+    }
+
+    /**
+     * folder structure:
+     * - Ontologie
+     * -- group1
+     * --- ot1
+     * ---- test1.ttl
+     * ---- test1-aligns.ttl
+     * -- ot2
+     * --- test2.ttl
+     * --- test2.csv
+     */
+    @Test
+    void shouldFindAllOntologiesAndIgnoreCsvs() throws IOException {
+        Path folder = Path.of("/temp/ndc-1", ONTOLOGY_FOLDER);
+        String ontology1 = "test1.ttl";
+        String ontology2 = "test2.ttl";
+        String csvIntruder = "test2.csv";
+
+        when(fileUtils.folderExists(folder)).thenReturn(true);
+
+        when(fileUtils.isDirectory(folder)).thenReturn(true);
+        when(fileUtils.isDirectory(Path.of("group1"))).thenReturn(true);
+        when(fileUtils.isDirectory(Path.of("ot1"))).thenReturn(true);
+        when(fileUtils.isDirectory(Path.of("ot2"))).thenReturn(true);
+
+        when(fileUtils.listContents(folder))
+                .thenReturn(List.of(Path.of("group1"), Path.of("ot2")));
+
+        when(fileUtils.listContents(Path.of("group1")))
+                .thenReturn(List.of(Path.of("ot1")));
+
+        when(fileUtils.listContents(Path.of("ot2")))
+                .thenReturn(List.of(Path.of(ontology2), Path.of(csvIntruder)));
 
         when(fileUtils.listContents(Path.of("ot1")))
                 .thenReturn(List.of(Path.of(ontology1)));
