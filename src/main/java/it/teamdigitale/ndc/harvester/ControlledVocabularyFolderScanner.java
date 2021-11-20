@@ -1,5 +1,6 @@
 package it.teamdigitale.ndc.harvester;
 
+import it.teamdigitale.ndc.harvester.exception.InvalidAssetFolderException;
 import it.teamdigitale.ndc.harvester.model.CvPath;
 import it.teamdigitale.ndc.harvester.util.FileUtils;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -21,16 +23,22 @@ public class ControlledVocabularyFolderScanner implements FolderScanner<CvPath> 
 
     @Override
     public List<CvPath> scanFolder(Path folder) throws IOException {
-        Optional<Path> ttl = fileUtils.listContents(folder).stream()
+        List<Path> ttl = fileUtils.listContents(folder).stream()
                 .filter(path -> path.toString().toLowerCase(Locale.ROOT).endsWith(TURTLE_FILE_EXTENSION))
-                .findFirst();
+                .limit(2)
+                .collect(Collectors.toList());
 
         if (ttl.isEmpty()) {
             log.warn("Controlled vocabulary folder '{}' does not contain any TTL file", folder.toString());
             return Collections.emptyList();
         }
 
-        String ttlPath = ttl.get().toString();
+        if (ttl.size() > 1) {
+            log.error("Folder {} contains more than one controlled vocabulary", folder.toString());
+            throw new InvalidAssetFolderException(String.format("Folder '%s' has more than one Controlled Vocabulary", folder));
+        }
+
+        String ttlPath = ttl.get(0).toString();
 
         Optional<Path> csv = fileUtils.listContents(folder).stream()
                 .filter(path -> path.toString().toLowerCase(Locale.ROOT).endsWith(".csv"))

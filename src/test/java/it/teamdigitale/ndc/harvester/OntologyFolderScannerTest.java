@@ -42,7 +42,6 @@ class OntologyFolderScannerTest {
     @ParameterizedTest
     @CsvSource({"onto.ttl,onto-aligns.ttl", "onto-aligns.ttl,onto.ttl"})
     void shouldFindAllOntologiesAndIgnoreAligns(String firstTtl, String secondTtl) throws IOException {
-        Path folder = Path.of("/tmp/fake");
         when(fileUtils.listContents(folder))
                 .thenReturn(List.of(Path.of(firstTtl), Path.of(secondTtl)));
 
@@ -55,7 +54,6 @@ class OntologyFolderScannerTest {
     @ParameterizedTest
     @ValueSource(strings = {"onto.ttl", "ONTO.TTL", "very-unlikely.Ttl"})
     void shouldFindOntologiesByCaseInsensitiveExtension(String fileName) throws IOException {
-        Path folder = Path.of("/tmp/fake");
         when(fileUtils.listContents(folder))
                 .thenReturn(List.of(Path.of(fileName)));
 
