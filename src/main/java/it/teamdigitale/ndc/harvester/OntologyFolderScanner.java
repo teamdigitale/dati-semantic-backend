@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -20,7 +21,7 @@ public class OntologyFolderScanner implements FolderScanner<SemanticAssetPath> {
     @Override
     public List<SemanticAssetPath> scanFolder(Path folder) throws IOException {
         Optional<Path> ttl = fileUtils.listContents(folder).stream()
-                .filter(path -> path.toString().endsWith(".ttl"))
+                .filter(path -> path.toString().toLowerCase(Locale.ROOT).endsWith(".ttl"))
                 // let's consider the shortest file name as the "main" one, whereas others might be aligns
                 .min(Comparator.comparingInt(p -> p.toString().length()));
 

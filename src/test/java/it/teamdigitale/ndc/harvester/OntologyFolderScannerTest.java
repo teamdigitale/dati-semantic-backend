@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -51,4 +52,16 @@ class OntologyFolderScannerTest {
         assertThat(ontologyPaths).contains(new SemanticAssetPath("onto.ttl"));
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"onto.ttl", "ONTO.TTL", "very-unlikely.Ttl"})
+    void shouldFindOntologiesByCaseInsensitiveExtension(String fileName) throws IOException {
+        Path folder = Path.of("/tmp/fake");
+        when(fileUtils.listContents(folder))
+                .thenReturn(List.of(Path.of(fileName)));
+
+        List<SemanticAssetPath> ontologyPaths = scanner.scanFolder(folder);
+
+        assertThat(ontologyPaths).hasSize(1);
+        assertThat(ontologyPaths).contains(new SemanticAssetPath(fileName));
+    }
 }
