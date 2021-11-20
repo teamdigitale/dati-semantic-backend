@@ -15,7 +15,7 @@ public class CsvParserTest {
 
         List<Map<String, String>> json = csvParser.convertCsvToJson(testCsvFile);
 
-        assert json.size() == 2;
+        assertThat(json.size()).isEqualTo(2);
         Map<String, String> firstRecord = json.get(0);
         assertThat(firstRecord.get("code_level_1")).isEqualTo("3.0");
         assertThat(firstRecord.get("label_level_1")).isEqualTo("3 stelle");
