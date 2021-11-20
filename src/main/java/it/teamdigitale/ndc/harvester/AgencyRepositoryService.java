@@ -4,18 +4,16 @@ import it.teamdigitale.ndc.harvester.model.CvPath;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
 import it.teamdigitale.ndc.harvester.util.FileUtils;
 import it.teamdigitale.ndc.harvester.util.GitUtils;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -63,11 +61,8 @@ public class AgencyRepositoryService {
                 fileUtils.listContents(dir).stream().anyMatch(fileUtils::isDirectory);
         if (hasSubDir) {
             return fileUtils.listContents(dir).stream()
-                    .map(this::createSemanticAssetPaths)
-                    .reduce(new ArrayList<>(), (acc, cvPaths) -> {
-                        acc.addAll(cvPaths);
-                        return acc;
-                    });
+                    .flatMap(subDir -> createSemanticAssetPaths(subDir).stream())
+                    .collect(Collectors.toList());
         } else {
             Optional<Path> csv = fileUtils.listContents(dir).stream()
                     .filter(path -> path.toString().endsWith(".csv"))
