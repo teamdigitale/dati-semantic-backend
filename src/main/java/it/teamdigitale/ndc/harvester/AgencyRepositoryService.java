@@ -4,11 +4,14 @@ import it.teamdigitale.ndc.harvester.model.CvPath;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
 import it.teamdigitale.ndc.harvester.util.FileUtils;
 import it.teamdigitale.ndc.harvester.util.GitUtils;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -56,34 +59,32 @@ public class AgencyRepositoryService {
 
     @SneakyThrows
     private List<SemanticAssetPath> createSemanticAssetPaths(Path dir) {
-        List<SemanticAssetPath> accumulator = new ArrayList<>();
         boolean hasSubDir =
-            fileUtils.listContents(dir).stream().anyMatch(fileUtils::isDirectory);
+                fileUtils.listContents(dir).stream().anyMatch(fileUtils::isDirectory);
         if (hasSubDir) {
-            List<SemanticAssetPath> subDirCvPaths = fileUtils.listContents(dir).stream()
-                .map(this::createSemanticAssetPaths)
-                .reduce(new ArrayList<>(), (acc, cvPaths) -> {
-                    acc.addAll(cvPaths);
-                    return acc;
-                });
-            accumulator.addAll(subDirCvPaths);
+            return fileUtils.listContents(dir).stream()
+                    .map(this::createSemanticAssetPaths)
+                    .reduce(new ArrayList<>(), (acc, cvPaths) -> {
+                        acc.addAll(cvPaths);
+                        return acc;
+                    });
         } else {
             Optional<Path> csv = fileUtils.listContents(dir).stream()
-                .filter(path -> path.toString().endsWith(".csv"))
-                .findFirst();
+                    .filter(path -> path.toString().endsWith(".csv"))
+                    .findFirst();
 
             //filter out all alignment ttls
             Optional<Path> ttl = fileUtils.listContents(dir).stream()
-                .filter(path -> path.toString().endsWith(".ttl"))
-                .findFirst();
+                    .filter(path -> path.toString().endsWith(".ttl"))
+                    .findFirst();
 
             if (ttl.isPresent() && csv.isPresent()) {
-                accumulator.add(CvPath.of(csv.get().toString(), ttl.get().toString()));
+                return List.of(CvPath.of(csv.get().toString(), ttl.get().toString()));
             } else {
-                ttl.ifPresent(path -> accumulator.add(new SemanticAssetPath(path.toString())));
+                return ttl
+                        .map(path -> new SemanticAssetPath(path.toString()))
+                        .stream().collect(Collectors.toList());
             }
         }
-
-        return accumulator;
     }
 }

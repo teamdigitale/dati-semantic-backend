@@ -12,12 +12,15 @@ import it.teamdigitale.ndc.harvester.model.CvPath;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
 import it.teamdigitale.ndc.harvester.util.FileUtils;
 import it.teamdigitale.ndc.harvester.util.GitUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class AgencyRepositoryServiceTest {
@@ -68,19 +71,19 @@ public class AgencyRepositoryServiceTest {
         when(fileUtils.isDirectory(Path.of("cv2"))).thenReturn(true);
 
         when(fileUtils.listContents(cvFolder))
-            .thenReturn(List.of(Path.of("group1"), Path.of("cv2")));
+                .thenReturn(List.of(Path.of("group1"), Path.of("cv2")));
 
         when(fileUtils.listContents(Path.of("group1")))
-            .thenReturn(List.of(Path.of("cv1")));
+                .thenReturn(List.of(Path.of("cv1")));
 
         when(fileUtils.listContents(Path.of("cv2")))
-            .thenReturn(List.of(Path.of("test2.csv"), Path.of("test2.ttl")));
+                .thenReturn(List.of(Path.of("test2.csv"), Path.of("test2.ttl")));
 
         when(fileUtils.listContents(Path.of("cv1")))
-            .thenReturn(List.of(Path.of("test1.csv"), Path.of("test1.ttl")));
+                .thenReturn(List.of(Path.of("test1.csv"), Path.of("test1.ttl")));
 
         List<CvPath> cvPaths =
-            agencyRepoService.getControlledVocabularyPaths(Path.of("/temp/ndc-1"));
+                agencyRepoService.getControlledVocabularyPaths(Path.of("/temp/ndc-1"));
 
         assertThat(cvPaths).hasSize(2);
         assertThat(cvPaths).containsAll(List.of(expected1, expected2));
@@ -106,9 +109,9 @@ public class AgencyRepositoryServiceTest {
      */
     @Test
     void shouldFindAllOntologies() throws IOException {
-        SemanticAssetPath expected1 =  new SemanticAssetPath("test1.ttl");
-        SemanticAssetPath expected2 =  new SemanticAssetPath("test2.ttl");
         Path folder = Path.of("/temp/ndc-1", ONTOLOGY_FOLDER);
+        String ontology1 = "test1.ttl";
+        String ontology2 = "test2.ttl";
 
         when(fileUtils.folderExists(folder)).thenReturn(true);
 
@@ -124,16 +127,16 @@ public class AgencyRepositoryServiceTest {
                 .thenReturn(List.of(Path.of("ot1")));
 
         when(fileUtils.listContents(Path.of("ot2")))
-                .thenReturn(List.of(Path.of("test2.ttl")));
+                .thenReturn(List.of(Path.of(ontology2)));
 
         when(fileUtils.listContents(Path.of("ot1")))
-                .thenReturn(List.of(Path.of("test1.ttl")));
+                .thenReturn(List.of(Path.of(ontology1)));
 
         List<SemanticAssetPath> ontologyPaths =
                 agencyRepoService.getOntologyPaths(Path.of("/temp/ndc-1"));
 
         assertThat(ontologyPaths).hasSize(2);
-        assertThat(ontologyPaths).containsAll(List.of(expected1, expected2));
+        assertThat(ontologyPaths).containsAll(List.of(new SemanticAssetPath(ontology1), new SemanticAssetPath(ontology2)));
     }
 
     @Test
