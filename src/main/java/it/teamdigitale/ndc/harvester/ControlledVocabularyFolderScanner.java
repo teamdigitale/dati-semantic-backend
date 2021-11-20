@@ -23,7 +23,7 @@ public class ControlledVocabularyFolderScanner implements FolderScanner<CvPath> 
     @Override
     public List<CvPath> scanFolder(Path folder) throws IOException {
         Optional<Path> ttl = fileUtils.listContents(folder).stream()
-                .filter(path -> path.toString().endsWith(".ttl"))
+                .filter(path -> path.toString().endsWith(TURTLE_FILE_EXTENSION))
                 .findFirst();
 
         if (ttl.isEmpty()) {

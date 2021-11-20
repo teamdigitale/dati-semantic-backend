@@ -7,5 +7,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 public interface FolderScanner<P extends SemanticAssetPath> {
+    String TURTLE_FILE_EXTENSION = ".ttl";
+
     List<P> scanFolder(Path folder) throws IOException;
 }
