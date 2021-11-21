@@ -28,7 +28,7 @@ public class AgencyRepositoryService {
     private final OntologyFolderScanner ontologyFolderScanner;
     private final ControlledVocabularyFolderScanner controlledVocabularyFolderScanner;
 
-    public Path cloneRepo(String repoUrl) throws IOException, GitAPIException {
+    public Path cloneRepo(String repoUrl) throws IOException {
         Path cloneDir = fileUtils.createTempDirectory(TEMP_DIR_PREFIX);
         log.info("Cloning repo {}, at {}", repoUrl, cloneDir);
         gitUtils.cloneRepo(repoUrl, cloneDir.toFile());

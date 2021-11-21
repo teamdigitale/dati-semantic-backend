@@ -3,7 +3,6 @@ package it.teamdigitale.ndc.harvester;
 import it.teamdigitale.ndc.harvester.model.CvPath;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
 import it.teamdigitale.ndc.harvester.pathprocessors.ControlledVocabularyPathProcessor;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -30,7 +29,7 @@ public class HarvesterServiceTest {
     HarvesterService harvester;
 
     @Test
-    void shouldHarvestControlledVocabularies() throws GitAPIException, IOException {
+    void shouldHarvestControlledVocabularies() throws IOException {
         String repoUrl = "someRepoUri";
         File clonedRepo = new File("/tmp/ndc-1234");
         CvPath path1 = CvPath.of("test1.ttl", "test1.csv");
@@ -47,7 +46,7 @@ public class HarvesterServiceTest {
     }
 
     @Test
-    void shouldHarvestOntologyFiles() throws GitAPIException, IOException {
+    void shouldHarvestOntologyFiles() throws IOException {
         String repoUrl = "someRepoUri";
         File clonedRepo = new File("/tmp/ndc-1234");
 

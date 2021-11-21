@@ -19,7 +19,7 @@ public class HarvesterService {
     private final AgencyRepositoryService agencyRepositoryService;
     private final ControlledVocabularyPathProcessor controlledVocabularyPathProcessor;
 
-    public void harvest(String repoUrl) throws GitAPIException, IOException {
+    public void harvest(String repoUrl) throws IOException {
         Path path = agencyRepositoryService.cloneRepo(repoUrl);
         harvestControlledVocabularies(path);
         harvestOntologies(path);
