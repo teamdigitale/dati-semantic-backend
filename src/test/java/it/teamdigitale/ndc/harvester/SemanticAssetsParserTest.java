@@ -6,7 +6,6 @@ import static org.apache.jena.vocabulary.DCTerms.identifier;
 import static org.apache.jena.vocabulary.DCTerms.rightsHolder;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertThrows;
 
 import it.teamdigitale.ndc.harvester.exception.InvalidAssetException;
 import org.apache.jena.rdf.model.Model;
@@ -33,8 +32,8 @@ class SemanticAssetsParserTest {
         String ttlFile = "src/test/resources/testdata/no-cv.ttl";
         SemanticAssetsParser semanticAssetsParser = new SemanticAssetsParser();
 
-        assertThrows(
-                InvalidAssetException.class, () -> semanticAssetsParser.getControlledVocabulary(ttlFile));
+        assertThatThrownBy(() -> semanticAssetsParser.getControlledVocabulary(ttlFile))
+                .isInstanceOf(InvalidAssetException.class);
     }
 
     @Test

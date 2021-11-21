@@ -1,11 +1,12 @@
 package it.teamdigitale.ndc.harvester;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertThrows;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
-import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class CsvParserTest {
     @Test
@@ -30,6 +31,6 @@ public class CsvParserTest {
         String testCsvFile = "invalid-path.csv";
         CsvParser csvParser = new CsvParser();
 
-        assertThrows(RuntimeException.class, () -> csvParser.convertCsvToJson(testCsvFile));
+        assertThatThrownBy(() -> csvParser.convertCsvToJson(testCsvFile)).isInstanceOf(RuntimeException.class);
     }
 }
