@@ -60,6 +60,7 @@ public class AgencyRepositoryService {
                 fileUtils.listContents(dir).stream().anyMatch(fileUtils::isDirectory);
         if (hasSubDir) {
             return fileUtils.listContents(dir).stream()
+                    .filter(fileUtils::isDirectory)
                     .flatMap(subDir -> createSemanticAssetPaths(subDir, scanner).stream())
                     .collect(Collectors.toList());
         } else {

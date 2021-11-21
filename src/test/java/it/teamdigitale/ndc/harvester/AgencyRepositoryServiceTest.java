@@ -141,6 +141,52 @@ public class AgencyRepositoryServiceTest {
         assertThat(ontologyPaths).containsAll(List.of(new SemanticAssetPath(ontology1), new SemanticAssetPath(ontology2)));
     }
 
+    /**
+     * folder structure:
+     * - Ontologie
+     * -- group1
+     * --- ot1
+     * ---- test1.ttl
+     * -- README.md
+     * -- ot2
+     * --- test2.ttl
+     */
+    @Test
+    void shouldIgnoreFilesInNonLeafFolders() throws IOException {
+        Path folder = Path.of("/temp/ndc-1", ONTOLOGY_FOLDER);
+        String ontology1 = "test1.ttl";
+        String ontology2 = "test2.ttl";
+
+        when(fileUtils.folderExists(folder)).thenReturn(true);
+
+        when(fileUtils.isDirectory(folder)).thenReturn(true);
+        when(fileUtils.isDirectory(Path.of("group1"))).thenReturn(true);
+        when(fileUtils.isDirectory(Path.of("ot1"))).thenReturn(true);
+        when(fileUtils.isDirectory(Path.of("ot2"))).thenReturn(true);
+        when(fileUtils.isDirectory(Path.of("README.md"))).thenReturn(false);
+
+        when(fileUtils.listContents(folder))
+                .thenReturn(List.of(Path.of("group1"), Path.of("README.md"), Path.of("ot2")));
+
+        when(fileUtils.listContents(Path.of("group1")))
+                .thenReturn(List.of(Path.of("ot1")));
+
+        when(fileUtils.listContents(Path.of("README.md")))
+                .thenThrow(new IOException("There's no further content inside README.md..."));
+
+        when(fileUtils.listContents(Path.of("ot2")))
+                .thenReturn(List.of(Path.of(ontology2)));
+
+        when(fileUtils.listContents(Path.of("ot1")))
+                .thenReturn(List.of(Path.of(ontology1)));
+
+        List<SemanticAssetPath> ontologyPaths =
+                agencyRepoService.getOntologyPaths(Path.of("/temp/ndc-1"));
+
+        assertThat(ontologyPaths).hasSize(2);
+        assertThat(ontologyPaths).containsAll(List.of(new SemanticAssetPath(ontology1), new SemanticAssetPath(ontology2)));
+    }
+
     @Test
     void shouldReturnEmptyListWhenOntologyFolderIsNotPresent() {
         Path ontologyFolder = Path.of("/temp/ndc-1", ONTOLOGY_FOLDER);
