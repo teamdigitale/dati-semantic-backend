@@ -20,8 +20,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AgencyRepositoryService {
     public static final String TEMP_DIR_PREFIX = "ndc-";
-    public static final String CV_FOLDER = "VocabolariControllati";
-    public static final String ONTOLOGY_FOLDER = "Ontologie";
     private final FileUtils fileUtils;
     private final GitUtils gitUtils;
     private final OntologyFolderScanner ontologyFolderScanner;
@@ -35,23 +33,21 @@ public class AgencyRepositoryService {
     }
 
     public List<CvPath> getControlledVocabularyPaths(Path clonedRepo) {
-        Path cvFolder = Path.of(clonedRepo.toString(), CV_FOLDER);
-        if (!fileUtils.folderExists(cvFolder)) {
-            log.warn("No controlled vocabulary folder found in {}", clonedRepo);
-            return List.of();
-        }
-
-        return createSemanticAssetPaths(cvFolder, controlledVocabularyFolderScanner);
+        return findPaths(clonedRepo, SemanticAssetType.CONTROLLED_VOCABULARY, controlledVocabularyFolderScanner);
     }
 
     public List<SemanticAssetPath> getOntologyPaths(Path clonedRepo) {
-        Path ontologyFolder = Path.of(clonedRepo.toString(), ONTOLOGY_FOLDER);
+        return findPaths(clonedRepo, SemanticAssetType.ONTOLOGY, ontologyFolderScanner);
+    }
+
+    private <P extends SemanticAssetPath> List<P> findPaths(Path clonedRepo, SemanticAssetType type, FolderScanner<P> scanner) {
+        Path ontologyFolder = Path.of(clonedRepo.toString(), type.getFolderName());
         if (!fileUtils.folderExists(ontologyFolder)) {
-            log.warn("No ontology folder found in {}", clonedRepo);
+            log.warn("No {} folder found in {}", type.getDescription(), clonedRepo);
             return List.of();
         }
 
-        return createSemanticAssetPaths(ontologyFolder, ontologyFolderScanner);
+        return createSemanticAssetPaths(ontologyFolder, scanner);
     }
 
     @SneakyThrows

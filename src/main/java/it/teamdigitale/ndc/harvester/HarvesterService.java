@@ -41,28 +41,36 @@ public class HarvesterService {
     private void harvestOntologies(Path path) {
         List<SemanticAssetPath> ontologyPaths = agencyRepositoryService.getOntologyPaths(path);
         for (SemanticAssetPath ontologyPath : ontologyPaths) {
-            log.info("parsing and loading file {}", ontologyPath.getTtlPath());
-            // load the ttl file into memory
-
-            // store the metadata into Elasticsearch main index
-            // store the resource into Virtuoso
+            processOntologyPath(ontologyPath);
         }
+    }
+
+    private void processOntologyPath(SemanticAssetPath ontologyPath) {
+        log.info("parsing and loading file {}", ontologyPath.getTtlPath());
+        // load the ttl file into memory
+
+        // store the metadata into Elasticsearch main index
+        // store the resource into Virtuoso
     }
 
     private void harvestControlledVocabularies(Path path) {
         List<CvPath> controlledVocabularyPaths =
                 agencyRepositoryService.getControlledVocabularyPaths(path);
         for (CvPath cvPath : controlledVocabularyPaths) {
-            Resource controlledVocabulary =
-                    semanticAssetsParser.getControlledVocabulary(cvPath.getTtlPath());
-            String vocabularyId = semanticAssetsParser.getKeyConcept(controlledVocabulary);
-            String rightsHolderId = semanticAssetsParser.getRightsHolderId(controlledVocabulary);
-
-            cvPath.getCsvPath().ifPresent(p -> parseAndIndexCsv(vocabularyId, rightsHolderId, p));
-
-            // store the metadata into Elasticsearch main index
-            // store the resource into Virtuoso
+            processControlledVocabularyPath(cvPath);
         }
+    }
+
+    private void processControlledVocabularyPath(CvPath cvPath) {
+        Resource controlledVocabulary =
+                semanticAssetsParser.getControlledVocabulary(cvPath.getTtlPath());
+        String vocabularyId = semanticAssetsParser.getKeyConcept(controlledVocabulary);
+        String rightsHolderId = semanticAssetsParser.getRightsHolderId(controlledVocabulary);
+
+        cvPath.getCsvPath().ifPresent(p -> parseAndIndexCsv(vocabularyId, rightsHolderId, p));
+
+        // store the metadata into Elasticsearch main index
+        // store the resource into Virtuoso
     }
 
     private void parseAndIndexCsv(String vocabularyId, String rightsHolderId, String csvPath) {
