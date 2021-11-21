@@ -82,8 +82,7 @@ jacocoTestCoverageVerification {
             excludes = [
                     'it.teamdigitale.ndc.config.*',
                     'it.teamdigitale.ndc.Application',
-                    'it.teamdigitale.ndc.harvester.util.FileUtils',
-                    'it.teamdigitale.ndc.harvester.util.GitUtils',
+                    'it.teamdigitale.ndc.harvester.util.*',
                     'it.teamdigitale.ndc.controller.ScheduledJobsController',
             ]
         }
