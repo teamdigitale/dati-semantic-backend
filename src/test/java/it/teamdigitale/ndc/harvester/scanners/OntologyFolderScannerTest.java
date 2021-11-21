@@ -1,4 +1,4 @@
-package it.teamdigitale.ndc.harvester;
+package it.teamdigitale.ndc.harvester.scanners;
 
 import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
 import org.junit.jupiter.api.Test;

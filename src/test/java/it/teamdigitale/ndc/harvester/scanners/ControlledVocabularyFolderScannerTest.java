@@ -1,18 +1,19 @@
-package it.teamdigitale.ndc.harvester;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+package it.teamdigitale.ndc.harvester.scanners;
 
 import it.teamdigitale.ndc.harvester.exception.InvalidAssetFolderException;
 import it.teamdigitale.ndc.harvester.model.CvPath;
-import java.io.IOException;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.io.IOException;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @ExtendWith(MockitoExtension.class)
 class ControlledVocabularyFolderScannerTest extends BaseFolderScannerTest {

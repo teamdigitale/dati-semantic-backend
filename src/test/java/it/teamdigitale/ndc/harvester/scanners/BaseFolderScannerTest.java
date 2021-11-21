@@ -1,4 +1,4 @@
-package it.teamdigitale.ndc.harvester;
+package it.teamdigitale.ndc.harvester.scanners;
 
 import it.teamdigitale.ndc.harvester.util.FileUtils;
 import org.mockito.Mock;

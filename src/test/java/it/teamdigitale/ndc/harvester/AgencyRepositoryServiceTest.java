@@ -10,6 +10,8 @@ import static org.mockito.Mockito.when;
 
 import it.teamdigitale.ndc.harvester.model.CvPath;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
+import it.teamdigitale.ndc.harvester.scanners.ControlledVocabularyFolderScanner;
+import it.teamdigitale.ndc.harvester.scanners.OntologyFolderScanner;
 import it.teamdigitale.ndc.harvester.util.FileUtils;
 import it.teamdigitale.ndc.harvester.util.GitUtils;
 
