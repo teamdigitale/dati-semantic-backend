@@ -1,6 +1,6 @@
 package it.teamdigitale.ndc.service;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -10,6 +10,8 @@ import static org.mockito.Mockito.when;
 import it.teamdigitale.ndc.dto.VocabularyDataDto;
 import java.util.Arrays;
 import java.util.Map;
+
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -50,9 +52,9 @@ public class VocabularyDataServiceTest {
             indexCaptor.capture());
         String actualIndex = indexCaptor.getValue().getIndexName();
 
-        assertEquals(queryArgumentCaptor.getValue().getPageable().getPageNumber(), 0);
-        assertEquals(queryArgumentCaptor.getValue().getPageable().getPageSize(), 10);
-        assertEquals("agid." + expectedIndex, actualIndex);
-        assertEquals(Arrays.asList(data), actual.getData());
+        assertThat(queryArgumentCaptor.getValue().getPageable().getPageNumber()).isEqualTo(0);
+        assertThat(queryArgumentCaptor.getValue().getPageable().getPageSize()).isEqualTo(10);
+        assertThat("agid." + expectedIndex).isEqualTo(actualIndex);
+        assertThat(Arrays.asList(data)).isEqualTo(actual.getData());
     }
 }
