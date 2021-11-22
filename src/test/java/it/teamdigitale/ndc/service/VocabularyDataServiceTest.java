@@ -37,14 +37,14 @@ public class VocabularyDataServiceTest {
         Map<String, String> data = Map.of("key", "val");
         SearchHits<Map> searchHits = mock(SearchHits.class);
         SearchHit<Map> searchHit = mock(SearchHit.class);
-        String expectedIndex = "person-title";
-        String agencyId = "agid";
+        String concept = "person-title";
+        String rightsHolder = "agid";
 
         when(searchHits.getSearchHits()).thenReturn(List.of(searchHit));
         when(searchHit.getContent()).thenReturn(data);
         when(elasticsearchOperations.search(any(Query.class), eq(Map.class),
             any(IndexCoordinates.class))).thenReturn(searchHits);
-        VocabularyDataDto actual = vocabularyDataService.getData(agencyId, expectedIndex, 0, 10);
+        VocabularyDataDto actual = vocabularyDataService.getData(rightsHolder, concept, 0, 10);
         ArgumentCaptor<IndexCoordinates> indexCaptor =
             ArgumentCaptor.forClass(IndexCoordinates.class);
         ArgumentCaptor<Query> queryArgumentCaptor = ArgumentCaptor.forClass(Query.class);
@@ -54,7 +54,7 @@ public class VocabularyDataServiceTest {
 
         assertThat(queryArgumentCaptor.getValue().getPageable().getPageNumber()).isEqualTo(0);
         assertThat(queryArgumentCaptor.getValue().getPageable().getPageSize()).isEqualTo(10);
-        assertThat("agid." + expectedIndex).isEqualTo(actualIndex);
+        assertThat("agid." + concept).isEqualTo(actualIndex);
         assertThat(List.of(data)).isEqualTo(actual.getData());
     }
 }

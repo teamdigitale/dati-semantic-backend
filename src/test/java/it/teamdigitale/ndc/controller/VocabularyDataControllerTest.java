@@ -1,7 +1,6 @@
 package it.teamdigitale.ndc.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -22,17 +21,18 @@ public class VocabularyDataControllerTest {
 
     @Test
     void shouldReturnControlledVocabulary() {
-        String indexName = "person-title";
+        String concept = "person-title";
         final int pageNumber = 1;
         final int pageSize = 2;
-        String agencyId = "agid";
+        String rightsHolder = "agid";
         VocabularyDataDto expected = mock(VocabularyDataDto.class);
-        when(vocabularyDataService.getData(agencyId, indexName, pageNumber - 1, pageSize)).thenReturn(expected);
+        when(vocabularyDataService.getData(rightsHolder, concept, pageNumber - 1,
+            pageSize)).thenReturn(expected);
 
-        VocabularyDataDto actual = vocabularyDataController.fetchVocabularyData(agencyId,
-                indexName,
-                pageNumber,
-                pageSize);
+        VocabularyDataDto actual = vocabularyDataController.fetchVocabularyData(rightsHolder,
+            concept,
+            pageNumber,
+            pageSize);
 
         assertEquals(expected, actual);
     }

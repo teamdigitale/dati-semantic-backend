@@ -35,9 +35,9 @@ public class VocabularyDataService {
         this.esClient = esClient;
     }
 
-    public VocabularyDataDto getData(String agencyId, String vocabularyName, Integer pageIndex,
+    public VocabularyDataDto getData(String rightsHolder, String keyConcept, Integer pageIndex,
                                      Integer pageSize) {
-        String index = String.join(".", agencyId, vocabularyName).toLowerCase();
+        String index = String.join(".", rightsHolder, keyConcept).toLowerCase();
         if (exists(index)) {
             Query findAll = Query.findAll().setPageable(PageRequest.of(pageIndex, pageSize));
             SearchHits<Map> results =
@@ -48,14 +48,14 @@ public class VocabularyDataService {
                 .collect(Collectors.toList());
             return new VocabularyDataDto(results.getTotalHits(), pageIndex, data);
         } else {
-            log.error("Controlled Vocabulary not found for {}/{}", agencyId, vocabularyName);
+            log.error("Controlled Vocabulary not found for {}/{}", rightsHolder, keyConcept);
             throw new VocabularyDataNotFoundException(index);
         }
     }
 
-    public void indexData(String rightsHolderId, String keyConcept,
+    public void indexData(String rightsHolder, String keyConcept,
                           List<Map<String, String>> data) {
-        String indexName = String.join(".", rightsHolderId, keyConcept).toLowerCase();
+        String indexName = String.join(".", rightsHolder, keyConcept).toLowerCase();
         ensureCleanIndex(indexName);
         elasticsearchOperations.save(data, IndexCoordinates.of(indexName));
     }
