@@ -62,6 +62,17 @@ class SemanticAssetsParserTest {
     }
 
     @Test
+    void shouldFailWithMissingKeyConcept() {
+        Resource controlledVocabulary =
+                createDefaultModel()
+                        .createResource("https://w3id.org/italia/controlled-vocabulary/test");
+        SemanticAssetsParser semanticAssetsParser = new SemanticAssetsParser();
+
+        assertThatThrownBy(() -> semanticAssetsParser.getKeyConcept(controlledVocabulary))
+                .isInstanceOf(InvalidAssetException.class);
+    }
+
+    @Test
     void shouldReturnRightsHolderId() {
         Resource controlledVocabulary = createControlledVocabularyWithRightsHolder("agid");
         SemanticAssetsParser semanticAssetsParser = new SemanticAssetsParser();

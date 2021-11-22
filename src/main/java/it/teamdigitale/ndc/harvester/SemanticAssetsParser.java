@@ -1,18 +1,19 @@
 package it.teamdigitale.ndc.harvester;
 
-import static java.lang.String.format;
-import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
-import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-
-import java.util.List;
-
 import it.teamdigitale.ndc.harvester.exception.InvalidAssetException;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.shared.PropertyNotFoundException;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
+
+import static java.lang.String.format;
+import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 
 @Component
 public class SemanticAssetsParser {
@@ -46,9 +47,14 @@ public class SemanticAssetsParser {
     }
 
     public String getKeyConcept(Resource controlledVocabulary) {
-        return controlledVocabulary
-                .getRequiredProperty(createProperty("https://w3id.org/italia/onto/ndc-profile/keyConcept"))
-                .getString();
+        try {
+            return controlledVocabulary
+                    .getRequiredProperty(createProperty("https://w3id.org/italia/onto/ndc-profile/keyConcept"))
+                    .getString();
+
+        } catch (PropertyNotFoundException e) {
+            throw new InvalidAssetException(format("Cannot find keyConcept property for controlled vocabulary %s", controlledVocabulary), e);
+        }
     }
 
     public String getRightsHolderId(Resource controlledVocabulary) {
