@@ -1,7 +1,8 @@
 package it.teamdigitale.ndc.harvester.pathprocessors;
 
-import it.teamdigitale.ndc.harvester.SemanticAssetsParser;
-import it.teamdigitale.ndc.harvester.model.CvPath;
+import it.teamdigitale.ndc.harvester.model.OntologyModel;
+import it.teamdigitale.ndc.harvester.model.SemanticAssetModelFactory;
+import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
 import org.apache.jena.rdf.model.Resource;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,7 +16,9 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class OntologyPathProcessorTest {
     @Mock
-    SemanticAssetsParser semanticAssetsParser;
+    SemanticAssetModelFactory modelFactory;
+    @Mock
+    OntologyModel ontologyModel;
     @Mock
     Resource ontology;
     @InjectMocks
@@ -24,13 +27,14 @@ class OntologyPathProcessorTest {
     @Test
     void shouldProcessOntology() {
         String ttlFile = "cities.ttl";
-        String csvFile = "cities.csv";
-        CvPath path = CvPath.of(ttlFile, csvFile);
+        SemanticAssetPath path = new SemanticAssetPath(ttlFile);
 
-        when(semanticAssetsParser.getOntology(ttlFile)).thenReturn(ontology);
+        when(modelFactory.createOntology(ttlFile)).thenReturn(ontologyModel);
+        when(ontologyModel.getMainResource()).thenReturn(ontology);
 
         pathProcessor.process(path);
 
-        verify(semanticAssetsParser).getOntology(ttlFile);
+        verify(ontologyModel).getMainResource();
+        verify(modelFactory).createOntology(ttlFile);
     }
 }

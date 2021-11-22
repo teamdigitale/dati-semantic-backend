@@ -1,6 +1,8 @@
 package it.teamdigitale.ndc.harvester.pathprocessors;
 
 import it.teamdigitale.ndc.harvester.SemanticAssetsParser;
+import it.teamdigitale.ndc.harvester.model.OntologyModel;
+import it.teamdigitale.ndc.harvester.model.SemanticAssetModelFactory;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,11 +13,14 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @RequiredArgsConstructor
 public class OntologyPathProcessor {
-    private final SemanticAssetsParser semanticAssetsParser;
+    private final SemanticAssetModelFactory modelFactory;
 
     public void process(SemanticAssetPath path) {
-        log.info("parsing and loading file {}", path.getTtlPath());
-        Resource ontology = semanticAssetsParser.getOntology(path.getTtlPath());
+        String ttlPath = path.getTtlPath();
+        log.info("parsing and loading file {}", ttlPath);
+
+        OntologyModel ontologyModel = modelFactory.createOntology(ttlPath);
+        Resource ontology = ontologyModel.getMainResource();
 
         log.info("Found ontology {}", ontology);
         // load the ttl file into memory

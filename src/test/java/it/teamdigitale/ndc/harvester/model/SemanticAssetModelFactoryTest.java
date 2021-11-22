@@ -24,4 +24,15 @@ class SemanticAssetModelFactoryTest {
         assertThat(resource.toString()).isEqualTo(
                 "https://w3id.org/italia/controlled-vocabulary/classifications-for-accommodation-facilities/accommodation-star-rating");
     }
+
+    @Test
+    void canBuildOntologyModel() {
+        String ttlFile = "src/test/resources/testdata/onto.ttl";
+
+        OntologyModel model = factory.createOntology(ttlFile);
+
+        Resource resource = model.getMainResource();
+
+        assertThat(resource.toString()).isEqualTo("https://w3id.org/italia/onto/CulturalHeritage");
+    }
 }

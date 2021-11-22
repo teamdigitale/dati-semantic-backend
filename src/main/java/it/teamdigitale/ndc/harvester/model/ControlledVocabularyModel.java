@@ -9,27 +9,16 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.DCTerms;
-import org.apache.jena.vocabulary.RDF;
 
-import java.util.List;
-
-import static java.lang.String.format;
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
-import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 
 @Slf4j
 public class ControlledVocabularyModel extends SemanticAssetModel {
     public static final String DATASET_IRI = "http://dati.gov.it/onto/dcatapit#Dataset";
     public static final String KEY_CONCEPT_IRI = "https://w3id.org/italia/onto/ndc-profile/keyConcept";
 
-    private final Model coreModel;
-    private final String source;
-
-    private Resource mainResource;
-
     public ControlledVocabularyModel(Model coreModel, String source) {
-        this.coreModel = coreModel;
-        this.source = source;
+        super(coreModel, source);
     }
 
     public String getKeyConcept() {
@@ -61,36 +50,9 @@ public class ControlledVocabularyModel extends SemanticAssetModel {
                 .getString();
     }
 
-    public Resource getMainResource() {
-        if (mainResource == null) {
-            mainResource = getUniqueResourceByType(SemanticAssetsParser.DATASET_IRI);
-        }
-
-        return mainResource;
-    }
-
-    private Resource getUniqueResourceByType(String resourceTypeIri) {
-        List<Resource> resources = coreModel
-                        .listResourcesWithProperty(RDF.type, createResource(resourceTypeIri))
-                        .toList();
-
-        checkFileDeclaresSingleResource(resources, resourceTypeIri);
-        return resources.get(0);
-    }
-
-    private void checkFileDeclaresSingleResource(List<Resource> resources, String typeIri) {
-        if (resources.size() == 1) {
-            return;
-        }
-
-        if (resources.isEmpty()) {
-            throw new InvalidAssetException(
-                    format("No statement for a node whose type is '%s' in '%s'", typeIri, source));
-        }
-        throw new InvalidAssetException(
-                format(
-                        "Found %d statements for nodes whose type is '%s' in '%s', expecting only 1",
-                        resources.size(), typeIri, source));
+    @Override
+    protected String getMainResourceIri() {
+        return SemanticAssetsParser.DATASET_IRI;
     }
 
 }
