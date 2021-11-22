@@ -47,7 +47,7 @@ public class SemanticAssetsParser {
 
     public String getKeyConcept(Resource controlledVocabulary) {
         return controlledVocabulary
-                .getRequiredProperty(createProperty("https://w3id.org/italia/onto/NDC/keyConcept"))
+                .getRequiredProperty(createProperty("https://w3id.org/italia/onto/ndc-profile/keyConcept"))
                 .getString();
     }
 

@@ -53,7 +53,7 @@ class SemanticAssetsParserTest {
                 createDefaultModel()
                         .createResource("https://w3id.org/italia/controlled-vocabulary/test")
                         .addProperty(
-                                createProperty("https://w3id.org/italia/onto/NDC/keyConcept"), "someValue");
+                                createProperty("https://w3id.org/italia/onto/ndc-profile/keyConcept"), "someValue");
         SemanticAssetsParser semanticAssetsParser = new SemanticAssetsParser();
 
         String keyConcept = semanticAssetsParser.getKeyConcept(controlledVocabulary);
