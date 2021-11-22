@@ -50,6 +50,16 @@ class SemanticAssetsParserTest {
     }
 
     @Test
+    void shouldReturnOntologyFromTtlFile() {
+        String ttlFile = "src/test/resources/testdata/onto.ttl";
+        SemanticAssetsParser semanticAssetsParser = new SemanticAssetsParser();
+
+        Resource controlledVocabulary = semanticAssetsParser.getOntology(ttlFile);
+
+        assertThat(controlledVocabulary.getURI()).isEqualTo("https://w3id.org/italia/onto/CulturalHeritage");
+    }
+
+    @Test
     void shouldReturnKeyConcept() {
         Resource controlledVocabulary =
                 createDefaultModel()

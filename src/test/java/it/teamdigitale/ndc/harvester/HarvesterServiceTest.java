@@ -3,6 +3,7 @@ package it.teamdigitale.ndc.harvester;
 import it.teamdigitale.ndc.harvester.model.CvPath;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
 import it.teamdigitale.ndc.harvester.pathprocessors.ControlledVocabularyPathProcessor;
+import it.teamdigitale.ndc.harvester.pathprocessors.OntologyPathProcessor;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,7 +15,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -24,6 +24,8 @@ public class HarvesterServiceTest {
     AgencyRepositoryService agencyRepoService;
     @Mock
     ControlledVocabularyPathProcessor controlledVocabularyPathProcessor;
+    @Mock
+    OntologyPathProcessor ontologyPathProcessor;
 
     @InjectMocks
     HarvesterService harvester;
@@ -49,14 +51,17 @@ public class HarvesterServiceTest {
     void shouldHarvestOntologyFiles() throws IOException {
         String repoUrl = "someRepoUri";
         File clonedRepo = new File("/tmp/ndc-1234");
+        SemanticAssetPath path1 = new SemanticAssetPath("test1.ttl");
+        SemanticAssetPath path2 = new SemanticAssetPath("test2.ttl");
 
         when(agencyRepoService.cloneRepo(repoUrl)).thenReturn(clonedRepo.toPath());
-        when(agencyRepoService.getOntologyPaths(clonedRepo.toPath()))
-                .thenReturn(List.of(new SemanticAssetPath("test.ttl"), new SemanticAssetPath("test.ttl")));
+        when(agencyRepoService.getOntologyPaths(clonedRepo.toPath())).thenReturn(List.of(path1, path2));
 
         harvester.harvest(repoUrl);
 
-        verify(agencyRepoService, times(1)).cloneRepo("someRepoUri");
+        verify(agencyRepoService).cloneRepo("someRepoUri");
         verify(agencyRepoService).getOntologyPaths(Path.of("/tmp/ndc-1234"));
+        verify(ontologyPathProcessor).process(path1);
+        verify(ontologyPathProcessor).process(path2);
     }
 }
