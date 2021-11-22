@@ -17,16 +17,13 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
+    integrationImplementation.extendsFrom testImplementation
+    integrationRuntime.extendsFrom testRuntime
+    integrationCompileOnly.extendsFrom testCompileOnly
 }
 
 repositories {
     mavenCentral()
-}
-
-configurations {
-    integrationImplementation.extendsFrom testImplementation
-    integrationRuntime.extendsFrom testRuntime
-    integrationCompileOnly.extendsFrom testCompileOnly
 }
 
 dependencies {
@@ -160,6 +157,7 @@ gradle.taskGraph.whenReady { graph ->
 }
 
 task integrationTest(type: Test) {
+    useJUnitPlatform()
     testClassesDirs = sourceSets.integration.output.classesDirs
     classpath = sourceSets.integration.runtimeClasspath
 }
