@@ -12,7 +12,7 @@ import org.apache.jena.vocabulary.DCTerms;
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 
 @Slf4j
-public class ControlledVocabularyModel extends SemanticAssetModel {
+public class ControlledVocabularyModel extends BaseSemanticAssetModel {
     public static final String DATASET_IRI = "http://dati.gov.it/onto/dcatapit#Dataset";
     public static final String KEY_CONCEPT_IRI = "https://w3id.org/italia/onto/ndc-profile/keyConcept";
 
