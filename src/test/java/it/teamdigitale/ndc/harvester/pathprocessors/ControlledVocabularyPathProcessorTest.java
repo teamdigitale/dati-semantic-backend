@@ -1,8 +1,11 @@
 package it.teamdigitale.ndc.harvester.pathprocessors;
 
 import it.teamdigitale.ndc.harvester.CsvParser;
+import it.teamdigitale.ndc.harvester.SemanticAssetType;
 import it.teamdigitale.ndc.harvester.SemanticAssetsParser;
+import it.teamdigitale.ndc.harvester.model.ControlledVocabularyModel;
 import it.teamdigitale.ndc.harvester.model.CvPath;
+import it.teamdigitale.ndc.harvester.model.SemanticAssetModelFactory;
 import it.teamdigitale.ndc.service.VocabularyDataService;
 import org.apache.jena.rdf.model.Resource;
 import org.junit.jupiter.api.Test;
@@ -20,9 +23,9 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ControlledVocabularyPathProcessorTest {
     @Mock
-    SemanticAssetsParser semanticAssetsParser;
+    SemanticAssetModelFactory semanticAssetModelFactory;
     @Mock
-    Resource controlledVocabulary;
+    ControlledVocabularyModel cvModel;
     @Mock
     CsvParser csvParser;
     @Mock
@@ -36,17 +39,15 @@ class ControlledVocabularyPathProcessorTest {
         String csvFile = "cities.csv";
         CvPath path = CvPath.of(ttlFile, csvFile);
 
-        when(semanticAssetsParser.getControlledVocabulary(ttlFile)).thenReturn(controlledVocabulary);
-        when(semanticAssetsParser.getKeyConcept(controlledVocabulary)).thenReturn("keyConcept");
-        when(semanticAssetsParser.getRightsHolderId(controlledVocabulary)).thenReturn("rightsHolderId");
+        when(semanticAssetModelFactory.createControlledVocabulary(ttlFile)).thenReturn(cvModel);
+        when(cvModel.getKeyConcept()).thenReturn("keyConcept");
+        when(cvModel.getRightsHolderId()).thenReturn("rightsHolderId");
         when(csvParser.convertCsvToJson(csvFile)).thenReturn(List.of(Map.of("key", "val")));
 
         pathProcessor.process(path);
 
+        verify(semanticAssetModelFactory).createControlledVocabulary(ttlFile);
         verify(csvParser).convertCsvToJson(csvFile);
-        verify(semanticAssetsParser).getControlledVocabulary(ttlFile);
-        verify(semanticAssetsParser).getKeyConcept(controlledVocabulary);
-        verify(semanticAssetsParser).getRightsHolderId(controlledVocabulary);
         verify(vocabularyDataService).indexData("rightsHolderId", "keyConcept", List.of(Map.of("key", "val")));
     }
 }

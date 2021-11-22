@@ -1,27 +1,27 @@
 package it.teamdigitale.ndc.harvester.pathprocessors;
 
 import it.teamdigitale.ndc.harvester.CsvParser;
-import it.teamdigitale.ndc.harvester.SemanticAssetsParser;
+import it.teamdigitale.ndc.harvester.model.ControlledVocabularyModel;
 import it.teamdigitale.ndc.harvester.model.CvPath;
+import it.teamdigitale.ndc.harvester.model.SemanticAssetModelFactory;
 import it.teamdigitale.ndc.service.VocabularyDataService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
 import java.util.List;
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
-import org.apache.jena.rdf.model.Resource;
-import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
 public class ControlledVocabularyPathProcessor {
-    private final SemanticAssetsParser semanticAssetsParser;
+    private final SemanticAssetModelFactory modelFactory;
     private final CsvParser csvParser;
     private final VocabularyDataService vocabularyDataService;
 
     public void process(CvPath path) {
-        Resource controlledVocabulary =
-            semanticAssetsParser.getControlledVocabulary(path.getTtlPath());
-        String vocabularyId = semanticAssetsParser.getKeyConcept(controlledVocabulary);
-        String rightsHolder = semanticAssetsParser.getRightsHolderId(controlledVocabulary);
+        ControlledVocabularyModel model = modelFactory.createControlledVocabulary(path.getTtlPath());
+        String vocabularyId = model.getKeyConcept();
+        String rightsHolder = model.getRightsHolderId();
 
         path.getCsvPath().ifPresent(p -> parseAndIndexCsv(vocabularyId, rightsHolder, p));
 

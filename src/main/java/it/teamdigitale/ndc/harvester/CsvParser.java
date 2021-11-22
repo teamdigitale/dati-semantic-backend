@@ -1,15 +1,16 @@
 package it.teamdigitale.ndc.harvester;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
+import org.springframework.stereotype.Component;
 
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVRecord;
-import org.springframework.stereotype.Component;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Component
 public class CsvParser {

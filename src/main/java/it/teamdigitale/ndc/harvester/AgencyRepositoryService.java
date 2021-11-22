@@ -10,7 +10,6 @@ import it.teamdigitale.ndc.harvester.util.GitUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;

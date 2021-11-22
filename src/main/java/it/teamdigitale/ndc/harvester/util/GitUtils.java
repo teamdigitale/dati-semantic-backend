@@ -1,10 +1,10 @@
 package it.teamdigitale.ndc.harvester.util;
 
-import java.io.File;
-
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.stereotype.Component;
+
+import java.io.File;
 
 @Component
 public class GitUtils {
