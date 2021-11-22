@@ -40,7 +40,7 @@ public abstract class SemanticAssetPathProcessor<P extends SemanticAssetPath, M 
         // Note for #75 if this is actually common to all semantic types, it can stay here.
         // Maybe differences can be encapsulated in some method for extracting the SemanticAssetMetadata from
         // the SemanticAssetModel hierarchy, or maybe not. If that's not the case, of course we can make this (or
-        // part of this) abstract and override accordingly.
+        // part of this) protected and override accordingly.
     }
 
     private void persistModelToTripleStore(M model) {
