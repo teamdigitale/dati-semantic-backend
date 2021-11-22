@@ -1,6 +1,5 @@
 package it.teamdigitale.ndc.harvester.pathprocessors;
 
-import it.teamdigitale.ndc.harvester.SemanticAssetsParser;
 import it.teamdigitale.ndc.harvester.model.OntologyModel;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetModelFactory;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;

@@ -1,6 +1,5 @@
 package it.teamdigitale.ndc.harvester.model;
 
-import it.teamdigitale.ndc.harvester.SemanticAssetsParser;
 import it.teamdigitale.ndc.harvester.exception.InvalidAssetException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.jena.rdf.model.Model;
@@ -52,7 +51,7 @@ public class ControlledVocabularyModel extends SemanticAssetModel {
 
     @Override
     protected String getMainResourceIri() {
-        return SemanticAssetsParser.DATASET_IRI;
+        return DATASET_IRI;
     }
 
 }
