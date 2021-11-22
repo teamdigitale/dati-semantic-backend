@@ -6,7 +6,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.testcontainers.utility.DockerImageName.parse;
 
 import io.restassured.response.Response;
-import it.teamdigitale.ndc.config.ElasticsearchClientConfig;
 import it.teamdigitale.ndc.dto.VocabularyDataDto;
 import it.teamdigitale.ndc.service.VocabularyDataService;
 import java.io.IOException;
@@ -47,9 +46,6 @@ public class VocabularyDataIntegrationTest {
 
     @LocalServerPort
     private int port;
-
-    @Autowired
-    ElasticsearchClientConfig clientConfig;
 
     @Autowired
     RestHighLevelClient restHighLevelClient;
