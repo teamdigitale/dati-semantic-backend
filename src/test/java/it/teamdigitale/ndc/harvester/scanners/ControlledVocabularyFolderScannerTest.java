@@ -1,4 +1,4 @@
-package it.teamdigitale.ndc.harvester;
+package it.teamdigitale.ndc.harvester.scanners;
 
 import it.teamdigitale.ndc.harvester.exception.InvalidAssetFolderException;
 import it.teamdigitale.ndc.harvester.model.CvPath;
@@ -39,9 +39,17 @@ class ControlledVocabularyFolderScannerTest extends BaseFolderScannerTest {
         assertThat(cvPaths).containsOnly(new CvPath("cv.ttl", null));
     }
 
+    @Test
+    void shouldReturnEmptyResultsWhenTtlIsNotPresentInFolder() throws IOException {
+        List<CvPath> cvPaths = scanner.scanFolder(folder);
+
+        assertThat(cvPaths).isEmpty();
+    }
+
     @ParameterizedTest
     @CsvSource({"cv.ttl,cv.csv", "cv.TTL,cv.CSV", "cv.ttl,cv.CSV", "cv.TTL,cv.csv"})
-    void shouldFindOntologiesByCaseInsensitiveExtension(String ttlFileName, String csvFileName) throws IOException {
+    void shouldFindOntologiesByCaseInsensitiveExtension(String ttlFileName, String csvFileName)
+        throws IOException {
         mockFolderToContain(ttlFileName, csvFileName);
 
         List<CvPath> cvPaths = scanner.scanFolder(folder);
@@ -54,7 +62,7 @@ class ControlledVocabularyFolderScannerTest extends BaseFolderScannerTest {
         mockFolderToContain("the-real-cv.ttl", "the-real-cv.csv", "the-old-leftover-version.ttl");
 
         assertThatThrownBy(() -> scanner.scanFolder(folder))
-                .isInstanceOf(InvalidAssetFolderException.class);
+            .isInstanceOf(InvalidAssetFolderException.class);
     }
 
     @Test
@@ -62,6 +70,6 @@ class ControlledVocabularyFolderScannerTest extends BaseFolderScannerTest {
         mockFolderToContain("the-real-cv.ttl", "the-real-cv.csv", "the-experimental-cv.csv");
 
         assertThatThrownBy(() -> scanner.scanFolder(folder))
-                .isInstanceOf(InvalidAssetFolderException.class);
+            .isInstanceOf(InvalidAssetFolderException.class);
     }
 }

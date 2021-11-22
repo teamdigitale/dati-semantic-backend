@@ -2,12 +2,13 @@ package it.teamdigitale.ndc.service;
 
 import static org.elasticsearch.client.RequestOptions.DEFAULT;
 
+import it.teamdigitale.ndc.controller.exception.VocabularyDataNotFoundException;
 import it.teamdigitale.ndc.dto.VocabularyDataDto;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.CreateIndexRequest;
@@ -21,6 +22,7 @@ import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class VocabularyDataService {
 
     private final ElasticsearchOperations elasticsearchOperations;
@@ -36,17 +38,21 @@ public class VocabularyDataService {
     public VocabularyDataDto getData(String agencyId, String vocabularyName, Integer pageIndex,
                                      Integer pageSize) {
         String index = String.join(".", agencyId, vocabularyName).toLowerCase();
-        Query findAll = Query.findAll().setPageable(PageRequest.of(pageIndex, pageSize));
-        SearchHits<Map> results =
-            elasticsearchOperations.search(findAll, Map.class, IndexCoordinates.of(index));
+        if (exists(index)) {
+            Query findAll = Query.findAll().setPageable(PageRequest.of(pageIndex, pageSize));
+            SearchHits<Map> results =
+                elasticsearchOperations.search(findAll, Map.class, IndexCoordinates.of(index));
 
-        List<Map> data = results.getSearchHits().stream()
-            .map(searchHits -> searchHits.getContent())
-            .collect(Collectors.toList());
-        return new VocabularyDataDto(results.getTotalHits(), pageIndex, data);
+            List<Map> data = results.getSearchHits().stream()
+                .map(searchHits -> searchHits.getContent())
+                .collect(Collectors.toList());
+            return new VocabularyDataDto(results.getTotalHits(), pageIndex, data);
+        } else {
+            log.error("Controlled Vocabulary not found for {}/{}", agencyId, vocabularyName);
+            throw new VocabularyDataNotFoundException(index);
+        }
     }
 
-    @SneakyThrows
     public void indexData(String rightsHolderId, String keyConcept,
                           List<Map<String, String>> data) {
         String indexName = String.join(".", rightsHolderId, keyConcept).toLowerCase();
@@ -54,12 +60,17 @@ public class VocabularyDataService {
         elasticsearchOperations.save(data, IndexCoordinates.of(indexName));
     }
 
-    private void ensureCleanIndex(String indexName) throws IOException {
-        boolean indexExists =
-            esClient.indices().exists(new GetIndexRequest(indexName), DEFAULT);
-        if (indexExists) {
+    @SneakyThrows
+    private void ensureCleanIndex(String indexName) {
+        if (exists(indexName)) {
             esClient.indices().delete(new DeleteIndexRequest(indexName), DEFAULT);
         }
         esClient.indices().create(new CreateIndexRequest(indexName), DEFAULT);
+    }
+
+    @SneakyThrows
+    private boolean exists(String indexName) {
+        return esClient.indices().exists(new GetIndexRequest(indexName), DEFAULT);
+
     }
 }

@@ -1,6 +1,6 @@
 package it.teamdigitale.ndc.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -8,10 +8,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import it.teamdigitale.ndc.dto.VocabularyDataDto;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
-
-import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -36,11 +35,11 @@ public class VocabularyDataServiceTest {
     void shouldFetchDataFromElasticSearchForGivenIndex() {
         Map<String, String> data = Map.of("key", "val");
         SearchHits<Map> searchHits = mock(SearchHits.class);
-        SearchHit searchHit = mock(SearchHit.class);
+        SearchHit<Map> searchHit = mock(SearchHit.class);
         String expectedIndex = "person-title";
         String agencyId = "agid";
 
-        when(searchHits.getSearchHits()).thenReturn(Arrays.asList(searchHit));
+        when(searchHits.getSearchHits()).thenReturn(List.of(searchHit));
         when(searchHit.getContent()).thenReturn(data);
         when(elasticsearchOperations.search(any(Query.class), eq(Map.class),
             any(IndexCoordinates.class))).thenReturn(searchHits);
@@ -55,6 +54,6 @@ public class VocabularyDataServiceTest {
         assertThat(queryArgumentCaptor.getValue().getPageable().getPageNumber()).isEqualTo(0);
         assertThat(queryArgumentCaptor.getValue().getPageable().getPageSize()).isEqualTo(10);
         assertThat("agid." + expectedIndex).isEqualTo(actualIndex);
-        assertThat(Arrays.asList(data)).isEqualTo(actual.getData());
+        assertThat(List.of(data)).isEqualTo(actual.getData());
     }
 }

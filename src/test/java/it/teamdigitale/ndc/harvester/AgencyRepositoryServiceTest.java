@@ -1,8 +1,8 @@
 package it.teamdigitale.ndc.harvester;
 
-import static it.teamdigitale.ndc.harvester.AgencyRepositoryService.CV_FOLDER;
-import static it.teamdigitale.ndc.harvester.AgencyRepositoryService.ONTOLOGY_FOLDER;
 import static it.teamdigitale.ndc.harvester.AgencyRepositoryService.TEMP_DIR_PREFIX;
+import static it.teamdigitale.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
+import static it.teamdigitale.ndc.harvester.SemanticAssetType.ONTOLOGY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -10,6 +10,8 @@ import static org.mockito.Mockito.when;
 
 import it.teamdigitale.ndc.harvester.model.CvPath;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
+import it.teamdigitale.ndc.harvester.scanners.ControlledVocabularyFolderScanner;
+import it.teamdigitale.ndc.harvester.scanners.OntologyFolderScanner;
 import it.teamdigitale.ndc.harvester.util.FileUtils;
 import it.teamdigitale.ndc.harvester.util.GitUtils;
 
@@ -26,15 +28,13 @@ public class AgencyRepositoryServiceTest {
     FileUtils fileUtils;
     GitUtils gitUtils;
     AgencyRepositoryService agencyRepoService;
-    private OntologyFolderScanner ontologyScanner;
-    private ControlledVocabularyFolderScanner cvScanner;
 
     @BeforeEach
     public void setup() {
         fileUtils = mock(FileUtils.class);
         gitUtils = mock(GitUtils.class);
-        ontologyScanner = new OntologyFolderScanner(fileUtils);
-        cvScanner = new ControlledVocabularyFolderScanner(fileUtils);
+        OntologyFolderScanner ontologyScanner = new OntologyFolderScanner(fileUtils);
+        ControlledVocabularyFolderScanner cvScanner = new ControlledVocabularyFolderScanner(fileUtils);
         agencyRepoService = new AgencyRepositoryService(fileUtils, gitUtils, ontologyScanner, cvScanner);
     }
 
@@ -64,7 +64,7 @@ public class AgencyRepositoryServiceTest {
     void shouldFindAllControlledVocabularies() throws IOException {
         CvPath expected1 = CvPath.of("test1.ttl", "test1.csv");
         CvPath expected2 = CvPath.of("test2.ttl", "test2.csv");
-        Path cvFolder = Path.of("/temp/ndc-1", CV_FOLDER);
+        Path cvFolder = Path.of("/temp/ndc-1", CONTROLLED_VOCABULARY.getFolderName());
 
         when(fileUtils.folderExists(cvFolder)).thenReturn(true);
 
@@ -94,7 +94,7 @@ public class AgencyRepositoryServiceTest {
 
     @Test
     void shouldReturnEmptyListWhenControlledVocabularyFolderIsNotPresent() {
-        Path cvFolder = Path.of("/temp/ndc-1", CV_FOLDER);
+        Path cvFolder = Path.of("/temp/ndc-1", CONTROLLED_VOCABULARY.getFolderName());
         when(fileUtils.folderExists(cvFolder)).thenReturn(false);
 
         assertThat(agencyRepoService.getControlledVocabularyPaths(cvFolder)).isEmpty();
@@ -111,7 +111,7 @@ public class AgencyRepositoryServiceTest {
      */
     @Test
     void shouldFindAllOntologies() throws IOException {
-        Path folder = Path.of("/temp/ndc-1", ONTOLOGY_FOLDER);
+        Path folder = Path.of("/temp/ndc-1", ONTOLOGY.getFolderName());
         String ontology1 = "test1.ttl";
         String ontology2 = "test2.ttl";
 
@@ -153,7 +153,7 @@ public class AgencyRepositoryServiceTest {
      */
     @Test
     void shouldIgnoreFilesInNonLeafFolders() throws IOException {
-        Path folder = Path.of("/temp/ndc-1", ONTOLOGY_FOLDER);
+        Path folder = Path.of("/temp/ndc-1", ONTOLOGY.getFolderName());
         String ontology1 = "test1.ttl";
         String ontology2 = "test2.ttl";
 
@@ -189,7 +189,7 @@ public class AgencyRepositoryServiceTest {
 
     @Test
     void shouldReturnEmptyListWhenOntologyFolderIsNotPresent() {
-        Path ontologyFolder = Path.of("/temp/ndc-1", ONTOLOGY_FOLDER);
+        Path ontologyFolder = Path.of("/temp/ndc-1", ONTOLOGY.getFolderName());
         when(fileUtils.folderExists(ontologyFolder)).thenReturn(false);
 
         assertThat(agencyRepoService.getOntologyPaths(ontologyFolder)).isEmpty();

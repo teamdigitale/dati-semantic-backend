@@ -134,6 +134,20 @@ public class VocabularyDataIntegrationTest {
 
     }
 
+    @Test
+    void shouldReturnNotFoundErrorWhenDataIsNotPresent() {
+        // when
+        Response response = given()
+            .when()
+            .get(String.format(
+                "http://localhost:%d/vocabularies/wrong/wrong?page_number=1&page_size=2", port));
+
+        // then
+        response.then()
+            .statusCode(404)
+            .body("message", equalTo("Unable to find vocabulary data for : wrong.wrong"));
+    }
+
     /**
      * We do not have any API to invoke this code, hence this way is used.
      */
