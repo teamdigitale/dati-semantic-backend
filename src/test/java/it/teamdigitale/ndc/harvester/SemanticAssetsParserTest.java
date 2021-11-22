@@ -1,5 +1,10 @@
 package it.teamdigitale.ndc.harvester;
 
+import it.teamdigitale.ndc.harvester.exception.InvalidAssetException;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
+import org.junit.jupiter.api.Test;
+
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.vocabulary.DCTerms.identifier;
@@ -8,12 +13,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertThrows;
 
-import it.teamdigitale.ndc.harvester.exception.InvalidAssetException;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
-import org.junit.jupiter.api.Test;
-
 class SemanticAssetsParserTest {
+
+    public static final String KEY_CONCEPT_IRI = "https://w3id.org/italia/onto/ndc-profile/keyConcept";
 
     @Test
     void shouldReturnControlledVocabularyFromTtlFile() {
@@ -53,7 +55,7 @@ class SemanticAssetsParserTest {
                 createDefaultModel()
                         .createResource("https://w3id.org/italia/controlled-vocabulary/test")
                         .addProperty(
-                                createProperty("https://w3id.org/italia/onto/ndc-profile/keyConcept"), "someValue");
+                                createProperty(KEY_CONCEPT_IRI), "someValue");
         SemanticAssetsParser semanticAssetsParser = new SemanticAssetsParser();
 
         String keyConcept = semanticAssetsParser.getKeyConcept(controlledVocabulary);
@@ -66,6 +68,19 @@ class SemanticAssetsParserTest {
         Resource controlledVocabulary =
                 createDefaultModel()
                         .createResource("https://w3id.org/italia/controlled-vocabulary/test");
+        SemanticAssetsParser semanticAssetsParser = new SemanticAssetsParser();
+
+        assertThatThrownBy(() -> semanticAssetsParser.getKeyConcept(controlledVocabulary))
+                .isInstanceOf(InvalidAssetException.class);
+    }
+
+    @Test
+    void shouldFailWithMultipleKeyConcepts() {
+        Resource controlledVocabulary =
+                createDefaultModel()
+                        .createResource("https://w3id.org/italia/controlled-vocabulary/test")
+                        .addProperty(createProperty(KEY_CONCEPT_IRI), "someValue")
+                        .addProperty(createProperty(KEY_CONCEPT_IRI), "someOtherValue");
         SemanticAssetsParser semanticAssetsParser = new SemanticAssetsParser();
 
         assertThatThrownBy(() -> semanticAssetsParser.getKeyConcept(controlledVocabulary))
