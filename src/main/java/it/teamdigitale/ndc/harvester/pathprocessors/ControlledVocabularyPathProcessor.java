@@ -34,7 +34,7 @@ public class ControlledVocabularyPathProcessor extends SemanticAssetPathProcesso
     }
 
     private void parseAndIndexCsv(String vocabularyId, String rightsHolder, String csvPath) {
-        List<Map<String, String>> flatData = csvParser.convertCsvToJson(csvPath);
+        List<Map<String, String>> flatData = csvParser.convertCsvToMapList(csvPath);
         vocabularyDataService.indexData(rightsHolder, vocabularyId, flatData);
     }
 }

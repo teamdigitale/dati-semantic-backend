@@ -15,14 +15,17 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 @Component
 public class CsvParser {
 
-    public List<Map<String, String>> convertCsvToJson(String csvFile) {
+    public List<Map<String, String>> convertCsvToMapList(String csvFile) {
         try (FileReader csvReader = new FileReader(csvFile, UTF_8)) {
-            List<CSVRecord> records = CSVFormat.DEFAULT.withFirstRecordAsHeader()
-                .parse(csvReader)
-                .getRecords();
+            List<CSVRecord> records = CSVFormat.DEFAULT.builder()
+                    .setHeader()
+                    .setSkipHeaderRecord(true)
+                    .build()
+                    .parse(csvReader)
+                    .getRecords();
             return records.stream()
-                .map(CSVRecord::toMap)
-                .collect(Collectors.toList());
+                    .map(CSVRecord::toMap)
+                    .collect(Collectors.toList());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

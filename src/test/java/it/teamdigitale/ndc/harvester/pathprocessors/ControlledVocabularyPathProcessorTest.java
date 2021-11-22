@@ -39,12 +39,12 @@ class ControlledVocabularyPathProcessorTest {
         when(semanticAssetModelFactory.createControlledVocabulary(ttlFile)).thenReturn(cvModel);
         when(cvModel.getKeyConcept()).thenReturn("keyConcept");
         when(cvModel.getRightsHolderId()).thenReturn("rightsHolderId");
-        when(csvParser.convertCsvToJson(csvFile)).thenReturn(List.of(Map.of("key", "val")));
+        when(csvParser.convertCsvToMapList(csvFile)).thenReturn(List.of(Map.of("key", "val")));
 
         pathProcessor.process(path);
 
         verify(semanticAssetModelFactory).createControlledVocabulary(ttlFile);
-        verify(csvParser).convertCsvToJson(csvFile);
+        verify(csvParser).convertCsvToMapList(csvFile);
         verify(vocabularyDataService).indexData("rightsHolderId", "keyConcept", List.of(Map.of("key", "val")));
     }
 }

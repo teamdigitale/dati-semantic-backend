@@ -13,7 +13,7 @@ public class CsvParserTest {
         String testCsvFile = "src/test/resources/testdata/cv.csv";
         CsvParser csvParser = new CsvParser();
 
-        List<Map<String, String>> json = csvParser.convertCsvToJson(testCsvFile);
+        List<Map<String, String>> json = csvParser.convertCsvToMapList(testCsvFile);
 
         assertThat(json.size()).isEqualTo(2);
         Map<String, String> firstRecord = json.get(0);
@@ -30,6 +30,6 @@ public class CsvParserTest {
         String testCsvFile = "invalid-path.csv";
         CsvParser csvParser = new CsvParser();
 
-        assertThrows(RuntimeException.class, () -> csvParser.convertCsvToJson(testCsvFile));
+        assertThrows(RuntimeException.class, () -> csvParser.convertCsvToMapList(testCsvFile));
     }
 }
