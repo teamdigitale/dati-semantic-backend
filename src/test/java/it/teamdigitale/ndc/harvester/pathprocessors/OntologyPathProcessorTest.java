@@ -10,6 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -34,7 +35,7 @@ class OntologyPathProcessorTest {
 
         pathProcessor.process(path);
 
-        verify(ontologyModel).getMainResource();
+        verify(ontologyModel, atLeastOnce()).getMainResource();
         verify(modelFactory).createOntology(ttlFile);
     }
 }

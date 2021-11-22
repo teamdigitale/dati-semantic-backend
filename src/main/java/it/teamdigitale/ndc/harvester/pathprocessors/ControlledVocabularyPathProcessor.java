@@ -5,32 +5,32 @@ import it.teamdigitale.ndc.harvester.model.ControlledVocabularyModel;
 import it.teamdigitale.ndc.harvester.model.CvPath;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetModelFactory;
 import it.teamdigitale.ndc.service.VocabularyDataService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
 
 @Component
-public class ControlledVocabularyPathProcessor extends SemanticAssetPathProcessor<CvPath> {
+@RequiredArgsConstructor
+public class ControlledVocabularyPathProcessor extends SemanticAssetPathProcessor<CvPath, ControlledVocabularyModel> {
+    private final SemanticAssetModelFactory modelFactory;
     private final CsvParser csvParser;
     private final VocabularyDataService vocabularyDataService;
 
-    public ControlledVocabularyPathProcessor(SemanticAssetModelFactory modelFactory, CsvParser csvParser, VocabularyDataService vocabularyDataService) {
-        super(modelFactory);
-        this.csvParser = csvParser;
-        this.vocabularyDataService = vocabularyDataService;
-    }
-
     @Override
-    public void process(CvPath path) {
-        ControlledVocabularyModel model = modelFactory.createControlledVocabulary(path.getTtlPath());
+    protected void processWithModel(CvPath path, ControlledVocabularyModel model) {
+        super.processWithModel(path, model);
+
         String vocabularyId = model.getKeyConcept();
         String rightsHolder = model.getRightsHolderId();
 
         path.getCsvPath().ifPresent(p -> parseAndIndexCsv(vocabularyId, rightsHolder, p));
+    }
 
-        // store the metadata into Elasticsearch main index
-        // store the resource into Virtuoso
+    @Override
+    protected ControlledVocabularyModel loadModel(String ttlFile) {
+        return modelFactory.createControlledVocabulary(ttlFile);
     }
 
     private void parseAndIndexCsv(String vocabularyId, String rightsHolder, String csvPath) {
