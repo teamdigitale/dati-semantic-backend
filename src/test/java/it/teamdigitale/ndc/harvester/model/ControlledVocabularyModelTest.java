@@ -5,8 +5,14 @@ import static it.teamdigitale.ndc.harvester.model.ControlledVocabularyModel.KEY_
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
+import static org.apache.jena.vocabulary.DCAT.distribution;
+import static org.apache.jena.vocabulary.DCAT.theme;
+import static org.apache.jena.vocabulary.DCTerms.accrualPeriodicity;
+import static org.apache.jena.vocabulary.DCTerms.description;
 import static org.apache.jena.vocabulary.DCTerms.identifier;
+import static org.apache.jena.vocabulary.DCTerms.modified;
 import static org.apache.jena.vocabulary.DCTerms.rightsHolder;
+import static org.apache.jena.vocabulary.DCTerms.title;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -27,21 +33,29 @@ class ControlledVocabularyModelTest {
     private static final String TTL_FILE = "some-file";
     public static final String CV_IRI = "https://w3id.org/italia/controlled-vocabulary/test";
     public static final String RIGHTS_HOLDER_IRI =
-        "http://spcdata.digitpa.gov.it/browse/page/Amministrazione/agid";
+            "http://spcdata.digitpa.gov.it/browse/page/Amministrazione/agid";
     private Model jenaModel;
 
     @BeforeEach
     void setupMockModel() {
         jenaModel = createDefaultModel();
         Resource agid =
-            jenaModel
-                .createResource(RIGHTS_HOLDER_IRI)
-                .addProperty(identifier, "agid");
+                jenaModel
+                        .createResource(RIGHTS_HOLDER_IRI)
+                        .addProperty(identifier, "agid");
         jenaModel
-            .createResource(CV_IRI)
-            .addProperty(RDF.type, createResource(CONTROLLED_VOCABULARY.getTypeIri()))
-            .addProperty(createProperty(KEY_CONCEPT_IRI), "test-concept")
-            .addProperty(rightsHolder, agid);
+                .createResource(CV_IRI)
+                .addProperty(RDF.type, createResource(CONTROLLED_VOCABULARY.getTypeIri()))
+                .addProperty(createProperty(KEY_CONCEPT_IRI), "test-concept")
+                .addProperty(rightsHolder, agid)
+                .addProperty(identifier, "test-identifier")
+                .addProperty(title, "title")
+                .addProperty(description, "description")
+                .addProperty(modified, "2021-03-02")
+                .addProperty(theme, "theme")
+                .addProperty(accrualPeriodicity, "IRREG")
+                .addProperty(distribution, "rdf file path").addProperty(distribution, "ttl file path");
+
     }
 
     @Test
@@ -56,8 +70,8 @@ class ControlledVocabularyModelTest {
     @Test
     void shouldFailWhenModelDoesNotContainControlledVocabulary() {
         List<Statement> conceptStatements = jenaModel
-            .listStatements(null, RDF.type, (RDFNode) null)
-            .toList();
+                .listStatements(null, RDF.type, (RDFNode) null)
+                .toList();
         assertThat(conceptStatements.size()).isEqualTo(1);
         conceptStatements.forEach(s -> jenaModel.remove(s));
 
@@ -69,8 +83,8 @@ class ControlledVocabularyModelTest {
     @Test
     void shouldFailWhenTtlContainsMoreThanOneControlledVocabulary() {
         jenaModel
-            .createResource("http://www.diseny.com/characters")
-            .addProperty(RDF.type, createResource(CONTROLLED_VOCABULARY.getTypeIri()));
+                .createResource("http://www.diseny.com/characters")
+                .addProperty(RDF.type, createResource(CONTROLLED_VOCABULARY.getTypeIri()));
 
         ControlledVocabularyModel model = new ControlledVocabularyModel(jenaModel, TTL_FILE);
 
@@ -87,8 +101,8 @@ class ControlledVocabularyModelTest {
     @Test
     void shouldFailWithMissingKeyConcept() {
         List<Statement> conceptStatements = jenaModel
-            .listStatements(null, createProperty(KEY_CONCEPT_IRI), (String) null)
-            .toList();
+                .listStatements(null, createProperty(KEY_CONCEPT_IRI), (String) null)
+                .toList();
         assertThat(conceptStatements.size()).isEqualTo(1);
         conceptStatements.forEach(s -> jenaModel.remove(s));
 
@@ -100,9 +114,9 @@ class ControlledVocabularyModelTest {
     @Test
     void shouldFailWithMultipleKeyConcepts() {
         jenaModel
-            .createResource(CV_IRI)
-            .addProperty(RDF.type, createResource(CONTROLLED_VOCABULARY.getTypeIri()))
-            .addProperty(createProperty(KEY_CONCEPT_IRI), "another-concept");
+                .createResource(CV_IRI)
+                .addProperty(RDF.type, createResource(CONTROLLED_VOCABULARY.getTypeIri()))
+                .addProperty(createProperty(KEY_CONCEPT_IRI), "another-concept");
 
         ControlledVocabularyModel model = new ControlledVocabularyModel(jenaModel, TTL_FILE);
 
@@ -114,5 +128,14 @@ class ControlledVocabularyModelTest {
         ControlledVocabularyModel model = new ControlledVocabularyModel(jenaModel, TTL_FILE);
 
         assertThat(model.getRightsHolderId()).isEqualTo("agid");
+    }
+
+    @Test
+    void shouldExtractKeyConceptMetaData() {
+        ControlledVocabularyModel model = new ControlledVocabularyModel(jenaModel, TTL_FILE);
+
+        SemanticAssetMetadata semanticAssetMetadata = model.extractMetadata();
+
+        assertThat(semanticAssetMetadata.getKeyConcept()).isEqualTo("test-concept");
     }
 }

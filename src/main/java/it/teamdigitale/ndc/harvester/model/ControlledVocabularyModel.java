@@ -59,4 +59,8 @@ public class ControlledVocabularyModel extends BaseSemanticAssetModel {
         return CONTROLLED_VOCABULARY.getTypeIri();
     }
 
+    @Override
+    public SemanticAssetMetadata extractMetadata() {
+        return super.extractMetadata().toBuilder().keyConcept(getKeyConcept()).build();
+    }
 }
