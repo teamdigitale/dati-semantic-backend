@@ -5,8 +5,11 @@ import it.teamdigitale.ndc.harvester.model.CvPath;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
 import it.teamdigitale.ndc.harvester.pathprocessors.ControlledVocabularyPathProcessor;
 import it.teamdigitale.ndc.harvester.pathprocessors.OntologyPathProcessor;
+import it.teamdigitale.ndc.repository.TripleStoreRepository;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -18,6 +21,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -30,6 +34,8 @@ public class HarvesterServiceTest {
     ControlledVocabularyPathProcessor controlledVocabularyPathProcessor;
     @Mock
     OntologyPathProcessor ontologyPathProcessor;
+    @Mock
+    TripleStoreRepository tripleStoreRepository;
 
     @InjectMocks
     HarvesterService harvester;
@@ -120,5 +126,21 @@ public class HarvesterServiceTest {
 
         verify(controlledVocabularyPathProcessor).process(path1);
         verify(controlledVocabularyPathProcessor, never()).process(path2);
+    }
+
+    @Test
+    void shouldClearNamedGraphBeforeProcessingData() throws IOException {
+        String repoUrl = "someRepoUri";
+        File clonedRepo = new File("/tmp/ndc-1234");
+        SemanticAssetPath path1 = new SemanticAssetPath("test1.ttl");
+
+        when(agencyRepoService.cloneRepo(repoUrl)).thenReturn(clonedRepo.toPath());
+        when(agencyRepoService.getOntologyPaths(clonedRepo.toPath())).thenReturn(List.of(path1));
+
+        harvester.harvest(repoUrl);
+
+        InOrder order = inOrder(tripleStoreRepository, ontologyPathProcessor);
+        order.verify(tripleStoreRepository).clearExistingNamedGraph(repoUrl);
+        order.verify(ontologyPathProcessor).process(path1);
     }
 }

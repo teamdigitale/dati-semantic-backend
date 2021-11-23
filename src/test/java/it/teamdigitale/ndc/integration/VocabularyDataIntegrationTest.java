@@ -5,6 +5,7 @@ import it.teamdigitale.ndc.dto.VocabularyDataDto;
 import it.teamdigitale.ndc.harvester.AgencyRepositoryService;
 import it.teamdigitale.ndc.harvester.HarvesterService;
 import it.teamdigitale.ndc.harvester.model.CvPath;
+import it.teamdigitale.ndc.repository.TripleStoreRepository;
 import it.teamdigitale.ndc.service.VocabularyDataService;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -25,7 +26,9 @@ import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
+import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
@@ -46,11 +49,12 @@ import static org.testcontainers.utility.DockerImageName.parse;
 public class VocabularyDataIntegrationTest {
 
     private static final int ELASTICSEARCH_PORT = 9200;
+    private static final int VIRTUOSO_PORT = 8890;
     private static final String CLUSTER_NAME = "cluster.name";
     public static final String indexName = "agency.vocab";
     private static final DockerImageName ELASTICSEARCH_IMAGE =
-        parse("docker.elastic.co/elasticsearch/elasticsearch")
-            .withTag("7.12.0");
+            parse("docker.elastic.co/elasticsearch/elasticsearch")
+                    .withTag("7.12.0");
     private static final String cloneDirectory = "src/test/resources/testdata";
     private static final String ttlPath = "src/test/resources/testdata/cv.ttl";
     private static final String csvPath = "src/test/resources/testdata/cv.csv";
@@ -70,6 +74,10 @@ public class VocabularyDataIntegrationTest {
     @MockBean
     AgencyRepositoryService agencyRepositoryService;
 
+    @MockBean
+    TripleStoreRepository tripleStoreRepository;
+
+    @Container
     private static ElasticsearchContainer elasticsearchContainer =
         new ElasticsearchContainer(ELASTICSEARCH_IMAGE)
             .withReuse(true)
@@ -80,18 +88,12 @@ public class VocabularyDataIntegrationTest {
     @DynamicPropertySource
     static void updateTestcontainersProperties(DynamicPropertyRegistry registry) {
         registry.add("elasticsearch.port",
-            () -> elasticsearchContainer.getMappedPort(ELASTICSEARCH_PORT));
+                () -> elasticsearchContainer.getMappedPort(ELASTICSEARCH_PORT));
     }
 
     @BeforeAll
     private static void setup() throws IOException {
-        elasticsearchContainer.start();
         setupIndexData();
-    }
-
-    @AfterAll
-    private static void tearDown() {
-        elasticsearchContainer.stop();
     }
 
     @Test
@@ -106,29 +108,29 @@ public class VocabularyDataIntegrationTest {
         harvesterService.harvest(repositoryUrl);
 
         Response response = given()
-            .when()
-            .get(String.format(
-                "http://localhost:%d/vocabularies/agid/testVocabulary", port));
+                .when()
+                .get(String.format(
+                        "http://localhost:%d/vocabularies/agid/testVocabulary", port));
 
         // then
         response.then()
-            .statusCode(200)
-            .body("totalResults", equalTo(2))
-            .body("pageNumber", equalTo(1))
-            .body("data.size()", equalTo(2))
-            .body("data[0].code_level_1", equalTo("3.0"));
+                .statusCode(200)
+                .body("totalResults", equalTo(2))
+                .body("pageNumber", equalTo(1))
+                .body("data.size()", equalTo(2))
+                .body("data[0].code_level_1", equalTo("3.0"));
     }
 
     @Test
     void shouldValidatePageNumberWhileGettingControlledVocabularyData() throws IOException {
 
         Response response = given()
-            .when()
-            .get(String.format(
-                "http://localhost:%d/vocabularies/agency/vocab?page_number=0&page_size=2", port));
+                .when()
+                .get(String.format(
+                        "http://localhost:%d/vocabularies/agency/vocab?page_number=0&page_size=2", port));
 
         response.then()
-            .statusCode(400);
+                .statusCode(400);
 
     }
 
@@ -136,12 +138,12 @@ public class VocabularyDataIntegrationTest {
     void shouldValidatePageSizeWhileGettingControlledVocabularyData() throws IOException {
 
         Response response = given()
-            .when()
-            .get(String.format(
-                "http://localhost:%d/vocabularies/agency/vocab?page_number=1&page_size=0", port));
+                .when()
+                .get(String.format(
+                        "http://localhost:%d/vocabularies/agency/vocab?page_number=1&page_size=0", port));
 
         response.then()
-            .statusCode(400);
+                .statusCode(400);
 
     }
 
@@ -149,12 +151,12 @@ public class VocabularyDataIntegrationTest {
     void shouldValidateMaxPageSizeWhileGettingControlledVocabularyData() throws IOException {
 
         Response response = given()
-            .when()
-            .get(String.format(
-                "http://localhost:%d/vocabularies/agency/vocab?page_number=1&page_size=250", port));
+                .when()
+                .get(String.format(
+                        "http://localhost:%d/vocabularies/agency/vocab?page_number=1&page_size=250", port));
 
         response.then()
-            .statusCode(400);
+                .statusCode(400);
 
     }
 
@@ -162,14 +164,14 @@ public class VocabularyDataIntegrationTest {
     void shouldReturnNotFoundErrorWhenDataIsNotPresent() {
         // when
         Response response = given()
-            .when()
-            .get(String.format(
-                "http://localhost:%d/vocabularies/wrong/wrong?page_number=1&page_size=2", port));
+                .when()
+                .get(String.format(
+                        "http://localhost:%d/vocabularies/wrong/wrong?page_number=1&page_size=2", port));
 
         // then
         response.then()
-            .statusCode(404)
-            .body("message", equalTo("Unable to find vocabulary data for : wrong.wrong"));
+                .statusCode(404)
+                .body("message", equalTo("Unable to find vocabulary data for : wrong.wrong"));
     }
 
     /**
@@ -178,10 +180,10 @@ public class VocabularyDataIntegrationTest {
     @Test
     void shouldCreateNewIndexAndSaveTheData() throws InterruptedException {
         VocabularyDataService vocabularyDataService =
-            new VocabularyDataService(elasticsearchOperations, restHighLevelClient);
+                new VocabularyDataService(elasticsearchOperations, restHighLevelClient);
 
         vocabularyDataService.indexData("rightsHolder", "keyConcept",
-            List.of(Map.of("key", "val")));
+                List.of(Map.of("key", "val")));
 
         //TODO find a better way
         Thread.sleep(3000);
@@ -192,8 +194,8 @@ public class VocabularyDataIntegrationTest {
 
     private static void setupIndexData() throws IOException {
         RestClient client =
-            RestClient.builder(HttpHost.create(elasticsearchContainer.getHttpHostAddress()))
-                .build();
+                RestClient.builder(HttpHost.create(elasticsearchContainer.getHttpHostAddress()))
+                        .build();
 
         //delete index
         Request deleteRequest = new Request("DELETE", "/" + indexName);
@@ -212,19 +214,19 @@ public class VocabularyDataIntegrationTest {
         //add data
         Request dataRequest1 = new Request("POST", "/" + indexName + "/_doc");
         HttpEntity dataEntity1 =
-            new NStringEntity("{\"name\":\"Rob\"}", ContentType.APPLICATION_JSON);
+                new NStringEntity("{\"name\":\"Rob\"}", ContentType.APPLICATION_JSON);
         dataRequest1.setEntity(dataEntity1);
         client.performRequest(dataRequest1);
 
         Request dataRequest2 = new Request("POST", "/" + indexName + "/_doc");
         HttpEntity dataEntity2 =
-            new NStringEntity("{\"name\":\"Sam\"}", ContentType.APPLICATION_JSON);
+                new NStringEntity("{\"name\":\"Sam\"}", ContentType.APPLICATION_JSON);
         dataRequest2.setEntity(dataEntity2);
         client.performRequest(dataRequest2);
 
         Request dataRequest3 = new Request("POST", "/" + indexName + "/_doc");
         HttpEntity dataEntity3 =
-            new NStringEntity("{\"name\":\"Peter\"}", ContentType.APPLICATION_JSON);
+                new NStringEntity("{\"name\":\"Peter\"}", ContentType.APPLICATION_JSON);
         dataRequest3.setEntity(dataEntity3);
         client.performRequest(dataRequest3);
     }

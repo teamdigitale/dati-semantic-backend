@@ -1,6 +1,7 @@
 package it.teamdigitale.ndc.repository;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.atlas.web.HttpException;
 import org.apache.jena.rdf.model.Model;
@@ -9,6 +10,7 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.update.UpdateExecutionFactory;
+import org.apache.jena.update.UpdateFactory;
 import org.apache.jena.update.UpdateRequest;
 import org.springframework.stereotype.Repository;
 
@@ -46,6 +48,12 @@ public class TripleStoreRepository {
             log.debug("Flushing {} statements", batchSize);
             flushBuilder(builder);
         }
+    }
+
+    public void clearExistingNamedGraph(String repoUrl) {
+        UpdateRequest updateRequest = UpdateFactory.create();
+        updateRequest.add("CLEAR GRAPH <" + repoUrl + ">");
+        UpdateExecutionFactory.createRemote(updateRequest, properties.getUrl()).execute();
     }
 
     private void flushBuilder(UpdateBuilder builder) {

@@ -18,26 +18,20 @@ import org.apache.jena.update.UpdateRequest;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @Testcontainers
 public class TripleStoreRepositoryTest {
 
     private static final int VIRTUOSO_PORT = 8890;
-    private static final String CV_IRI = "https://w3id.org/italia/controlled-vocabulary/test";
-    private static final String RIGHTS_HOLDER_IRI = "http://spcdata.digitpa.gov.it/browse/page/Amministrazione/agid";
 
-
+    @Container
     private static GenericContainer virtuoso = new GenericContainer(parse("tenforce/virtuoso"))
             .withReuse(true)
             .withExposedPorts(VIRTUOSO_PORT)
             .withEnv("DBA_PASSWORD", "dba")
             .withEnv("SPARQL_UPDATE", "true");
-
-    @BeforeAll
-    static void setup() {
-        virtuoso.start();
-    }
 
     @Test
     void shouldExecuteSparqlOnVirtuosoTestcontainer() {
@@ -71,6 +65,45 @@ public class TripleStoreRepositoryTest {
         assertThat(querySolution).as("Check a valid result row").isNotNull();
         assertThat(querySolution.get("o").toString()).as("Check variable bound value")
                 .isEqualTo("http://publications.europa.eu/resource/authority/frequency/IRREG");
+    }
+
+    @Test
+    void shouldDeleteOnlyTheSpecifiedNamedGraph() {
+        final String repoUrl = "http://agid";
+
+        // given
+        String sparqlUrl = "http://localhost:" + virtuoso.getMappedPort(VIRTUOSO_PORT) + "/sparql";
+        TripleStoreRepositoryProperties properties = new TripleStoreRepositoryProperties(sparqlUrl, "dba", "dba");
+        TripleStoreRepository repository = new TripleStoreRepository(properties);
+        UpdateRequest updateRequest = new UpdateBuilder()
+                .addInsert("<http://agid>", "<http://example/egbook>", "<http://example/title>",
+                        "This is an example title")
+                .addInsert("<http://istat>", "<http://example/anotherBook>", "<http://example/title>",
+                        "Something different")
+                .buildRequest();
+        UpdateExecutionFactory.createRemote(updateRequest, sparqlUrl).execute();
+
+        // when
+        repository.clearExistingNamedGraph(repoUrl);
+
+        // then
+        Query findTitle = new SelectBuilder()
+                .addVar("b")
+                .addVar("t")
+                .addWhere(
+                        "?b",
+                        "<http://example/title>",
+                        "?t"
+                )
+                .build();
+        ResultSet resultSet =
+                QueryExecutionFactory.sparqlService(sparqlUrl, findTitle).execSelect();
+
+        assertThat(resultSet.hasNext()).isTrue();
+        QuerySolution querySolution = resultSet.next();
+        assertThat(querySolution.get("b").toString()).as("Check variable bound value")
+                .isEqualTo("http://example/anotherBook");
+        assertThat(resultSet.hasNext()).isFalse();
     }
 
     private void deleteAllTriplesFromGraph(String graphName, String sparqlUrl) {
