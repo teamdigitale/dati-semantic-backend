@@ -18,7 +18,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 
 @Document(indexName = "semantic-asset-metadata")
 @Data
-@Builder
+@Builder(toBuilder = true)
 public class SemanticAssetMetadata {
 
     @Id
@@ -26,7 +26,7 @@ public class SemanticAssetMetadata {
     private String identifier;
     @Field(index = false)
     @NotBlank
-    private String uri;
+    private String iri;
     @Field(index = false)
     @NotNull
     private SemanticAssetType type;

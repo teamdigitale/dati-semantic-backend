@@ -1,16 +1,16 @@
 package it.teamdigitale.ndc.harvester.model;
 
+import static it.teamdigitale.ndc.harvester.SemanticAssetType.ONTOLOGY;
+
 import org.apache.jena.rdf.model.Model;
 
 public class OntologyModel extends BaseSemanticAssetModel {
-    public static final String ONTOLOGY_IRI = "http://www.w3.org/2002/07/owl#Ontology";
-
     public OntologyModel(Model coreModel, String source) {
         super(coreModel, source);
     }
 
     @Override
-    protected String getMainResourceIri() {
-        return ONTOLOGY_IRI;
+    protected String getMainResourceTypeIri() {
+        return ONTOLOGY.getTypeIri();
     }
 }

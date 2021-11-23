@@ -1,14 +1,15 @@
 package it.teamdigitale.ndc.harvester.model;
 
-import it.teamdigitale.ndc.harvester.exception.InvalidAssetException;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.vocabulary.RDF;
-
-import java.util.List;
-
 import static java.lang.String.format;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
+
+import it.teamdigitale.ndc.harvester.SemanticAssetType;
+import it.teamdigitale.ndc.harvester.exception.InvalidAssetException;
+import java.util.List;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.DCTerms;
+import org.apache.jena.vocabulary.RDF;
 
 public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
     protected final Model coreModel;
@@ -23,18 +24,18 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
     @Override
     public Resource getMainResource() {
         if (mainResource == null) {
-            mainResource = getUniqueResourceByType(getMainResourceIri());
+            mainResource = getUniqueResourceByType(getMainResourceTypeIri());
         }
 
         return mainResource;
     }
 
-    protected abstract String getMainResourceIri();
+    protected abstract String getMainResourceTypeIri();
 
     private Resource getUniqueResourceByType(String resourceTypeIri) {
         List<Resource> resources = coreModel
-                        .listResourcesWithProperty(RDF.type, createResource(resourceTypeIri))
-                        .toList();
+            .listResourcesWithProperty(RDF.type, createResource(resourceTypeIri))
+            .toList();
 
         checkFileDeclaresSingleResource(resources, resourceTypeIri);
         return resources.get(0);
@@ -47,11 +48,27 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
 
         if (resources.isEmpty()) {
             throw new InvalidAssetException(
-                    format("No statement for a node whose type is '%s' in '%s'", typeIri, source));
+                format("No statement for a node whose type is '%s' in '%s'", typeIri, source));
         }
         throw new InvalidAssetException(
-                format(
-                        "Found %d statements for nodes whose type is '%s' in '%s', expecting only 1",
-                        resources.size(), typeIri, source));
+            format(
+                "Found %d statements for nodes whose type is '%s' in '%s', expecting only 1",
+                resources.size(), typeIri, source));
     }
+
+    public SemanticAssetMetadata extractMetadata() {
+        Resource mainResource = getMainResource();
+        return SemanticAssetMetadata.builder()
+            .iri(mainResource.getURI())
+            .rightsHolder(
+                mainResource.getRequiredProperty(DCTerms.rightsHolder).getResource().getURI())
+            .identifier(mainResource.getRequiredProperty(DCTerms.identifier).getString())
+            .type(getType())
+            .build();
+    }
+
+    private SemanticAssetType getType() {
+        return SemanticAssetType.getByIri(getMainResourceTypeIri());
+    }
+
 }

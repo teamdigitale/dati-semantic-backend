@@ -1,5 +1,8 @@
 package it.teamdigitale.ndc.integration;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.testcontainers.utility.DockerImageName.parse;
+
 import it.teamdigitale.ndc.repository.TripleStoreRepository;
 import it.teamdigitale.ndc.repository.TripleStoreRepositoryProperties;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -9,25 +12,13 @@ import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.update.UpdateExecutionFactory;
 import org.apache.jena.update.UpdateRequest;
-import org.apache.jena.vocabulary.RDF;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
-
-import static it.teamdigitale.ndc.harvester.model.ControlledVocabularyModel.DATASET_IRI;
-import static it.teamdigitale.ndc.harvester.model.ControlledVocabularyModel.KEY_CONCEPT_IRI;
-import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
-import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
-import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-import static org.apache.jena.vocabulary.DCTerms.identifier;
-import static org.apache.jena.vocabulary.DCTerms.rightsHolder;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.testcontainers.utility.DockerImageName.parse;
 
 @Testcontainers
 public class TripleStoreRepositoryTest {

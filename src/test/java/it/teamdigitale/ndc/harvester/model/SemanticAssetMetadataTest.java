@@ -13,7 +13,7 @@ class SemanticAssetMetadataTest {
     @Test
     void shouldDefineConstraints() throws NoSuchFieldException {
         assertThat(getAnnotations("identifier", NotBlank.class)).isNotNull();
-        assertThat(getAnnotations("uri", NotBlank.class)).isNotNull();
+        assertThat(getAnnotations("iri", NotBlank.class)).isNotNull();
         assertThat(getAnnotations("type", NotNull.class)).isNotNull();
         assertThat(getAnnotations("title", NotBlank.class)).isNotNull();
         assertThat(getAnnotations("description", NotBlank.class)).isNotNull();
@@ -24,6 +24,7 @@ class SemanticAssetMetadataTest {
         assertThat(getAnnotations("distribution", NotEmpty.class)).isNotNull();
     }
 
+    @SuppressWarnings("unchecked")
     private Annotation getAnnotations(String fieldName, Class annotationClass)
         throws NoSuchFieldException {
         return SemanticAssetMetadata.class.getDeclaredField(fieldName)
