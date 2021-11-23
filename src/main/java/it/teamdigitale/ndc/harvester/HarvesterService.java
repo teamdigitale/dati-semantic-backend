@@ -1,10 +1,11 @@
 package it.teamdigitale.ndc.harvester;
 
 import it.teamdigitale.ndc.harvester.exception.SinglePathProcessingException;
-import it.teamdigitale.ndc.harvester.model.CvPath;
+import it.teamdigitale.ndc.harvester.model.SemanticAssetModel;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
 import it.teamdigitale.ndc.harvester.pathprocessors.ControlledVocabularyPathProcessor;
 import it.teamdigitale.ndc.harvester.pathprocessors.OntologyPathProcessor;
+import it.teamdigitale.ndc.harvester.pathprocessors.SemanticAssetPathProcessor;
 import it.teamdigitale.ndc.repository.TripleStoreRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,9 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+
+import static it.teamdigitale.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
+import static it.teamdigitale.ndc.harvester.SemanticAssetType.ONTOLOGY;
 
 @Slf4j
 @Component
@@ -53,32 +57,38 @@ public class HarvesterService {
     }
 
     private void harvestOntologies(String repoUrl, Path rootPath) {
-        log.debug("Looking for ontology paths");
-
-        List<SemanticAssetPath> ontologyPaths = agencyRepositoryService.getOntologyPaths(rootPath);
-        log.debug("Found {} ontology path(s) for processing", ontologyPaths.size());
-
-        for (SemanticAssetPath ontologyPath : ontologyPaths) {
-            try {
-                ontologyPathProcessor.process(repoUrl, ontologyPath);
-            } catch (SinglePathProcessingException e) {
-                log.error("Error processing ontology {} in repo {}", ontologyPath, repoUrl, e);
-            }
-        }
+        harvestAssetsOfType(ONTOLOGY, repoUrl, rootPath,
+                agencyRepositoryService::getOntologyPaths,
+                ontologyPathProcessor);
     }
 
     private void harvestControlledVocabularies(String repoUrl, Path rootPath) {
-        log.debug("Looking for vocabulary paths");
+        harvestAssetsOfType(CONTROLLED_VOCABULARY, repoUrl, rootPath,
+                agencyRepositoryService::getControlledVocabularyPaths,
+                controlledVocabularyPathProcessor);
+    }
 
-        List<CvPath> cvPaths = agencyRepositoryService.getControlledVocabularyPaths(rootPath);
-        log.debug("Found {} controlled vocabulary path(s) for processing", cvPaths.size());
+    private interface PathSupplier<P extends SemanticAssetPath> {
+        List<P> get(Path rootPath);
+    }
 
-        for (CvPath cvPath : cvPaths) {
+    private <P extends SemanticAssetPath, M extends SemanticAssetModel> void harvestAssetsOfType(
+            SemanticAssetType type, String repoUrl, Path rootPath,
+            PathSupplier<P> pathSupplier,
+            SemanticAssetPathProcessor<P, M> pathProcessor) {
+        log.debug("Looking for {} paths", type);
+
+        List<P> paths = pathSupplier.get(rootPath);
+        log.debug("Found {} {} path(s) for processing", paths.size(), type);
+
+        for (P path : paths) {
             try {
-                controlledVocabularyPathProcessor.process(repoUrl, cvPath);
+                pathProcessor.process(repoUrl, path);
             } catch (SinglePathProcessingException e) {
-                log.error("Error processing controlled vocabulary {} in repo {}", cvPath, repoUrl, e);
+                log.error("Error processing {} {} in repo {}", type, path, repoUrl, e);
             }
         }
     }
+
+
 }

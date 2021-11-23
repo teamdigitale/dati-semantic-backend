@@ -7,7 +7,7 @@ import lombok.Getter;
 public enum SemanticAssetType {
     ONTOLOGY("ontology", "Ontologie", "http://www.w3.org/2002/07/owl#Ontology"),
     CONTROLLED_VOCABULARY("controlled vocabulary", "VocabolariControllati",
-        "http://dati.gov.it/onto/dcatapit#Dataset"),
+            "http://dati.gov.it/onto/dcatapit#Dataset"),
     SCHEMA("schema", null, "to be added");
 
     private final String description;
@@ -27,5 +27,10 @@ public enum SemanticAssetType {
             }
         }
         throw new UnknownTypeIriException(typeIri);
+    }
+
+    @Override
+    public String toString() {
+        return description;
     }
 }
