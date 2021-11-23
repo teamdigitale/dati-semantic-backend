@@ -1,5 +1,6 @@
 package it.teamdigitale.ndc.harvester;
 
+import it.teamdigitale.ndc.harvester.exception.SinglePathProcessingException;
 import it.teamdigitale.ndc.harvester.model.CvPath;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
 import it.teamdigitale.ndc.harvester.pathprocessors.ControlledVocabularyPathProcessor;
@@ -29,14 +30,22 @@ public class HarvesterService {
     private void harvestOntologies(Path path) {
         List<SemanticAssetPath> ontologyPaths = agencyRepositoryService.getOntologyPaths(path);
         for (SemanticAssetPath ontologyPath : ontologyPaths) {
-            ontologyPathProcessor.process(ontologyPath);
+            try {
+                ontologyPathProcessor.process(ontologyPath);
+            } catch (SinglePathProcessingException e) {
+                log.error("Error processing ontology {}", ontologyPath, e);
+            }
         }
     }
 
     private void harvestControlledVocabularies(Path rootPath) {
         List<CvPath> cvPaths = agencyRepositoryService.getControlledVocabularyPaths(rootPath);
         for (CvPath cvPath : cvPaths) {
-            controlledVocabularyPathProcessor.process(cvPath);
+            try {
+                controlledVocabularyPathProcessor.process(cvPath);
+            } catch (SinglePathProcessingException e) {
+                log.error("Error processing controlled vocabulary {}", cvPath, e);
+            }
         }
     }
 }
