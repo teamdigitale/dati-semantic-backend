@@ -1,16 +1,11 @@
 package it.teamdigitale.ndc.integration;
 
-import static io.restassured.RestAssured.given;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.testcontainers.utility.DockerImageName.parse;
-
 import io.restassured.response.Response;
 import it.teamdigitale.ndc.dto.VocabularyDataDto;
+import it.teamdigitale.ndc.harvester.AgencyRepositoryService;
+import it.teamdigitale.ndc.harvester.HarvesterService;
+import it.teamdigitale.ndc.harvester.model.CvPath;
 import it.teamdigitale.ndc.service.VocabularyDataService;
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.entity.ContentType;
@@ -18,11 +13,13 @@ import org.apache.http.nio.entity.NStringEntity;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -31,6 +28,17 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
+
+import static io.restassured.RestAssured.given;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.mockito.Mockito.when;
+import static org.testcontainers.utility.DockerImageName.parse;
 
 @Testcontainers
 @ExtendWith(SpringExtension.class)
@@ -43,6 +51,9 @@ public class VocabularyDataIntegrationTest {
     private static final DockerImageName ELASTICSEARCH_IMAGE =
         parse("docker.elastic.co/elasticsearch/elasticsearch")
             .withTag("7.12.0");
+    private static final String cloneDirectory = "src/test/resources/testdata";
+    private static final String ttlPath = "src/test/resources/testdata/cv.ttl";
+    private static final String csvPath = "src/test/resources/testdata/cv.csv";
 
     @LocalServerPort
     private int port;
@@ -52,6 +63,12 @@ public class VocabularyDataIntegrationTest {
 
     @Autowired
     ElasticsearchOperations elasticsearchOperations;
+
+    @Autowired
+    HarvesterService harvesterService;
+
+    @MockBean
+    AgencyRepositoryService agencyRepositoryService;
 
     private static ElasticsearchContainer elasticsearchContainer =
         new ElasticsearchContainer(ELASTICSEARCH_IMAGE)
@@ -72,23 +89,34 @@ public class VocabularyDataIntegrationTest {
         setupIndexData();
     }
 
+    @AfterAll
+    private static void tearDown() {
+        elasticsearchContainer.stop();
+    }
+
     @Test
-    void shouldGetControlledVocabularyData() {
+    void shouldHarvestAndGetControlledVocabularyData() throws IOException {
         // when
+        Path cloneDir = Path.of(cloneDirectory);
+        String repositoryUrl = "testRepoURL";
+        when(agencyRepositoryService.cloneRepo(repositoryUrl)).thenReturn(cloneDir);
+        when(agencyRepositoryService.getControlledVocabularyPaths(cloneDir))
+                .thenReturn(List.of(CvPath.of(ttlPath, csvPath)));
+
+        harvesterService.harvest(repositoryUrl);
+
         Response response = given()
             .when()
             .get(String.format(
-                "http://localhost:%d/vocabularies/agency/vocab?page_number=1&page_size=2", port));
+                "http://localhost:%d/vocabularies/agid/testVocabulary", port));
 
         // then
         response.then()
             .statusCode(200)
-            .body("totalResults", equalTo(3))
+            .body("totalResults", equalTo(2))
             .body("pageNumber", equalTo(1))
             .body("data.size()", equalTo(2))
-            .body("data[0].name", equalTo("Rob"))
-            .body("data[1].name", equalTo("Sam"));
-
+            .body("data[0].code_level_1", equalTo("3.0"));
     }
 
     @Test

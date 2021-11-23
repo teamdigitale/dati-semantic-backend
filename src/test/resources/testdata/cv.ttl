@@ -199,6 +199,7 @@ vcard:hasEmail
       <https://w3id.org/italia/controlled-vocabulary/classifications-for-accommodation-facilities/accommodation-star-rating/5L> ;
       dct:issued "2017-10-20"^^xsd:date ;
       dct:modified "2018-02-11"^^xsd:date ;
+      <https://w3id.org/italia/onto/ndc-profile/keyConcept> "testVocabulary" ;
       owl:versionInfo "0.1" .
 
 <http://spcdata.digitpa.gov.it/browse/page/Amministrazione/agid>
