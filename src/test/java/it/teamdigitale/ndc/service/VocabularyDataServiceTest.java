@@ -24,7 +24,7 @@ import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.elasticsearch.core.query.Query;
 
 @ExtendWith(MockitoExtension.class)
-@Disabled("Unable to mock IndicesClient as it's final. Covering in integration tests as of now")
+@Disabled("Unable to mock elasticsearch IndicesClient as its final")
 public class VocabularyDataServiceTest {
     @Mock
     ElasticsearchOperations elasticsearchOperations;

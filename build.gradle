@@ -17,6 +17,9 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
+    integrationImplementation.extendsFrom testImplementation
+    integrationRuntime.extendsFrom testRuntime
+    integrationCompileOnly.extendsFrom testCompileOnly
 }
 
 repositories {
@@ -35,14 +38,17 @@ dependencies {
 
     compileOnly 'org.projectlombok:lombok'
     testCompileOnly 'org.projectlombok:lombok'
+    integrationCompileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation "org.testcontainers:testcontainers:1.16.0"
-    testImplementation "org.testcontainers:junit-jupiter:1.16.0"
-    testImplementation "org.testcontainers:elasticsearch:1.16.2"
     testImplementation 'io.rest-assured:rest-assured:4.0.0'
     testImplementation 'io.rest-assured:json-path:4.0.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
+
+    testImplementation "org.testcontainers:elasticsearch:1.16.2"
+    testImplementation "org.testcontainers:testcontainers:1.16.0"
+    testImplementation "org.testcontainers:junit-jupiter:1.16.0"
 
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 }
@@ -65,6 +71,9 @@ checkstyle {
 }
 
 jacocoTestReport {
+    sourceSets sourceSets.main
+    executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
+
     reports {
         xml.required = false
         csv.required = false
@@ -73,6 +82,8 @@ jacocoTestReport {
 }
 
 jacocoTestCoverageVerification {
+    executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
+
     violationRules {
 
         rule {
@@ -90,7 +101,16 @@ jacocoTestCoverageVerification {
             ]
         }
     }
+}
 
+sourceSets {
+    integration {
+        java.srcDir "$projectDir/src/integration/java"
+        resources.srcDir "$projectDir/src/integration/resources"
+
+        compileClasspath += main.output + test.output
+        runtimeClasspath += main.output + test.output
+    }
 }
 
 test.finalizedBy jacocoTestReport
@@ -140,6 +160,15 @@ gradle.taskGraph.whenReady { graph ->
         spotbugsMain.enabled = false
         dependencyCheckAnalyze.enabled = false
         spotbugsTest.enabled = false
-
     }
 }
+
+task integrationTest(type: Test) {
+    useJUnitPlatform()
+    testClassesDirs = sourceSets.integration.output.classesDirs
+    classpath = sourceSets.integration.runtimeClasspath
+}
+
+integrationTest.finalizedBy jacocoTestReport
+check.dependsOn integrationTest
+jacocoTestCoverageVerification.dependsOn integrationTest

@@ -13,7 +13,6 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@Disabled("This test uses the file-system, and it's therefore to be considered slow")
 class FileUtilsTest {
 
     private FileUtils fileUtils = new FileUtils();
