@@ -23,6 +23,7 @@ public abstract class SemanticAssetPathProcessor<P extends SemanticAssetPath, M 
         log.info("Found resource {}", resource);
 
         processWithModel(repoUrl, path, model);
+        log.info("Path {} processed", path);
     }
 
     protected void processWithModel(String repoUrl, P path, M model) {

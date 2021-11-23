@@ -6,7 +6,6 @@ import lombok.ToString;
 import java.util.Optional;
 
 @EqualsAndHashCode
-@ToString
 public class CvPath extends SemanticAssetPath {
     private final String csvPath;
 
@@ -21,5 +20,10 @@ public class CvPath extends SemanticAssetPath {
 
     public static CvPath of(String ttlPath, String csvPath) {
         return new CvPath(ttlPath, csvPath);
+    }
+
+    @Override
+    public String toString() {
+        return "CvPath{ttlPath='" + ttlPath + "', csvPath='" + csvPath + "'}";
     }
 }
