@@ -13,6 +13,8 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 @Slf4j
 @Component
@@ -26,28 +28,28 @@ public class HarvesterService {
     public void harvest(String repoUrl) throws IOException {
         Path path = agencyRepositoryService.cloneRepo(repoUrl);
         tripleStoreRepository.clearExistingNamedGraph(repoUrl);
-        harvestControlledVocabularies(path);
-        harvestOntologies(path);
+        harvestControlledVocabularies(repoUrl, path);
+        harvestOntologies(repoUrl, path);
     }
 
-    private void harvestOntologies(Path path) {
-        List<SemanticAssetPath> ontologyPaths = agencyRepositoryService.getOntologyPaths(path);
+    private void harvestOntologies(String repoUrl, Path rootPath) {
+        List<SemanticAssetPath> ontologyPaths = agencyRepositoryService.getOntologyPaths(rootPath);
         for (SemanticAssetPath ontologyPath : ontologyPaths) {
             try {
-                ontologyPathProcessor.process(ontologyPath);
+                ontologyPathProcessor.process(repoUrl, ontologyPath);
             } catch (SinglePathProcessingException e) {
-                log.error("Error processing ontology {}", ontologyPath, e);
+                log.error("Error processing ontology {} in repo {}", ontologyPath, repoUrl, e);
             }
         }
     }
 
-    private void harvestControlledVocabularies(Path rootPath) {
+    private void harvestControlledVocabularies(String repoUrl, Path rootPath) {
         List<CvPath> cvPaths = agencyRepositoryService.getControlledVocabularyPaths(rootPath);
         for (CvPath cvPath : cvPaths) {
             try {
-                controlledVocabularyPathProcessor.process(cvPath);
+                controlledVocabularyPathProcessor.process(repoUrl, cvPath);
             } catch (SinglePathProcessingException e) {
-                log.error("Error processing controlled vocabulary {}", cvPath, e);
+                log.error("Error processing controlled vocabulary {} in repo {}", cvPath, repoUrl, e);
             }
         }
     }

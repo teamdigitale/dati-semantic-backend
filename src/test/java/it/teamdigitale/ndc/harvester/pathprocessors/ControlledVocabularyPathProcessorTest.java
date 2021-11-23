@@ -4,6 +4,7 @@ import it.teamdigitale.ndc.harvester.CsvParser;
 import it.teamdigitale.ndc.harvester.model.ControlledVocabularyModel;
 import it.teamdigitale.ndc.harvester.model.CvPath;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetModelFactory;
+import it.teamdigitale.ndc.repository.TripleStoreRepository;
 import it.teamdigitale.ndc.service.VocabularyDataService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,6 +28,8 @@ class ControlledVocabularyPathProcessorTest {
     CsvParser csvParser;
     @Mock
     VocabularyDataService vocabularyDataService;
+    @Mock
+    TripleStoreRepository repository;
     @InjectMocks
     ControlledVocabularyPathProcessor pathProcessor;
 
@@ -41,7 +44,7 @@ class ControlledVocabularyPathProcessorTest {
         when(cvModel.getRightsHolderId()).thenReturn("rightsHolderId");
         when(csvParser.convertCsvToMapList(csvFile)).thenReturn(List.of(Map.of("key", "val")));
 
-        pathProcessor.process(path);
+        pathProcessor.process("some-repo", path);
 
         verify(semanticAssetModelFactory).createControlledVocabulary(ttlFile);
         verify(csvParser).convertCsvToMapList(csvFile);

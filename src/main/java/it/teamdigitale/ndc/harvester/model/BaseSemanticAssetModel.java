@@ -33,13 +33,18 @@ import static org.apache.jena.vocabulary.OWL.versionInfo;
 import org.apache.jena.vocabulary.RDF;
 
 public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
-    protected final Model coreModel;
+    protected final Model rdfModel;
     protected final String source;
     private Resource mainResource;
 
-    public BaseSemanticAssetModel(Model coreModel, String source) {
-        this.coreModel = coreModel;
+    public BaseSemanticAssetModel(Model rdfModel, String source) {
+        this.rdfModel = rdfModel;
         this.source = source;
+    }
+
+    @Override
+    public Model getRdfModel() {
+        return rdfModel;
     }
 
     @Override
@@ -54,7 +59,7 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
     protected abstract String getMainResourceTypeIri();
 
     private Resource getUniqueResourceByType(String resourceTypeIri) {
-        List<Resource> resources = coreModel
+        List<Resource> resources = rdfModel
                 .listResourcesWithProperty(RDF.type, createResource(resourceTypeIri))
                 .toList();
 

@@ -4,23 +4,29 @@ import it.teamdigitale.ndc.harvester.CsvParser;
 import it.teamdigitale.ndc.harvester.model.ControlledVocabularyModel;
 import it.teamdigitale.ndc.harvester.model.CvPath;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetModelFactory;
+import it.teamdigitale.ndc.repository.TripleStoreRepository;
 import it.teamdigitale.ndc.service.VocabularyDataService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
 
 @Component
-@RequiredArgsConstructor
 public class ControlledVocabularyPathProcessor extends SemanticAssetPathProcessor<CvPath, ControlledVocabularyModel> {
     private final SemanticAssetModelFactory modelFactory;
     private final CsvParser csvParser;
     private final VocabularyDataService vocabularyDataService;
 
+    public ControlledVocabularyPathProcessor(TripleStoreRepository repository, SemanticAssetModelFactory modelFactory, CsvParser csvParser, VocabularyDataService vocabularyDataService) {
+        super(repository);
+        this.modelFactory = modelFactory;
+        this.csvParser = csvParser;
+        this.vocabularyDataService = vocabularyDataService;
+    }
+
     @Override
-    protected void processWithModel(CvPath path, ControlledVocabularyModel model) {
-        super.processWithModel(path, model);
+    protected void processWithModel(String repoUrl, CvPath path, ControlledVocabularyModel model) {
+        super.processWithModel(repoUrl, path, model);
 
         String vocabularyId = model.getKeyConcept();
         String rightsHolder = model.getRightsHolderId();

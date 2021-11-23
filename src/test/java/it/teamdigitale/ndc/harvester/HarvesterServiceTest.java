@@ -6,7 +6,6 @@ import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
 import it.teamdigitale.ndc.harvester.pathprocessors.ControlledVocabularyPathProcessor;
 import it.teamdigitale.ndc.harvester.pathprocessors.OntologyPathProcessor;
 import it.teamdigitale.ndc.repository.TripleStoreRepository;
-import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
@@ -53,8 +52,8 @@ public class HarvesterServiceTest {
 
         verify(agencyRepoService).cloneRepo("someRepoUri");
         verify(agencyRepoService).getControlledVocabularyPaths(Path.of("/tmp/ndc-1234"));
-        verify(controlledVocabularyPathProcessor).process(path1);
-        verify(controlledVocabularyPathProcessor).process(path2);
+        verify(controlledVocabularyPathProcessor).process(repoUrl, path1);
+        verify(controlledVocabularyPathProcessor).process(repoUrl, path2);
     }
 
     @Test
@@ -71,8 +70,8 @@ public class HarvesterServiceTest {
 
         verify(agencyRepoService).cloneRepo("someRepoUri");
         verify(agencyRepoService).getOntologyPaths(Path.of("/tmp/ndc-1234"));
-        verify(ontologyPathProcessor).process(path1);
-        verify(ontologyPathProcessor).process(path2);
+        verify(ontologyPathProcessor).process(repoUrl, path1);
+        verify(ontologyPathProcessor).process(repoUrl, path2);
     }
 
     @Test
@@ -84,12 +83,12 @@ public class HarvesterServiceTest {
 
         when(agencyRepoService.cloneRepo(repoUrl)).thenReturn(clonedRepo.toPath());
         when(agencyRepoService.getOntologyPaths(clonedRepo.toPath())).thenReturn(List.of(path1, path2));
-        doThrow(new InvalidAssetException("Something went wrong")).when(ontologyPathProcessor).process(path1);
+        doThrow(new InvalidAssetException("Something went wrong")).when(ontologyPathProcessor).process(repoUrl, path1);
 
         harvester.harvest(repoUrl);
 
-        verify(ontologyPathProcessor).process(path1);
-        verify(ontologyPathProcessor).process(path2);
+        verify(ontologyPathProcessor).process(repoUrl, path1);
+        verify(ontologyPathProcessor).process(repoUrl, path2);
     }
 
     @Test
@@ -101,12 +100,12 @@ public class HarvesterServiceTest {
 
         when(agencyRepoService.cloneRepo(repoUrl)).thenReturn(clonedRepo.toPath());
         when(agencyRepoService.getControlledVocabularyPaths(clonedRepo.toPath())).thenReturn(List.of(path1, path2));
-        doThrow(new InvalidAssetException("Something went wrong")).when(controlledVocabularyPathProcessor).process(path1);
+        doThrow(new InvalidAssetException("Something went wrong")).when(controlledVocabularyPathProcessor).process(repoUrl, path1);
 
         harvester.harvest(repoUrl);
 
-        verify(controlledVocabularyPathProcessor).process(path1);
-        verify(controlledVocabularyPathProcessor).process(path2);
+        verify(controlledVocabularyPathProcessor).process(repoUrl, path1);
+        verify(controlledVocabularyPathProcessor).process(repoUrl, path2);
     }
 
     @Test
@@ -118,14 +117,14 @@ public class HarvesterServiceTest {
 
         when(agencyRepoService.cloneRepo(repoUrl)).thenReturn(clonedRepo.toPath());
         when(agencyRepoService.getControlledVocabularyPaths(clonedRepo.toPath())).thenReturn(List.of(path1, path2));
-        doThrow(new RuntimeException("Something else went wrong")).when(controlledVocabularyPathProcessor).process(path1);
+        doThrow(new RuntimeException("Something else went wrong")).when(controlledVocabularyPathProcessor).process(repoUrl, path1);
 
         assertThatThrownBy(() -> harvester.harvest(repoUrl))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage("Something else went wrong");
 
-        verify(controlledVocabularyPathProcessor).process(path1);
-        verify(controlledVocabularyPathProcessor, never()).process(path2);
+        verify(controlledVocabularyPathProcessor).process(repoUrl, path1);
+        verify(controlledVocabularyPathProcessor, never()).process(repoUrl, path2);
     }
 
     @Test
@@ -141,6 +140,6 @@ public class HarvesterServiceTest {
 
         InOrder order = inOrder(tripleStoreRepository, ontologyPathProcessor);
         order.verify(tripleStoreRepository).clearExistingNamedGraph(repoUrl);
-        order.verify(ontologyPathProcessor).process(path1);
+        order.verify(ontologyPathProcessor).process(repoUrl, path1);
     }
 }

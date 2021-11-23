@@ -2,6 +2,7 @@ package it.teamdigitale.ndc.harvester.pathprocessors;
 
 import it.teamdigitale.ndc.harvester.model.SemanticAssetModel;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
+import it.teamdigitale.ndc.repository.TripleStoreRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.jena.rdf.model.Resource;
@@ -9,7 +10,9 @@ import org.apache.jena.rdf.model.Resource;
 @RequiredArgsConstructor
 @Slf4j
 public abstract class SemanticAssetPathProcessor<P extends SemanticAssetPath, M extends SemanticAssetModel> {
-    public void process(P path) {
+    private final TripleStoreRepository repository;
+
+    public void process(String repoUrl, P path) {
         log.info("Processing path {}", path);
 
         log.debug("Loading model");
@@ -19,11 +22,11 @@ public abstract class SemanticAssetPathProcessor<P extends SemanticAssetPath, M 
         Resource resource = model.getMainResource();
         log.info("Found resource {}", resource);
 
-        processWithModel(path, model);
+        processWithModel(repoUrl, path, model);
     }
 
-    protected void processWithModel(P path, M model) {
-        persistModelToTripleStore(model);
+    protected void processWithModel(String repoUrl, P path, M model) {
+        persistModelToTripleStore(repoUrl, model);
 
         indexMetadataForSearch(model);
     }
@@ -43,12 +46,12 @@ public abstract class SemanticAssetPathProcessor<P extends SemanticAssetPath, M 
         // part of this) protected and override accordingly.
     }
 
-    private void persistModelToTripleStore(M model) {
+    private void persistModelToTripleStore(String repoUrl, M model) {
         log.debug("Enriching model before persisting");
         enrichModelBeforePersisting(model);
 
         log.debug("Storing RDF content for {} in Virtuoso", model.getMainResource());
-        // store triples in Virtuoso
+        repository.save(repoUrl, model.getRdfModel());
     }
 
     protected abstract M loadModel(String ttlFile);
