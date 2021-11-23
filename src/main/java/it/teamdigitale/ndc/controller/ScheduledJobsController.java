@@ -1,13 +1,13 @@
 package it.teamdigitale.ndc.controller;
 
 import it.teamdigitale.ndc.harvester.HarvesterService;
-import java.io.IOException;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/scheduler")
@@ -21,7 +21,7 @@ public class ScheduledJobsController {
     }
 
     @PostMapping("/harvester")
-    public void csv(@RequestParam("repoURI") String repoUri) throws GitAPIException, IOException {
+    public void csv(@RequestParam("repoURI") String repoUri) throws IOException {
         harvesterService.harvest(repoUri);
     }
 }
