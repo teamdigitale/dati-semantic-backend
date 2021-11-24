@@ -138,4 +138,11 @@ class ControlledVocabularyModelTest {
 
         assertThat(semanticAssetMetadata.getKeyConcept()).isEqualTo("test-concept");
     }
+
+    @Test
+    void shouldExtractDataService() {
+        ControlledVocabularyModel model = new ControlledVocabularyModel(jenaModel, TTL_FILE);
+        assertThat(model.dataServiceResource().toString()).isEqualTo("<ModelCom   {https://w3id.org/italia/controlled-vocabulary-api/agid/test-concept @https://w3id.org/italia/onto/ndc-profile/servesDataset https://w3id.org/italia/controlled-vocabulary/test; https://w3id.org/italia/controlled-vocabulary-api/agid/test-concept @https://w3id.org/italia/onto/ndc-profile/endpointUrl https://w3id.org/italia/controlled-vocabulary-api/agid/test-concept; https://w3id.org/italia/controlled-vocabulary-api/agid/test-concept @http://www.w3.org/1999/02/22-rdf-syntax-ns#type https://w3id.org/italia/onto/ndc-profile/DataService} |  [https://w3id.org/italia/controlled-vocabulary-api/agid/test-concept, https://w3id.org/italia/onto/ndc-profile/servesDataset, https://w3id.org/italia/controlled-vocabulary/test] [https://w3id.org/italia/controlled-vocabulary-api/agid/test-concept, https://w3id.org/italia/onto/ndc-profile/endpointUrl, https://w3id.org/italia/controlled-vocabulary-api/agid/test-concept] [https://w3id.org/italia/controlled-vocabulary-api/agid/test-concept, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, https://w3id.org/italia/onto/ndc-profile/DataService]>");
+    }
+
 }
