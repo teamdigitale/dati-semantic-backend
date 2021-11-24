@@ -1,10 +1,12 @@
 package it.teamdigitale.ndc.harvester.pathprocessors;
 
+import it.teamdigitale.ndc.harvester.exception.SinglePathProcessingException;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetMetadata;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetModel;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
 import it.teamdigitale.ndc.repository.SemanticAssetMetadataRepository;
 import it.teamdigitale.ndc.repository.TripleStoreRepository;
+import it.teamdigitale.ndc.repository.TripleStoreRepositoryException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.jena.rdf.model.Resource;
@@ -51,8 +53,13 @@ public abstract class SemanticAssetPathProcessor<P extends SemanticAssetPath, M 
         log.debug("Enriching model before persisting");
         enrichModelBeforePersisting(model);
 
-        log.debug("Storing RDF content for {} in Virtuoso", model.getMainResource());
-        tripleStoreRepository.save(repoUrl, model.getRdfModel());
+        try {
+            log.debug("Storing RDF content for {} in Virtuoso", model.getMainResource());
+            tripleStoreRepository.save(repoUrl, model.getRdfModel());
+        } catch (TripleStoreRepositoryException e) {
+            log.error("Failed to persist model to triple store", e);
+            throw new SinglePathProcessingException("Could not persist model to triple store", e);
+        }
     }
 
     protected abstract M loadModel(String ttlFile);

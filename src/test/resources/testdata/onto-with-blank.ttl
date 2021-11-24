@@ -1,0 +1,12 @@
+@prefix : <https://w3id.org/italia/onto/CulturalHeritage/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
+@base <https://w3id.org/italia/onto/CulturalHeritage> .
+
+<https://w3id.org/italia/onto/CulturalHeritage> rdf:type owl:Ontology ;
+                                                 dcat:keyword "Beni culturali"@it ;
+                                                              <http://fakestuff/someProperty> [
+                                                                dcat:keyword "I mess up your import"@it
+                                                              ] .
+

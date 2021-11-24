@@ -1,6 +1,7 @@
 package it.teamdigitale.ndc.integration;
 
 import it.teamdigitale.ndc.repository.TripleStoreRepository;
+import it.teamdigitale.ndc.repository.TripleStoreRepositoryException;
 import it.teamdigitale.ndc.repository.TripleStoreRepositoryProperties;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
@@ -8,28 +9,41 @@ import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
+import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.update.UpdateExecutionFactory;
 import org.apache.jena.update.UpdateFactory;
 import org.apache.jena.update.UpdateRequest;
+
 import static org.assertj.core.api.Assertions.assertThat;
+
+import org.apache.jena.vocabulary.RDF;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
+
+import java.util.concurrent.Callable;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.testcontainers.utility.DockerImageName.parse;
 
 @Testcontainers
 public class TripleStoreRepositoryTest {
 
     private static final int VIRTUOSO_PORT = 8890;
-    String sparqlUrl = "http://localhost:" + virtuoso.getMappedPort(VIRTUOSO_PORT) + "/sparql";
-    final String graphName = this.getClass().getSimpleName();
-    TripleStoreRepository repository;
+    private static String baseUrl;
+    private static String sparqlUrl;
+    private static final String graphName = "http://www.fantasy.org/graph";
 
-    private static GenericContainer virtuoso = new GenericContainer(parse("tenforce/virtuoso"))
+    private static TripleStoreRepository repository;
+
+    private static final GenericContainer virtuoso = new GenericContainer(parse("tenforce/virtuoso"))
             .withReuse(true)
             .withExposedPorts(VIRTUOSO_PORT)
             .withEnv("DBA_PASSWORD", "dba")
@@ -38,12 +52,13 @@ public class TripleStoreRepositoryTest {
     @BeforeAll
     public static void beforeAll() {
         virtuoso.start();
+        baseUrl = "http://localhost:" + virtuoso.getMappedPort(VIRTUOSO_PORT);
+        sparqlUrl = baseUrl + "/sparql";
+        repository = new TripleStoreRepository(TripleStoreRepositoryProperties.forAnonymousBaseUrl(baseUrl));
     }
 
     @BeforeEach
     public void beforeEach() {
-        TripleStoreRepositoryProperties properties = new TripleStoreRepositoryProperties(sparqlUrl, "dba", "dba");
-        repository = new TripleStoreRepository(properties);
         deleteAllTriplesFromGraph(graphName, sparqlUrl);
         deleteAllTriplesFromGraph("http://agid", sparqlUrl);
         deleteAllTriplesFromGraph("http://istat", sparqlUrl);
@@ -75,6 +90,40 @@ public class TripleStoreRepositoryTest {
         assertThat(querySolution).as("Check a valid result row").isNotNull();
         assertThat(querySolution.get("o").toString()).as("Check variable bound value")
                 .isEqualTo("http://publications.europa.eu/resource/authority/frequency/IRREG");
+    }
+
+    @Test
+    void shouldSaveGivenModelWithBlankNodeInVirtuosoTestcontainer() {
+        // given
+        Model model = RDFDataMgr.loadModel("src/test/resources/testdata/onto-with-blank.ttl");
+
+        // when
+        repository.save(graphName, model);
+
+        // then
+        Query keywordQuery = new SelectBuilder()
+                .addVar("k")
+                .addWhere(
+                        "<https://w3id.org/italia/onto/CulturalHeritage>",
+                        "<http://www.w3.org/ns/dcat#keyword>",
+                        "?k"
+                )
+                .from(graphName)
+                .build();
+        ResultSet resultSet = QueryExecutionFactory.sparqlService(sparqlUrl, keywordQuery).execSelect();
+
+        assertThat(resultSet.hasNext()).isTrue();
+
+        QuerySolution querySolution = resultSet.next();
+        assertThat(querySolution).as("Check a valid result row").isNotNull();
+
+        RDFNode keywordNode = querySolution.get("k");
+        assertThat(keywordNode).isNotNull();
+
+        assertThat(keywordNode.isLiteral()).isTrue();
+        Literal keyword = (Literal) keywordNode;
+        assertThat(keyword.getLanguage()).isEqualTo("it");
+        assertThat(keyword.getString()).isEqualTo("Beni culturali");
     }
 
     @Test
@@ -113,4 +162,5 @@ public class TripleStoreRepositoryTest {
         updateRequest.add("CLEAR GRAPH <" + graphName + ">");
         UpdateExecutionFactory.createRemote(updateRequest, sparqlUrl).execute();
     }
+
 }

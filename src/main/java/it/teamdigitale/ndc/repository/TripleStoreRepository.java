@@ -7,10 +7,8 @@ import org.apache.jena.atlas.web.HttpException;
 import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.ResourceFactory;
-import org.apache.jena.rdf.model.Statement;
-import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.rdfconnection.RDFConnection;
+import org.apache.jena.rdfconnection.RDFConnectionFactory;
 import org.apache.jena.update.UpdateExecutionFactory;
 import org.apache.jena.update.UpdateFactory;
 import org.apache.jena.update.UpdateRequest;
@@ -26,49 +24,36 @@ public class TripleStoreRepository {
     }
 
     public void save(String graphName, Model model) {
-        Resource graph = ResourceFactory.createResource(graphName);
-        UpdateBuilder builder = null;
-        int batchSize = 0;
-        StmtIterator iterator = model.listStatements();
-        while (iterator.hasNext()) {
-            Statement statement = iterator.nextStatement();
-            if (batchSize == 0) {
-                builder = new UpdateBuilder();
-            }
-
-            builder = builder.addInsert(graph, statement.asTriple());
-            batchSize++;
-
-            if (batchSize >= 20) {
-                log.debug("Flushing {} statements", batchSize);
-                flushBuilder(builder);
-                batchSize = 0;
-            }
+        log.info("Saving model to Virtuoso");
+        RDFConnection connection = RDFConnectionFactory.connect(properties.getSparqlGraphStore().getUrl());
+        try {
+            saveWithConnection(graphName, model, connection);
+        } finally {
+            connection.close();
         }
+        log.info("Model saved to Virtuoso");
+    }
 
-        if (batchSize > 0) {
-            log.debug("Flushing {} statements", batchSize);
-            flushBuilder(builder);
+    private void saveWithConnection(String graphName, Model model, RDFConnection connection) {
+        try {
+            connection.load(graphName, model);
+        } catch (HttpException e) {
+            log.error("Could not flush! '{}'", e.getResponse(), e);
+            throw new TripleStoreRepositoryException(String.format("Could not save model to '%s'", graphName), e);
+        } catch (Exception e) {
+            log.error("Could not flush!", e);
+            throw new TripleStoreRepositoryException(String.format("Could not save model to '%s'", graphName), e);
         }
     }
 
     public void clearExistingNamedGraph(String repoUrl) {
         UpdateRequest updateRequest = UpdateFactory.create();
         updateRequest.add("CLEAR GRAPH <" + repoUrl + ">");
-        UpdateExecutionFactory.createRemote(updateRequest, properties.getUrl()).execute();
-    }
-
-    private void flushBuilder(UpdateBuilder builder) {
-        UpdateRequest updateRequest = builder.buildRequest();
-        try {
-            UpdateExecutionFactory.createRemote(updateRequest, properties.getUrl()).execute();
-        } catch (HttpException e) {
-            log.error("Could not flush! '{}'", e.getResponse(), e);
-        }
+        UpdateExecutionFactory.createRemote(updateRequest, properties.getSparql().getUrl()).execute();
     }
 
     public ResultSet select(SelectBuilder selectBuilder) {
-        return QueryExecutionFactory.sparqlService(properties.getUrl(), selectBuilder.build())
-            .execSelect();
+        return QueryExecutionFactory.sparqlService(properties.getSparql().getUrl(), selectBuilder.build())
+                .execSelect();
     }
 }

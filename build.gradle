@@ -41,10 +41,13 @@ dependencies {
     integrationCompileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.mockito', module: 'mockito-core'
+    }
     testImplementation 'io.rest-assured:rest-assured:4.0.0'
     testImplementation 'io.rest-assured:json-path:4.0.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
+    testImplementation 'org.mockito:mockito-inline:3.9.0'
 
     testImplementation "org.testcontainers:elasticsearch:1.16.2"
     testImplementation "org.testcontainers:testcontainers:1.16.0"
