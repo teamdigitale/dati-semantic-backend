@@ -13,7 +13,6 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.shared.PropertyNotFoundException;
 import static org.apache.jena.vocabulary.DCAT.contactPoint;
 import static org.apache.jena.vocabulary.DCAT.distribution;
@@ -94,18 +93,34 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
                 .title(mainResource.getRequiredProperty(title).getString())
                 .description(mainResource.getRequiredProperty(description).getString())
                 .modified(parseDate(mainResource.getRequiredProperty(modified).getString()))
-                .theme(mainResource.getRequiredProperty(theme).getString())
-                .accrualPeriodicity(mainResource.getRequiredProperty(accrualPeriodicity).getString())
+                .theme(mainResource.getRequiredProperty(theme).getResource().getURI())
+                .accrualPeriodicity(mainResource.getRequiredProperty(accrualPeriodicity).getResource().getURI())
                 .distribution(getCollection(mainResource, distribution, true))
                 .subject(getCollection(mainResource, subject, false))
-                .contactPoint(getOptionalProperty(mainResource, contactPoint))
-                .publisher(getOptionalProperty(mainResource, publisher))
-                .creator(getOptionalProperty(mainResource, creator))
+                .contactPoint(getOptionalResource(mainResource, contactPoint))
+                .publisher(getOptionalResource(mainResource, publisher))
+                .creator(getOptionalResource(mainResource, creator))
                 .versionInfo(getOptionalProperty(mainResource, versionInfo))
                 .issued(parseDate(getOptionalProperty(mainResource, issued)))
-                .language(getOptionalProperty(mainResource, language))
-                .conformsTo(getOptionalProperty(mainResource, conformsTo))
+                .language(getOptionalResource(mainResource, language))
+                .conformsTo(getOptionalResource(mainResource, conformsTo))
                 .build();
+    }
+
+    private String getOptionalProperty(Resource mainResource, Property property) {
+        try {
+            return mainResource.getRequiredProperty(property).getString();
+        } catch (PropertyNotFoundException e) {
+            return null;
+        }
+    }
+
+    private String getOptionalResource(Resource mainResource, Property property) {
+        try {
+            return mainResource.getRequiredProperty(property).getResource().getURI();
+        } catch (PropertyNotFoundException e) {
+            return null;
+        }
     }
 
     private LocalDate parseDate(String date) {
@@ -118,19 +133,12 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
     private List<String> getCollection(Resource mainResource, Property property, boolean isMandatory) {
         List<String> items = mainResource.listProperties(property).toList()
                 .stream()
-                .map(Statement::getString)
+                .map(statement -> statement.getResource().getURI())
                 .collect(Collectors.toList());
         if (items.isEmpty() && isMandatory) {
             throw new PropertyNotFoundException(property);
         }
         return items;
-    }
-
-    private String getOptionalProperty(Resource resource, Property property) {
-        if (resource.hasProperty(property)) {
-            return resource.getProperty(property).getString();
-        }
-        return null;
     }
 
     private SemanticAssetType getType() {

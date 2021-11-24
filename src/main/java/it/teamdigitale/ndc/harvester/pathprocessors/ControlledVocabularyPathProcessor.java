@@ -4,6 +4,7 @@ import it.teamdigitale.ndc.harvester.CsvParser;
 import it.teamdigitale.ndc.harvester.model.ControlledVocabularyModel;
 import it.teamdigitale.ndc.harvester.model.CvPath;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetModelFactory;
+import it.teamdigitale.ndc.repository.SemanticAssetMetadataRepository;
 import it.teamdigitale.ndc.repository.TripleStoreRepository;
 import it.teamdigitale.ndc.service.VocabularyDataService;
 import org.springframework.stereotype.Component;
@@ -17,8 +18,10 @@ public class ControlledVocabularyPathProcessor extends SemanticAssetPathProcesso
     private final CsvParser csvParser;
     private final VocabularyDataService vocabularyDataService;
 
-    public ControlledVocabularyPathProcessor(TripleStoreRepository repository, SemanticAssetModelFactory modelFactory, CsvParser csvParser, VocabularyDataService vocabularyDataService) {
-        super(repository);
+    public ControlledVocabularyPathProcessor(TripleStoreRepository tripleStoreRepository, SemanticAssetModelFactory modelFactory,
+                                             CsvParser csvParser, VocabularyDataService vocabularyDataService,
+                                             SemanticAssetMetadataRepository metadataRepository) {
+        super(tripleStoreRepository, metadataRepository);
         this.modelFactory = modelFactory;
         this.csvParser = csvParser;
         this.vocabularyDataService = vocabularyDataService;

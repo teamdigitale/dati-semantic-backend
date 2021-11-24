@@ -3,7 +3,9 @@ package it.teamdigitale.ndc.harvester.pathprocessors;
 import it.teamdigitale.ndc.harvester.CsvParser;
 import it.teamdigitale.ndc.harvester.model.ControlledVocabularyModel;
 import it.teamdigitale.ndc.harvester.model.CvPath;
+import it.teamdigitale.ndc.harvester.model.SemanticAssetMetadata;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetModelFactory;
+import it.teamdigitale.ndc.repository.SemanticAssetMetadataRepository;
 import it.teamdigitale.ndc.repository.TripleStoreRepository;
 import it.teamdigitale.ndc.service.VocabularyDataService;
 import org.junit.jupiter.api.Test;
@@ -29,7 +31,10 @@ class ControlledVocabularyPathProcessorTest {
     @Mock
     VocabularyDataService vocabularyDataService;
     @Mock
-    TripleStoreRepository repository;
+    TripleStoreRepository tripleStoreRepository;
+    @Mock
+    SemanticAssetMetadataRepository metadataRepository;
+
     @InjectMocks
     ControlledVocabularyPathProcessor pathProcessor;
 
@@ -43,11 +48,15 @@ class ControlledVocabularyPathProcessorTest {
         when(cvModel.getKeyConcept()).thenReturn("keyConcept");
         when(cvModel.getRightsHolderId()).thenReturn("rightsHolderId");
         when(csvParser.convertCsvToMapList(csvFile)).thenReturn(List.of(Map.of("key", "val")));
+        SemanticAssetMetadata metadata = SemanticAssetMetadata.builder().build();
+        when(cvModel.extractMetadata()).thenReturn(metadata);
 
         pathProcessor.process("some-repo", path);
 
         verify(semanticAssetModelFactory).createControlledVocabulary(ttlFile);
         verify(csvParser).convertCsvToMapList(csvFile);
         verify(vocabularyDataService).indexData("rightsHolderId", "keyConcept", List.of(Map.of("key", "val")));
+        verify(cvModel).extractMetadata();
+        verify(metadataRepository).save(metadata);
     }
 }

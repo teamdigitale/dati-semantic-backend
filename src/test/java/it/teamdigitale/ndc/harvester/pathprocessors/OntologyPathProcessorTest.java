@@ -1,8 +1,10 @@
 package it.teamdigitale.ndc.harvester.pathprocessors;
 
 import it.teamdigitale.ndc.harvester.model.OntologyModel;
+import it.teamdigitale.ndc.harvester.model.SemanticAssetMetadata;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetModelFactory;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
+import it.teamdigitale.ndc.repository.SemanticAssetMetadataRepository;
 import it.teamdigitale.ndc.repository.TripleStoreRepository;
 import org.apache.jena.rdf.model.Resource;
 import org.junit.jupiter.api.Test;
@@ -25,6 +27,9 @@ class OntologyPathProcessorTest {
     Resource ontology;
     @Mock
     TripleStoreRepository repository;
+    @Mock
+    SemanticAssetMetadataRepository metadataRepository;
+
     @InjectMocks
     OntologyPathProcessor pathProcessor;
 
@@ -35,10 +40,14 @@ class OntologyPathProcessorTest {
 
         when(modelFactory.createOntology(ttlFile)).thenReturn(ontologyModel);
         when(ontologyModel.getMainResource()).thenReturn(ontology);
+        SemanticAssetMetadata metadata = SemanticAssetMetadata.builder().build();
+        when(ontologyModel.extractMetadata()).thenReturn(metadata);
 
         pathProcessor.process("some-repo", path);
 
         verify(ontologyModel, atLeastOnce()).getMainResource();
         verify(modelFactory).createOntology(ttlFile);
+        verify(ontologyModel).extractMetadata();
+        verify(metadataRepository).save(metadata);
     }
 }

@@ -1,8 +1,5 @@
 package it.teamdigitale.ndc.integration;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.testcontainers.utility.DockerImageName.parse;
-
 import it.teamdigitale.ndc.repository.TripleStoreRepository;
 import it.teamdigitale.ndc.repository.TripleStoreRepositoryProperties;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -14,16 +11,23 @@ import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.update.UpdateExecutionFactory;
+import org.apache.jena.update.UpdateFactory;
 import org.apache.jena.update.UpdateRequest;
+import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import static org.testcontainers.utility.DockerImageName.parse;
 
 @Testcontainers
 public class TripleStoreRepositoryTest {
 
     private static final int VIRTUOSO_PORT = 8890;
+    String sparqlUrl = "http://localhost:" + virtuoso.getMappedPort(VIRTUOSO_PORT) + "/sparql";
+    final String graphName = this.getClass().getSimpleName();
+    TripleStoreRepository repository;
 
     private static GenericContainer virtuoso = new GenericContainer(parse("tenforce/virtuoso"))
             .withReuse(true)
@@ -36,18 +40,21 @@ public class TripleStoreRepositoryTest {
         virtuoso.start();
     }
 
+    @BeforeEach
+    public void beforeEach() {
+        TripleStoreRepositoryProperties properties = new TripleStoreRepositoryProperties(sparqlUrl, "dba", "dba");
+        repository = new TripleStoreRepository(properties);
+        deleteAllTriplesFromGraph(graphName, sparqlUrl);
+        deleteAllTriplesFromGraph("http://agid", sparqlUrl);
+        deleteAllTriplesFromGraph("http://istat", sparqlUrl);
+    }
+
     @Test
     void shouldSaveGivenModelInVirtuosoTestcontainer() {
-        final String graphName = this.getClass().getSimpleName();
-
         // given
-        String sparqlUrl = "http://localhost:" + virtuoso.getMappedPort(VIRTUOSO_PORT) + "/sparql";
-        TripleStoreRepositoryProperties properties = new TripleStoreRepositoryProperties(sparqlUrl, "dba", "dba");
         Model model = RDFDataMgr.loadModel("src/test/resources/testdata/onto.ttl");
-        deleteAllTriplesFromGraph(graphName, sparqlUrl);
 
         // when
-        TripleStoreRepository repository = new TripleStoreRepository(properties);
         repository.save(graphName, model);
 
         // then
@@ -72,74 +79,38 @@ public class TripleStoreRepositoryTest {
 
     @Test
     void shouldDeleteOnlyTheSpecifiedNamedGraph() {
-        final String repoUrl = "http://agid";
-
         // given
-        String sparqlUrl = "http://localhost:" + virtuoso.getMappedPort(VIRTUOSO_PORT) + "/sparql";
-        TripleStoreRepositoryProperties properties = new TripleStoreRepositoryProperties(sparqlUrl, "dba", "dba");
-        TripleStoreRepository repository = new TripleStoreRepository(properties);
-        UpdateRequest updateRequest = new UpdateBuilder()
-                .addInsert("<http://agid>", "<http://example/egbook>", "<http://example/title>",
-                        "This is an example title")
-                .addInsert("<http://istat>", "<http://example/anotherBook>", "<http://example/title>",
-                        "Something different")
-                .buildRequest();
-        UpdateExecutionFactory.createRemote(updateRequest, sparqlUrl).execute();
-
-        // when
-        repository.clearExistingNamedGraph(repoUrl);
-
-        // then
-        Query findTitle = new SelectBuilder()
+        SelectBuilder findTitle = new SelectBuilder()
                 .addVar("b")
                 .addVar("t")
                 .addWhere(
                         "?b",
                         "<http://example/title>",
                         "?t"
-                )
-                .build();
-        ResultSet resultSet =
-                QueryExecutionFactory.sparqlService(sparqlUrl, findTitle).execSelect();
-
-        assertThat(resultSet.hasNext()).isTrue();
-        QuerySolution querySolution = resultSet.next();
-        assertThat(querySolution.get("b").toString()).as("Check variable bound value")
-                .isEqualTo("http://example/anotherBook");
-        assertThat(resultSet.hasNext()).isFalse();
-    }
-
-    @Test
-    void shouldRunSparqlOnVirtuoso() {
-        // given
-        String sparqlUrl = "http://localhost:" + virtuoso.getMappedPort(VIRTUOSO_PORT) + "/sparql";
-        TripleStoreRepositoryProperties properties =
-            new TripleStoreRepositoryProperties(sparqlUrl, "dba", "dba");
-        TripleStoreRepository repository = new TripleStoreRepository(properties);
-        repository.clearExistingNamedGraph("http://agid");
-        repository.clearExistingNamedGraph("http://istat");
+                );
         UpdateRequest updateRequest = new UpdateBuilder()
-            .addInsert("<http://agid>", "<http://example/egbook>", "<http://example/title>",
-                "This is an example title")
-            .buildRequest();
+                .addInsert("<http://agid>", "<http://example/egbook>", "<http://example/title>",
+                        "This is an example title")
+                .buildRequest();
         UpdateExecutionFactory.createRemote(updateRequest, sparqlUrl).execute();
-        SelectBuilder findTitle = new SelectBuilder()
-            .addVar("b").addVar("t")
-            .addWhere("?b", "<http://example/title>", "?t");
 
         //when
         ResultSet resultSet = repository.select(findTitle);
-
-        //then
         assertThat(resultSet.hasNext()).isTrue();
-        QuerySolution querySolution = resultSet.next();
-        assertThat(querySolution.get("b").toString()).as("Check variable bound value")
-            .isEqualTo("http://example/egbook");
+        assertThat(resultSet.next().get("b").asResource().getURI()).isEqualTo("http://example/egbook");
+        assertThat(resultSet.hasNext()).isFalse();
+
+        // when
+        repository.clearExistingNamedGraph("http://agid");
+        resultSet = repository.select(findTitle);
+
+        // then
         assertThat(resultSet.hasNext()).isFalse();
     }
 
     private void deleteAllTriplesFromGraph(String graphName, String sparqlUrl) {
-        UpdateRequest updateRequest = new UpdateBuilder().addDelete(new SelectBuilder().from(graphName)).buildRequest();
+        UpdateRequest updateRequest = UpdateFactory.create();
+        updateRequest.add("CLEAR GRAPH <" + graphName + ">");
         UpdateExecutionFactory.createRemote(updateRequest, sparqlUrl).execute();
     }
 }

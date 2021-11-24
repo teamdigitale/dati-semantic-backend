@@ -1,7 +1,9 @@
 package it.teamdigitale.ndc.harvester.pathprocessors;
 
+import it.teamdigitale.ndc.harvester.model.SemanticAssetMetadata;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetModel;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
+import it.teamdigitale.ndc.repository.SemanticAssetMetadataRepository;
 import it.teamdigitale.ndc.repository.TripleStoreRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,7 +12,8 @@ import org.apache.jena.rdf.model.Resource;
 @RequiredArgsConstructor
 @Slf4j
 public abstract class SemanticAssetPathProcessor<P extends SemanticAssetPath, M extends SemanticAssetModel> {
-    private final TripleStoreRepository repository;
+    private final TripleStoreRepository tripleStoreRepository;
+    private final SemanticAssetMetadataRepository metadataRepository;
 
     public void process(String repoUrl, P path) {
         log.info("Processing path {}", path);
@@ -40,11 +43,8 @@ public abstract class SemanticAssetPathProcessor<P extends SemanticAssetPath, M 
 
     private void indexMetadataForSearch(M model) {
         log.debug("Indexing {} for search", model.getMainResource());
-
-        // Note for #75 if this is actually common to all semantic types, it can stay here.
-        // Maybe differences can be encapsulated in some method for extracting the SemanticAssetMetadata from
-        // the SemanticAssetModel hierarchy, or maybe not. If that's not the case, of course we can make this (or
-        // part of this) protected and override accordingly.
+        SemanticAssetMetadata metadata = model.extractMetadata();
+        metadataRepository.save(metadata);
     }
 
     private void persistModelToTripleStore(String repoUrl, M model) {
@@ -52,7 +52,7 @@ public abstract class SemanticAssetPathProcessor<P extends SemanticAssetPath, M 
         enrichModelBeforePersisting(model);
 
         log.debug("Storing RDF content for {} in Virtuoso", model.getMainResource());
-        repository.save(repoUrl, model.getRdfModel());
+        tripleStoreRepository.save(repoUrl, model.getRdfModel());
     }
 
     protected abstract M loadModel(String ttlFile);

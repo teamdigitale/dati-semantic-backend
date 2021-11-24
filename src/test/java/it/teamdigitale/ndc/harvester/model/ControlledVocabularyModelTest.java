@@ -52,9 +52,9 @@ class ControlledVocabularyModelTest {
                 .addProperty(title, "title")
                 .addProperty(description, "description")
                 .addProperty(modified, "2021-03-02")
-                .addProperty(theme, "theme")
-                .addProperty(accrualPeriodicity, "IRREG")
-                .addProperty(distribution, "rdf file path").addProperty(distribution, "ttl file path");
+                .addProperty(theme, createResource("theme"))
+                .addProperty(accrualPeriodicity, createResource("IRREG"))
+                .addProperty(distribution, createResource("rdf file path")).addProperty(distribution, createResource("ttl file path"));
 
     }
 

@@ -57,17 +57,17 @@ class BaseSemanticAssetModelTest {
                 .addProperty(title, "title")
                 .addProperty(description, "description")
                 .addProperty(modified, "2021-03-02")
-                .addProperty(theme, "theme")
-                .addProperty(accrualPeriodicity, "IRREG")
-                .addProperty(distribution, "rdf file path").addProperty(distribution, "ttl file path")
-                .addProperty(subject, "subTheme1").addProperty(subject, "subTheme2")
-                .addProperty(contactPoint, "Agid")
-                .addProperty(publisher, "Agid")
-                .addProperty(creator, "stlab")
+                .addProperty(theme, createResource("theme"))
+                .addProperty(accrualPeriodicity, createResource("IRREG"))
+                .addProperty(distribution, createResource("rdf file path")).addProperty(distribution, createResource("ttl file path"))
+                .addProperty(subject, createResource("subTheme1")).addProperty(subject, createResource("subTheme2"))
+                .addProperty(contactPoint, createResource("Agid"))
+                .addProperty(publisher, createResource("Agid"))
+                .addProperty(creator, createResource("stlab"))
                 .addProperty(versionInfo, "1.0")
                 .addProperty(issued, "2021-02-01")
-                .addProperty(language, "ENG")
-                .addProperty(conformsTo, "SKOS");
+                .addProperty(language, createResource("ENG"))
+                .addProperty(conformsTo, createResource("SKOS"));
         semanticAssetModel = new TestBaseSemanticAssetModel(jenaModel, TTL_FILE);
     }
 

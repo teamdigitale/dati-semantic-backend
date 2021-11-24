@@ -7,4 +7,6 @@ public interface SemanticAssetModel {
     Resource getMainResource();
 
     Model getRdfModel();
+
+    SemanticAssetMetadata extractMetadata();
 }

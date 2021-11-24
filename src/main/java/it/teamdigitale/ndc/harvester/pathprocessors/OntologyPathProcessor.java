@@ -3,8 +3,8 @@ package it.teamdigitale.ndc.harvester.pathprocessors;
 import it.teamdigitale.ndc.harvester.model.OntologyModel;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetModelFactory;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
+import it.teamdigitale.ndc.repository.SemanticAssetMetadataRepository;
 import it.teamdigitale.ndc.repository.TripleStoreRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -13,8 +13,9 @@ import org.springframework.stereotype.Component;
 public class OntologyPathProcessor extends SemanticAssetPathProcessor<SemanticAssetPath, OntologyModel> {
     private final SemanticAssetModelFactory modelFactory;
 
-    public OntologyPathProcessor(TripleStoreRepository repository, SemanticAssetModelFactory modelFactory) {
-        super(repository);
+    public OntologyPathProcessor(TripleStoreRepository tripleStoreRepository, SemanticAssetModelFactory modelFactory,
+                                 SemanticAssetMetadataRepository metadataRepository) {
+        super(tripleStoreRepository, metadataRepository);
         this.modelFactory = modelFactory;
     }
 
