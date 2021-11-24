@@ -1,5 +1,11 @@
 package it.teamdigitale.ndc.integration;
 
+import static io.restassured.RestAssured.given;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.mockito.Mockito.when;
+import static org.testcontainers.utility.DockerImageName.parse;
+
 import io.restassured.response.Response;
 import it.teamdigitale.ndc.dto.VocabularyDataDto;
 import it.teamdigitale.ndc.harvester.AgencyRepositoryService;
@@ -7,6 +13,10 @@ import it.teamdigitale.ndc.harvester.HarvesterService;
 import it.teamdigitale.ndc.harvester.model.CvPath;
 import it.teamdigitale.ndc.repository.TripleStoreRepository;
 import it.teamdigitale.ndc.service.VocabularyDataService;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.entity.ContentType;
@@ -14,7 +24,6 @@ import org.apache.http.nio.entity.NStringEntity;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,22 +35,9 @@ import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Map;
-
-import static io.restassured.RestAssured.given;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.mockito.Mockito.when;
-import static org.testcontainers.utility.DockerImageName.parse;
 
 @Testcontainers
 @ExtendWith(SpringExtension.class)
@@ -77,7 +73,6 @@ public class VocabularyDataIntegrationTest {
     @MockBean
     TripleStoreRepository tripleStoreRepository;
 
-    @Container
     private static ElasticsearchContainer elasticsearchContainer =
         new ElasticsearchContainer(ELASTICSEARCH_IMAGE)
             .withReuse(true)
@@ -93,6 +88,7 @@ public class VocabularyDataIntegrationTest {
 
     @BeforeAll
     private static void setup() throws IOException {
+        elasticsearchContainer.start();
         setupIndexData();
     }
 

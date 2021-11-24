@@ -18,7 +18,6 @@ import org.apache.jena.update.UpdateRequest;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @Testcontainers
@@ -26,15 +25,19 @@ public class TripleStoreRepositoryTest {
 
     private static final int VIRTUOSO_PORT = 8890;
 
-    @Container
     private static GenericContainer virtuoso = new GenericContainer(parse("tenforce/virtuoso"))
             .withReuse(true)
             .withExposedPorts(VIRTUOSO_PORT)
             .withEnv("DBA_PASSWORD", "dba")
             .withEnv("SPARQL_UPDATE", "true");
 
+    @BeforeAll
+    public static void beforeAll() {
+        virtuoso.start();
+    }
+
     @Test
-    void shouldExecuteSparqlOnVirtuosoTestcontainer() {
+    void shouldSaveGivenModelInVirtuosoTestcontainer() {
         final String graphName = this.getClass().getSimpleName();
 
         // given
@@ -103,6 +106,35 @@ public class TripleStoreRepositoryTest {
         QuerySolution querySolution = resultSet.next();
         assertThat(querySolution.get("b").toString()).as("Check variable bound value")
                 .isEqualTo("http://example/anotherBook");
+        assertThat(resultSet.hasNext()).isFalse();
+    }
+
+    @Test
+    void shouldRunSparqlOnVirtuoso() {
+        // given
+        String sparqlUrl = "http://localhost:" + virtuoso.getMappedPort(VIRTUOSO_PORT) + "/sparql";
+        TripleStoreRepositoryProperties properties =
+            new TripleStoreRepositoryProperties(sparqlUrl, "dba", "dba");
+        TripleStoreRepository repository = new TripleStoreRepository(properties);
+        repository.clearExistingNamedGraph("http://agid");
+        repository.clearExistingNamedGraph("http://istat");
+        UpdateRequest updateRequest = new UpdateBuilder()
+            .addInsert("<http://agid>", "<http://example/egbook>", "<http://example/title>",
+                "This is an example title")
+            .buildRequest();
+        UpdateExecutionFactory.createRemote(updateRequest, sparqlUrl).execute();
+        SelectBuilder findTitle = new SelectBuilder()
+            .addVar("b").addVar("t")
+            .addWhere("?b", "<http://example/title>", "?t");
+
+        //when
+        ResultSet resultSet = repository.select(findTitle);
+
+        //then
+        assertThat(resultSet.hasNext()).isTrue();
+        QuerySolution querySolution = resultSet.next();
+        assertThat(querySolution.get("b").toString()).as("Check variable bound value")
+            .isEqualTo("http://example/egbook");
         assertThat(resultSet.hasNext()).isFalse();
     }
 

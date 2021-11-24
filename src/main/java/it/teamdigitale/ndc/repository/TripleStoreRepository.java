@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.atlas.web.HttpException;
+import org.apache.jena.query.QueryExecutionFactory;
+import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
@@ -63,5 +65,10 @@ public class TripleStoreRepository {
         } catch (HttpException e) {
             log.error("Could not flush! '{}'", e.getResponse(), e);
         }
+    }
+
+    public ResultSet select(SelectBuilder selectBuilder) {
+        return QueryExecutionFactory.sparqlService(properties.getUrl(), selectBuilder.build())
+            .execSelect();
     }
 }

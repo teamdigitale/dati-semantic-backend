@@ -1,11 +1,9 @@
 package it.teamdigitale.ndc.integration;
 
-import it.teamdigitale.ndc.repository.TripleStoreRepositoryProperties;
+import it.teamdigitale.ndc.repository.TripleStoreRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.query.Query;
-import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.sparql.engine.http.QueryExceptionHTTP;
 import org.springframework.boot.actuate.autoconfigure.health.ConditionalOnEnabledHealthIndicator;
@@ -18,7 +16,7 @@ import org.springframework.stereotype.Component;
 @Component
 @ConditionalOnEnabledHealthIndicator("virtuoso")
 public class VirtuosoHealthIndicator implements HealthIndicator {
-    private final TripleStoreRepositoryProperties props;
+    private final TripleStoreRepository repository;
 
     @Override
     public Health health() {
@@ -35,13 +33,12 @@ public class VirtuosoHealthIndicator implements HealthIndicator {
     }
 
     private void performQuery() {
-        Query query = new SelectBuilder()
-                .addWhere("<http://www.disney.com/characters/Fethry_Duck>",
-                        "<http://www.w3.org/2000/01/rdf-schema#type>",
-                        "<http://www.disney.com/characters/Character>")
-                .build();
-        ResultSet resultSet =
-                QueryExecutionFactory.sparqlService(props.getUrl(), query).execSelect();
+        SelectBuilder queryBuilder = new SelectBuilder()
+            .addWhere("<http://www.disney.com/characters/Fethry_Duck>",
+                "<http://www.w3.org/2000/01/rdf-schema#type>",
+                "<http://www.disney.com/characters/Character>");
+
+        ResultSet resultSet = repository.select(queryBuilder);
 
         if (resultSet.hasNext()) {
             log.warn("What?! We found Fethry Duck");
