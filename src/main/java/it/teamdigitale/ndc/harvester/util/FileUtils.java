@@ -2,11 +2,15 @@ package it.teamdigitale.ndc.harvester.util;
 
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static java.util.Comparator.reverseOrder;
 
 @Component
 public class FileUtils {
@@ -25,5 +29,12 @@ public class FileUtils {
 
     public boolean isDirectory(Path maybeDir) {
         return maybeDir.toFile().isDirectory();
+    }
+
+    public void removeDirectory(Path directory) throws IOException {
+        Files.walk(directory)
+                .sorted(reverseOrder())
+                .map(Path::toFile)
+                .forEach(File::delete);
     }
 }

@@ -65,4 +65,8 @@ public class AgencyRepositoryService {
             return scanner.scanFolder(dir);
         }
     }
+
+    public void removeClonedRepo(Path repoPath) throws IOException {
+        fileUtils.removeDirectory(repoPath);
+    }
 }

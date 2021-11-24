@@ -6,6 +6,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -61,6 +62,21 @@ class FileUtilsTest {
 
         assertThatThrownBy(() -> fileUtils.listContents(textFile.toPath()))
                 .isInstanceOf(IOException.class);
+    }
+
+    @Test
+    void shouldRemoveNonEmptyFolder() throws IOException {
+        File clonedRepo = new File(rootFolder.toFile(), "fake-cloned-repo");
+        assertThat(clonedRepo.mkdir()).isTrue();
+        File readme = new File(clonedRepo, "README.md");
+        Files.write(readme.toPath(), "# This is a repo".getBytes(StandardCharsets.UTF_8));
+        assertThat(clonedRepo.exists()).isTrue();
+        assertThat(readme.exists()).isTrue();
+
+        fileUtils.removeDirectory(clonedRepo.toPath());
+
+        assertThat(readme.exists()).isFalse();
+        assertThat(clonedRepo.exists()).isFalse();
     }
 
     private File createTextFile(Path parent, String fileName, List<String> content) throws IOException {

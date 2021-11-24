@@ -35,6 +35,8 @@ public class HarvesterServiceTest {
     OntologyPathProcessor ontologyPathProcessor;
     @Mock
     TripleStoreRepository tripleStoreRepository;
+    @Mock
+    Path clonedRepoPath;
 
     @InjectMocks
     HarvesterService harvester;
@@ -42,16 +44,15 @@ public class HarvesterServiceTest {
     @Test
     void shouldHarvestControlledVocabularies() throws IOException {
         String repoUrl = "someRepoUri";
-        File clonedRepo = new File("/tmp/ndc-1234");
         CvPath path1 = CvPath.of("test1.ttl", "test1.csv");
         CvPath path2 = CvPath.of("test2.ttl", "test2.csv");
-        when(agencyRepoService.cloneRepo(repoUrl)).thenReturn(clonedRepo.toPath());
-        when(agencyRepoService.getControlledVocabularyPaths(clonedRepo.toPath())).thenReturn(List.of(path1, path2));
+        when(agencyRepoService.cloneRepo(repoUrl)).thenReturn(clonedRepoPath);
+        when(agencyRepoService.getControlledVocabularyPaths(clonedRepoPath)).thenReturn(List.of(path1, path2));
 
         harvester.harvest(repoUrl);
 
         verify(agencyRepoService).cloneRepo("someRepoUri");
-        verify(agencyRepoService).getControlledVocabularyPaths(Path.of("/tmp/ndc-1234"));
+        verify(agencyRepoService).getControlledVocabularyPaths(clonedRepoPath);
         verify(controlledVocabularyPathProcessor).process(repoUrl, path1);
         verify(controlledVocabularyPathProcessor).process(repoUrl, path2);
     }
@@ -59,17 +60,16 @@ public class HarvesterServiceTest {
     @Test
     void shouldHarvestOntologyFiles() throws IOException {
         String repoUrl = "someRepoUri";
-        File clonedRepo = new File("/tmp/ndc-1234");
         SemanticAssetPath path1 = new SemanticAssetPath("test1.ttl");
         SemanticAssetPath path2 = new SemanticAssetPath("test2.ttl");
 
-        when(agencyRepoService.cloneRepo(repoUrl)).thenReturn(clonedRepo.toPath());
-        when(agencyRepoService.getOntologyPaths(clonedRepo.toPath())).thenReturn(List.of(path1, path2));
+        when(agencyRepoService.cloneRepo(repoUrl)).thenReturn(clonedRepoPath);
+        when(agencyRepoService.getOntologyPaths(clonedRepoPath)).thenReturn(List.of(path1, path2));
 
         harvester.harvest(repoUrl);
 
         verify(agencyRepoService).cloneRepo("someRepoUri");
-        verify(agencyRepoService).getOntologyPaths(Path.of("/tmp/ndc-1234"));
+        verify(agencyRepoService).getOntologyPaths(clonedRepoPath);
         verify(ontologyPathProcessor).process(repoUrl, path1);
         verify(ontologyPathProcessor).process(repoUrl, path2);
     }
@@ -77,12 +77,11 @@ public class HarvesterServiceTest {
     @Test
     void shouldMoveOnToNextOntologyIfProcessingOneFails() throws IOException {
         String repoUrl = "someRepoUri";
-        File clonedRepo = new File("/tmp/ndc-1234");
         SemanticAssetPath path1 = new SemanticAssetPath("test1.ttl");
         SemanticAssetPath path2 = new SemanticAssetPath("test2.ttl");
 
-        when(agencyRepoService.cloneRepo(repoUrl)).thenReturn(clonedRepo.toPath());
-        when(agencyRepoService.getOntologyPaths(clonedRepo.toPath())).thenReturn(List.of(path1, path2));
+        when(agencyRepoService.cloneRepo(repoUrl)).thenReturn(clonedRepoPath);
+        when(agencyRepoService.getOntologyPaths(clonedRepoPath)).thenReturn(List.of(path1, path2));
         doThrow(new InvalidAssetException("Something went wrong")).when(ontologyPathProcessor).process(repoUrl, path1);
 
         harvester.harvest(repoUrl);
@@ -94,12 +93,11 @@ public class HarvesterServiceTest {
     @Test
     void shouldMoveOnToNextCvIfProcessingOneFails() throws IOException {
         String repoUrl = "someRepoUri";
-        File clonedRepo = new File("/tmp/ndc-1234");
         CvPath path1 = new CvPath("test1.ttl", "test1.csv");
         CvPath path2 = new CvPath("test2.ttl", "test2.csv");
 
-        when(agencyRepoService.cloneRepo(repoUrl)).thenReturn(clonedRepo.toPath());
-        when(agencyRepoService.getControlledVocabularyPaths(clonedRepo.toPath())).thenReturn(List.of(path1, path2));
+        when(agencyRepoService.cloneRepo(repoUrl)).thenReturn(clonedRepoPath);
+        when(agencyRepoService.getControlledVocabularyPaths(clonedRepoPath)).thenReturn(List.of(path1, path2));
         doThrow(new InvalidAssetException("Something went wrong")).when(controlledVocabularyPathProcessor).process(repoUrl, path1);
 
         harvester.harvest(repoUrl);
@@ -111,12 +109,11 @@ public class HarvesterServiceTest {
     @Test
     void shouldGiveUpOnRepoWhenGenericExceptionIsThrown() throws IOException {
         String repoUrl = "someRepoUri";
-        File clonedRepo = new File("/tmp/ndc-1234");
         CvPath path1 = new CvPath("test1.ttl", "test1.csv");
         CvPath path2 = new CvPath("test2.ttl", "test2.csv");
 
-        when(agencyRepoService.cloneRepo(repoUrl)).thenReturn(clonedRepo.toPath());
-        when(agencyRepoService.getControlledVocabularyPaths(clonedRepo.toPath())).thenReturn(List.of(path1, path2));
+        when(agencyRepoService.cloneRepo(repoUrl)).thenReturn(clonedRepoPath);
+        when(agencyRepoService.getControlledVocabularyPaths(clonedRepoPath)).thenReturn(List.of(path1, path2));
         doThrow(new RuntimeException("Something else went wrong")).when(controlledVocabularyPathProcessor).process(repoUrl, path1);
 
         assertThatThrownBy(() -> harvester.harvest(repoUrl))
@@ -130,16 +127,43 @@ public class HarvesterServiceTest {
     @Test
     void shouldClearNamedGraphBeforeProcessingData() throws IOException {
         String repoUrl = "someRepoUri";
-        File clonedRepo = new File("/tmp/ndc-1234");
         SemanticAssetPath path1 = new SemanticAssetPath("test1.ttl");
 
-        when(agencyRepoService.cloneRepo(repoUrl)).thenReturn(clonedRepo.toPath());
-        when(agencyRepoService.getOntologyPaths(clonedRepo.toPath())).thenReturn(List.of(path1));
+        when(agencyRepoService.cloneRepo(repoUrl)).thenReturn(clonedRepoPath);
+        when(agencyRepoService.getOntologyPaths(clonedRepoPath)).thenReturn(List.of(path1));
 
         harvester.harvest(repoUrl);
 
         InOrder order = inOrder(tripleStoreRepository, ontologyPathProcessor);
         order.verify(tripleStoreRepository).clearExistingNamedGraph(repoUrl);
         order.verify(ontologyPathProcessor).process(repoUrl, path1);
+    }
+
+    @Test
+    void shouldCleanUpTemporaryFolderWithRepoAfterProcessing() throws IOException {
+        String repoUrl = "someRepoUri";
+        SemanticAssetPath path1 = new SemanticAssetPath("test1.ttl");
+
+        when(agencyRepoService.cloneRepo(repoUrl)).thenReturn(clonedRepoPath);
+        when(agencyRepoService.getOntologyPaths(clonedRepoPath)).thenReturn(List.of(path1));
+
+        harvester.harvest(repoUrl);
+
+        verify(agencyRepoService).removeClonedRepo(clonedRepoPath);
+    }
+
+    @Test
+    void shouldCleanUpTemporaryFolderWithRepoAfterFailure() throws IOException {
+        String repoUrl = "someRepoUri";
+        SemanticAssetPath path1 = new SemanticAssetPath("test1.ttl");
+
+        when(agencyRepoService.cloneRepo(repoUrl)).thenReturn(clonedRepoPath);
+        when(agencyRepoService.getOntologyPaths(clonedRepoPath)).thenReturn(List.of(path1));
+        doThrow(new RuntimeException("network disaster")).when(ontologyPathProcessor).process(repoUrl, path1);
+
+        assertThatThrownBy(() -> harvester.harvest(repoUrl))
+                .hasMessage("network disaster");
+
+        verify(agencyRepoService).removeClonedRepo(clonedRepoPath);
     }
 }

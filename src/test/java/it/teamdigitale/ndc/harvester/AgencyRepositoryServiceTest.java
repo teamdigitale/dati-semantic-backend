@@ -23,6 +23,7 @@ import java.util.List;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 
 public class AgencyRepositoryServiceTest {
     FileUtils fileUtils;
@@ -39,7 +40,7 @@ public class AgencyRepositoryServiceTest {
     }
 
     @Test
-    void shouldCloneTheRepoInTempDir() throws GitAPIException, IOException {
+    void shouldCloneTheRepoInTempDir() throws IOException {
         when(fileUtils.createTempDirectory(TEMP_DIR_PREFIX)).thenReturn(Path.of("temp"));
 
         Path clonedTempDir = agencyRepoService.cloneRepo("someURI");
@@ -193,5 +194,14 @@ public class AgencyRepositoryServiceTest {
         when(fileUtils.folderExists(ontologyFolder)).thenReturn(false);
 
         assertThat(agencyRepoService.getOntologyPaths(ontologyFolder)).isEmpty();
+    }
+
+    @Test
+    void shouldCleanUpRepoFolder() throws IOException {
+        Path clonedRepoPath = mock(Path.class);
+
+        agencyRepoService.removeClonedRepo(clonedRepoPath);
+
+        verify(fileUtils).removeDirectory(clonedRepoPath);
     }
 }

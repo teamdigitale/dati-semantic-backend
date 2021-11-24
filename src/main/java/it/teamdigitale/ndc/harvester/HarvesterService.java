@@ -32,17 +32,24 @@ public class HarvesterService {
         try {
             Path path = cloneRepoToTempPath(repoUrl);
 
-            cleanUpTripleStore(repoUrl);
-
-            harvestControlledVocabularies(repoUrl, path);
-            harvestOntologies(repoUrl, path);
-
-            log.info("Repo {} processed", repoUrl);
-
+            try {
+                harvestClonedRepo(repoUrl, path);
+            } finally {
+                agencyRepositoryService.removeClonedRepo(path);
+            }
         } catch (IOException e) {
             log.error("Exception while processing {}", repoUrl, e);
             throw e;
         }
+    }
+
+    private void harvestClonedRepo(String repoUrl, Path path) {
+        cleanUpTripleStore(repoUrl);
+
+        harvestControlledVocabularies(repoUrl, path);
+        harvestOntologies(repoUrl, path);
+
+        log.info("Repo {} processed", repoUrl);
     }
 
     private Path cloneRepoToTempPath(String repoUrl) throws IOException {
