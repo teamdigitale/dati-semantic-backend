@@ -8,6 +8,7 @@ import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import org.apache.jena.rdf.model.Resource;
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
+import org.apache.jena.shared.PropertyNotFoundException;
 import static org.apache.jena.vocabulary.DCAT.contactPoint;
 import static org.apache.jena.vocabulary.DCAT.distribution;
 import static org.apache.jena.vocabulary.DCAT.theme;
@@ -26,6 +27,7 @@ import static org.apache.jena.vocabulary.DCTerms.title;
 import static org.apache.jena.vocabulary.OWL.versionInfo;
 import org.apache.jena.vocabulary.RDF;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -84,6 +86,13 @@ class BaseSemanticAssetModelTest {
     }
 
     @Test
+    void shouldFailWhenExtractingMetadataWithOutIdentifier() {
+        jenaModel.getResource(CV_IRI).removeAll(identifier);
+
+        assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(PropertyNotFoundException.class);
+    }
+
+    @Test
     void shouldExtractMetadataWithSemanticAssetType() {
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
@@ -98,10 +107,24 @@ class BaseSemanticAssetModelTest {
     }
 
     @Test
+    void shouldFailWhenExtractingMetadataWithOutTitle() {
+        jenaModel.getResource(CV_IRI).removeAll(title);
+
+        assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(PropertyNotFoundException.class);
+    }
+
+    @Test
     void shouldExtractMetadataWithDescription() {
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
         assertThat(metadata.getDescription()).isEqualTo("description");
+    }
+
+    @Test
+    void shouldFailWhenExtractingMetadataWithOutDescription() {
+        jenaModel.getResource(CV_IRI).removeAll(description);
+
+        assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(PropertyNotFoundException.class);
     }
 
     @Test
@@ -112,10 +135,24 @@ class BaseSemanticAssetModelTest {
     }
 
     @Test
+    void shouldFailWhenExtractingMetadataWithOutModified() {
+        jenaModel.getResource(CV_IRI).removeAll(modified);
+
+        assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(PropertyNotFoundException.class);
+    }
+
+    @Test
     void shouldExtractMetadataWithTheme() {
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
         assertThat(metadata.getTheme()).isEqualTo("theme");
+    }
+
+    @Test
+    void shouldFailWhenExtractingMetadataWithOutTheme() {
+        jenaModel.getResource(CV_IRI).removeAll(theme);
+
+        assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(PropertyNotFoundException.class);
     }
 
     @Test
@@ -126,6 +163,13 @@ class BaseSemanticAssetModelTest {
     }
 
     @Test
+    void shouldFailWhenExtractingMetadataWithOutRightsHolder() {
+        jenaModel.getResource(CV_IRI).removeAll(rightsHolder);
+
+        assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(PropertyNotFoundException.class);
+    }
+
+    @Test
     void shouldExtractMetadataWithAccrualPeriodicity() {
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
@@ -133,10 +177,24 @@ class BaseSemanticAssetModelTest {
     }
 
     @Test
+    void shouldFailWhenExtractingMetadataWithOutAccrualPeriodicity() {
+        jenaModel.getResource(CV_IRI).removeAll(accrualPeriodicity);
+
+        assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(PropertyNotFoundException.class);
+    }
+
+    @Test
     void shouldExtractMetadataWithDistribution() {
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
         assertThat(metadata.getDistribution()).containsExactlyInAnyOrder("rdf file path", "ttl file path");
+    }
+
+    @Test
+    void shouldFailWhenExtractingMetadataWithOutDistribution() {
+        jenaModel.getResource(CV_IRI).removeAll(distribution);
+
+        assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(PropertyNotFoundException.class);
     }
 
     @Test

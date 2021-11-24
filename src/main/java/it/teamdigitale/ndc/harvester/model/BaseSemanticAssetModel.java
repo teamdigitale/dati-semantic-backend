@@ -14,6 +14,7 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.shared.PropertyNotFoundException;
 import static org.apache.jena.vocabulary.DCAT.contactPoint;
 import static org.apache.jena.vocabulary.DCAT.distribution;
 import static org.apache.jena.vocabulary.DCAT.theme;
@@ -95,8 +96,8 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
                 .modified(parseDate(mainResource.getRequiredProperty(modified).getString()))
                 .theme(mainResource.getRequiredProperty(theme).getString())
                 .accrualPeriodicity(mainResource.getRequiredProperty(accrualPeriodicity).getString())
-                .distribution(getCollection(mainResource, distribution))
-                .subject(getCollection(mainResource, subject))
+                .distribution(getCollection(mainResource, distribution, true))
+                .subject(getCollection(mainResource, subject, false))
                 .contactPoint(getOptionalProperty(mainResource, contactPoint))
                 .publisher(getOptionalProperty(mainResource, publisher))
                 .creator(getOptionalProperty(mainResource, creator))
@@ -114,11 +115,15 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
         return DatatypeConverter.parseDate(date).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
     }
 
-    private List<String> getCollection(Resource mainResource, Property property) {
-        return mainResource.listProperties(property).toList()
+    private List<String> getCollection(Resource mainResource, Property property, boolean isMandatory) {
+        List<String> items = mainResource.listProperties(property).toList()
                 .stream()
                 .map(Statement::getString)
                 .collect(Collectors.toList());
+        if (items.isEmpty() && isMandatory) {
+            throw new PropertyNotFoundException(property);
+        }
+        return items;
     }
 
     private String getOptionalProperty(Resource resource, Property property) {
