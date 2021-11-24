@@ -8,6 +8,7 @@ import it.teamdigitale.ndc.harvester.model.SemanticAssetModelFactory;
 import it.teamdigitale.ndc.repository.SemanticAssetMetadataRepository;
 import it.teamdigitale.ndc.repository.TripleStoreRepository;
 import it.teamdigitale.ndc.service.VocabularyDataService;
+import org.apache.jena.rdf.model.Model;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,7 +18,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Map;
 
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,6 +37,8 @@ class ControlledVocabularyPathProcessorTest {
     TripleStoreRepository tripleStoreRepository;
     @Mock
     SemanticAssetMetadataRepository metadataRepository;
+    @Mock
+    Model jenaModel;
 
     @InjectMocks
     ControlledVocabularyPathProcessor pathProcessor;
@@ -45,6 +50,7 @@ class ControlledVocabularyPathProcessorTest {
         CvPath path = CvPath.of(ttlFile, csvFile);
 
         when(semanticAssetModelFactory.createControlledVocabulary(ttlFile)).thenReturn(cvModel);
+        when(cvModel.getRdfModel()).thenReturn(jenaModel);
         when(cvModel.getKeyConcept()).thenReturn("keyConcept");
         when(cvModel.getRightsHolderId()).thenReturn("rightsHolderId");
         when(csvParser.convertCsvToMapList(csvFile)).thenReturn(List.of(Map.of("key", "val")));
@@ -55,8 +61,32 @@ class ControlledVocabularyPathProcessorTest {
 
         verify(semanticAssetModelFactory).createControlledVocabulary(ttlFile);
         verify(csvParser).convertCsvToMapList(csvFile);
+        verify(tripleStoreRepository).save("some-repo", jenaModel);
         verify(vocabularyDataService).indexData("rightsHolderId", "keyConcept", List.of(Map.of("key", "val")));
         verify(cvModel).extractMetadata();
         verify(metadataRepository).save(metadata);
+    }
+
+    @Test
+    void shouldNotAttemptToProcessCsvIfOnlyTtlIsInPath() {
+        String ttlFile = "cities.ttl";
+        CvPath path = CvPath.of(ttlFile, null);
+
+        when(semanticAssetModelFactory.createControlledVocabulary(ttlFile)).thenReturn(cvModel);
+        when(cvModel.getRdfModel()).thenReturn(jenaModel);
+        SemanticAssetMetadata metadata = SemanticAssetMetadata.builder().build();
+        when(cvModel.extractMetadata()).thenReturn(metadata);
+
+        pathProcessor.process("some-repo", path);
+
+        verify(semanticAssetModelFactory).createControlledVocabulary(ttlFile);
+        verify(tripleStoreRepository).save("some-repo", jenaModel);
+        verify(cvModel).extractMetadata();
+
+        verify(cvModel, never()).getRightsHolderId();
+        verify(cvModel, never()).getKeyConcept();
+        verify(metadataRepository).save(metadata);
+        verifyNoInteractions(csvParser);
+        verifyNoInteractions(vocabularyDataService);
     }
 }

@@ -31,10 +31,12 @@ public class ControlledVocabularyPathProcessor extends SemanticAssetPathProcesso
     protected void processWithModel(String repoUrl, CvPath path, ControlledVocabularyModel model) {
         super.processWithModel(repoUrl, path, model);
 
-        String vocabularyId = model.getKeyConcept();
-        String rightsHolder = model.getRightsHolderId();
+        path.getCsvPath().ifPresent(p -> {
+            String vocabularyId = model.getKeyConcept();
+            String rightsHolder = model.getRightsHolderId();
 
-        path.getCsvPath().ifPresent(p -> parseAndIndexCsv(vocabularyId, rightsHolder, p));
+            parseAndIndexCsv(vocabularyId, rightsHolder, p);
+        });
     }
 
     @Override
