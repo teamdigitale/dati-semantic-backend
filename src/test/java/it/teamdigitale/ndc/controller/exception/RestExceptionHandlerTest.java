@@ -17,7 +17,7 @@ class RestExceptionHandlerTest {
         RestExceptionHandler handler = new RestExceptionHandler();
 
         ResponseEntity<Object> responseEntity =
-            handler.handleVocabularyDataNotFound(new VocabularyDataNotFoundException("testIndex"));
+            handler.handleNotFound(new VocabularyDataNotFoundException("testIndex"));
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         Object body = responseEntity.getBody();
@@ -33,7 +33,7 @@ class RestExceptionHandlerTest {
         RestExceptionHandler handler = new RestExceptionHandler();
 
         ResponseEntity<Object> responseEntity =
-            handler.handleSemanticAssetNotFound(new SemanticAssetNotFoundException("iri"));
+            handler.handleNotFound(new SemanticAssetNotFoundException("iri"));
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         Object body = responseEntity.getBody();
