@@ -3,6 +3,7 @@ package it.teamdigitale.ndc.integration;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.mockito.Mockito.when;
+import static org.springframework.data.elasticsearch.core.mapping.IndexCoordinates.of;
 import static org.testcontainers.utility.DockerImageName.parse;
 
 import io.restassured.response.Response;
@@ -89,14 +90,16 @@ public class VocabularyDataIntegrationTest {
 
     @Test
     void shouldHarvestAndGetControlledVocabularyData() throws IOException {
-        // when
+        // given
         Path cloneDir = Path.of(cloneDirectory);
         String repositoryUrl = "testRepoURL";
         when(agencyRepositoryService.cloneRepo(repositoryUrl)).thenReturn(cloneDir);
         when(agencyRepositoryService.getControlledVocabularyPaths(cloneDir))
             .thenReturn(List.of(CvPath.of(ttlPath, csvPath)));
 
+        //when
         harvesterService.harvest(repositoryUrl);
+        elasticsearchOperations.indexOps(of("agid.testvocabulary")).refresh();
 
         Response response = given()
             .when()
