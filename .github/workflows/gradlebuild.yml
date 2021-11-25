@@ -19,13 +19,11 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build:
+  lint:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Code
+      - name: checkout code
         uses: actions/checkout@v2
-
       - name: Linting with Super-Linter
         uses: github/super-linter@v4.8.1
         env:
@@ -35,6 +33,11 @@ jobs:
           VALIDATE_JAVA: false
           VALIDATE_GOOGLE_JAVA_FORMAT: false
 
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v2
       - name: caching
         uses: actions/cache@v1
         with:
@@ -44,12 +47,16 @@ jobs:
             ${{ runner.os }}-gradle-
       - name: Create Build Artifact
         run: ./gradlew clean build
-
-      - name: Dependency Check
-        run: ./gradlew dependencyCheckAnalyze
-
       - name: SpotBugs Check
         run: ./gradlew spotbugsMain spotbugsTest
+
+  owasp:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v2
+      - name: Dependency Check
+        run: ./gradlew dependencyCheckAnalyze
 
   publish:
     runs-on: ubuntu-latest
@@ -58,7 +65,9 @@ jobs:
       contents: read
       packages: write
     needs:
+      - lint
       - build
+      - owasp
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
