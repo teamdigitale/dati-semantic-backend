@@ -9,9 +9,9 @@ import it.teamdigitale.ndc.repository.SemanticAssetMetadataRepository;
 import it.teamdigitale.ndc.repository.TripleStoreRepository;
 import it.teamdigitale.ndc.service.VocabularyDataService;
 import org.apache.jena.rdf.model.Model;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -40,8 +40,15 @@ class ControlledVocabularyPathProcessorTest {
     @Mock
     Model jenaModel;
 
-    @InjectMocks
+    String baseUrl = "http://ndc";
+
     ControlledVocabularyPathProcessor pathProcessor;
+
+    @BeforeEach
+    void setup() {
+        pathProcessor = new ControlledVocabularyPathProcessor(tripleStoreRepository, semanticAssetModelFactory,
+                csvParser, vocabularyDataService, metadataRepository, baseUrl);
+    }
 
     @Test
     void shouldProcessCsv() {
@@ -88,5 +95,12 @@ class ControlledVocabularyPathProcessorTest {
         verify(metadataRepository).save(metadata);
         verifyNoInteractions(csvParser);
         verifyNoInteractions(vocabularyDataService);
+    }
+
+    @Test
+    void shouldAddNdcEndpointUrlToModelBeforePersisting() {
+        pathProcessor.enrichModelBeforePersisting(cvModel);
+
+        verify(cvModel).addNdcUrlProperty(baseUrl);
     }
 }

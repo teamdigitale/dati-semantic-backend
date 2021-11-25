@@ -7,6 +7,7 @@ import it.teamdigitale.ndc.harvester.model.SemanticAssetModelFactory;
 import it.teamdigitale.ndc.repository.SemanticAssetMetadataRepository;
 import it.teamdigitale.ndc.repository.TripleStoreRepository;
 import it.teamdigitale.ndc.service.VocabularyDataService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -17,14 +18,17 @@ public class ControlledVocabularyPathProcessor extends SemanticAssetPathProcesso
     private final SemanticAssetModelFactory modelFactory;
     private final CsvParser csvParser;
     private final VocabularyDataService vocabularyDataService;
+    private final String baseUrl;
 
     public ControlledVocabularyPathProcessor(TripleStoreRepository tripleStoreRepository, SemanticAssetModelFactory modelFactory,
                                              CsvParser csvParser, VocabularyDataService vocabularyDataService,
-                                             SemanticAssetMetadataRepository metadataRepository) {
+                                             SemanticAssetMetadataRepository metadataRepository,
+                                             @Value("${ndc.baseUrl}") String baseUrl) {
         super(tripleStoreRepository, metadataRepository);
         this.modelFactory = modelFactory;
         this.csvParser = csvParser;
         this.vocabularyDataService = vocabularyDataService;
+        this.baseUrl = baseUrl;
     }
 
     @Override
@@ -42,6 +46,11 @@ public class ControlledVocabularyPathProcessor extends SemanticAssetPathProcesso
     @Override
     protected ControlledVocabularyModel loadModel(String ttlFile) {
         return modelFactory.createControlledVocabulary(ttlFile);
+    }
+
+    @Override
+    protected void enrichModelBeforePersisting(ControlledVocabularyModel model) {
+        model.addNdcUrlProperty(baseUrl);
     }
 
     private void parseAndIndexCsv(String vocabularyId, String rightsHolder, String csvPath) {

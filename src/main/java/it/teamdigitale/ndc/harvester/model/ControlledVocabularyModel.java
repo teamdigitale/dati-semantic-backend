@@ -1,6 +1,8 @@
 package it.teamdigitale.ndc.harvester.model;
 
 import static it.teamdigitale.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
+import static java.util.Objects.isNull;
+import static jdk.dynalink.linker.support.Guards.isNotNull;
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 
 import it.teamdigitale.ndc.harvester.exception.InvalidAssetException;
@@ -14,8 +16,10 @@ import org.apache.jena.vocabulary.DCTerms;
 
 @Slf4j
 public class ControlledVocabularyModel extends BaseSemanticAssetModel {
-    public static final String KEY_CONCEPT_IRI =
-        "https://w3id.org/italia/onto/ndc-profile/keyConcept";
+    public static final String NDC_PREFIX = "https://w3id.org/italia/onto/ndc-profile/";
+    public static final String KEY_CONCEPT_IRI = NDC_PREFIX + "keyConcept";
+    public static final String REST_ENDPOINT_IRI = NDC_PREFIX + "endpointUrl";
+    public static final String NDC_ENDPOINT_URL = "%s/vocabularies/%s/%s";
 
     public ControlledVocabularyModel(Model coreModel, String source) {
         super(coreModel, source);
@@ -54,6 +58,13 @@ public class ControlledVocabularyModel extends BaseSemanticAssetModel {
             .getString();
     }
 
+    public void addNdcUrlProperty(String baseUrl) {
+        Property endpointUrlProperty = createProperty(REST_ENDPOINT_IRI);
+        String ndcUrl = String.format(NDC_ENDPOINT_URL, baseUrl, getRightsHolderId(), getKeyConcept());
+
+        this.getMainResource().addProperty(endpointUrlProperty, ndcUrl);
+    }
+
     @Override
     protected String getMainResourceTypeIri() {
         return CONTROLLED_VOCABULARY.getTypeIri();
@@ -61,6 +72,15 @@ public class ControlledVocabularyModel extends BaseSemanticAssetModel {
 
     @Override
     public SemanticAssetMetadata extractMetadata() {
-        return super.extractMetadata().toBuilder().keyConcept(getKeyConcept()).build();
+        return super.extractMetadata().toBuilder()
+                .keyConcept(getKeyConcept())
+                .endpointUrl(getNdcEndpointUrl()) // assumption is that ndc endpoint url will be added to model before indexing
+                .build();
+    }
+
+    private String getNdcEndpointUrl() {
+        Property endpointUrlProperty = createProperty(REST_ENDPOINT_IRI);
+        Statement endpointUrl = getMainResource().getProperty(endpointUrlProperty);
+        return isNull(endpointUrl) ? "" : endpointUrl.getString();
     }
 }

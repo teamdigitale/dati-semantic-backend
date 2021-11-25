@@ -2,6 +2,7 @@ package it.teamdigitale.ndc.harvester.model;
 
 import static it.teamdigitale.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
 import static it.teamdigitale.ndc.harvester.model.ControlledVocabularyModel.KEY_CONCEPT_IRI;
+import static it.teamdigitale.ndc.harvester.model.ControlledVocabularyModel.REST_ENDPOINT_IRI;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
@@ -19,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import it.teamdigitale.ndc.harvester.exception.InvalidAssetException;
 import java.util.List;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
@@ -39,8 +41,7 @@ class ControlledVocabularyModelTest {
     @BeforeEach
     void setupMockModel() {
         jenaModel = createDefaultModel();
-        Resource agid =
-                jenaModel
+        Resource agid = jenaModel
                         .createResource(RIGHTS_HOLDER_IRI)
                         .addProperty(identifier, "agid");
         jenaModel
@@ -137,5 +138,29 @@ class ControlledVocabularyModelTest {
         SemanticAssetMetadata semanticAssetMetadata = model.extractMetadata();
 
         assertThat(semanticAssetMetadata.getKeyConcept()).isEqualTo("test-concept");
+    }
+
+    @Test
+    void shouldExtractNdcEndpointUrlAsPartOfMetaData() {
+        ControlledVocabularyModel model = new ControlledVocabularyModel(jenaModel, TTL_FILE);
+        model.addNdcUrlProperty("http://ndc");
+
+        SemanticAssetMetadata semanticAssetMetadata = model.extractMetadata();
+        assertThat(semanticAssetMetadata.getEndpointUrl()).isEqualTo("http://ndc/vocabularies/agid/test-concept");
+    }
+
+    @Test
+    void shouldAddNdcEndpointUrlProperty() {
+        ControlledVocabularyModel model = new ControlledVocabularyModel(jenaModel, TTL_FILE);
+        model.addNdcUrlProperty("http://ndc");
+
+        assertThat(getNdcEndpointUrl(model)).isEqualTo("http://ndc/vocabularies/agid/test-concept");
+    }
+
+    private String getNdcEndpointUrl(ControlledVocabularyModel model) {
+        Property endpointUrlProperty = createProperty(REST_ENDPOINT_IRI);
+        return model.getMainResource()
+                .getProperty(endpointUrlProperty)
+                .getString();
     }
 }
