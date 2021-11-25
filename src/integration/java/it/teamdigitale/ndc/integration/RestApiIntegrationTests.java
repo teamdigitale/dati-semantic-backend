@@ -1,14 +1,16 @@
 package it.teamdigitale.ndc.integration;
 
+import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.mockito.Mockito.when;
-import static org.testcontainers.utility.DockerImageName.parse;
+import static org.springframework.data.elasticsearch.core.mapping.IndexCoordinates.of;
 
 import io.restassured.response.Response;
 import it.teamdigitale.ndc.controller.dto.SemanticAssetSearchResult;
 import it.teamdigitale.ndc.harvester.AgencyRepositoryService;
 import it.teamdigitale.ndc.harvester.HarvesterService;
+import it.teamdigitale.ndc.harvester.SemanticAssetType;
 import it.teamdigitale.ndc.harvester.model.CvPath;
 import it.teamdigitale.ndc.repository.TripleStoreRepository;
 import java.io.IOException;
@@ -28,14 +30,10 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
-public class SemanticAssetSearchIntegrationTest {
+public class RestApiIntegrationTests {
 
-    private static final ElasticsearchContainer elasticsearchContainer = new ElasticsearchContainer(
-        parse("docker.elastic.co/elasticsearch/elasticsearch").withTag("7.12.0"))
-        .withReuse(true)
-        .withExposedPorts(9200)
-        .withEnv("discovery.type", "single-node")
-        .withEnv("cluster.name", "elasticsearch");
+    private static final ElasticsearchContainer elasticsearchContainer =
+        Containers.buildElasticsearchContainer();
 
     @LocalServerPort
     private int port;
@@ -94,7 +92,10 @@ public class SemanticAssetSearchIntegrationTest {
         detailsResponse.then()
             .statusCode(200)
             .body("iri", equalTo(
-                "https://w3id.org/italia/controlled-vocabulary/classifications-for-accommodation-facilities/accommodation-star-rating"));
+                "https://w3id.org/italia/controlled-vocabulary/classifications-for-accommodation-facilities/accommodation-star-rating"))
+            .body("type", equalTo(SemanticAssetType.CONTROLLED_VOCABULARY.name()))
+            .body("keyConcept", equalTo("testVocabulary"))
+            .body("endpointUrl", equalTo("http://localhost:8080/vocabularies/agid/testVocabulary"));
     }
 
     @Test
@@ -114,6 +115,30 @@ public class SemanticAssetSearchIntegrationTest {
             .statusCode(404)
             .body("message", equalTo("Semantic Asset not found for Iri : https://wrong-iri"));
 
+    }
+
+    @Test
+    void shouldHarvestAndGetControlledVocabularyData() throws IOException {
+        // given
+        String repositoryUrl = "testRepoURL";
+        dataIsHarvested(repositoryUrl);
+
+        //when
+        harvesterService.harvest(repositoryUrl);
+        elasticsearchOperations.indexOps(of("agid.testvocabulary")).refresh();
+
+        Response response = given()
+            .when()
+            .get(String.format(
+                "http://localhost:%d/vocabularies/agid/testVocabulary", port));
+
+        // then
+        response.then()
+            .statusCode(200)
+            .body("totalResults", equalTo(2))
+            .body("pageNumber", equalTo(1))
+            .body("data.size()", equalTo(2))
+            .body("data[0].code_level_1", equalTo("3.0"));
     }
 
     private String dataIsHarvested(String repositoryUrl) throws IOException {
