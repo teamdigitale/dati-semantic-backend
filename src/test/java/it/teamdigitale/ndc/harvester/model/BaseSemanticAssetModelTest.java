@@ -2,15 +2,13 @@ package it.teamdigitale.ndc.harvester.model;
 
 import static it.teamdigitale.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
 import static it.teamdigitale.ndc.harvester.model.ControlledVocabularyModel.KEY_CONCEPT_IRI;
-import java.time.LocalDate;
-import org.apache.jena.rdf.model.Model;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
-import org.apache.jena.rdf.model.Resource;
+import static org.apache.jena.rdf.model.ResourceFactory.createLangLiteral;
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-import org.apache.jena.shared.PropertyNotFoundException;
 import static org.apache.jena.vocabulary.DCAT.contactPoint;
 import static org.apache.jena.vocabulary.DCAT.distribution;
+import static org.apache.jena.vocabulary.DCAT.keyword;
 import static org.apache.jena.vocabulary.DCAT.theme;
 import static org.apache.jena.vocabulary.DCTerms.accrualPeriodicity;
 import static org.apache.jena.vocabulary.DCTerms.conformsTo;
@@ -25,9 +23,14 @@ import static org.apache.jena.vocabulary.DCTerms.rightsHolder;
 import static org.apache.jena.vocabulary.DCTerms.subject;
 import static org.apache.jena.vocabulary.DCTerms.title;
 import static org.apache.jena.vocabulary.OWL.versionInfo;
-import org.apache.jena.vocabulary.RDF;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.time.LocalDate;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.shared.PropertyNotFoundException;
+import org.apache.jena.vocabulary.RDF;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -36,7 +39,7 @@ class BaseSemanticAssetModelTest {
     private static final String TTL_FILE = "some-file";
     public static final String CV_IRI = "https://w3id.org/italia/controlled-vocabulary/test";
     public static final String RIGHTS_HOLDER_IRI =
-            "http://spcdata.digitpa.gov.it/browse/page/Amministrazione/agid";
+        "http://spcdata.digitpa.gov.it/browse/page/Amministrazione/agid";
     private Model jenaModel;
     private BaseSemanticAssetModel semanticAssetModel;
 
@@ -44,30 +47,35 @@ class BaseSemanticAssetModelTest {
     void setupMockModel() {
         jenaModel = createDefaultModel();
         Resource agid =
-                jenaModel
-                        .createResource(RIGHTS_HOLDER_IRI)
-                        .addProperty(identifier, "agid");
+            jenaModel
+                .createResource(RIGHTS_HOLDER_IRI)
+                .addProperty(identifier, "agid");
         jenaModel
-                .createResource(CV_IRI)
-                .addProperty(RDF.type,
-                        createResource(CONTROLLED_VOCABULARY.getTypeIri()))
-                .addProperty(createProperty(KEY_CONCEPT_IRI), "test-concept")
-                .addProperty(identifier, "test-identifier")
-                .addProperty(rightsHolder, agid)
-                .addProperty(title, "title")
-                .addProperty(description, "description")
-                .addProperty(modified, "2021-03-02")
-                .addProperty(theme, createResource("theme"))
-                .addProperty(accrualPeriodicity, createResource("IRREG"))
-                .addProperty(distribution, createResource("rdf file path")).addProperty(distribution, createResource("ttl file path"))
-                .addProperty(subject, createResource("subTheme1")).addProperty(subject, createResource("subTheme2"))
-                .addProperty(contactPoint, createResource("Agid"))
-                .addProperty(publisher, createResource("Agid"))
-                .addProperty(creator, createResource("stlab"))
-                .addProperty(versionInfo, "1.0")
-                .addProperty(issued, "2021-02-01")
-                .addProperty(language, createResource("ENG"))
-                .addProperty(conformsTo, createResource("SKOS"));
+            .createResource(CV_IRI)
+            .addProperty(RDF.type,
+                createResource(CONTROLLED_VOCABULARY.getTypeIri()))
+            .addProperty(createProperty(KEY_CONCEPT_IRI), "test-concept")
+            .addProperty(identifier, "test-identifier")
+            .addProperty(rightsHolder, agid)
+            .addProperty(title, createLangLiteral("title", "en"))
+            .addProperty(title, createLangLiteral("titolo", "it"))
+            .addProperty(title, createLangLiteral("french title", "fr"))
+            .addProperty(description, "description")
+            .addProperty(modified, "2021-03-02")
+            .addProperty(theme, createResource("theme"))
+            .addProperty(accrualPeriodicity, createResource("IRREG"))
+            .addProperty(distribution, createResource("rdf file path"))
+            .addProperty(distribution, createResource("ttl file path"))
+            .addProperty(subject, createResource("subTheme1"))
+            .addProperty(subject, createResource("subTheme2"))
+            .addProperty(contactPoint, createResource("Agid"))
+            .addProperty(publisher, createResource("Agid"))
+            .addProperty(creator, createResource("stlab"))
+            .addProperty(versionInfo, "1.0")
+            .addProperty(issued, "2021-02-01")
+            .addProperty(language, createResource("ENG"))
+            .addProperty(keyword, "keyword1").addProperty(keyword, "keyword2")
+            .addProperty(conformsTo, createResource("SKOS"));
         semanticAssetModel = new TestBaseSemanticAssetModel(jenaModel, TTL_FILE);
     }
 
@@ -89,7 +97,8 @@ class BaseSemanticAssetModelTest {
     void shouldFailWhenExtractingMetadataWithOutIdentifier() {
         jenaModel.getResource(CV_IRI).removeAll(identifier);
 
-        assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(PropertyNotFoundException.class);
+        assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(
+            PropertyNotFoundException.class);
     }
 
     @Test
@@ -100,7 +109,16 @@ class BaseSemanticAssetModelTest {
     }
 
     @Test
-    void shouldExtractMetadataWithTitle() {
+    void shouldExtractMetadataWithTitleInItalian() {
+        SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
+
+        assertThat(metadata.getTitle()).isEqualTo("titolo");
+    }
+
+    @Test
+    void shouldExtractMetadataWithTitleInEnglish() {
+        jenaModel.getResource(CV_IRI).removeAll(title);
+        jenaModel.getResource(CV_IRI).addProperty(title, "title");
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
         assertThat(metadata.getTitle()).isEqualTo("title");
@@ -110,7 +128,8 @@ class BaseSemanticAssetModelTest {
     void shouldFailWhenExtractingMetadataWithOutTitle() {
         jenaModel.getResource(CV_IRI).removeAll(title);
 
-        assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(PropertyNotFoundException.class);
+        assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(
+            PropertyNotFoundException.class);
     }
 
     @Test
@@ -124,7 +143,8 @@ class BaseSemanticAssetModelTest {
     void shouldFailWhenExtractingMetadataWithOutDescription() {
         jenaModel.getResource(CV_IRI).removeAll(description);
 
-        assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(PropertyNotFoundException.class);
+        assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(
+            PropertyNotFoundException.class);
     }
 
     @Test
@@ -138,21 +158,23 @@ class BaseSemanticAssetModelTest {
     void shouldFailWhenExtractingMetadataWithOutModified() {
         jenaModel.getResource(CV_IRI).removeAll(modified);
 
-        assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(PropertyNotFoundException.class);
+        assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(
+            PropertyNotFoundException.class);
     }
 
     @Test
     void shouldExtractMetadataWithTheme() {
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
-        assertThat(metadata.getTheme()).isEqualTo("theme");
+        assertThat(metadata.getTheme()).containsExactly("theme");
     }
 
     @Test
     void shouldFailWhenExtractingMetadataWithOutTheme() {
         jenaModel.getResource(CV_IRI).removeAll(theme);
 
-        assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(PropertyNotFoundException.class);
+        assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(
+            PropertyNotFoundException.class);
     }
 
     @Test
@@ -166,7 +188,8 @@ class BaseSemanticAssetModelTest {
     void shouldFailWhenExtractingMetadataWithOutRightsHolder() {
         jenaModel.getResource(CV_IRI).removeAll(rightsHolder);
 
-        assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(PropertyNotFoundException.class);
+        assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(
+            PropertyNotFoundException.class);
     }
 
     @Test
@@ -180,21 +203,24 @@ class BaseSemanticAssetModelTest {
     void shouldFailWhenExtractingMetadataWithOutAccrualPeriodicity() {
         jenaModel.getResource(CV_IRI).removeAll(accrualPeriodicity);
 
-        assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(PropertyNotFoundException.class);
+        assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(
+            PropertyNotFoundException.class);
     }
 
     @Test
     void shouldExtractMetadataWithDistribution() {
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
-        assertThat(metadata.getDistribution()).containsExactlyInAnyOrder("rdf file path", "ttl file path");
+        assertThat(metadata.getDistribution()).containsExactlyInAnyOrder("rdf file path",
+            "ttl file path");
     }
 
     @Test
     void shouldFailWhenExtractingMetadataWithOutDistribution() {
         jenaModel.getResource(CV_IRI).removeAll(distribution);
 
-        assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(PropertyNotFoundException.class);
+        assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(
+            PropertyNotFoundException.class);
     }
 
     @Test
@@ -232,7 +258,7 @@ class BaseSemanticAssetModelTest {
     void shouldExtractMetadataWithPublisher() {
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
-        assertThat(metadata.getPublisher()).isEqualTo("Agid");
+        assertThat(metadata.getPublisher()).containsExactly("Agid");
     }
 
     @Test
@@ -241,14 +267,14 @@ class BaseSemanticAssetModelTest {
 
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
-        assertThat(metadata.getPublisher()).isNull();
+        assertThat(metadata.getPublisher()).isEmpty();
     }
 
     @Test
     void shouldExtractMetadataWithCreator() {
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
-        assertThat(metadata.getCreator()).isEqualTo("stlab");
+        assertThat(metadata.getCreator()).containsExactly("stlab");
     }
 
     @Test
@@ -257,7 +283,7 @@ class BaseSemanticAssetModelTest {
 
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
-        assertThat(metadata.getCreator()).isNull();
+        assertThat(metadata.getCreator()).isEmpty();
     }
 
     @Test
@@ -296,7 +322,7 @@ class BaseSemanticAssetModelTest {
     void shouldExtractMetadataWithLanguage() {
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
-        assertThat(metadata.getLanguage()).isEqualTo("ENG");
+        assertThat(metadata.getLanguage()).containsExactly("ENG");
     }
 
     @Test
@@ -305,14 +331,30 @@ class BaseSemanticAssetModelTest {
 
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
-        assertThat(metadata.getLanguage()).isNull();
+        assertThat(metadata.getLanguage()).isEmpty();
+    }
+
+    @Test
+    void shouldExtractMetadataWithKeywords() {
+        SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
+
+        assertThat(metadata.getKeywords()).containsExactlyInAnyOrder("keyword1", "keyword2");
+    }
+
+    @Test
+    void shouldExtractMetadataWithoutKeywords() {
+        jenaModel.getResource(CV_IRI).removeAll(keyword);
+
+        SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
+
+        assertThat(metadata.getKeywords()).isEmpty();
     }
 
     @Test
     void shouldExtractMetadataWithConformsTo() {
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
-        assertThat(metadata.getConformsTo()).isEqualTo("SKOS");
+        assertThat(metadata.getConformsTo()).containsExactly("SKOS");
     }
 
     @Test
@@ -321,7 +363,7 @@ class BaseSemanticAssetModelTest {
 
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
-        assertThat(metadata.getConformsTo()).isNull();
+        assertThat(metadata.getConformsTo()).isEmpty();
     }
 
     private static class TestBaseSemanticAssetModel extends BaseSemanticAssetModel {

@@ -14,7 +14,7 @@ class RestExceptionHandlerTest {
     void shouldHandleVocabularyNotFound() {
         RestExceptionHandler handler = new RestExceptionHandler();
         ResponseEntity<Object> responseEntity =
-                handler.handleNotFound(new VocabularyDataNotFoundException("testIndex"));
+                handler.handleVocabularyDataNotFound(new VocabularyDataNotFoundException("testIndex"));
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         Object body = responseEntity.getBody();

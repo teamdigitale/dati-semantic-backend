@@ -14,7 +14,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = {VocabularyDataNotFoundException.class})
-    public ResponseEntity<Object> handleNotFound(RuntimeException exception) {
+    public ResponseEntity<Object> handleVocabularyDataNotFound(RuntimeException exception) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("message", exception.getMessage());

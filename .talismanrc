@@ -13,3 +13,5 @@ fileignoreconfig:
   checksum: be6ce41271d41d5bd98ca5ae8b35ab09a0701d25e02fc92abe348674b62c7614
 - filename: src/main/java/it/teamdigitale/ndc/harvester/model/ControlledVocabularyModel.java
   checksum: 2415833c3e97e20aeb25cd4b07f1ebb5d46550d04ee28f068f6a49ca655c3bbc
+- filename: src/main/java/it/teamdigitale/ndc/harvester/model/SemanticAssetMetadata.java
+  checksum: a55ea1884845d520c72d97775fc8ec88d4a586700ff2d38efd0adcb9ac46db1e

@@ -1,5 +1,10 @@
 package it.teamdigitale.ndc.harvester.model;
 
+import static org.springframework.data.elasticsearch.annotations.FieldType.Date;
+import static org.springframework.data.elasticsearch.annotations.FieldType.Keyword;
+import static org.springframework.data.elasticsearch.annotations.FieldType.Text;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.teamdigitale.ndc.harvester.SemanticAssetType;
 import java.time.LocalDate;
 import java.util.List;
@@ -8,9 +13,6 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
-import static org.springframework.data.elasticsearch.annotations.FieldType.Date;
-import static org.springframework.data.elasticsearch.annotations.FieldType.Keyword;
-import static org.springframework.data.elasticsearch.annotations.FieldType.Text;
 
 @Document(indexName = "semantic-asset-metadata")
 @Data
@@ -21,20 +23,20 @@ public class SemanticAssetMetadata {
     private String identifier;
     @Field(index = false, type = Keyword)
     private String iri;
-    @Field(index = false, type = Keyword)
+    @Field(type = Keyword)
     private SemanticAssetType type;
 
-    @Field(type = Text)
+    @Field(type = Text, copyTo = "searchableText")
     private String title;
-    @Field(type = Text)
+    @Field(type = Text, copyTo = "searchableText")
     private String description;
-    @Field(type = Keyword)
+    @Field(type = Keyword, copyTo = "searchableText")
     private List<String> keywords;
 
-    @Field(type = Date, index = false)
+    @Field(type = Date)
     private LocalDate modified;
-    @Field(index = false, type = Keyword)
-    private String theme;
+    @Field(type = Keyword)
+    private List<String> theme;
     @Field(index = false, type = Keyword)
     private String rightsHolder;
     @Field(index = false, type = Keyword)
@@ -46,23 +48,27 @@ public class SemanticAssetMetadata {
     @Field(index = false, type = Keyword)
     private String contactPoint;
     @Field(index = false, type = Keyword)
-    private String publisher;
+    private List<String> publisher;
     @Field(index = false, type = Keyword)
-    private String creator;
+    private List<String> creator;
     @Field(index = false, type = Keyword)
     private String versionInfo;
     @Field(index = false, type = Date)
     private LocalDate issued;
     @Field(index = false, type = Keyword)
-    private String language;
+    private List<String> language;
     @Field(index = false, type = Keyword)
     private String temporal;
     @Field(index = false, type = Keyword)
-    private String conformsTo;
+    private List<String> conformsTo;
 
     // Controlled Vocabulary Specific
     @Field(index = false, type = Keyword)
     private String keyConcept;
     @Field(index = false, type = Keyword)
     private String endpointUrl;
+
+    //for the searchable content in multiple fields
+    @JsonIgnore
+    private String searchableText;
 }
