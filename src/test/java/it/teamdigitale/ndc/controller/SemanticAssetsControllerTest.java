@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import it.teamdigitale.ndc.controller.dto.SemanticAssetDetailsDto;
 import it.teamdigitale.ndc.controller.dto.SemanticAssetSearchResult;
 import it.teamdigitale.ndc.service.SemanticAssetSearchService;
 import org.junit.jupiter.api.Test;
@@ -29,5 +30,17 @@ public class SemanticAssetsControllerTest {
 
         verify(service).search("searchTerm", Pageable.ofSize(10).withPage(1));
         assertThat(actualResult).isEqualTo(expectedResult);
+    }
+
+    @Test
+    void shouldGetDetailsOfTheAssetByIri() {
+        SemanticAssetsController controller = new SemanticAssetsController(service);
+        SemanticAssetDetailsDto expected = SemanticAssetDetailsDto.builder().build();
+        when(service.findByIri(any())).thenReturn(expected);
+
+        SemanticAssetDetailsDto actualResult = controller.getDetails("iri");
+
+        verify(service).findByIri("iri");
+        assertThat(actualResult).isEqualTo(expected);
     }
 }

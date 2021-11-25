@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import org.elasticsearch.common.collect.List;
 import org.junit.jupiter.api.Test;
 
-class SemanticAssetsSearchResultEntryTest {
+class SemanticAssetsSearchDtoTest {
 
     @Test
     void shouldCreateFromSemanticAssetMetadata() {
@@ -22,8 +22,8 @@ class SemanticAssetsSearchResultEntryTest {
             .theme(List.of("education", "health"))
             .build();
 
-        SemanticAssetsSearchResultEntry entry =
-            SemanticAssetsSearchResultEntry.from(build);
+        SemanticAssetsSearchDto entry =
+            SemanticAssetsSearchDto.from(build);
 
         assertThat(entry.getIri()).isEqualTo("iri");
         assertThat(entry.getType()).isEqualTo(SemanticAssetType.ONTOLOGY);

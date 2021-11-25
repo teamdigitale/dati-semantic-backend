@@ -1,5 +1,6 @@
 package it.teamdigitale.ndc.controller;
 
+import it.teamdigitale.ndc.controller.dto.SemanticAssetDetailsDto;
 import it.teamdigitale.ndc.controller.dto.SemanticAssetSearchResult;
 import it.teamdigitale.ndc.service.SemanticAssetSearchService;
 import lombok.RequiredArgsConstructor;
@@ -23,5 +24,10 @@ public class SemanticAssetsController {
         @RequestParam(value = "pageSize", defaultValue = "10") int pageSize) {
         int pageIndex = pageNumber - 1;
         return searchService.search(term, Pageable.ofSize(pageSize).withPage(pageIndex));
+    }
+
+    @GetMapping("/details")
+    public SemanticAssetDetailsDto getDetails(@RequestParam("iri") String iri) {
+        return searchService.findByIri(iri);
     }
 }

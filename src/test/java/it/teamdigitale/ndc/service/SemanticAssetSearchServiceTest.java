@@ -1,14 +1,18 @@
 package it.teamdigitale.ndc.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import it.teamdigitale.ndc.controller.dto.SemanticAssetDetailsDto;
 import it.teamdigitale.ndc.controller.dto.SemanticAssetSearchResult;
+import it.teamdigitale.ndc.controller.exception.SemanticAssetNotFoundException;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetMetadata;
 import it.teamdigitale.ndc.repository.SemanticAssetMetadataRepository;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -45,5 +49,25 @@ class SemanticAssetSearchServiceTest {
         assertThat(result.getData().stream().filter(e -> e.getIri().equals("1"))).isNotNull();
         assertThat(result.getData().stream().filter(e -> e.getIri().equals("2"))).isNotNull();
         verify(metadataRepository).findBySearchableTextContaining("term", pageable);
+    }
+
+    @Test
+    void shouldFindAssetByIri() {
+        when(metadataRepository.findByIri("iri"))
+            .thenReturn(Optional.of(SemanticAssetMetadata.builder().iri("iri").build()));
+
+        SemanticAssetDetailsDto actual = searchService.findByIri("iri");
+
+        verify(metadataRepository).findByIri("iri");
+        assertThat(actual.getIri()).isEqualTo("iri");
+    }
+
+    @Test
+    void shouldFailWhenNotFoundByIri() {
+        when(metadataRepository.findByIri("iri")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> searchService.findByIri("iri"))
+            .isInstanceOf(SemanticAssetNotFoundException.class)
+            .hasMessage("Semantic Asset not found for Iri : iri");
     }
 }

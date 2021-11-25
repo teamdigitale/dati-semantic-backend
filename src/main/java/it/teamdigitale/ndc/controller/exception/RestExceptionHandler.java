@@ -14,7 +14,18 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = {VocabularyDataNotFoundException.class})
-    public ResponseEntity<Object> handleVocabularyDataNotFound(RuntimeException exception) {
+    public ResponseEntity<Object> handleVocabularyDataNotFound(
+        VocabularyDataNotFoundException exception) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("message", exception.getMessage());
+
+        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(value = {SemanticAssetNotFoundException.class})
+    public ResponseEntity<Object> handleSemanticAssetNotFound(
+        SemanticAssetNotFoundException exception) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("message", exception.getMessage());
@@ -23,7 +34,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(value = {ConstraintViolationException.class})
-    protected ResponseEntity<Object> handleValidationFailures(RuntimeException ex) {
+    protected ResponseEntity<Object> handleValidationFailures(ConstraintViolationException ex) {
         String errorMessage = "Validation for parameter failed " + ex.getMessage();
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());

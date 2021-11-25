@@ -21,6 +21,7 @@ import static org.apache.jena.vocabulary.DCTerms.modified;
 import static org.apache.jena.vocabulary.DCTerms.publisher;
 import static org.apache.jena.vocabulary.DCTerms.rightsHolder;
 import static org.apache.jena.vocabulary.DCTerms.subject;
+import static org.apache.jena.vocabulary.DCTerms.temporal;
 import static org.apache.jena.vocabulary.DCTerms.title;
 import static org.apache.jena.vocabulary.OWL.versionInfo;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -55,7 +56,6 @@ class BaseSemanticAssetModelTest {
             .addProperty(RDF.type,
                 createResource(CONTROLLED_VOCABULARY.getTypeIri()))
             .addProperty(createProperty(KEY_CONCEPT_IRI), "test-concept")
-            .addProperty(identifier, "test-identifier")
             .addProperty(rightsHolder, agid)
             .addProperty(title, createLangLiteral("title", "en"))
             .addProperty(title, createLangLiteral("titolo", "it"))
@@ -75,6 +75,7 @@ class BaseSemanticAssetModelTest {
             .addProperty(issued, "2021-02-01")
             .addProperty(language, createResource("ENG"))
             .addProperty(keyword, "keyword1").addProperty(keyword, "keyword2")
+            .addProperty(temporal, "temporal")
             .addProperty(conformsTo, createResource("SKOS"));
         semanticAssetModel = new TestBaseSemanticAssetModel(jenaModel, TTL_FILE);
     }
@@ -84,21 +85,6 @@ class BaseSemanticAssetModelTest {
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
         assertThat(metadata.getIri()).isEqualTo(CV_IRI);
-    }
-
-    @Test
-    void shouldExtractMetadataWithIdentifier() {
-        SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
-
-        assertThat(metadata.getIdentifier()).isEqualTo("test-identifier");
-    }
-
-    @Test
-    void shouldFailWhenExtractingMetadataWithOutIdentifier() {
-        jenaModel.getResource(CV_IRI).removeAll(identifier);
-
-        assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(
-            PropertyNotFoundException.class);
     }
 
     @Test
@@ -364,6 +350,22 @@ class BaseSemanticAssetModelTest {
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
         assertThat(metadata.getConformsTo()).isEmpty();
+    }
+
+    @Test
+    void shouldExtractMetadataWithTemporal() {
+        SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
+
+        assertThat(metadata.getTemporal()).isEqualTo("temporal");
+    }
+
+    @Test
+    void shouldExtractMetadataWithoutTemporal() {
+        jenaModel.getResource(CV_IRI).removeAll(temporal);
+
+        SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
+
+        assertThat(metadata.getTemporal()).isNull();
     }
 
     private static class TestBaseSemanticAssetModel extends BaseSemanticAssetModel {

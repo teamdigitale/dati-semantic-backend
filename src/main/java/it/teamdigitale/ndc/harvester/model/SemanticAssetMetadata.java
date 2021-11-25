@@ -20,8 +20,6 @@ import org.springframework.data.elasticsearch.annotations.Field;
 public class SemanticAssetMetadata {
 
     @Id
-    private String identifier;
-    @Field(index = false, type = Keyword)
     private String iri;
     @Field(type = Keyword)
     private SemanticAssetType type;

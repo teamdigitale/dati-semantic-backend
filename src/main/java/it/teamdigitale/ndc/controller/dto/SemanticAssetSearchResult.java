@@ -9,5 +9,5 @@ import lombok.Data;
 public class SemanticAssetSearchResult {
     Integer totalPages;
     Integer pageNumber;
-    List<SemanticAssetsSearchResultEntry> data;
+    List<SemanticAssetsSearchDto> data;
 }

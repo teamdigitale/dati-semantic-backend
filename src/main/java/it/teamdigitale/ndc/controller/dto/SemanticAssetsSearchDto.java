@@ -9,7 +9,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class SemanticAssetsSearchResultEntry {
+public class SemanticAssetsSearchDto {
     private String iri;
     private String title;
     private String description;
@@ -18,8 +18,8 @@ public class SemanticAssetsSearchResultEntry {
     private List<String> theme;
     private String rightsHolder;
 
-    public static SemanticAssetsSearchResultEntry from(SemanticAssetMetadata metadata) {
-        return SemanticAssetsSearchResultEntry.builder()
+    public static SemanticAssetsSearchDto from(SemanticAssetMetadata metadata) {
+        return SemanticAssetsSearchDto.builder()
             .iri(metadata.getIri())
             .title(metadata.getTitle())
             .description(metadata.getDescription())

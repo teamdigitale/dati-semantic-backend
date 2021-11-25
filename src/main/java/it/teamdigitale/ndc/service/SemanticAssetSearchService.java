@@ -1,7 +1,9 @@
 package it.teamdigitale.ndc.service;
 
+import it.teamdigitale.ndc.controller.dto.SemanticAssetDetailsDto;
 import it.teamdigitale.ndc.controller.dto.SemanticAssetSearchResult;
-import it.teamdigitale.ndc.controller.dto.SemanticAssetsSearchResultEntry;
+import it.teamdigitale.ndc.controller.dto.SemanticAssetsSearchDto;
+import it.teamdigitale.ndc.controller.exception.SemanticAssetNotFoundException;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetMetadata;
 import it.teamdigitale.ndc.repository.SemanticAssetMetadataRepository;
 import java.util.stream.Collectors;
@@ -22,8 +24,14 @@ public class SemanticAssetSearchService {
             .pageNumber(page.getNumber() + 1)
             .totalPages(page.getTotalPages())
             .data(page.stream()
-                .map(SemanticAssetsSearchResultEntry::from)
+                .map(SemanticAssetsSearchDto::from)
                 .collect(Collectors.toList()))
             .build();
+    }
+
+    public SemanticAssetDetailsDto findByIri(String iri) {
+        return metadataRepository.findByIri(iri)
+            .map(SemanticAssetDetailsDto::from)
+            .orElseThrow(() -> new SemanticAssetNotFoundException(iri));
     }
 }

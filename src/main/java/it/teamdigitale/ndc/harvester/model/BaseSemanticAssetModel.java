@@ -10,13 +10,13 @@ import static org.apache.jena.vocabulary.DCTerms.accrualPeriodicity;
 import static org.apache.jena.vocabulary.DCTerms.conformsTo;
 import static org.apache.jena.vocabulary.DCTerms.creator;
 import static org.apache.jena.vocabulary.DCTerms.description;
-import static org.apache.jena.vocabulary.DCTerms.identifier;
 import static org.apache.jena.vocabulary.DCTerms.issued;
 import static org.apache.jena.vocabulary.DCTerms.language;
 import static org.apache.jena.vocabulary.DCTerms.modified;
 import static org.apache.jena.vocabulary.DCTerms.publisher;
 import static org.apache.jena.vocabulary.DCTerms.rightsHolder;
 import static org.apache.jena.vocabulary.DCTerms.subject;
+import static org.apache.jena.vocabulary.DCTerms.temporal;
 import static org.apache.jena.vocabulary.DCTerms.title;
 import static org.apache.jena.vocabulary.OWL.versionInfo;
 
@@ -93,7 +93,6 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
         return SemanticAssetMetadata.builder()
             .iri(mainResource.getURI())
             .rightsHolder(getRequiredProperty(rightsHolder, resourceMapper()))
-            .identifier(getRequiredProperty(identifier, propertyMapper()))
             .type(getType())
             .title(getItalianOrEnglishOrDefaultValue(title, true))
             .description(getItalianOrEnglishOrDefaultValue(description, true))
@@ -109,6 +108,7 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
             .issued(parseDate(getOptional(issued, propertyMapper())))
             .language(getCollection(language, false, resourceMapper()))
             .keywords(getCollection(keyword, false, propertyMapper()))
+            .temporal(getOptional(temporal, propertyMapper()))
             .conformsTo(getCollection(conformsTo, false, resourceMapper()))
             .build();
     }
