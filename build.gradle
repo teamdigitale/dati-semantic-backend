@@ -85,6 +85,7 @@ jacocoTestReport {
 }
 
 jacocoTestCoverageVerification {
+    dependsOn jacocoTestReport
     executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
 
     violationRules {
