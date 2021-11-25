@@ -1,5 +1,14 @@
 package it.teamdigitale.ndc.harvester.model;
 
+import it.teamdigitale.ndc.harvester.model.exception.InvalidModelException;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.time.LocalDate;
+
 import static it.teamdigitale.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
 import static it.teamdigitale.ndc.harvester.model.ControlledVocabularyModel.KEY_CONCEPT_IRI;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
@@ -26,14 +35,6 @@ import static org.apache.jena.vocabulary.DCTerms.title;
 import static org.apache.jena.vocabulary.OWL.versionInfo;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import java.time.LocalDate;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.shared.PropertyNotFoundException;
-import org.apache.jena.vocabulary.RDF;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 class BaseSemanticAssetModelTest {
 
@@ -115,7 +116,7 @@ class BaseSemanticAssetModelTest {
         jenaModel.getResource(CV_IRI).removeAll(title);
 
         assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(
-            PropertyNotFoundException.class);
+            InvalidModelException.class);
     }
 
     @Test
@@ -130,7 +131,7 @@ class BaseSemanticAssetModelTest {
         jenaModel.getResource(CV_IRI).removeAll(description);
 
         assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(
-            PropertyNotFoundException.class);
+            InvalidModelException.class);
     }
 
     @Test
@@ -145,7 +146,7 @@ class BaseSemanticAssetModelTest {
         jenaModel.getResource(CV_IRI).removeAll(modified);
 
         assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(
-            PropertyNotFoundException.class);
+            InvalidModelException.class);
     }
 
     @Test
@@ -160,7 +161,7 @@ class BaseSemanticAssetModelTest {
         jenaModel.getResource(CV_IRI).removeAll(theme);
 
         assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(
-            PropertyNotFoundException.class);
+            InvalidModelException.class);
     }
 
     @Test
@@ -175,7 +176,7 @@ class BaseSemanticAssetModelTest {
         jenaModel.getResource(CV_IRI).removeAll(rightsHolder);
 
         assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(
-            PropertyNotFoundException.class);
+            InvalidModelException.class);
     }
 
     @Test
@@ -190,7 +191,7 @@ class BaseSemanticAssetModelTest {
         jenaModel.getResource(CV_IRI).removeAll(accrualPeriodicity);
 
         assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(
-            PropertyNotFoundException.class);
+            InvalidModelException.class);
     }
 
     @Test
@@ -206,7 +207,7 @@ class BaseSemanticAssetModelTest {
         jenaModel.getResource(CV_IRI).removeAll(distribution);
 
         assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(
-            PropertyNotFoundException.class);
+            InvalidModelException.class);
     }
 
     @Test

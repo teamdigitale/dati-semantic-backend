@@ -1,5 +1,23 @@
 package it.teamdigitale.ndc.harvester.model;
 
+import it.teamdigitale.ndc.harvester.SemanticAssetType;
+import it.teamdigitale.ndc.harvester.model.exception.InvalidModelException;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.vocabulary.RDF;
+
+import javax.xml.bind.DatatypeConverter;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
 import static java.lang.String.format;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.apache.jena.vocabulary.DCAT.contactPoint;
@@ -18,25 +36,8 @@ import static org.apache.jena.vocabulary.DCTerms.rightsHolder;
 import static org.apache.jena.vocabulary.DCTerms.subject;
 import static org.apache.jena.vocabulary.DCTerms.temporal;
 import static org.apache.jena.vocabulary.DCTerms.title;
-import static org.apache.jena.vocabulary.OWL.versionInfo;
 
-import it.teamdigitale.ndc.harvester.SemanticAssetType;
-import it.teamdigitale.ndc.harvester.exception.InvalidAssetException;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import javax.xml.bind.DatatypeConverter;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.Statement;
-import org.apache.jena.shared.PropertyNotFoundException;
-import org.apache.jena.vocabulary.RDF;
+import static org.apache.jena.vocabulary.OWL.versionInfo;
 
 public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
     protected final Model rdfModel;
@@ -79,10 +80,10 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
         }
 
         if (resources.isEmpty()) {
-            throw new InvalidAssetException(
+            throw new InvalidModelException(
                 format("No statement for a node whose type is '%s' in '%s'", typeIri, source));
         }
-        throw new InvalidAssetException(
+        throw new InvalidModelException(
             format(
                 "Found %d statements for nodes whose type is '%s' in '%s', expecting only 1",
                 resources.size(), typeIri, source));
@@ -114,20 +115,22 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
     }
 
     private String getRequiredProperty(Property property, Function<Statement, String> mapper) {
-        return Optional.ofNullable(getMainResource().getProperty(property))
+        Resource resource = getMainResource();
+        return Optional.ofNullable(resource.getProperty(property))
             .map(mapper)
-            .orElseThrow(() -> new PropertyNotFoundException(property));
+            .orElseThrow(() -> missingResourcePropertyException(property, resource));
     }
 
     private String getItalianOrEnglishOrDefaultValue(Property property, boolean isRequired) {
-        List<Statement> properties = getMainResource().listProperties(property).toList();
+        Resource resource = getMainResource();
+        List<Statement> properties = resource.listProperties(property).toList();
         return properties.stream()
             .filter(filterItalianOrEnglishOrDefault())
             .max((o1, o2) -> o1.getLanguage().compareToIgnoreCase(o2.getLanguage()))
             .map(Statement::getString)
             .or(() -> {
                 if (isRequired) {
-                    throw new PropertyNotFoundException(property);
+                    throw missingResourcePropertyException(property, resource);
                 }
                 return Optional.empty();
             }).orElse(null);
@@ -168,7 +171,7 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
             .map(mapper)
             .collect(Collectors.toList());
         if (items.isEmpty() && isMandatory) {
-            throw new PropertyNotFoundException(property);
+            throw missingResourcePropertyException(property, getMainResource());
         }
         return items;
     }
@@ -177,4 +180,8 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
         return SemanticAssetType.getByIri(getMainResourceTypeIri());
     }
 
+
+    private InvalidModelException missingResourcePropertyException(Property property, Resource resource) {
+        return new InvalidModelException(format("Cannot find property '%s' for resource '%s'", property, resource));
+    }
 }

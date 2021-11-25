@@ -6,7 +6,6 @@ import it.teamdigitale.ndc.harvester.model.SemanticAssetModel;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
 import it.teamdigitale.ndc.repository.SemanticAssetMetadataRepository;
 import it.teamdigitale.ndc.repository.TripleStoreRepository;
-import it.teamdigitale.ndc.repository.TripleStoreRepositoryException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.jena.rdf.model.Resource;
@@ -18,17 +17,22 @@ public abstract class SemanticAssetPathProcessor<P extends SemanticAssetPath, M 
     private final SemanticAssetMetadataRepository metadataRepository;
 
     public void process(String repoUrl, P path) {
-        log.info("Processing path {}", path);
+        try {
+            log.info("Processing path {}", path);
 
-        log.debug("Loading model");
-        M model = loadModel(path.getTtlPath());
+            log.debug("Loading model");
+            M model = loadModel(path.getTtlPath());
 
-        log.debug("Extracting main resource");
-        Resource resource = model.getMainResource();
-        log.info("Found resource {}", resource);
+            log.debug("Extracting main resource");
+            Resource resource = model.getMainResource();
+            log.info("Found resource {}", resource);
 
-        processWithModel(repoUrl, path, model);
-        log.info("Path {} processed", path);
+            processWithModel(repoUrl, path, model);
+            log.info("Path {} processed", path);
+        } catch (Exception e) {
+            log.error("Error processing {}", path, e);
+            throw new SinglePathProcessingException(String.format("Cannot process '%s'", path), e);
+        }
     }
 
     protected void processWithModel(String repoUrl, P path, M model) {
@@ -53,13 +57,8 @@ public abstract class SemanticAssetPathProcessor<P extends SemanticAssetPath, M 
         log.debug("Enriching model before persisting");
         enrichModelBeforePersisting(model, path);
 
-        try {
-            log.debug("Storing RDF content for {} in Virtuoso", model.getMainResource());
-            tripleStoreRepository.save(repoUrl, model.getRdfModel());
-        } catch (TripleStoreRepositoryException e) {
-            log.error("Failed to persist model to triple store", e);
-            throw new SinglePathProcessingException("Could not persist model to triple store", e);
-        }
+        log.debug("Storing RDF content for {} in Virtuoso", model.getMainResource());
+        tripleStoreRepository.save(repoUrl, model.getRdfModel());
     }
 
     protected abstract M loadModel(String ttlFile);

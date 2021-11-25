@@ -1,5 +1,19 @@
 package it.teamdigitale.ndc.harvester.model;
 
+import it.teamdigitale.ndc.harvester.model.exception.InvalidModelException;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.vocabulary.RDF;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.List;
+
 import static it.teamdigitale.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
 import static it.teamdigitale.ndc.harvester.model.ControlledVocabularyModel.KEY_CONCEPT_IRI;
 import static it.teamdigitale.ndc.harvester.model.ControlledVocabularyModel.REST_ENDPOINT_IRI;
@@ -16,19 +30,6 @@ import static org.apache.jena.vocabulary.DCTerms.rightsHolder;
 import static org.apache.jena.vocabulary.DCTerms.title;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import it.teamdigitale.ndc.harvester.exception.InvalidAssetException;
-import java.util.List;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.RDFNode;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.Statement;
-import org.apache.jena.vocabulary.RDF;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class ControlledVocabularyModelTest {
@@ -78,7 +79,7 @@ class ControlledVocabularyModelTest {
 
         ControlledVocabularyModel model = new ControlledVocabularyModel(jenaModel, TTL_FILE);
 
-        assertThatThrownBy(() -> model.getMainResource()).isInstanceOf(InvalidAssetException.class);
+        assertThatThrownBy(() -> model.getMainResource()).isInstanceOf(InvalidModelException.class);
     }
 
     @Test
@@ -89,7 +90,7 @@ class ControlledVocabularyModelTest {
 
         ControlledVocabularyModel model = new ControlledVocabularyModel(jenaModel, TTL_FILE);
 
-        assertThatThrownBy(() -> model.getMainResource()).isInstanceOf(InvalidAssetException.class);
+        assertThatThrownBy(() -> model.getMainResource()).isInstanceOf(InvalidModelException.class);
     }
 
     @Test
@@ -109,7 +110,7 @@ class ControlledVocabularyModelTest {
 
         ControlledVocabularyModel model = new ControlledVocabularyModel(jenaModel, TTL_FILE);
 
-        assertThatThrownBy(() -> model.getKeyConcept()).isInstanceOf(InvalidAssetException.class);
+        assertThatThrownBy(() -> model.getKeyConcept()).isInstanceOf(InvalidModelException.class);
     }
 
     @Test
@@ -121,7 +122,7 @@ class ControlledVocabularyModelTest {
 
         ControlledVocabularyModel model = new ControlledVocabularyModel(jenaModel, TTL_FILE);
 
-        assertThatThrownBy(() -> model.getKeyConcept()).isInstanceOf(InvalidAssetException.class);
+        assertThatThrownBy(() -> model.getKeyConcept()).isInstanceOf(InvalidModelException.class);
     }
 
     @Test
