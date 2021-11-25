@@ -14,7 +14,6 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
 @RestController
-@RequestMapping
 @Validated
 @RequiredArgsConstructor
 public class VocabularyDataController {

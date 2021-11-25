@@ -4,12 +4,10 @@ package it.teamdigitale.ndc.dto;
 import java.util.List;
 import java.util.Map;
 import lombok.Builder;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
-@Getter
-@NoArgsConstructor
+@Data
 @Builder
 @EqualsAndHashCode
 public class VocabularyDataDto {
@@ -19,7 +17,7 @@ public class VocabularyDataDto {
 
     public VocabularyDataDto(Long totalResults, Integer pageIndex, List<Map> data) {
         this.totalResults = totalResults;
-        this.pageNumber = pageIndex + 1;
+        this.pageNumber = pageIndex;
         this.data = data;
     }
 }

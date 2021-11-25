@@ -1,7 +1,5 @@
 package it.teamdigitale.ndc.service;
 
-import static org.elasticsearch.client.RequestOptions.DEFAULT;
-
 import it.teamdigitale.ndc.controller.exception.VocabularyDataNotFoundException;
 import it.teamdigitale.ndc.dto.VocabularyDataDto;
 import java.util.List;
@@ -9,13 +7,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.client.indices.CreateIndexRequest;
-import org.elasticsearch.client.indices.GetIndexRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.elasticsearch.core.query.Query;
@@ -26,13 +21,11 @@ import org.springframework.stereotype.Service;
 public class VocabularyDataService {
 
     private final ElasticsearchOperations elasticsearchOperations;
-    private final RestHighLevelClient esClient;
 
     @Autowired
     public VocabularyDataService(
-        ElasticsearchOperations elasticsearchOperations, RestHighLevelClient esClient) {
+        ElasticsearchOperations elasticsearchOperations) {
         this.elasticsearchOperations = elasticsearchOperations;
-        this.esClient = esClient;
     }
 
     public VocabularyDataDto getData(String rightsHolder, String keyConcept, Integer pageIndex,
@@ -44,9 +37,9 @@ public class VocabularyDataService {
                 elasticsearchOperations.search(findAll, Map.class, IndexCoordinates.of(index));
 
             List<Map> data = results.getSearchHits().stream()
-                .map(searchHits -> searchHits.getContent())
+                .map(SearchHit::getContent)
                 .collect(Collectors.toList());
-            return new VocabularyDataDto(results.getTotalHits(), pageIndex, data);
+            return new VocabularyDataDto(results.getTotalHits(), pageIndex + 1, data);
         } else {
             log.error("Controlled Vocabulary not found for {}/{}", rightsHolder, keyConcept);
             throw new VocabularyDataNotFoundException(index);
@@ -63,14 +56,13 @@ public class VocabularyDataService {
     @SneakyThrows
     private void ensureCleanIndex(String indexName) {
         if (exists(indexName)) {
-            esClient.indices().delete(new DeleteIndexRequest(indexName), DEFAULT);
+            elasticsearchOperations.indexOps(IndexCoordinates.of(indexName)).delete();
         }
-        esClient.indices().create(new CreateIndexRequest(indexName), DEFAULT);
+        elasticsearchOperations.indexOps(IndexCoordinates.of(indexName)).create();
     }
 
     @SneakyThrows
     private boolean exists(String indexName) {
-        return esClient.indices().exists(new GetIndexRequest(indexName), DEFAULT);
-
+        return elasticsearchOperations.indexOps(IndexCoordinates.of(indexName)).exists();
     }
 }

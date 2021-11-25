@@ -115,59 +115,6 @@ public class VocabularyDataIntegrationTest {
             .body("data[0].code_level_1", equalTo("3.0"));
     }
 
-    @Test
-    void shouldValidatePageNumberWhileGettingControlledVocabularyData() {
-
-        Response response = given()
-            .when()
-            .get(String.format(
-                "http://localhost:%d/vocabularies/agency/vocab?page_number=0&page_size=2", port));
-
-        response.then()
-            .statusCode(400);
-
-    }
-
-    @Test
-    void shouldValidatePageSizeWhileGettingControlledVocabularyData() {
-
-        Response response = given()
-            .when()
-            .get(String.format(
-                "http://localhost:%d/vocabularies/agency/vocab?page_number=1&page_size=0", port));
-
-        response.then()
-            .statusCode(400);
-
-    }
-
-    @Test
-    void shouldValidateMaxPageSizeWhileGettingControlledVocabularyData() {
-
-        Response response = given()
-            .when()
-            .get(String.format(
-                "http://localhost:%d/vocabularies/agency/vocab?page_number=1&page_size=250", port));
-
-        response.then()
-            .statusCode(400);
-
-    }
-
-    @Test
-    void shouldReturnNotFoundErrorWhenDataIsNotPresent() {
-        // when
-        Response response = given()
-            .when()
-            .get(String.format(
-                "http://localhost:%d/vocabularies/wrong/wrong?page_number=1&page_size=2", port));
-
-        // then
-        response.then()
-            .statusCode(404)
-            .body("message", equalTo("Unable to find vocabulary data for : wrong.wrong"));
-    }
-
     private static void setupIndexData() throws IOException {
         RestClient client =
             RestClient.builder(HttpHost.create(elasticsearchContainer.getHttpHostAddress()))
