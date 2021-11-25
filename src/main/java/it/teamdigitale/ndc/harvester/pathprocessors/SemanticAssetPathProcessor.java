@@ -32,12 +32,12 @@ public abstract class SemanticAssetPathProcessor<P extends SemanticAssetPath, M 
     }
 
     protected void processWithModel(String repoUrl, P path, M model) {
-        persistModelToTripleStore(repoUrl, model);
+        persistModelToTripleStore(repoUrl, path, model);
 
         indexMetadataForSearch(model);
     }
 
-    protected void enrichModelBeforePersisting(M model) {
+    protected void enrichModelBeforePersisting(M model, P path) {
         // default implementation doesn't do anything.
         // if you need to enrich the RDF triples (e.g. add REST API URL property), you can override this method.
         // maybe call super() in there, anyways.
@@ -49,9 +49,9 @@ public abstract class SemanticAssetPathProcessor<P extends SemanticAssetPath, M 
         metadataRepository.save(metadata);
     }
 
-    private void persistModelToTripleStore(String repoUrl, M model) {
+    private void persistModelToTripleStore(String repoUrl, P path, M model) {
         log.debug("Enriching model before persisting");
-        enrichModelBeforePersisting(model);
+        enrichModelBeforePersisting(model, path);
 
         try {
             log.debug("Storing RDF content for {} in Virtuoso", model.getMainResource());

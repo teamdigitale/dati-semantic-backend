@@ -49,8 +49,8 @@ public class ControlledVocabularyPathProcessor extends SemanticAssetPathProcesso
     }
 
     @Override
-    protected void enrichModelBeforePersisting(ControlledVocabularyModel model) {
-        model.addNdcUrlProperty(baseUrl);
+    protected void enrichModelBeforePersisting(ControlledVocabularyModel model, CvPath path) {
+        path.getCsvPath().ifPresent(p -> model.addNdcUrlProperty(baseUrl));
     }
 
     private void parseAndIndexCsv(String vocabularyId, String rightsHolder, String csvPath) {
