@@ -1,7 +1,6 @@
 package it.teamdigitale.ndc.integration;
 
 import it.teamdigitale.ndc.repository.TripleStoreRepository;
-import it.teamdigitale.ndc.repository.TripleStoreRepositoryException;
 import it.teamdigitale.ndc.repository.TripleStoreRepositoryProperties;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
@@ -11,9 +10,7 @@ import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.RDFNode;
-import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.update.UpdateExecutionFactory;
 import org.apache.jena.update.UpdateFactory;
@@ -21,38 +18,29 @@ import org.apache.jena.update.UpdateRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.jena.vocabulary.RDF;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.util.concurrent.Callable;
-
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.testcontainers.utility.DockerImageName.parse;
 
 @Testcontainers
 public class TripleStoreRepositoryTest {
 
-    private static final int VIRTUOSO_PORT = 8890;
     private static String baseUrl;
     private static String sparqlUrl;
     private static final String graphName = "http://www.fantasy.org/graph";
 
     private static TripleStoreRepository repository;
 
-    private static final GenericContainer virtuoso = new GenericContainer(parse("tenforce/virtuoso"))
-            .withReuse(true)
-            .withExposedPorts(VIRTUOSO_PORT)
-            .withEnv("DBA_PASSWORD", "dba")
-            .withEnv("SPARQL_UPDATE", "true");
+    private static final GenericContainer virtuoso = Containers.buildVirtuosoContainer();
 
     @BeforeAll
     public static void beforeAll() {
         virtuoso.start();
-        baseUrl = "http://localhost:" + virtuoso.getMappedPort(VIRTUOSO_PORT);
+        baseUrl = "http://localhost:" + virtuoso.getMappedPort(Containers.VIRTUOSO_PORT);
         sparqlUrl = baseUrl + "/sparql";
         repository = new TripleStoreRepository(TripleStoreRepositoryProperties.forAnonymousBaseUrl(baseUrl));
     }

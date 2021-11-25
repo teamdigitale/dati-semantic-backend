@@ -1,19 +1,10 @@
 package it.teamdigitale.ndc.integration;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.mockito.Mockito.when;
-import static org.springframework.data.elasticsearch.core.mapping.IndexCoordinates.of;
-import static org.testcontainers.utility.DockerImageName.parse;
-
 import io.restassured.response.Response;
 import it.teamdigitale.ndc.harvester.AgencyRepositoryService;
 import it.teamdigitale.ndc.harvester.HarvesterService;
 import it.teamdigitale.ndc.harvester.model.CvPath;
 import it.teamdigitale.ndc.repository.TripleStoreRepository;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.entity.ContentType;
@@ -34,19 +25,22 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
+
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.mockito.Mockito.when;
+import static org.springframework.data.elasticsearch.core.mapping.IndexCoordinates.of;
 
 @Testcontainers
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class VocabularyDataIntegrationTest {
 
-    private static final int ELASTICSEARCH_PORT = 9200;
-    private static final String CLUSTER_NAME = "cluster.name";
     public static final String indexName = "agency.vocab";
-    private static final DockerImageName ELASTICSEARCH_IMAGE =
-        parse("docker.elastic.co/elasticsearch/elasticsearch")
-            .withTag("7.12.0");
     private static final String cloneDirectory = "src/test/resources/testdata";
     private static final String ttlPath = "src/test/resources/testdata/cv.ttl";
     private static final String csvPath = "src/test/resources/testdata/cv.csv";
@@ -69,17 +63,12 @@ public class VocabularyDataIntegrationTest {
     @MockBean
     TripleStoreRepository tripleStoreRepository;
 
-    private static ElasticsearchContainer elasticsearchContainer =
-        new ElasticsearchContainer(ELASTICSEARCH_IMAGE)
-            .withReuse(true)
-            .withExposedPorts(ELASTICSEARCH_PORT)
-            .withEnv("discovery.type", "single-node")
-            .withEnv(CLUSTER_NAME, "elasticsearch");
+    private static final ElasticsearchContainer elasticsearchContainer = Containers.buildElasticsearchContainer();
 
     @DynamicPropertySource
     static void updateTestcontainersProperties(DynamicPropertyRegistry registry) {
         registry.add("elasticsearch.port",
-            () -> elasticsearchContainer.getMappedPort(ELASTICSEARCH_PORT));
+                () -> elasticsearchContainer.getMappedPort(Containers.ELASTICSEARCH_PORT));
     }
 
     @BeforeAll
