@@ -19,7 +19,7 @@ public class SemanticAssetSearchService {
 
     public SemanticAssetSearchResult search(String term, Pageable pageable) {
         Page<SemanticAssetMetadata> page =
-            metadataRepository.findBySearchableTextContaining(term, pageable);
+            metadataRepository.findBySearchableText(term, pageable);
         return SemanticAssetSearchResult.builder()
             .pageNumber(page.getNumber() + 1)
             .totalPages(page.getTotalPages())

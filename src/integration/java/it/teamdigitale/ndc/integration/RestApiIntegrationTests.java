@@ -12,17 +12,20 @@ import it.teamdigitale.ndc.harvester.AgencyRepositoryService;
 import it.teamdigitale.ndc.harvester.HarvesterService;
 import it.teamdigitale.ndc.harvester.SemanticAssetType;
 import it.teamdigitale.ndc.harvester.model.CvPath;
+import it.teamdigitale.ndc.harvester.model.SemanticAssetMetadata;
 import it.teamdigitale.ndc.repository.TripleStoreRepository;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
@@ -55,6 +58,11 @@ public class RestApiIntegrationTests {
         elasticsearchContainer.start();
     }
 
+    @BeforeEach
+    public void beforeEach() {
+        elasticsearchOperations.delete(Query.findAll(), SemanticAssetMetadata.class);
+    }
+
     @DynamicPropertySource
     static void updateTestcontainersProperties(DynamicPropertyRegistry registry) {
         registry.add("elasticsearch.port", () -> elasticsearchContainer.getMappedPort(9200));
@@ -63,12 +71,9 @@ public class RestApiIntegrationTests {
     @Test
     void shouldIndexRepoAndSearch() throws IOException {
         //given
-        String repositoryUrl = "testRepoURL";
-        dataIsHarvested(repositoryUrl);
+        dataIsHarvested("testRepoURL");
 
         //when
-        harvesterService.harvest(repositoryUrl);
-
         Response searchResponse =
             when().get(
                 String.format("http://localhost:%d/semantic-assets/search?term=ricettive", port));
@@ -100,12 +105,8 @@ public class RestApiIntegrationTests {
 
     @Test
     void shouldFailWhenAssetIsNotFoundByIri() throws IOException {
-        //given
-        String repositoryUrl = "testRepoURL";
-        dataIsHarvested(repositoryUrl);
-
         //when
-        harvesterService.harvest(repositoryUrl);
+        dataIsHarvested("testRepoURL");
 
         //then
         Response detailsResponse = when().get(String.format(
@@ -120,11 +121,9 @@ public class RestApiIntegrationTests {
     @Test
     void shouldHarvestAndGetControlledVocabularyData() throws IOException {
         // given
-        String repositoryUrl = "testRepoURL";
-        dataIsHarvested(repositoryUrl);
+        dataIsHarvested("testRepoURL");
 
         //when
-        harvesterService.harvest(repositoryUrl);
         elasticsearchOperations.indexOps(of("agid.testvocabulary")).refresh();
 
         Response response = given()
@@ -141,12 +140,12 @@ public class RestApiIntegrationTests {
             .body("data[0].code_level_1", equalTo("3.0"));
     }
 
-    private String dataIsHarvested(String repositoryUrl) throws IOException {
+    private void dataIsHarvested(String repositoryUrl) throws IOException {
         String dir = "src/test/resources/testdata";
         Path cloneDir = Path.of(dir);
         when(agencyRepositoryService.cloneRepo(repositoryUrl)).thenReturn(cloneDir);
         when(agencyRepositoryService.getControlledVocabularyPaths(cloneDir)).thenReturn(
             List.of(CvPath.of(dir + "/cv.ttl", dir + "/cv.csv")));
-        return repositoryUrl;
+        harvesterService.harvest(repositoryUrl);
     }
 }

@@ -38,7 +38,7 @@ class SemanticAssetSearchServiceTest {
         SemanticAssetMetadata expectedData2 = SemanticAssetMetadata.builder()
             .iri("2").build();
         Pageable pageable = Pageable.ofSize(10).withPage(0);
-        when(metadataRepository.findBySearchableTextContaining(any(), any()))
+        when(metadataRepository.findBySearchableText(any(), any()))
             .thenReturn(new PageImpl<>(List.of(expectedData1, expectedData2), pageable, 2));
 
         SemanticAssetSearchResult result = searchService.search("term", pageable);
@@ -48,7 +48,7 @@ class SemanticAssetSearchServiceTest {
         assertThat(result.getData()).hasSize(2);
         assertThat(result.getData().stream().filter(e -> e.getIri().equals("1"))).isNotNull();
         assertThat(result.getData().stream().filter(e -> e.getIri().equals("2"))).isNotNull();
-        verify(metadataRepository).findBySearchableTextContaining("term", pageable);
+        verify(metadataRepository).findBySearchableText("term", pageable);
     }
 
     @Test
