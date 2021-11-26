@@ -1,7 +1,7 @@
 package it.teamdigitale.ndc.service;
 
 import it.teamdigitale.ndc.controller.exception.VocabularyDataNotFoundException;
-import it.teamdigitale.ndc.dto.VocabularyDataDto;
+import it.teamdigitale.ndc.controller.dto.VocabularyDataDto;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;

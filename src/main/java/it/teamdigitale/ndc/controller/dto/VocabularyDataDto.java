@@ -1,4 +1,4 @@
-package it.teamdigitale.ndc.dto;
+package it.teamdigitale.ndc.controller.dto;
 
 
 import java.util.List;
