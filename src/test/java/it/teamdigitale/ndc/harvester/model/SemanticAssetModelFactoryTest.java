@@ -12,13 +12,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @ExtendWith(MockitoExtension.class)
 class SemanticAssetModelFactoryTest {
 
+    public static final String REPO_URL = "http://repo";
     private final SemanticAssetModelFactory factory = new SemanticAssetModelFactory();
 
     @Test
     void canBuildControlledVocabularyModel() {
         String ttlFile = "src/test/resources/testdata/cv.ttl";
 
-        ControlledVocabularyModel model = factory.createControlledVocabulary(ttlFile);
+        ControlledVocabularyModel model = factory.createControlledVocabulary(ttlFile, REPO_URL);
 
         Resource resource = model.getMainResource();
 
@@ -31,7 +32,7 @@ class SemanticAssetModelFactoryTest {
     void canBuildOntologyModel() {
         String ttlFile = "src/test/resources/testdata/onto.ttl";
 
-        OntologyModel model = factory.createOntology(ttlFile);
+        OntologyModel model = factory.createOntology(ttlFile, REPO_URL);
 
         Resource resource = model.getMainResource();
 
@@ -40,13 +41,15 @@ class SemanticAssetModelFactoryTest {
 
     @Test
     void shouldFailForInvalidControlledVocabularyModel() {
-        assertThatThrownBy(() -> factory.createControlledVocabulary("src/main/resources/application.properties"))
+        assertThatThrownBy(() -> factory.createControlledVocabulary("src/main/resources/application.properties",
+            REPO_URL))
                 .isInstanceOf(InvalidModelException.class);
     }
 
     @Test
     void shouldFailForInvalidOntologyModel() {
-        assertThatThrownBy(() -> factory.createOntology("src/main/resources/application.properties"))
+        assertThatThrownBy(() -> factory.createOntology("src/main/resources/application.properties",
+            REPO_URL))
                 .isInstanceOf(InvalidModelException.class);
     }
 }

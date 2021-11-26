@@ -16,12 +16,15 @@ public class SemanticAssetModelFactory {
         T build(Model model, String source);
     }
 
-    public ControlledVocabularyModel createControlledVocabulary(String ttlFile) {
-        return loadAndBuild(ttlFile, ControlledVocabularyModel::new);
+    public ControlledVocabularyModel createControlledVocabulary(String ttlFile,
+                                                                String repoUrl) {
+        return loadAndBuild(ttlFile,
+            (coreModel, source) -> new ControlledVocabularyModel(coreModel, source, repoUrl));
     }
 
-    public OntologyModel createOntology(String ttlFile) {
-        return loadAndBuild(ttlFile, OntologyModel::new);
+    public OntologyModel createOntology(String ttlFile, String repoUrl) {
+        return loadAndBuild(ttlFile,
+            (coreModel, source) -> new OntologyModel(coreModel, source, repoUrl));
     }
 
     private <T extends SemanticAssetModel> T loadAndBuild(String source, ModelConstructor<T> c) {

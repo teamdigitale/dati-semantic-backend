@@ -32,7 +32,7 @@ class SemanticAssetPathProcessorTest {
         }
 
         @Override
-        protected OntologyModel loadModel(String ttlFile) {
+        protected OntologyModel loadModel(String ttlFile, String repoUrl) {
             return modelDecorator;
         }
 
@@ -96,7 +96,7 @@ class SemanticAssetPathProcessorTest {
         TestSemanticAssetPathProcessor processor = spy(new TestSemanticAssetPathProcessor(tripleStoreRepository, metadataRepository));
         SemanticAssetPath path = new SemanticAssetPath(ttlFile);
         InvalidModelException invalidModelException = new InvalidModelException("Cannot load model", new RuntimeException("Malformed TTL"));
-        when(processor.loadModel(ttlFile)).thenThrow(invalidModelException);
+        when(processor.loadModel(ttlFile, repoUrl)).thenThrow(invalidModelException);
 
         assertThatThrownBy(() -> processor.process(repoUrl, path))
                 .isInstanceOf(SinglePathProcessingException.class)

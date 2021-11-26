@@ -23,6 +23,8 @@ public class SemanticAssetMetadata {
     private String iri;
     @Field(type = Keyword)
     private SemanticAssetType type;
+    @Field(type = Keyword)
+    private String repoUrl;
 
     @Field(type = Text, copyTo = "searchableText")
     private String title;

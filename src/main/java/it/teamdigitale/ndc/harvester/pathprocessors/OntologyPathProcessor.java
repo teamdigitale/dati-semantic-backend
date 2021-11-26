@@ -20,7 +20,7 @@ public class OntologyPathProcessor extends SemanticAssetPathProcessor<SemanticAs
     }
 
     @Override
-    protected OntologyModel loadModel(String ttlFile) {
-        return modelFactory.createOntology(ttlFile);
+    protected OntologyModel loadModel(String ttlFile, String repoUrl) {
+        return modelFactory.createOntology(ttlFile, repoUrl);
     }
 }

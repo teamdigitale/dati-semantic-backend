@@ -1,22 +1,22 @@
 package it.teamdigitale.ndc.harvester;
 
+import static it.teamdigitale.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
+import static it.teamdigitale.ndc.harvester.SemanticAssetType.ONTOLOGY;
+
 import it.teamdigitale.ndc.harvester.exception.SinglePathProcessingException;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetModel;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
 import it.teamdigitale.ndc.harvester.pathprocessors.ControlledVocabularyPathProcessor;
 import it.teamdigitale.ndc.harvester.pathprocessors.OntologyPathProcessor;
 import it.teamdigitale.ndc.harvester.pathprocessors.SemanticAssetPathProcessor;
+import it.teamdigitale.ndc.repository.SemanticAssetMetadataRepository;
 import it.teamdigitale.ndc.repository.TripleStoreRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
-
-import static it.teamdigitale.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
-import static it.teamdigitale.ndc.harvester.SemanticAssetType.ONTOLOGY;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
@@ -26,6 +26,7 @@ public class HarvesterService {
     private final ControlledVocabularyPathProcessor controlledVocabularyPathProcessor;
     private final OntologyPathProcessor ontologyPathProcessor;
     private final TripleStoreRepository tripleStoreRepository;
+    private final SemanticAssetMetadataRepository semanticAssetMetadataRepository;
 
     public void harvest(String repoUrl) throws IOException {
         log.info("Processing repo {}", repoUrl);
@@ -45,6 +46,7 @@ public class HarvesterService {
 
     private void harvestClonedRepo(String repoUrl, Path path) {
         cleanUpTripleStore(repoUrl);
+        cleanUpIndexedMetadata(repoUrl);
 
         harvestControlledVocabularies(repoUrl, path);
         harvestOntologies(repoUrl, path);
@@ -63,16 +65,21 @@ public class HarvesterService {
         tripleStoreRepository.clearExistingNamedGraph(repoUrl);
     }
 
+    private void cleanUpIndexedMetadata(String repoUrl) {
+        log.debug("Cleaning up indexed metadata for {}", repoUrl);
+        semanticAssetMetadataRepository.deleteByRepoUrl(repoUrl);
+    }
+
     private void harvestOntologies(String repoUrl, Path rootPath) {
         harvestAssetsOfType(ONTOLOGY, repoUrl, rootPath,
-                agencyRepositoryService::getOntologyPaths,
-                ontologyPathProcessor);
+            agencyRepositoryService::getOntologyPaths,
+            ontologyPathProcessor);
     }
 
     private void harvestControlledVocabularies(String repoUrl, Path rootPath) {
         harvestAssetsOfType(CONTROLLED_VOCABULARY, repoUrl, rootPath,
-                agencyRepositoryService::getControlledVocabularyPaths,
-                controlledVocabularyPathProcessor);
+            agencyRepositoryService::getControlledVocabularyPaths,
+            controlledVocabularyPathProcessor);
     }
 
     private interface PathSupplier<P extends SemanticAssetPath> {
@@ -80,9 +87,9 @@ public class HarvesterService {
     }
 
     private <P extends SemanticAssetPath, M extends SemanticAssetModel> void harvestAssetsOfType(
-            SemanticAssetType type, String repoUrl, Path rootPath,
-            PathSupplier<P> pathSupplier,
-            SemanticAssetPathProcessor<P, M> pathProcessor) {
+        SemanticAssetType type, String repoUrl, Path rootPath,
+        PathSupplier<P> pathSupplier,
+        SemanticAssetPathProcessor<P, M> pathProcessor) {
         log.debug("Looking for {} paths", type);
 
         List<P> paths = pathSupplier.get(rootPath);

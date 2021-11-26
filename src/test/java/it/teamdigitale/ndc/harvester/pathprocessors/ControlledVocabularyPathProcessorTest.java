@@ -56,7 +56,7 @@ class ControlledVocabularyPathProcessorTest {
         String csvFile = "cities.csv";
         CvPath path = CvPath.of(ttlFile, csvFile);
 
-        when(semanticAssetModelFactory.createControlledVocabulary(ttlFile)).thenReturn(cvModel);
+        when(semanticAssetModelFactory.createControlledVocabulary(ttlFile, "some-repo")).thenReturn(cvModel);
         when(cvModel.getRdfModel()).thenReturn(jenaModel);
         when(cvModel.getKeyConcept()).thenReturn("keyConcept");
         when(cvModel.getRightsHolderId()).thenReturn("rightsHolderId");
@@ -66,7 +66,7 @@ class ControlledVocabularyPathProcessorTest {
 
         pathProcessor.process("some-repo", path);
 
-        verify(semanticAssetModelFactory).createControlledVocabulary(ttlFile);
+        verify(semanticAssetModelFactory).createControlledVocabulary(ttlFile, "some-repo");
         verify(csvParser).convertCsvToMapList(csvFile);
         verify(tripleStoreRepository).save("some-repo", jenaModel);
         verify(vocabularyDataService).indexData("rightsHolderId", "keyConcept", List.of(Map.of("key", "val")));
@@ -79,14 +79,14 @@ class ControlledVocabularyPathProcessorTest {
         String ttlFile = "cities.ttl";
         CvPath path = CvPath.of(ttlFile, null);
 
-        when(semanticAssetModelFactory.createControlledVocabulary(ttlFile)).thenReturn(cvModel);
+        when(semanticAssetModelFactory.createControlledVocabulary(ttlFile, "some-repo")).thenReturn(cvModel);
         when(cvModel.getRdfModel()).thenReturn(jenaModel);
         SemanticAssetMetadata metadata = SemanticAssetMetadata.builder().build();
         when(cvModel.extractMetadata()).thenReturn(metadata);
 
         pathProcessor.process("some-repo", path);
 
-        verify(semanticAssetModelFactory).createControlledVocabulary(ttlFile);
+        verify(semanticAssetModelFactory).createControlledVocabulary(ttlFile, "some-repo");
         verify(tripleStoreRepository).save("some-repo", jenaModel);
         verify(cvModel).extractMetadata();
 

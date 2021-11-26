@@ -44,8 +44,8 @@ public class ControlledVocabularyPathProcessor extends SemanticAssetPathProcesso
     }
 
     @Override
-    protected ControlledVocabularyModel loadModel(String ttlFile) {
-        return modelFactory.createControlledVocabulary(ttlFile);
+    protected ControlledVocabularyModel loadModel(String ttlFile, String repoUrl) {
+        return modelFactory.createControlledVocabulary(ttlFile, repoUrl);
     }
 
     @Override

@@ -1,29 +1,28 @@
 package it.teamdigitale.ndc.harvester;
 
-import it.teamdigitale.ndc.harvester.exception.InvalidAssetException;
-import it.teamdigitale.ndc.harvester.model.CvPath;
-import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
-import it.teamdigitale.ndc.harvester.pathprocessors.ControlledVocabularyPathProcessor;
-import it.teamdigitale.ndc.harvester.pathprocessors.OntologyPathProcessor;
-import it.teamdigitale.ndc.repository.TripleStoreRepository;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InOrder;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import it.teamdigitale.ndc.harvester.exception.InvalidAssetException;
+import it.teamdigitale.ndc.harvester.model.CvPath;
+import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
+import it.teamdigitale.ndc.harvester.pathprocessors.ControlledVocabularyPathProcessor;
+import it.teamdigitale.ndc.harvester.pathprocessors.OntologyPathProcessor;
+import it.teamdigitale.ndc.repository.SemanticAssetMetadataRepository;
+import it.teamdigitale.ndc.repository.TripleStoreRepository;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 public class HarvesterServiceTest {
@@ -37,9 +36,12 @@ public class HarvesterServiceTest {
     TripleStoreRepository tripleStoreRepository;
     @Mock
     Path clonedRepoPath;
+    @Mock
+    private SemanticAssetMetadataRepository metadataRepository;
 
     @InjectMocks
     HarvesterService harvester;
+
 
     @Test
     void shouldHarvestControlledVocabularies() throws IOException {
@@ -47,7 +49,8 @@ public class HarvesterServiceTest {
         CvPath path1 = CvPath.of("test1.ttl", "test1.csv");
         CvPath path2 = CvPath.of("test2.ttl", "test2.csv");
         when(agencyRepoService.cloneRepo(repoUrl)).thenReturn(clonedRepoPath);
-        when(agencyRepoService.getControlledVocabularyPaths(clonedRepoPath)).thenReturn(List.of(path1, path2));
+        when(agencyRepoService.getControlledVocabularyPaths(clonedRepoPath)).thenReturn(
+            List.of(path1, path2));
 
         harvester.harvest(repoUrl);
 
@@ -82,7 +85,8 @@ public class HarvesterServiceTest {
 
         when(agencyRepoService.cloneRepo(repoUrl)).thenReturn(clonedRepoPath);
         when(agencyRepoService.getOntologyPaths(clonedRepoPath)).thenReturn(List.of(path1, path2));
-        doThrow(new InvalidAssetException("Something went wrong")).when(ontologyPathProcessor).process(repoUrl, path1);
+        doThrow(new InvalidAssetException("Something went wrong")).when(ontologyPathProcessor)
+            .process(repoUrl, path1);
 
         harvester.harvest(repoUrl);
 
@@ -97,8 +101,10 @@ public class HarvesterServiceTest {
         CvPath path2 = new CvPath("test2.ttl", "test2.csv");
 
         when(agencyRepoService.cloneRepo(repoUrl)).thenReturn(clonedRepoPath);
-        when(agencyRepoService.getControlledVocabularyPaths(clonedRepoPath)).thenReturn(List.of(path1, path2));
-        doThrow(new InvalidAssetException("Something went wrong")).when(controlledVocabularyPathProcessor).process(repoUrl, path1);
+        when(agencyRepoService.getControlledVocabularyPaths(clonedRepoPath)).thenReturn(
+            List.of(path1, path2));
+        doThrow(new InvalidAssetException("Something went wrong")).when(
+            controlledVocabularyPathProcessor).process(repoUrl, path1);
 
         harvester.harvest(repoUrl);
 
@@ -113,19 +119,21 @@ public class HarvesterServiceTest {
         CvPath path2 = new CvPath("test2.ttl", "test2.csv");
 
         when(agencyRepoService.cloneRepo(repoUrl)).thenReturn(clonedRepoPath);
-        when(agencyRepoService.getControlledVocabularyPaths(clonedRepoPath)).thenReturn(List.of(path1, path2));
-        doThrow(new RuntimeException("Something else went wrong")).when(controlledVocabularyPathProcessor).process(repoUrl, path1);
+        when(agencyRepoService.getControlledVocabularyPaths(clonedRepoPath)).thenReturn(
+            List.of(path1, path2));
+        doThrow(new RuntimeException("Something else went wrong")).when(
+            controlledVocabularyPathProcessor).process(repoUrl, path1);
 
         assertThatThrownBy(() -> harvester.harvest(repoUrl))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessage("Something else went wrong");
+            .isInstanceOf(RuntimeException.class)
+            .hasMessage("Something else went wrong");
 
         verify(controlledVocabularyPathProcessor).process(repoUrl, path1);
         verify(controlledVocabularyPathProcessor, never()).process(repoUrl, path2);
     }
 
     @Test
-    void shouldClearNamedGraphBeforeProcessingData() throws IOException {
+    void shouldClearNamedGraphAndMetadataBeforeProcessingData() throws IOException {
         String repoUrl = "someRepoUri";
         SemanticAssetPath path1 = new SemanticAssetPath("test1.ttl");
 
@@ -134,8 +142,9 @@ public class HarvesterServiceTest {
 
         harvester.harvest(repoUrl);
 
-        InOrder order = inOrder(tripleStoreRepository, ontologyPathProcessor);
+        InOrder order = inOrder(tripleStoreRepository, metadataRepository, ontologyPathProcessor);
         order.verify(tripleStoreRepository).clearExistingNamedGraph(repoUrl);
+        order.verify(metadataRepository).deleteByRepoUrl(repoUrl);
         order.verify(ontologyPathProcessor).process(repoUrl, path1);
     }
 
@@ -159,10 +168,11 @@ public class HarvesterServiceTest {
 
         when(agencyRepoService.cloneRepo(repoUrl)).thenReturn(clonedRepoPath);
         when(agencyRepoService.getOntologyPaths(clonedRepoPath)).thenReturn(List.of(path1));
-        doThrow(new RuntimeException("network disaster")).when(ontologyPathProcessor).process(repoUrl, path1);
+        doThrow(new RuntimeException("network disaster")).when(ontologyPathProcessor)
+            .process(repoUrl, path1);
 
         assertThatThrownBy(() -> harvester.harvest(repoUrl))
-                .hasMessage("network disaster");
+            .hasMessage("network disaster");
 
         verify(agencyRepoService).removeClonedRepo(clonedRepoPath);
     }

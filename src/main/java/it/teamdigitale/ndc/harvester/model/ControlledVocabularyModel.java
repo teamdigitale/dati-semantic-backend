@@ -20,8 +20,8 @@ public class ControlledVocabularyModel extends BaseSemanticAssetModel {
     public static final String REST_ENDPOINT_IRI = NDC_PREFIX + "endpointUrl";
     public static final String NDC_ENDPOINT_URL = "%s/vocabularies/%s/%s";
 
-    public ControlledVocabularyModel(Model coreModel, String source) {
-        super(coreModel, source);
+    public ControlledVocabularyModel(Model coreModel, String source, String repoUrl) {
+        super(coreModel, source, repoUrl);
     }
 
     public String getKeyConcept() {

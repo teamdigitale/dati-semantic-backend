@@ -15,4 +15,6 @@ public interface SemanticAssetMetadataRepository
                                                      Pageable pageable);
 
     Optional<SemanticAssetMetadata> findByIri(String iri);
+
+    long deleteByRepoUrl(String repoUrl);
 }

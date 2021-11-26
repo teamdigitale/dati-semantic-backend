@@ -21,7 +21,7 @@ public abstract class SemanticAssetPathProcessor<P extends SemanticAssetPath, M 
             log.info("Processing path {}", path);
 
             log.debug("Loading model");
-            M model = loadModel(path.getTtlPath());
+            M model = loadModel(path.getTtlPath(), repoUrl);
 
             log.debug("Extracting main resource");
             Resource resource = model.getMainResource();
@@ -61,5 +61,5 @@ public abstract class SemanticAssetPathProcessor<P extends SemanticAssetPath, M 
         tripleStoreRepository.save(repoUrl, model.getRdfModel());
     }
 
-    protected abstract M loadModel(String ttlFile);
+    protected abstract M loadModel(String ttlFile, String repoUrl);
 }

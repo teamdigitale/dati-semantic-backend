@@ -1,14 +1,5 @@
 package it.teamdigitale.ndc.harvester.model;
 
-import it.teamdigitale.ndc.harvester.model.exception.InvalidModelException;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.vocabulary.RDF;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.time.LocalDate;
-
 import static it.teamdigitale.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
 import static it.teamdigitale.ndc.harvester.model.ControlledVocabularyModel.KEY_CONCEPT_IRI;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
@@ -35,6 +26,14 @@ import static org.apache.jena.vocabulary.DCTerms.title;
 import static org.apache.jena.vocabulary.OWL.versionInfo;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import it.teamdigitale.ndc.harvester.model.exception.InvalidModelException;
+import java.time.LocalDate;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class BaseSemanticAssetModelTest {
 
@@ -78,7 +77,7 @@ class BaseSemanticAssetModelTest {
             .addProperty(keyword, "keyword1").addProperty(keyword, "keyword2")
             .addProperty(temporal, "temporal")
             .addProperty(conformsTo, createResource("SKOS"));
-        semanticAssetModel = new TestBaseSemanticAssetModel(jenaModel, TTL_FILE);
+        semanticAssetModel = new TestBaseSemanticAssetModel(jenaModel, TTL_FILE, "some-repo");
     }
 
     @Test
@@ -93,6 +92,13 @@ class BaseSemanticAssetModelTest {
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
         assertThat(metadata.getType()).isEqualTo(CONTROLLED_VOCABULARY);
+    }
+
+    @Test
+    void shouldExtractWithRepoUrl() {
+        SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
+
+        assertThat(metadata.getRepoUrl()).isEqualTo("some-repo");
     }
 
     @Test
@@ -371,8 +377,8 @@ class BaseSemanticAssetModelTest {
 
     private static class TestBaseSemanticAssetModel extends BaseSemanticAssetModel {
 
-        public TestBaseSemanticAssetModel(Model coreModel, String source) {
-            super(coreModel, source);
+        public TestBaseSemanticAssetModel(Model coreModel, String source, String repoUrl) {
+            super(coreModel, source, repoUrl);
         }
 
         @Override

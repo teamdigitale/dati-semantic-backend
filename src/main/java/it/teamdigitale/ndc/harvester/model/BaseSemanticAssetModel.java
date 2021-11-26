@@ -43,10 +43,12 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
     protected final Model rdfModel;
     protected final String source;
     private Resource mainResource;
+    private String repoUrl;
 
-    public BaseSemanticAssetModel(Model rdfModel, String source) {
+    public BaseSemanticAssetModel(Model rdfModel, String source, String repoUrl) {
         this.rdfModel = rdfModel;
         this.source = source;
+        this.repoUrl = repoUrl;
     }
 
     @Override
@@ -93,6 +95,7 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
         Resource mainResource = getMainResource();
         return SemanticAssetMetadata.builder()
             .iri(mainResource.getURI())
+            .repoUrl(repoUrl)
             .rightsHolder(getRequiredProperty(rightsHolder, resourceMapper()))
             .type(getType())
             .title(getItalianOrEnglishOrDefaultValue(title, true))
