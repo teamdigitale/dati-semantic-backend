@@ -1,23 +1,12 @@
 package it.teamdigitale.ndc.harvester.model;
 
-import it.teamdigitale.ndc.harvester.SemanticAssetType;
-import it.teamdigitale.ndc.harvester.model.exception.InvalidModelException;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.Statement;
-import org.apache.jena.vocabulary.RDF;
-
-import javax.xml.bind.DatatypeConverter;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
+import static it.teamdigitale.ndc.harvester.model.extractors.LiteralExtractor.extract;
+import static it.teamdigitale.ndc.harvester.model.extractors.LiteralExtractor.extractAll;
+import static it.teamdigitale.ndc.harvester.model.extractors.LiteralExtractor.extractOptional;
+import static it.teamdigitale.ndc.harvester.model.extractors.NodeExtractor.extractMaybeNode;
+import static it.teamdigitale.ndc.harvester.model.extractors.NodeExtractor.extractMaybeNodes;
+import static it.teamdigitale.ndc.harvester.model.extractors.NodeExtractor.extractNode;
+import static it.teamdigitale.ndc.harvester.model.extractors.NodeExtractor.extractNodes;
 import static java.lang.String.format;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.apache.jena.vocabulary.DCAT.contactPoint;
@@ -36,8 +25,19 @@ import static org.apache.jena.vocabulary.DCTerms.rightsHolder;
 import static org.apache.jena.vocabulary.DCTerms.subject;
 import static org.apache.jena.vocabulary.DCTerms.temporal;
 import static org.apache.jena.vocabulary.DCTerms.title;
-
 import static org.apache.jena.vocabulary.OWL.versionInfo;
+
+import it.teamdigitale.ndc.harvester.SemanticAssetType;
+import it.teamdigitale.ndc.harvester.model.exception.InvalidModelException;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import javax.xml.bind.DatatypeConverter;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
 
 public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
     protected final Model rdfModel;
@@ -96,67 +96,30 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
         return SemanticAssetMetadata.builder()
             .iri(mainResource.getURI())
             .repoUrl(repoUrl)
-            .rightsHolder(getRequiredProperty(rightsHolder, resourceMapper()))
+            .rightsHolder(extractNode(mainResource, rightsHolder).getURI())
             .type(getType())
-            .title(getItalianOrEnglishOrDefaultValue(title, true))
-            .description(getItalianOrEnglishOrDefaultValue(description, true))
-            .modified(parseDate(getRequiredProperty(modified, propertyMapper())))
-            .theme(getCollection(theme, true, resourceMapper()))
-            .accrualPeriodicity(getRequiredProperty(accrualPeriodicity, resourceMapper()))
-            .distribution(getCollection(distribution, true, resourceMapper()))
-            .subject(getCollection(subject, false, resourceMapper()))
-            .contactPoint(getOptional(contactPoint, resourceMapper()))
-            .publisher(getCollection(publisher, false, resourceMapper()))
-            .creator(getCollection(creator, false, resourceMapper()))
-            .versionInfo(getItalianOrEnglishOrDefaultValue(versionInfo, false))
-            .issued(parseDate(getOptional(issued, propertyMapper())))
-            .language(getCollection(language, false, resourceMapper()))
-            .keywords(getCollection(keyword, false, propertyMapper()))
-            .temporal(getOptional(temporal, propertyMapper()))
-            .conformsTo(getCollection(conformsTo, false, resourceMapper()))
+            .title(extract(mainResource, title))
+            .description(extract(mainResource, description))
+            .modified(parseDate(extract(mainResource, modified)))
+            .theme(asIriList(extractNodes(mainResource, theme)))
+            .accrualPeriodicity(extractNode(mainResource, accrualPeriodicity).getURI())
+            .distribution(asIriList(extractNodes(mainResource, distribution)))
+            .subject(asIriList(extractMaybeNodes(mainResource, subject)))
+            .contactPoint(extractMaybeNode(mainResource, contactPoint).getURI())
+            .publisher(asIriList(extractMaybeNodes(mainResource, publisher)))
+            .creator(asIriList(extractMaybeNodes(mainResource, creator)))
+            .versionInfo(extractOptional(mainResource, versionInfo))
+            .issued(parseDate(extractOptional(mainResource, issued)))
+            .language(asIriList(extractMaybeNodes(mainResource, language)))
+            .keywords(extractAll(mainResource, keyword))
+            .temporal(extractOptional(mainResource, temporal))
+            .conformsTo(asIriList(extractMaybeNodes(mainResource, conformsTo)))
             .build();
     }
 
-    private String getRequiredProperty(Property property, Function<Statement, String> mapper) {
-        Resource resource = getMainResource();
-        return Optional.ofNullable(resource.getProperty(property))
-            .map(mapper)
-            .orElseThrow(() -> missingResourcePropertyException(property, resource));
-    }
-
-    private String getItalianOrEnglishOrDefaultValue(Property property, boolean isRequired) {
-        Resource resource = getMainResource();
-        List<Statement> properties = resource.listProperties(property).toList();
-        return properties.stream()
-            .filter(filterItalianOrEnglishOrDefault())
-            .max((o1, o2) -> o1.getLanguage().compareToIgnoreCase(o2.getLanguage()))
-            .map(Statement::getString)
-            .or(() -> {
-                if (isRequired) {
-                    throw missingResourcePropertyException(property, resource);
-                }
-                return Optional.empty();
-            }).orElse(null);
-    }
-
-    private Predicate<Statement> filterItalianOrEnglishOrDefault() {
-        return s -> s.getLanguage().equalsIgnoreCase("it")
-            || s.getLanguage().equalsIgnoreCase("en")
-            || s.getLanguage().isEmpty();
-    }
-
-    private Function<Statement, String> resourceMapper() {
-        return statement -> statement.getResource().getURI();
-    }
-
-    private Function<Statement, String> propertyMapper() {
-        return Statement::getString;
-    }
-
-    private String getOptional(Property property, Function<Statement, String> mapper) {
-        return Optional.ofNullable(getMainResource().getProperty(property))
-            .map(mapper)
-            .orElse(null);
+    private List<String> asIriList(List<Resource> resources) {
+        return resources.stream().map(Resource::getURI)
+            .collect(Collectors.toList());
     }
 
     private LocalDate parseDate(String date) {
@@ -167,24 +130,7 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
             .toLocalDate();
     }
 
-    private List<String> getCollection(Property property, boolean isMandatory,
-                                       Function<Statement, String> mapper) {
-        List<String> items = getMainResource().listProperties(property).toList()
-            .stream()
-            .map(mapper)
-            .collect(Collectors.toList());
-        if (items.isEmpty() && isMandatory) {
-            throw missingResourcePropertyException(property, getMainResource());
-        }
-        return items;
-    }
-
     private SemanticAssetType getType() {
         return SemanticAssetType.getByIri(getMainResourceTypeIri());
-    }
-
-
-    private InvalidModelException missingResourcePropertyException(Property property, Resource resource) {
-        return new InvalidModelException(format("Cannot find property '%s' for resource '%s'", property, resource));
     }
 }
