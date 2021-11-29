@@ -144,7 +144,7 @@ class BaseSemanticAssetModelTest {
     void shouldExtractMetadataWithModified() {
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
-        assertThat(metadata.getModified()).isEqualTo(LocalDate.of(2021, 3, 2));
+        assertThat(metadata.getModifiedOn()).isEqualTo(LocalDate.of(2021, 3, 2));
     }
 
     @Test
@@ -159,7 +159,7 @@ class BaseSemanticAssetModelTest {
     void shouldExtractMetadataWithTheme() {
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
-        assertThat(metadata.getTheme()).containsExactly("theme");
+        assertThat(metadata.getThemes()).containsExactly("theme");
     }
 
     @Test
@@ -205,7 +205,7 @@ class BaseSemanticAssetModelTest {
     void shouldExtractMetadataWithDistribution() {
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
-        assertThat(metadata.getDistribution()).containsExactlyInAnyOrder("rdf file path",
+        assertThat(metadata.getDistributionUrls()).containsExactlyInAnyOrder("rdf file path",
             "ttl file path");
     }
 
@@ -221,7 +221,7 @@ class BaseSemanticAssetModelTest {
     void shouldExtractMetadataWithSubject() {
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
-        assertThat(metadata.getSubject()).containsExactlyInAnyOrder("subTheme1", "subTheme2");
+        assertThat(metadata.getSubjects()).containsExactlyInAnyOrder("subTheme1", "subTheme2");
     }
 
     @Test
@@ -229,7 +229,7 @@ class BaseSemanticAssetModelTest {
         jenaModel.getResource(CV_IRI).removeAll(subject);
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
-        assertThat(metadata.getSubject()).isEmpty();
+        assertThat(metadata.getSubjects()).isEmpty();
     }
 
     @Test
@@ -253,8 +253,8 @@ class BaseSemanticAssetModelTest {
     void shouldExtractMetadataWithPublisher() {
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
-        assertThat(metadata.getPublisher()).hasSize(2);
-        assertThat(metadata.getPublisher()).containsExactlyInAnyOrder(
+        assertThat(metadata.getPublishers()).hasSize(2);
+        assertThat(metadata.getPublishers()).containsExactlyInAnyOrder(
             NodeSummary.builder().iri("http://publisher").summary("publisher").build(),
             NodeSummary.builder().iri("http://publisher2").summary("publisher2").build()
         );
@@ -266,15 +266,15 @@ class BaseSemanticAssetModelTest {
 
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
-        assertThat(metadata.getPublisher()).isEmpty();
+        assertThat(metadata.getPublishers()).isEmpty();
     }
 
     @Test
     void shouldExtractMetadataWithCreator() {
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
-        assertThat(metadata.getCreator()).hasSize(2);
-        assertThat(metadata.getCreator()).containsExactlyInAnyOrder(
+        assertThat(metadata.getCreators()).hasSize(2);
+        assertThat(metadata.getCreators()).containsExactlyInAnyOrder(
             NodeSummary.builder().iri("http://creator").summary("creator").build(),
             NodeSummary.builder().iri("http://creator2").summary("creator2").build()
         );
@@ -286,7 +286,7 @@ class BaseSemanticAssetModelTest {
 
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
-        assertThat(metadata.getCreator()).isEmpty();
+        assertThat(metadata.getCreators()).isEmpty();
     }
 
     @Test
@@ -309,7 +309,7 @@ class BaseSemanticAssetModelTest {
     void shouldExtractMetadataWithIssued() {
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
-        assertThat(metadata.getIssued()).isEqualTo(LocalDate.of(2021, 2, 1));
+        assertThat(metadata.getIssuedOn()).isEqualTo(LocalDate.of(2021, 2, 1));
     }
 
     @Test
@@ -318,14 +318,14 @@ class BaseSemanticAssetModelTest {
 
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
-        assertThat(metadata.getIssued()).isNull();
+        assertThat(metadata.getIssuedOn()).isNull();
     }
 
     @Test
     void shouldExtractMetadataWithLanguage() {
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
-        assertThat(metadata.getLanguage()).containsExactly("ENG");
+        assertThat(metadata.getLanguages()).containsExactly("ENG");
     }
 
     @Test
@@ -334,7 +334,7 @@ class BaseSemanticAssetModelTest {
 
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
-        assertThat(metadata.getLanguage()).isEmpty();
+        assertThat(metadata.getLanguages()).isEmpty();
     }
 
     @Test

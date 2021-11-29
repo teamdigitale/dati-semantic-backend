@@ -16,7 +16,7 @@ public class SemanticAssetsSearchDto {
     private String description;
     private SemanticAssetType type;
     private LocalDate modified;
-    private List<String> theme;
+    private List<String> themes;
     private NodeSummary rightsHolder;
 
     public static SemanticAssetsSearchDto from(SemanticAssetMetadata metadata) {
@@ -25,8 +25,8 @@ public class SemanticAssetsSearchDto {
             .title(metadata.getTitle())
             .description(metadata.getDescription())
             .type(metadata.getType())
-            .modified(metadata.getModified())
-            .theme(metadata.getTheme())
+            .modified(metadata.getModifiedOn())
+            .themes(metadata.getThemes())
             .rightsHolder(metadata.getRightsHolder())
             .build();
     }

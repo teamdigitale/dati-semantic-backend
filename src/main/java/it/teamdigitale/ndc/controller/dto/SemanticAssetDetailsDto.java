@@ -17,18 +17,18 @@ public class SemanticAssetDetailsDto {
     private String title;
     private String description;
     private SemanticAssetType type;
-    private LocalDate modified;
-    private List<String> theme;
+    private LocalDate modifiedOn;
+    private List<String> themes;
     private NodeSummary rightsHolder;
     private String accrualPeriodicity;
-    private List<String> distribution;
-    private List<String> subject;
+    private List<String> distributionUrls;
+    private List<String> subjects;
     private NodeSummary contactPoint;
-    private List<NodeSummary> publisher;
-    private List<NodeSummary> creator;
+    private List<NodeSummary> publishers;
+    private List<NodeSummary> creators;
     private String versionInfo;
-    private LocalDate issued;
-    private List<String> language;
+    private LocalDate issuedOn;
+    private List<String> languages;
     private String temporal;
     private List<NodeSummary> conformsTo;
     private String keyConcept;
@@ -40,18 +40,18 @@ public class SemanticAssetDetailsDto {
             .title(metadata.getTitle())
             .description(metadata.getDescription())
             .type(metadata.getType())
-            .modified(metadata.getModified())
-            .theme(metadata.getTheme())
+            .modifiedOn(metadata.getModifiedOn())
+            .themes(metadata.getThemes())
             .rightsHolder(metadata.getRightsHolder())
             .accrualPeriodicity(metadata.getAccrualPeriodicity())
-            .distribution(metadata.getDistribution())
-            .subject(metadata.getSubject())
+            .distributionUrls(metadata.getDistributionUrls())
+            .subjects(metadata.getSubjects())
             .contactPoint(metadata.getContactPoint())
-            .publisher(metadata.getPublisher())
-            .creator(metadata.getCreator())
+            .publishers(metadata.getPublishers())
+            .creators(metadata.getCreators())
             .versionInfo(metadata.getVersionInfo())
-            .issued(metadata.getIssued())
-            .language(metadata.getLanguage())
+            .issuedOn(metadata.getIssuedOn())
+            .languages(metadata.getLanguages())
             .temporal(metadata.getTemporal())
             .conformsTo(metadata.getConformsTo())
             .keyConcept(metadata.getKeyConcept())

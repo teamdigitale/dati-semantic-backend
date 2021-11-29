@@ -35,29 +35,29 @@ public class SemanticAssetMetadata {
     private List<String> keywords;
 
     @Field(type = Date)
-    private LocalDate modified;
+    private LocalDate modifiedOn;
     @Field(type = Keyword)
-    private List<String> theme;
+    private List<String> themes;
     @Field(index = false, type = FieldType.Object)
     private NodeSummary rightsHolder;
     @Field(index = false, type = Keyword)
     private String accrualPeriodicity;
     @Field(index = false, type = Keyword)
-    private List<String> distribution;
+    private List<String> distributionUrls;
     @Field(index = false, type = Keyword)
-    private List<String> subject;
+    private List<String> subjects;
     @Field(index = false, type = FieldType.Object)
     private NodeSummary contactPoint;
     @Field(index = false, type = FieldType.Object)
-    private List<NodeSummary> publisher;
+    private List<NodeSummary> publishers;
     @Field(index = false, type = FieldType.Object)
-    private List<NodeSummary> creator;
+    private List<NodeSummary> creators;
     @Field(index = false, type = Keyword)
     private String versionInfo;
     @Field(index = false, type = Date)
-    private LocalDate issued;
+    private LocalDate issuedOn;
     @Field(index = false, type = Keyword)
-    private List<String> language;
+    private List<String> languages;
     @Field(index = false, type = Keyword)
     private String temporal;
     @Field(index = false, type = FieldType.Object)

@@ -22,8 +22,8 @@ class SemanticAssetsSearchDtoTest {
                 .iri("http://rightsHolder")
                 .summary("rights holder name")
                 .build())
-            .modified(LocalDate.parse("2020-01-01"))
-            .theme(List.of("education", "health"))
+            .modifiedOn(LocalDate.parse("2020-01-01"))
+            .themes(List.of("education", "health"))
             .build();
 
         SemanticAssetsSearchDto entry =
@@ -34,7 +34,7 @@ class SemanticAssetsSearchDtoTest {
         assertThat(entry.getRightsHolder().getIri()).isEqualTo("http://rightsHolder");
         assertThat(entry.getRightsHolder().getSummary()).isEqualTo("rights holder name");
         assertThat(entry.getModified()).isEqualTo(LocalDate.parse("2020-01-01"));
-        assertThat(entry.getTheme()).isEqualTo(List.of("education", "health"));
+        assertThat(entry.getThemes()).isEqualTo(List.of("education", "health"));
         assertThat(entry.getTitle()).isEqualTo("title");
         assertThat(entry.getDescription()).isEqualTo("description");
     }
