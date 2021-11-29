@@ -2,7 +2,8 @@ package it.teamdigitale.ndc.controller.dto;
 
 
 import it.teamdigitale.ndc.harvester.SemanticAssetType;
-import it.teamdigitale.ndc.harvester.model.SemanticAssetMetadata;
+import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
+import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.Builder;
@@ -18,18 +19,18 @@ public class SemanticAssetDetailsDto {
     private SemanticAssetType type;
     private LocalDate modified;
     private List<String> theme;
-    private String rightsHolder;
+    private NodeSummary rightsHolder;
     private String accrualPeriodicity;
     private List<String> distribution;
     private List<String> subject;
-    private String contactPoint;
-    private List<String> publisher;
-    private List<String> creator;
+    private NodeSummary contactPoint;
+    private List<NodeSummary> publisher;
+    private List<NodeSummary> creator;
     private String versionInfo;
     private LocalDate issued;
     private List<String> language;
     private String temporal;
-    private List<String> conformsTo;
+    private List<NodeSummary> conformsTo;
     private String keyConcept;
     private String endpointUrl;
 

@@ -28,10 +28,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import it.teamdigitale.ndc.harvester.model.exception.InvalidModelException;
+import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
+import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
 import java.time.LocalDate;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.VCARD4;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -47,19 +50,15 @@ class BaseSemanticAssetModelTest {
     @BeforeEach
     void setupMockModel() {
         jenaModel = createDefaultModel();
-        Resource agid =
-            jenaModel
-                .createResource(RIGHTS_HOLDER_IRI)
-                .addProperty(identifier, "agid");
         jenaModel
             .createResource(CV_IRI)
             .addProperty(RDF.type,
                 createResource(CONTROLLED_VOCABULARY.getTypeIri()))
             .addProperty(createProperty(KEY_CONCEPT_IRI), "test-concept")
-            .addProperty(rightsHolder, agid)
+            .addProperty(rightsHolder, jenaModel.createResource(RIGHTS_HOLDER_IRI)
+                .addProperty(identifier, "agid")
+                .addProperty(FOAF.name, "AgID"))
             .addProperty(title, createLangLiteral("title", "en"))
-            .addProperty(title, createLangLiteral("titolo", "it"))
-            .addProperty(title, createLangLiteral("french title", "fr"))
             .addProperty(description, "description")
             .addProperty(modified, "2021-03-02")
             .addProperty(theme, createResource("theme"))
@@ -68,15 +67,25 @@ class BaseSemanticAssetModelTest {
             .addProperty(distribution, createResource("ttl file path"))
             .addProperty(subject, createResource("subTheme1"))
             .addProperty(subject, createResource("subTheme2"))
-            .addProperty(contactPoint, createResource("Agid"))
-            .addProperty(publisher, createResource("Agid"))
-            .addProperty(creator, createResource("stlab"))
+            .addProperty(contactPoint, jenaModel.createResource("http://contactPoint")
+                .addProperty(VCARD4.hasEmail, "contactPoint"))
+            .addProperty(publisher, jenaModel.createResource("http://publisher")
+                .addProperty(FOAF.name, "publisher"))
+            .addProperty(publisher, jenaModel.createResource("http://publisher2")
+                .addProperty(FOAF.name, "publisher2"))
+            .addProperty(creator, jenaModel.createResource("http://creator")
+                .addProperty(FOAF.name, "creator"))
+            .addProperty(creator, jenaModel.createResource("http://creator2")
+                .addProperty(FOAF.name, "creator2"))
             .addProperty(versionInfo, "1.0")
             .addProperty(issued, "2021-02-01")
-            .addProperty(language, createResource("ENG"))
+            .addProperty(language, jenaModel.createResource("ENG"))
             .addProperty(keyword, "keyword1").addProperty(keyword, "keyword2")
             .addProperty(temporal, "temporal")
-            .addProperty(conformsTo, createResource("SKOS"));
+            .addProperty(conformsTo, jenaModel.createResource("http://conformsTo")
+                .addProperty(FOAF.name, "conformsTo"))
+            .addProperty(conformsTo, jenaModel.createResource("http://conformsTo2")
+                .addProperty(FOAF.name, "conformsTo2"));
         semanticAssetModel = new TestBaseSemanticAssetModel(jenaModel, TTL_FILE, "some-repo");
     }
 
@@ -102,16 +111,7 @@ class BaseSemanticAssetModelTest {
     }
 
     @Test
-    void shouldExtractMetadataWithTitleInItalian() {
-        SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
-
-        assertThat(metadata.getTitle()).isEqualTo("titolo");
-    }
-
-    @Test
     void shouldExtractMetadataWithTitleInEnglish() {
-        jenaModel.getResource(CV_IRI).removeAll(title);
-        jenaModel.getResource(CV_IRI).addProperty(title, "title");
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
         assertThat(metadata.getTitle()).isEqualTo("title");
@@ -174,7 +174,8 @@ class BaseSemanticAssetModelTest {
     void shouldExtractMetadataWithRightsHolder() {
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
-        assertThat(metadata.getRightsHolder()).isEqualTo(RIGHTS_HOLDER_IRI);
+        assertThat(metadata.getRightsHolder().getIri()).isEqualTo(RIGHTS_HOLDER_IRI);
+        assertThat(metadata.getRightsHolder().getSummary()).isEqualTo("AgID");
     }
 
     @Test
@@ -235,7 +236,8 @@ class BaseSemanticAssetModelTest {
     void shouldExtractMetadataWithContactPoint() {
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
-        assertThat(metadata.getContactPoint()).isEqualTo("Agid");
+        assertThat(metadata.getContactPoint().getIri()).isEqualTo("http://contactPoint");
+        assertThat(metadata.getContactPoint().getSummary()).isEqualTo("contactPoint");
     }
 
     @Test
@@ -251,7 +253,11 @@ class BaseSemanticAssetModelTest {
     void shouldExtractMetadataWithPublisher() {
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
-        assertThat(metadata.getPublisher()).containsExactly("Agid");
+        assertThat(metadata.getPublisher()).hasSize(2);
+        assertThat(metadata.getPublisher()).containsExactlyInAnyOrder(
+            NodeSummary.builder().iri("http://publisher").summary("publisher").build(),
+            NodeSummary.builder().iri("http://publisher2").summary("publisher2").build()
+        );
     }
 
     @Test
@@ -267,7 +273,11 @@ class BaseSemanticAssetModelTest {
     void shouldExtractMetadataWithCreator() {
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
-        assertThat(metadata.getCreator()).containsExactly("stlab");
+        assertThat(metadata.getCreator()).hasSize(2);
+        assertThat(metadata.getCreator()).containsExactlyInAnyOrder(
+            NodeSummary.builder().iri("http://creator").summary("creator").build(),
+            NodeSummary.builder().iri("http://creator2").summary("creator2").build()
+        );
     }
 
     @Test
@@ -347,7 +357,11 @@ class BaseSemanticAssetModelTest {
     void shouldExtractMetadataWithConformsTo() {
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
-        assertThat(metadata.getConformsTo()).containsExactly("SKOS");
+        assertThat(metadata.getConformsTo()).hasSize(2);
+        assertThat(metadata.getConformsTo()).containsExactlyInAnyOrder(
+            NodeSummary.builder().iri("http://conformsTo").summary("conformsTo").build(),
+            NodeSummary.builder().iri("http://conformsTo2").summary("conformsTo2").build()
+        );
     }
 
     @Test

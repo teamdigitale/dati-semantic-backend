@@ -2,7 +2,7 @@ package it.teamdigitale.ndc.harvester.pathprocessors;
 
 import it.teamdigitale.ndc.harvester.exception.SinglePathProcessingException;
 import it.teamdigitale.ndc.harvester.model.OntologyModel;
-import it.teamdigitale.ndc.harvester.model.SemanticAssetMetadata;
+import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
 import it.teamdigitale.ndc.harvester.model.exception.InvalidModelException;
 import it.teamdigitale.ndc.repository.SemanticAssetMetadataRepository;

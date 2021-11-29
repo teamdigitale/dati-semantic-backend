@@ -3,10 +3,10 @@ package it.teamdigitale.ndc.harvester.model;
 import static it.teamdigitale.ndc.harvester.model.extractors.LiteralExtractor.extract;
 import static it.teamdigitale.ndc.harvester.model.extractors.LiteralExtractor.extractAll;
 import static it.teamdigitale.ndc.harvester.model.extractors.LiteralExtractor.extractOptional;
-import static it.teamdigitale.ndc.harvester.model.extractors.NodeExtractor.extractMaybeNode;
 import static it.teamdigitale.ndc.harvester.model.extractors.NodeExtractor.extractMaybeNodes;
 import static it.teamdigitale.ndc.harvester.model.extractors.NodeExtractor.extractNode;
 import static it.teamdigitale.ndc.harvester.model.extractors.NodeExtractor.extractNodes;
+import static it.teamdigitale.ndc.harvester.model.extractors.NodeSummaryExtractor.maybeNodeSummaries;
 import static java.lang.String.format;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.apache.jena.vocabulary.DCAT.contactPoint;
@@ -29,6 +29,9 @@ import static org.apache.jena.vocabulary.OWL.versionInfo;
 
 import it.teamdigitale.ndc.harvester.SemanticAssetType;
 import it.teamdigitale.ndc.harvester.model.exception.InvalidModelException;
+import it.teamdigitale.ndc.harvester.model.extractors.NodeSummaryExtractor;
+import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
+import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
@@ -37,7 +40,9 @@ import java.util.stream.Collectors;
 import javax.xml.bind.DatatypeConverter;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.VCARD4;
 
 public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
     protected final Model rdfModel;
@@ -96,7 +101,8 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
         return SemanticAssetMetadata.builder()
             .iri(mainResource.getURI())
             .repoUrl(repoUrl)
-            .rightsHolder(extractNode(mainResource, rightsHolder).getURI())
+            .rightsHolder(
+                NodeSummaryExtractor.mustExtractNodeSummary(mainResource, rightsHolder, FOAF.name))
             .type(getType())
             .title(extract(mainResource, title))
             .description(extract(mainResource, description))
@@ -105,16 +111,21 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
             .accrualPeriodicity(extractNode(mainResource, accrualPeriodicity).getURI())
             .distribution(asIriList(extractNodes(mainResource, distribution)))
             .subject(asIriList(extractMaybeNodes(mainResource, subject)))
-            .contactPoint(extractMaybeNode(mainResource, contactPoint).getURI())
-            .publisher(asIriList(extractMaybeNodes(mainResource, publisher)))
-            .creator(asIriList(extractMaybeNodes(mainResource, creator)))
+            .contactPoint(getContactPoint(mainResource))
+            .publisher(maybeNodeSummaries(mainResource, publisher, FOAF.name))
+            .creator(maybeNodeSummaries(mainResource, creator, FOAF.name))
             .versionInfo(extractOptional(mainResource, versionInfo))
             .issued(parseDate(extractOptional(mainResource, issued)))
             .language(asIriList(extractMaybeNodes(mainResource, language)))
             .keywords(extractAll(mainResource, keyword))
             .temporal(extractOptional(mainResource, temporal))
-            .conformsTo(asIriList(extractMaybeNodes(mainResource, conformsTo)))
+            .conformsTo(maybeNodeSummaries(mainResource, conformsTo, FOAF.name))
             .build();
+    }
+
+    private NodeSummary getContactPoint(Resource mainResource) {
+        return maybeNodeSummaries(mainResource, contactPoint, VCARD4.hasEmail).stream()
+            .findFirst().orElse(null);
     }
 
     private List<String> asIriList(List<Resource> resources) {

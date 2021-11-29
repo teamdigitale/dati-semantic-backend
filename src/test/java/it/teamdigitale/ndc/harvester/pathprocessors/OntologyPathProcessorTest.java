@@ -5,7 +5,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import it.teamdigitale.ndc.harvester.model.OntologyModel;
-import it.teamdigitale.ndc.harvester.model.SemanticAssetMetadata;
+import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetModelFactory;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
 import it.teamdigitale.ndc.repository.SemanticAssetMetadataRepository;

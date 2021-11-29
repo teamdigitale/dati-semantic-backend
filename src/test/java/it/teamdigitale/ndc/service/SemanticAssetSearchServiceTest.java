@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 import it.teamdigitale.ndc.controller.dto.SemanticAssetDetailsDto;
 import it.teamdigitale.ndc.controller.dto.SemanticAssetSearchResult;
 import it.teamdigitale.ndc.controller.exception.SemanticAssetNotFoundException;
-import it.teamdigitale.ndc.harvester.model.SemanticAssetMetadata;
+import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.teamdigitale.ndc.repository.SemanticAssetMetadataRepository;
 import java.util.List;
 import java.util.Optional;

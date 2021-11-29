@@ -1,7 +1,8 @@
 package it.teamdigitale.ndc.controller.dto;
 
 import it.teamdigitale.ndc.harvester.SemanticAssetType;
-import it.teamdigitale.ndc.harvester.model.SemanticAssetMetadata;
+import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
+import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.Builder;
@@ -16,7 +17,7 @@ public class SemanticAssetsSearchDto {
     private SemanticAssetType type;
     private LocalDate modified;
     private List<String> theme;
-    private String rightsHolder;
+    private NodeSummary rightsHolder;
 
     public static SemanticAssetsSearchDto from(SemanticAssetMetadata metadata) {
         return SemanticAssetsSearchDto.builder()

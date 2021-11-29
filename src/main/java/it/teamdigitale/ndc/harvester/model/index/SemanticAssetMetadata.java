@@ -1,4 +1,4 @@
-package it.teamdigitale.ndc.harvester.model;
+package it.teamdigitale.ndc.harvester.model.index;
 
 import static org.springframework.data.elasticsearch.annotations.FieldType.Date;
 import static org.springframework.data.elasticsearch.annotations.FieldType.Keyword;
@@ -13,6 +13,7 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 @Document(indexName = "semantic-asset-metadata")
 @Data
@@ -37,20 +38,20 @@ public class SemanticAssetMetadata {
     private LocalDate modified;
     @Field(type = Keyword)
     private List<String> theme;
-    @Field(index = false, type = Keyword)
-    private String rightsHolder;
+    @Field(index = false, type = FieldType.Object)
+    private NodeSummary rightsHolder;
     @Field(index = false, type = Keyword)
     private String accrualPeriodicity;
     @Field(index = false, type = Keyword)
     private List<String> distribution;
     @Field(index = false, type = Keyword)
     private List<String> subject;
-    @Field(index = false, type = Keyword)
-    private String contactPoint;
-    @Field(index = false, type = Keyword)
-    private List<String> publisher;
-    @Field(index = false, type = Keyword)
-    private List<String> creator;
+    @Field(index = false, type = FieldType.Object)
+    private NodeSummary contactPoint;
+    @Field(index = false, type = FieldType.Object)
+    private List<NodeSummary> publisher;
+    @Field(index = false, type = FieldType.Object)
+    private List<NodeSummary> creator;
     @Field(index = false, type = Keyword)
     private String versionInfo;
     @Field(index = false, type = Date)
@@ -59,8 +60,8 @@ public class SemanticAssetMetadata {
     private List<String> language;
     @Field(index = false, type = Keyword)
     private String temporal;
-    @Field(index = false, type = Keyword)
-    private List<String> conformsTo;
+    @Field(index = false, type = FieldType.Object)
+    private List<NodeSummary> conformsTo;
 
     // Controlled Vocabulary Specific
     @Field(index = false, type = Keyword)

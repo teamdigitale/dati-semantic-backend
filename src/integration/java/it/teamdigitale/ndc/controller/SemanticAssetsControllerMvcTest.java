@@ -13,6 +13,7 @@ import it.teamdigitale.ndc.controller.dto.SemanticAssetDetailsDto;
 import it.teamdigitale.ndc.controller.dto.SemanticAssetSearchResult;
 import it.teamdigitale.ndc.controller.dto.SemanticAssetsSearchDto;
 import it.teamdigitale.ndc.controller.exception.SemanticAssetNotFoundException;
+import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
 import it.teamdigitale.ndc.service.SemanticAssetSearchService;
 import java.time.LocalDate;
 import org.elasticsearch.common.collect.List;
@@ -40,16 +41,21 @@ public class SemanticAssetsControllerMvcTest {
             .description("some-description")
             .modified(LocalDate.parse("2020-01-01"))
             .type(CONTROLLED_VOCABULARY)
+            .rightsHolder(
+                buildNodeSummary("https://example.com/rightsHolder", "example rights holder"))
             .accrualPeriodicity("some-accrual-periodicity")
-            .conformsTo(List.of("some-conforms-to", "some-other-conforms-to"))
-            .contactPoint("some-contact-point")
-            .creator(List.of("some-creator", "some-other-creator"))
+            .conformsTo(List.of(buildNodeSummary("http://skos1", "skos1 name"),
+                buildNodeSummary("http://skos2", "skos2 name")))
+            .contactPoint(buildNodeSummary("https://example.com/contact", "mailto:test@test.com"))
+            .creator(List.of(buildNodeSummary("http://creator1", "creator 1 name"),
+                buildNodeSummary("http://creator2", "creator 2 name")))
             .distribution(List.of("some-distribution", "some-other-distribution"))
             .issued(LocalDate.parse("2020-01-02"))
             .endpointUrl("some-endpoint-url")
             .keyConcept("some-key-concept")
             .language(List.of("some-language", "some-other-language"))
-            .publisher(List.of("some-publisher", "some-other-publisher"))
+            .publisher(List.of(buildNodeSummary("http://publisher1", "publisher 1 name"),
+                buildNodeSummary("http://publisher2", "publisher 2 name")))
             .subject(List.of("some-subject", "some-other-subject"))
             .temporal("some-temporal")
             .versionInfo("some-version-info")
@@ -66,12 +72,17 @@ public class SemanticAssetsControllerMvcTest {
             .andExpect(jsonPath("$.type").value("CONTROLLED_VOCABULARY"))
             .andExpect(jsonPath("$.accrualPeriodicity").value("some-accrual-periodicity"))
             .andExpect(jsonPath("$.conformsTo").isArray())
-            .andExpect(jsonPath("$.conformsTo[0]").value("some-conforms-to"))
-            .andExpect(jsonPath("$.conformsTo[1]").value("some-other-conforms-to"))
-            .andExpect(jsonPath("$.contactPoint").value("some-contact-point"))
+            .andExpect(jsonPath("$.conformsTo[0].iri").value("http://skos1"))
+            .andExpect(jsonPath("$.conformsTo[0].summary").value("skos1 name"))
+            .andExpect(jsonPath("$.conformsTo[1].iri").value("http://skos2"))
+            .andExpect(jsonPath("$.conformsTo[1].summary").value("skos2 name"))
+            .andExpect(jsonPath("$.contactPoint.iri").value("https://example.com/contact"))
+            .andExpect(jsonPath("$.contactPoint.summary").value("mailto:test@test.com"))
             .andExpect(jsonPath("$.creator").isArray())
-            .andExpect(jsonPath("$.creator[0]").value("some-creator"))
-            .andExpect(jsonPath("$.creator[1]").value("some-other-creator"))
+            .andExpect(jsonPath("$.creator[0].iri").value("http://creator1"))
+            .andExpect(jsonPath("$.creator[0].summary").value("creator 1 name"))
+            .andExpect(jsonPath("$.creator[1].iri").value("http://creator2"))
+            .andExpect(jsonPath("$.creator[1].summary").value("creator 2 name"))
             .andExpect(jsonPath("$.distribution").isArray())
             .andExpect(jsonPath("$.distribution[0]").value("some-distribution"))
             .andExpect(jsonPath("$.distribution[1]").value("some-other-distribution"))
@@ -82,8 +93,10 @@ public class SemanticAssetsControllerMvcTest {
             .andExpect(jsonPath("$.language[0]").value("some-language"))
             .andExpect(jsonPath("$.language[1]").value("some-other-language"))
             .andExpect(jsonPath("$.publisher").isArray())
-            .andExpect(jsonPath("$.publisher[0]").value("some-publisher"))
-            .andExpect(jsonPath("$.publisher[1]").value("some-other-publisher"))
+            .andExpect(jsonPath("$.publisher[0].iri").value("http://publisher1"))
+            .andExpect(jsonPath("$.publisher[0].summary").value("publisher 1 name"))
+            .andExpect(jsonPath("$.publisher[1].iri").value("http://publisher2"))
+            .andExpect(jsonPath("$.publisher[1].summary").value("publisher 2 name"))
             .andExpect(jsonPath("$.subject").isArray())
             .andExpect(jsonPath("$.subject[0]").value("some-subject"))
             .andExpect(jsonPath("$.subject[1]").value("some-other-subject"))
@@ -113,7 +126,8 @@ public class SemanticAssetsControllerMvcTest {
                     .iri("some-iri")
                     .description("some-description")
                     .modified(LocalDate.parse("2020-01-01"))
-                    .rightsHolder("some-rights-holder")
+                    .rightsHolder(buildNodeSummary("https://example.com/rightsHolder",
+                        "example rights holder"))
                     .theme(List.of("study", "sports"))
                     .title("searchText contains")
                     .type(CONTROLLED_VOCABULARY)
@@ -129,7 +143,9 @@ public class SemanticAssetsControllerMvcTest {
             .andExpect(jsonPath("$.data[0].iri").value("some-iri"))
             .andExpect(jsonPath("$.data[0].description").value("some-description"))
             .andExpect(jsonPath("$.data[0].modified").value("2020-01-01"))
-            .andExpect(jsonPath("$.data[0].rightsHolder").value("some-rights-holder"))
+            .andExpect(
+                jsonPath("$.data[0].rightsHolder.iri").value("https://example.com/rightsHolder"))
+            .andExpect(jsonPath("$.data[0].rightsHolder.summary").value("example rights holder"))
             .andExpect(jsonPath("$.data[0].theme[0]").value("study"))
             .andExpect(jsonPath("$.data[0].theme[1]").value("sports"))
             .andExpect(jsonPath("$.data[0].title").value("searchText contains"))
@@ -170,6 +186,13 @@ public class SemanticAssetsControllerMvcTest {
             .andExpect(content().contentType("application/json"));
 
         verifyNoInteractions(searchService);
+    }
+
+    private NodeSummary buildNodeSummary(String iri, String summary) {
+        return NodeSummary.builder()
+            .iri(iri)
+            .summary(summary)
+            .build();
     }
 
 }

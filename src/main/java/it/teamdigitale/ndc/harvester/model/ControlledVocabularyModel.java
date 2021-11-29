@@ -1,6 +1,7 @@
 package it.teamdigitale.ndc.harvester.model;
 
 import it.teamdigitale.ndc.harvester.model.exception.InvalidModelException;
+import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;

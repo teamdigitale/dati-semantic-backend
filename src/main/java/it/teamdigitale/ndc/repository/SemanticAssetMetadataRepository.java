@@ -1,6 +1,6 @@
 package it.teamdigitale.ndc.repository;
 
-import it.teamdigitale.ndc.harvester.model.SemanticAssetMetadata;
+import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

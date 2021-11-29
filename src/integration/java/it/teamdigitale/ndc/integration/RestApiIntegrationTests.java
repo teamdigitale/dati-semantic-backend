@@ -77,7 +77,9 @@ public class RestApiIntegrationTests {
             .body("pageNumber", equalTo(1))
             .body("data.size()", equalTo(1))
             .body("data[0].iri", equalTo(
-                "https://w3id.org/italia/controlled-vocabulary/classifications-for-accommodation-facilities/accommodation-star-rating"));
+                "https://w3id.org/italia/controlled-vocabulary/classifications-for-accommodation-facilities/accommodation-star-rating"))
+            .body("data[0].rightsHolder.iri", equalTo("http://spcdata.digitpa.gov.it/browse/page/Amministrazione/agid"))
+            .body("data[0].rightsHolder.summary", equalTo("Agenzia per l'Italia Digitale"));
 
         String iri =
             searchResponse.getBody().as(SemanticAssetSearchResult.class).getData().get(0).getIri();
