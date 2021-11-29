@@ -3,6 +3,7 @@ package it.teamdigitale.ndc.harvester.model;
 import static it.teamdigitale.ndc.harvester.model.extractors.LiteralExtractor.extract;
 import static it.teamdigitale.ndc.harvester.model.extractors.LiteralExtractor.extractAll;
 import static it.teamdigitale.ndc.harvester.model.extractors.LiteralExtractor.extractOptional;
+import static it.teamdigitale.ndc.harvester.model.extractors.NodeExtractor.extractMaybeNode;
 import static it.teamdigitale.ndc.harvester.model.extractors.NodeExtractor.extractMaybeNodes;
 import static it.teamdigitale.ndc.harvester.model.extractors.NodeExtractor.extractNode;
 import static it.teamdigitale.ndc.harvester.model.extractors.NodeExtractor.extractNodes;
@@ -124,8 +125,17 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
     }
 
     private NodeSummary getContactPoint(Resource mainResource) {
-        return maybeNodeSummaries(mainResource, contactPoint, VCARD4.hasEmail).stream()
-            .findFirst().orElse(null);
+        Resource contactPointNode = extractMaybeNode(mainResource, contactPoint);
+        if (Objects.nonNull(contactPointNode)) {
+            Resource email = extractMaybeNode(contactPointNode, VCARD4.hasEmail);
+            if (Objects.nonNull(email)) {
+                return NodeSummary.builder()
+                    .iri(contactPointNode.getURI())
+                    .summary(email.getURI())
+                    .build();
+            }
+        }
+        return null;
     }
 
     private List<String> asIriList(List<Resource> resources) {

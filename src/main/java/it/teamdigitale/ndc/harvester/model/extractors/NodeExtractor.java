@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.ResourceRequiredException;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.shared.PropertyNotFoundException;
@@ -24,7 +23,7 @@ public class NodeExtractor {
         try {
             return extractNode(resource, property);
         } catch (InvalidModelException e) {
-            return ResourceFactory.createResource();
+            return null;
         }
     }
 

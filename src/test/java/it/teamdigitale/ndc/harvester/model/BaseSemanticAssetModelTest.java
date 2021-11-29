@@ -68,7 +68,7 @@ class BaseSemanticAssetModelTest {
             .addProperty(subject, createResource("subTheme1"))
             .addProperty(subject, createResource("subTheme2"))
             .addProperty(contactPoint, jenaModel.createResource("http://contactPoint")
-                .addProperty(VCARD4.hasEmail, "contactPoint"))
+                .addProperty(VCARD4.hasEmail, jenaModel.createResource("mailto:test@test.com")))
             .addProperty(publisher, jenaModel.createResource("http://publisher")
                 .addProperty(FOAF.name, "publisher"))
             .addProperty(publisher, jenaModel.createResource("http://publisher2")
@@ -237,7 +237,7 @@ class BaseSemanticAssetModelTest {
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
         assertThat(metadata.getContactPoint().getIri()).isEqualTo("http://contactPoint");
-        assertThat(metadata.getContactPoint().getSummary()).isEqualTo("contactPoint");
+        assertThat(metadata.getContactPoint().getSummary()).isEqualTo("mailto:test@test.com");
     }
 
     @Test

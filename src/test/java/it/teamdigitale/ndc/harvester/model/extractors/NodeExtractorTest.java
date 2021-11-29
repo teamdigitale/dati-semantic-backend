@@ -66,7 +66,7 @@ class NodeExtractorTest {
 
         Resource node = NodeExtractor.extractMaybeNode(resource, title);
 
-        assertThat(node.getURI()).isNull();
+        assertThat(node).isNull();
     }
 
     @Test
@@ -77,7 +77,7 @@ class NodeExtractorTest {
 
         Resource node = NodeExtractor.extractMaybeNode(resource, rightsHolder);
 
-        assertThat(node.getURI()).isNull();
+        assertThat(node).isNull();
     }
 
     @Test
