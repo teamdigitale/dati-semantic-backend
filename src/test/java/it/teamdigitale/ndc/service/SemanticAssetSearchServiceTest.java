@@ -32,7 +32,7 @@ class SemanticAssetSearchServiceTest {
     private SemanticAssetSearchService searchService;
 
     @Test
-    void shouldGetSearchResult() {
+    void shouldGetSearchResultForTerm() {
         SemanticAssetMetadata expectedData1 = SemanticAssetMetadata.builder()
             .iri("1").build();
         SemanticAssetMetadata expectedData2 = SemanticAssetMetadata.builder()
@@ -49,6 +49,26 @@ class SemanticAssetSearchServiceTest {
         assertThat(result.getData().stream().filter(e -> e.getIri().equals("1"))).isNotNull();
         assertThat(result.getData().stream().filter(e -> e.getIri().equals("2"))).isNotNull();
         verify(metadataRepository).findBySearchableText("term", pageable);
+    }
+
+    @Test
+    void shouldGetAllWhenSearchTermIsEmpty() {
+        SemanticAssetMetadata expectedData1 = SemanticAssetMetadata.builder()
+            .iri("1").build();
+        SemanticAssetMetadata expectedData2 = SemanticAssetMetadata.builder()
+            .iri("2").build();
+        Pageable pageable = Pageable.ofSize(10).withPage(0);
+        when(metadataRepository.findAll(pageable))
+            .thenReturn(new PageImpl<>(List.of(expectedData1, expectedData2), pageable, 2));
+
+        SemanticAssetSearchResult result = searchService.search("", pageable);
+
+        assertThat(result.getTotalPages()).isEqualTo(1);
+        assertThat(result.getPageNumber()).isEqualTo(1);
+        assertThat(result.getData()).hasSize(2);
+        assertThat(result.getData().stream().filter(e -> e.getIri().equals("1"))).isNotNull();
+        assertThat(result.getData().stream().filter(e -> e.getIri().equals("2"))).isNotNull();
+        verify(metadataRepository).findAll(pageable);
     }
 
     @Test

@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -18,12 +19,19 @@ public class SemanticAssetSearchService {
     private final SemanticAssetMetadataRepository metadataRepository;
 
     public SemanticAssetSearchResult search(String term, Pageable pageable) {
-        Page<SemanticAssetMetadata> page =
-            metadataRepository.findBySearchableText(term, pageable);
+        Page<SemanticAssetMetadata> resultPage;
+
+        //TODO find a way to do this with elasticsearch
+        if (ObjectUtils.isEmpty(term)) {
+            resultPage = metadataRepository.findAll(pageable);
+        } else {
+            resultPage = metadataRepository.findBySearchableText(term, pageable);
+        }
+
         return SemanticAssetSearchResult.builder()
-            .pageNumber(page.getNumber() + 1)
-            .totalPages(page.getTotalPages())
-            .data(page.stream()
+            .pageNumber(resultPage.getNumber() + 1)
+            .totalPages(resultPage.getTotalPages())
+            .data(resultPage.stream()
                 .map(SemanticAssetsSearchDto::from)
                 .collect(Collectors.toList()))
             .build();
