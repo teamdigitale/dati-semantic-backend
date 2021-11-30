@@ -1,6 +1,9 @@
 package it.teamdigitale.ndc.controller.dto;
 
 
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
 import it.teamdigitale.ndc.harvester.SemanticAssetType;
 import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
 import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
@@ -11,6 +14,7 @@ import lombok.Data;
 
 @Builder
 @Data
+@JsonInclude(NON_NULL)
 public class SemanticAssetDetailsDto {
 
     private String assetIri;

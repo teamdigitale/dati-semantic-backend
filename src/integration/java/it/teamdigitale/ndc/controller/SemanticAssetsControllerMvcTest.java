@@ -58,7 +58,6 @@ public class SemanticAssetsControllerMvcTest {
             .publishers(List.of(buildNodeSummary("http://publisher1", "publisher 1 name"),
                 buildNodeSummary("http://publisher2", "publisher 2 name")))
             .subjects(List.of("some-subject", "some-other-subject"))
-            .temporal("some-temporal")
             .versionInfo("some-version-info")
             .build());
 
@@ -104,7 +103,7 @@ public class SemanticAssetsControllerMvcTest {
             .andExpect(jsonPath("$.subjects").isArray())
             .andExpect(jsonPath("$.subjects[0]").value("some-subject"))
             .andExpect(jsonPath("$.subjects[1]").value("some-other-subject"))
-            .andExpect(jsonPath("$.temporal").value("some-temporal"))
+            .andExpect(jsonPath("$.temporal").doesNotExist())
             .andExpect(jsonPath("$.versionInfo").value("some-version-info"));
     }
 
