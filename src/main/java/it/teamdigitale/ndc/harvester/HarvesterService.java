@@ -30,6 +30,8 @@ public class HarvesterService {
 
     public void harvest(String repoUrl) throws IOException {
         log.info("Processing repo {}", repoUrl);
+        repoUrl = normaliseRepoUrl(repoUrl);
+        log.debug("Normalised repo url {}", repoUrl);
         try {
             Path path = cloneRepoToTempPath(repoUrl);
 
@@ -42,6 +44,10 @@ public class HarvesterService {
             log.error("Exception while processing {}", repoUrl, e);
             throw e;
         }
+    }
+
+    private String normaliseRepoUrl(String repoUrl) {
+        return repoUrl.replace(".git", "");
     }
 
     private void harvestClonedRepo(String repoUrl, Path path) {

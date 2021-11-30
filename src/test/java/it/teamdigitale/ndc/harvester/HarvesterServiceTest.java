@@ -45,10 +45,11 @@ public class HarvesterServiceTest {
 
     @Test
     void shouldHarvestControlledVocabularies() throws IOException {
-        String repoUrl = "someRepoUri";
+        String repoUrl = "someRepoUri.git";
+        String sanitizedRepoUrl = repoUrl.replace(".git", "");
         CvPath path1 = CvPath.of("test1.ttl", "test1.csv");
         CvPath path2 = CvPath.of("test2.ttl", "test2.csv");
-        when(agencyRepoService.cloneRepo(repoUrl)).thenReturn(clonedRepoPath);
+        when(agencyRepoService.cloneRepo(sanitizedRepoUrl)).thenReturn(clonedRepoPath);
         when(agencyRepoService.getControlledVocabularyPaths(clonedRepoPath)).thenReturn(
             List.of(path1, path2));
 
@@ -56,8 +57,8 @@ public class HarvesterServiceTest {
 
         verify(agencyRepoService).cloneRepo("someRepoUri");
         verify(agencyRepoService).getControlledVocabularyPaths(clonedRepoPath);
-        verify(controlledVocabularyPathProcessor).process(repoUrl, path1);
-        verify(controlledVocabularyPathProcessor).process(repoUrl, path2);
+        verify(controlledVocabularyPathProcessor).process(sanitizedRepoUrl, path1);
+        verify(controlledVocabularyPathProcessor).process(sanitizedRepoUrl, path2);
     }
 
     @Test
