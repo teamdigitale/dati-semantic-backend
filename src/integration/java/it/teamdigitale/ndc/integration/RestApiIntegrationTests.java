@@ -76,13 +76,13 @@ public class RestApiIntegrationTests {
             .body("totalPages", equalTo(1))
             .body("pageNumber", equalTo(1))
             .body("data.size()", equalTo(1))
-            .body("data[0].iri", equalTo(
+            .body("data[0].assetIri", equalTo(
                 "https://w3id.org/italia/controlled-vocabulary/classifications-for-accommodation-facilities/accommodation-star-rating"))
             .body("data[0].rightsHolder.iri", equalTo("http://spcdata.digitpa.gov.it/browse/page/Amministrazione/agid"))
             .body("data[0].rightsHolder.summary", equalTo("Agenzia per l'Italia Digitale"));
 
         String iri =
-            searchResponse.getBody().as(SemanticAssetSearchResult.class).getData().get(0).getIri();
+            searchResponse.getBody().as(SemanticAssetSearchResult.class).getData().get(0).getAssetIri();
 
         Response detailsResponse = when().get(
             String.format(
@@ -90,7 +90,7 @@ public class RestApiIntegrationTests {
 
         detailsResponse.then()
             .statusCode(200)
-            .body("iri", equalTo(
+            .body("assetIri", equalTo(
                 "https://w3id.org/italia/controlled-vocabulary/classifications-for-accommodation-facilities/accommodation-star-rating"))
             .body("type", equalTo(SemanticAssetType.CONTROLLED_VOCABULARY.name()))
             .body("keyConcept", equalTo("testVocabulary"))

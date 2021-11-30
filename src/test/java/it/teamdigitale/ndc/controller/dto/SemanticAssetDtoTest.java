@@ -43,7 +43,7 @@ class SemanticAssetDtoTest {
 
         SemanticAssetDetailsDto dto = SemanticAssetDetailsDto.from(metadata);
 
-        assertThat(dto.getIri()).isEqualTo("https://example.com/asset");
+        assertThat(dto.getAssetIri()).isEqualTo("https://example.com/asset");
         assertThat(dto.getTitle()).isEqualTo("Asset");
         assertThat(dto.getDescription()).isEqualTo("Asset description");
         assertThat(dto.getType()).isEqualTo(SemanticAssetType.CONTROLLED_VOCABULARY);

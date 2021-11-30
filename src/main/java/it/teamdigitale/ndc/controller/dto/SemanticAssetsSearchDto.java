@@ -11,7 +11,7 @@ import lombok.Data;
 @Data
 @Builder
 public class SemanticAssetsSearchDto {
-    private String iri;
+    private String assetIri;
     private String title;
     private String description;
     private SemanticAssetType type;
@@ -21,7 +21,7 @@ public class SemanticAssetsSearchDto {
 
     public static SemanticAssetsSearchDto from(SemanticAssetMetadata metadata) {
         return SemanticAssetsSearchDto.builder()
-            .iri(metadata.getIri())
+            .assetIri(metadata.getIri())
             .title(metadata.getTitle())
             .description(metadata.getDescription())
             .type(metadata.getType())

@@ -36,7 +36,7 @@ public class SemanticAssetsControllerMvcTest {
     @Test
     void shouldFindByIri() throws Exception {
         when(searchService.findByIri("some-iri")).thenReturn(SemanticAssetDetailsDto.builder()
-            .iri("some-iri")
+            .assetIri("some-iri")
             .title("some-title")
             .description("some-description")
             .themes(List.of("some-theme", "some-other-theme"))
@@ -66,7 +66,7 @@ public class SemanticAssetsControllerMvcTest {
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(content().contentType("application/json"))
-            .andExpect(jsonPath("$.iri").value("some-iri"))
+            .andExpect(jsonPath("$.assetIri").value("some-iri"))
             .andExpect(jsonPath("$.title").value("some-title"))
             .andExpect(jsonPath("$.description").value("some-description"))
             .andExpect(jsonPath("$.themes").isArray())
@@ -127,7 +127,7 @@ public class SemanticAssetsControllerMvcTest {
                 .pageNumber(1)
                 .totalPages(5)
                 .data(List.of(SemanticAssetsSearchDto.builder()
-                    .iri("some-iri")
+                    .assetIri("some-iri")
                     .description("some-description")
                     .modified(LocalDate.parse("2020-01-01"))
                     .rightsHolder(buildNodeSummary("https://example.com/rightsHolder",
@@ -144,7 +144,7 @@ public class SemanticAssetsControllerMvcTest {
             .andExpect(content().contentType("application/json"))
             .andExpect(jsonPath("$.pageNumber").value(1))
             .andExpect(jsonPath("$.totalPages").value(5))
-            .andExpect(jsonPath("$.data[0].iri").value("some-iri"))
+            .andExpect(jsonPath("$.data[0].assetIri").value("some-iri"))
             .andExpect(jsonPath("$.data[0].description").value("some-description"))
             .andExpect(jsonPath("$.data[0].modified").value("2020-01-01"))
             .andExpect(

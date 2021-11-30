@@ -13,7 +13,7 @@ import lombok.Data;
 @Data
 public class SemanticAssetDetailsDto {
 
-    private String iri;
+    private String assetIri;
     private String title;
     private String description;
     private SemanticAssetType type;
@@ -36,7 +36,7 @@ public class SemanticAssetDetailsDto {
 
     public static SemanticAssetDetailsDto from(SemanticAssetMetadata metadata) {
         return SemanticAssetDetailsDto.builder()
-            .iri(metadata.getIri())
+            .assetIri(metadata.getIri())
             .title(metadata.getTitle())
             .description(metadata.getDescription())
             .type(metadata.getType())

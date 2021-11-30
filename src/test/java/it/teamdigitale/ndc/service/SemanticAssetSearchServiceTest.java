@@ -46,8 +46,8 @@ class SemanticAssetSearchServiceTest {
         assertThat(result.getTotalPages()).isEqualTo(1);
         assertThat(result.getPageNumber()).isEqualTo(1);
         assertThat(result.getData()).hasSize(2);
-        assertThat(result.getData().stream().filter(e -> e.getIri().equals("1"))).isNotNull();
-        assertThat(result.getData().stream().filter(e -> e.getIri().equals("2"))).isNotNull();
+        assertThat(result.getData().stream().filter(e -> e.getAssetIri().equals("1"))).isNotNull();
+        assertThat(result.getData().stream().filter(e -> e.getAssetIri().equals("2"))).isNotNull();
         verify(metadataRepository).findBySearchableText("term", pageable);
     }
 
@@ -66,8 +66,8 @@ class SemanticAssetSearchServiceTest {
         assertThat(result.getTotalPages()).isEqualTo(1);
         assertThat(result.getPageNumber()).isEqualTo(1);
         assertThat(result.getData()).hasSize(2);
-        assertThat(result.getData().stream().filter(e -> e.getIri().equals("1"))).isNotNull();
-        assertThat(result.getData().stream().filter(e -> e.getIri().equals("2"))).isNotNull();
+        assertThat(result.getData().stream().filter(e -> e.getAssetIri().equals("1"))).isNotNull();
+        assertThat(result.getData().stream().filter(e -> e.getAssetIri().equals("2"))).isNotNull();
         verify(metadataRepository).findAll(pageable);
     }
 
@@ -79,7 +79,7 @@ class SemanticAssetSearchServiceTest {
         SemanticAssetDetailsDto actual = searchService.findByIri("iri");
 
         verify(metadataRepository).findByIri("iri");
-        assertThat(actual.getIri()).isEqualTo("iri");
+        assertThat(actual.getAssetIri()).isEqualTo("iri");
     }
 
     @Test

@@ -29,7 +29,7 @@ class SemanticAssetsSearchDtoTest {
         SemanticAssetsSearchDto entry =
             SemanticAssetsSearchDto.from(build);
 
-        assertThat(entry.getIri()).isEqualTo("iri");
+        assertThat(entry.getAssetIri()).isEqualTo("iri");
         assertThat(entry.getType()).isEqualTo(SemanticAssetType.ONTOLOGY);
         assertThat(entry.getRightsHolder().getIri()).isEqualTo("http://rightsHolder");
         assertThat(entry.getRightsHolder().getSummary()).isEqualTo("rights holder name");
