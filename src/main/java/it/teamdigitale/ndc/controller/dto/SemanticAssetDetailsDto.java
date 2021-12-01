@@ -37,6 +37,9 @@ public class SemanticAssetDetailsDto {
     private List<NodeSummary> conformsTo;
     private String keyConcept;
     private String endpointUrl;
+    private List<NodeSummary> keyClasses;
+    private String prefix;
+    private List<NodeSummary> projects;
 
     public static SemanticAssetDetailsDto from(SemanticAssetMetadata metadata) {
         return SemanticAssetDetailsDto.builder()
@@ -60,6 +63,9 @@ public class SemanticAssetDetailsDto {
             .conformsTo(metadata.getConformsTo())
             .keyConcept(metadata.getKeyConcept())
             .endpointUrl(metadata.getEndpointUrl())
+            .keyClasses(metadata.getKeyClasses())
+            .prefix(metadata.getPrefix())
+            .projects(metadata.getProjects())
             .build();
     }
 }

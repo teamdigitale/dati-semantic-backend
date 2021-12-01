@@ -102,6 +102,7 @@ jacocoTestCoverageVerification {
                     'it.teamdigitale.ndc.Application',
                     'it.teamdigitale.ndc.harvester.util.*',
                     'it.teamdigitale.ndc.controller.ScheduledJobsController',
+                    'it.teamdigitale.ndc.harvester.model.vocabulary.Admsapit'
             ]
         }
     }

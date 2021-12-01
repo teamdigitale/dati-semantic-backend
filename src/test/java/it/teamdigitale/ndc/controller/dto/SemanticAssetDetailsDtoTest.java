@@ -1,15 +1,14 @@
 package it.teamdigitale.ndc.controller.dto;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import it.teamdigitale.ndc.harvester.SemanticAssetType;
 import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
 import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
 import java.time.LocalDate;
+import static org.assertj.core.api.Assertions.assertThat;
 import org.elasticsearch.common.collect.List;
 import org.junit.jupiter.api.Test;
 
-class SemanticAssetDtoTest {
+class SemanticAssetDetailsDtoTest {
 
     @Test
     void shouldConstructFromSemanticAssetMetadataForControlledVocabulary() {
@@ -39,6 +38,9 @@ class SemanticAssetDtoTest {
                 buildNodeSummary("http://skos2", "skos2 name")))
             .keyConcept("keyConcept")
             .endpointUrl("https://example.com/endpoint")
+            .keyClasses(List.of(buildNodeSummary("http://Class1", "Class1"), buildNodeSummary("http://Class2", "Class2")))
+            .prefix("prefix")
+            .projects(List.of(buildNodeSummary("http://project1", "project1"), buildNodeSummary("http://project2", "project2")))
             .build();
 
         SemanticAssetDetailsDto dto = SemanticAssetDetailsDto.from(metadata);
@@ -83,6 +85,20 @@ class SemanticAssetDtoTest {
 
         assertThat(dto.getKeyConcept()).isEqualTo("keyConcept");
         assertThat(dto.getEndpointUrl()).isEqualTo("https://example.com/endpoint");
+
+        assertThat(dto.getKeyClasses()).hasSize(2);
+        assertThat(dto.getKeyClasses().get(0).getIri()).isEqualTo("http://Class1");
+        assertThat(dto.getKeyClasses().get(0).getSummary()).isEqualTo("Class1");
+        assertThat(dto.getKeyClasses().get(1).getIri()).isEqualTo("http://Class2");
+        assertThat(dto.getKeyClasses().get(1).getSummary()).isEqualTo("Class2");
+
+        assertThat(dto.getPrefix()).isEqualTo("prefix");
+
+        assertThat(dto.getProjects()).hasSize(2);
+        assertThat(dto.getProjects().get(0).getIri()).isEqualTo("http://project1");
+        assertThat(dto.getProjects().get(0).getSummary()).isEqualTo("project1");
+        assertThat(dto.getProjects().get(1).getIri()).isEqualTo("http://project2");
+        assertThat(dto.getProjects().get(1).getSummary()).isEqualTo("project2");
     }
 
     private NodeSummary buildNodeSummary(String iri, String summary) {

@@ -59,6 +59,9 @@ public class SemanticAssetsControllerMvcTest {
                 buildNodeSummary("http://publisher2", "publisher 2 name")))
             .subjects(List.of("some-subject", "some-other-subject"))
             .versionInfo("some-version-info")
+            .keyClasses(List.of(buildNodeSummary("http://Class1", "Class1"), buildNodeSummary("http://Class2", "Class2")))
+            .prefix("prefix")
+            .projects(List.of(buildNodeSummary("http://project1", "project1"), buildNodeSummary("http://project2", "project2")))
             .build());
 
         mockMvc.perform(get("/semantic-assets/details").param("iri", "some-iri"))
@@ -104,7 +107,19 @@ public class SemanticAssetsControllerMvcTest {
             .andExpect(jsonPath("$.subjects[0]").value("some-subject"))
             .andExpect(jsonPath("$.subjects[1]").value("some-other-subject"))
             .andExpect(jsonPath("$.temporal").doesNotExist())
-            .andExpect(jsonPath("$.versionInfo").value("some-version-info"));
+            .andExpect(jsonPath("$.versionInfo").value("some-version-info"))
+            .andExpect(jsonPath("$.keyClasses").isArray())
+            .andExpect(jsonPath("$.keyClasses[0].iri").value("http://Class1"))
+            .andExpect(jsonPath("$.keyClasses[0].summary").value("Class1"))
+            .andExpect(jsonPath("$.keyClasses[1].iri").value("http://Class2"))
+            .andExpect(jsonPath("$.keyClasses[1].summary").value("Class2"))
+            .andExpect(jsonPath("$.prefix").value("prefix"))
+            .andExpect(jsonPath("$.projects").isArray())
+            .andExpect(jsonPath("$.projects[0].iri").value("http://project1"))
+            .andExpect(jsonPath("$.projects[0].summary").value("project1"))
+            .andExpect(jsonPath("$.projects[1].iri").value("http://project2"))
+            .andExpect(jsonPath("$.projects[1].summary").value("project2"));
+
     }
 
     @Test

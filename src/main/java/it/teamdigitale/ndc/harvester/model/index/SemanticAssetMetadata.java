@@ -70,6 +70,14 @@ public class SemanticAssetMetadata {
     @Field(index = false, type = Keyword)
     private String endpointUrl;
 
+    //Ontology specific
+    @Field(index = false, type = FieldType.Object)
+    private List<NodeSummary> keyClasses;
+    @Field(index = false, type = Keyword)
+    private String prefix;
+    @Field(index = false, type = FieldType.Object)
+    private List<NodeSummary> projects;
+
     //for the searchable content in multiple fields
     @JsonIgnore
     private String searchableText;
