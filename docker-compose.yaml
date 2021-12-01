@@ -21,15 +21,23 @@ services:
       - 9200:9200
     environment:
       - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
 
   backend:
     image: gcr.io/distroless/java:11-debug-nonroot
+    restart: on-failure
+    depends_on:
+      - virtuoso
+      - elasticsearch
     volumes:
-      - .:/app
-    working_dir: /app
-    entrypoint: [ "sh", "/app/gradlew" ]
-    command:
-      - bootRun
+      - ${PWD}/build/libs/dati-semantic-backend-0.0.1-SNAPSHOT.jar:/app.jar
+    command: [ "/app.jar" ]
     ports:
       - 8080:8080
+    environment:
+      - ELASTICSEARCH_HOST=elasticsearch
+      - ELASTICSEARCH_PORT=9200
+      - VIRTUOSO_SPARQL_URL=http://virtuoso:8890/sparql
+      - VIRTUOSO_SPARQL_GRAPH_STORE_URL=http://virtuoso:8890/sparql-graph-crud
+      - HARVESTER_REPOSITORIES=https://github.com/ash1425/sample-ontology-repo
 
