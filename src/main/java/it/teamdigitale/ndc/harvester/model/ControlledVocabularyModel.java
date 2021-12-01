@@ -1,18 +1,21 @@
 package it.teamdigitale.ndc.harvester.model;
 
+import static it.teamdigitale.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
 import it.teamdigitale.ndc.harvester.model.exception.InvalidModelException;
+import static it.teamdigitale.ndc.harvester.model.extractors.NodeExtractor.extractNodes;
 import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
+import java.util.List;
+import static java.util.Objects.isNull;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
+import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
+import static org.apache.jena.vocabulary.DCAT.distribution;
 import org.apache.jena.vocabulary.DCTerms;
-
-import static it.teamdigitale.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
-import static java.util.Objects.isNull;
-import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 
 @Slf4j
 public class ControlledVocabularyModel extends BaseSemanticAssetModel {
@@ -73,9 +76,14 @@ public class ControlledVocabularyModel extends BaseSemanticAssetModel {
     @Override
     public SemanticAssetMetadata extractMetadata() {
         return super.extractMetadata().toBuilder()
+                .distributionUrls(getDistributionUrls())
                 .keyConcept(getKeyConcept())
                 .endpointUrl(getNdcEndpointUrl()) // assumption is that ndc endpoint url will be added to model before indexing
                 .build();
+    }
+
+    private List<String> getDistributionUrls() {
+        return extractNodes(getMainResource(), distribution).stream().map(Resource::getURI).collect(Collectors.toList());
     }
 
     private String getNdcEndpointUrl() {

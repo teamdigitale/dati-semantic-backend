@@ -7,7 +7,6 @@ import static org.apache.jena.rdf.model.ResourceFactory.createLangLiteral;
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.apache.jena.vocabulary.DCAT.contactPoint;
-import static org.apache.jena.vocabulary.DCAT.distribution;
 import static org.apache.jena.vocabulary.DCAT.keyword;
 import static org.apache.jena.vocabulary.DCAT.theme;
 import static org.apache.jena.vocabulary.DCTerms.accrualPeriodicity;
@@ -63,8 +62,6 @@ class BaseSemanticAssetModelTest {
             .addProperty(modified, "2021-03-02")
             .addProperty(theme, createResource("theme"))
             .addProperty(accrualPeriodicity, createResource("IRREG"))
-            .addProperty(distribution, createResource("rdf file path"))
-            .addProperty(distribution, createResource("ttl file path"))
             .addProperty(subject, createResource("subTheme1"))
             .addProperty(subject, createResource("subTheme2"))
             .addProperty(contactPoint, jenaModel.createResource("http://contactPoint")
@@ -196,22 +193,6 @@ class BaseSemanticAssetModelTest {
     @Test
     void shouldFailWhenExtractingMetadataWithOutAccrualPeriodicity() {
         jenaModel.getResource(CV_IRI).removeAll(accrualPeriodicity);
-
-        assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(
-            InvalidModelException.class);
-    }
-
-    @Test
-    void shouldExtractMetadataWithDistribution() {
-        SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
-
-        assertThat(metadata.getDistributionUrls()).containsExactlyInAnyOrder("rdf file path",
-            "ttl file path");
-    }
-
-    @Test
-    void shouldFailWhenExtractingMetadataWithOutDistribution() {
-        jenaModel.getResource(CV_IRI).removeAll(distribution);
 
         assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(
             InvalidModelException.class);

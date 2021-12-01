@@ -2,27 +2,27 @@ package it.teamdigitale.ndc.integration;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.mockito.Mockito.when;
-import static org.springframework.data.elasticsearch.core.mapping.IndexCoordinates.of;
-
 import io.restassured.response.Response;
 import it.teamdigitale.ndc.controller.dto.SemanticAssetSearchResult;
 import it.teamdigitale.ndc.harvester.AgencyRepositoryService;
 import it.teamdigitale.ndc.harvester.HarvesterService;
 import it.teamdigitale.ndc.harvester.SemanticAssetType;
 import it.teamdigitale.ndc.harvester.model.CvPath;
+import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
 import it.teamdigitale.ndc.repository.TripleStoreRepository;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import static org.springframework.data.elasticsearch.core.mapping.IndexCoordinates.of;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
@@ -68,18 +68,19 @@ public class RestApiIntegrationTests {
         //when
         Response searchResponse =
             when().get(
-                String.format("http://localhost:%d/semantic-assets/search?term=ricettive", port));
+                String.format("http://localhost:%d/semantic-assets/search?term=", port));
 
         //then
         searchResponse.then()
             .statusCode(200)
             .body("totalPages", equalTo(1))
             .body("pageNumber", equalTo(1))
-            .body("data.size()", equalTo(1))
+            .body("data.size()", equalTo(2))
             .body("data[0].assetIri", equalTo(
                 "https://w3id.org/italia/controlled-vocabulary/classifications-for-accommodation-facilities/accommodation-star-rating"))
             .body("data[0].rightsHolder.iri", equalTo("http://spcdata.digitpa.gov.it/browse/page/Amministrazione/agid"))
-            .body("data[0].rightsHolder.summary", equalTo("Agenzia per l'Italia Digitale"));
+            .body("data[0].rightsHolder.summary", equalTo("Agenzia per l'Italia Digitale"))
+            .body("data[1].assetIri", equalTo("https://w3id.org/italia/onto/CulturalHeritage"));
 
         String iri =
             searchResponse.getBody().as(SemanticAssetSearchResult.class).getData().get(0).getAssetIri();
@@ -140,6 +141,7 @@ public class RestApiIntegrationTests {
         when(agencyRepositoryService.cloneRepo(repositoryUrl)).thenReturn(cloneDir);
         when(agencyRepositoryService.getControlledVocabularyPaths(cloneDir)).thenReturn(
             List.of(CvPath.of(dir + "/cv.ttl", dir + "/cv.csv")));
+        when(agencyRepositoryService.getOntologyPaths(cloneDir)).thenReturn(List.of(new SemanticAssetPath(dir + "/onto.ttl")));
         harvesterService.harvest(repositoryUrl);
     }
 }
