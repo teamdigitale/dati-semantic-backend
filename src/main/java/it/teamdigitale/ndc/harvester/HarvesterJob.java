@@ -10,7 +10,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import java.util.List;
 
 @Configuration
-@EnableScheduling
+//@EnableScheduling
 @Slf4j
 public class HarvesterJob {
 
@@ -25,7 +25,7 @@ public class HarvesterJob {
         this.repos = repos;
     }
 
-    @Scheduled(cron = "0 0 22 ? * *")
+    //    @Scheduled(cron = "0 0 22 ? * *")
     public void harvest() {
         for (String repo : repos) {
             try {

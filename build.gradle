@@ -29,12 +29,15 @@ repositories {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation group: 'org.springframework.data', name: 'spring-data-elasticsearch', version: '4.2.6'
+    implementation 'org.springframework.boot:spring-boot-starter-batch'
+
+    implementation 'org.springframework.data:spring-data-elasticsearch:4.2.6'
     implementation 'org.apache.jena:apache-jena-libs:4.2.0'
     implementation 'org.apache.jena:jena-querybuilder:4.2.0'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springdoc:springdoc-openapi-ui:1.5.12'
     implementation 'org.eclipse.jgit:org.eclipse.jgit:5.13.0.202109080827-r'
+    runtimeOnly 'mysql:mysql-connector-java:8.0.26'
 
     compileOnly 'org.projectlombok:lombok'
     testCompileOnly 'org.projectlombok:lombok'
