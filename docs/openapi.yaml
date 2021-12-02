@@ -1,0 +1,249 @@
+openapi: 3.0.1
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+  - url: https://ndc-dev.apps.cloudpub.testedev.istat.it/
+    description: Generated server url
+paths:
+  /scheduler/harvester:
+    post:
+      tags:
+        - scheduled-jobs-controller
+      operationId: csv
+      parameters:
+        - name: repoURI
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+  "/vocabularies/{rights_holder}/{key_concept}":
+    get:
+      tags:
+        - vocabulary-data-controller
+      operationId: fetchVocabularyData
+      parameters:
+        - name: rights_holder
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: key_concept
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: page_number
+          in: query
+          required: false
+          schema:
+            minimum: 1
+            type: integer
+            format: int32
+            default: 1
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            maximum: 200
+            minimum: 1
+            type: integer
+            format: int32
+            default: 10
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/VocabularyDataDto"
+  /semantic-assets/search:
+    get:
+      tags:
+        - semantic-assets-controller
+      operationId: search
+      parameters:
+        - name: term
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: page_number
+          in: query
+          required: false
+          schema:
+            minimum: 1
+            type: integer
+            format: int32
+            default: 1
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            maximum: 200
+            minimum: 1
+            type: integer
+            format: int32
+            default: 10
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/SemanticAssetSearchResult"
+  /semantic-assets/details:
+    get:
+      tags:
+        - semantic-assets-controller
+      operationId: getDetails
+      parameters:
+        - name: iri
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/SemanticAssetDetailsDto"
+components:
+  schemas:
+    VocabularyDataDto:
+      type: object
+      properties:
+        totalResults:
+          type: integer
+          format: int64
+        pageNumber:
+          type: integer
+          format: int32
+        data:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: object
+    NodeSummary:
+      type: object
+      properties:
+        iri:
+          type: string
+        summary:
+          type: string
+    SemanticAssetSearchResult:
+      type: object
+      properties:
+        totalPages:
+          type: integer
+          format: int32
+        pageNumber:
+          type: integer
+          format: int32
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/SemanticAssetsSearchDto"
+    SemanticAssetsSearchDto:
+      type: object
+      properties:
+        assetIri:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum:
+            - ontology
+            - controlled vocabulary
+            - schema
+        modified:
+          type: string
+          format: date
+        themes:
+          type: array
+          items:
+            type: string
+        rightsHolder:
+          $ref: "#/components/schemas/NodeSummary"
+    SemanticAssetDetailsDto:
+      type: object
+      properties:
+        assetIri:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum:
+            - ontology
+            - controlled vocabulary
+            - schema
+        modifiedOn:
+          type: string
+          format: date
+        themes:
+          type: array
+          items:
+            type: string
+        rightsHolder:
+          $ref: "#/components/schemas/NodeSummary"
+        accrualPeriodicity:
+          type: string
+        distributionUrls:
+          type: array
+          items:
+            type: string
+        subjects:
+          type: array
+          items:
+            type: string
+        contactPoint:
+          $ref: "#/components/schemas/NodeSummary"
+        publishers:
+          type: array
+          items:
+            $ref: "#/components/schemas/NodeSummary"
+        creators:
+          type: array
+          items:
+            $ref: "#/components/schemas/NodeSummary"
+        versionInfo:
+          type: string
+        issuedOn:
+          type: string
+          format: date
+        languages:
+          type: array
+          items:
+            type: string
+        temporal:
+          type: string
+        conformsTo:
+          type: array
+          items:
+            $ref: "#/components/schemas/NodeSummary"
+        keyConcept:
+          type: string
+        endpointUrl:
+          type: string
+        keyClasses:
+          type: array
+          items:
+            $ref: "#/components/schemas/NodeSummary"
+        prefix:
+          type: string
+        projects:
+          type: array
+          items:
+            $ref: "#/components/schemas/NodeSummary"
