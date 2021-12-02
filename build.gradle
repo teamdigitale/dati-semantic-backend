@@ -55,6 +55,7 @@ dependencies {
     testImplementation "org.testcontainers:elasticsearch:1.16.2"
     testImplementation "org.testcontainers:testcontainers:1.16.0"
     testImplementation "org.testcontainers:junit-jupiter:1.16.0"
+    testImplementation "com.h2database:h2:1.4.192"
 
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 }
@@ -104,7 +105,7 @@ jacocoTestCoverageVerification {
                     'it.teamdigitale.ndc.config.*',
                     'it.teamdigitale.ndc.Application',
                     'it.teamdigitale.ndc.harvester.util.*',
-                    'it.teamdigitale.ndc.controller.ScheduledJobsController',
+                    'it.teamdigitale.ndc.controller.HarvestJobController',
             ]
         }
     }
