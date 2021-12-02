@@ -27,24 +27,6 @@ public class BatchConfiguration {
     private HarvesterService harvesterService;
     @Value("#{'${harvester.repositories}'.split(',')}")
     private List<String> repos;
-    //    @Value("${database.driver}")
-    //    private String databaseDriver;
-    //    @Value("${database.url}")
-    //    private String databaseUrl;
-    //    @Value("${database.username}")
-    //    private String databaseUsername;
-    //    @Value("${database.password}")
-    //    private String databasePassword;
-
-    //    @Bean
-    //    public DataSource dataSource() {
-    //        DriverManagerDataSource dataSource = new DriverManagerDataSource();
-    //        dataSource.setDriverClassName(databaseDriver);
-    //        dataSource.setUrl(databaseUrl);
-    //        dataSource.setUsername(databaseUsername);
-    //        dataSource.setPassword(databasePassword);
-    //        return dataSource;
-    //    }
 
     @Bean
     public Job harvestSemanticAssetsJob() {
