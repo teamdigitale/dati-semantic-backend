@@ -1,11 +1,12 @@
 package it.teamdigitale.ndc.controller.dto;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import it.teamdigitale.ndc.harvester.SemanticAssetType;
 import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
 import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
 import java.time.LocalDate;
-import static org.assertj.core.api.Assertions.assertThat;
-import org.elasticsearch.common.collect.List;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class SemanticAssetDetailsDtoTest {
@@ -38,9 +39,11 @@ class SemanticAssetDetailsDtoTest {
                 buildNodeSummary("http://skos2", "skos2 name")))
             .keyConcept("keyConcept")
             .endpointUrl("https://example.com/endpoint")
-            .keyClasses(List.of(buildNodeSummary("http://Class1", "Class1"), buildNodeSummary("http://Class2", "Class2")))
+            .keyClasses(List.of(buildNodeSummary("http://Class1", "Class1"),
+                buildNodeSummary("http://Class2", "Class2")))
             .prefix("prefix")
-            .projects(List.of(buildNodeSummary("http://project1", "project1"), buildNodeSummary("http://project2", "project2")))
+            .projects(List.of(buildNodeSummary("http://project1", "project1"),
+                buildNodeSummary("http://project2", "project2")))
             .build();
 
         SemanticAssetDetailsDto dto = SemanticAssetDetailsDto.from(metadata);

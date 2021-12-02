@@ -16,7 +16,7 @@ import it.teamdigitale.ndc.controller.exception.SemanticAssetNotFoundException;
 import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
 import it.teamdigitale.ndc.service.SemanticAssetSearchService;
 import java.time.LocalDate;
-import org.elasticsearch.common.collect.List;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -59,9 +59,11 @@ public class SemanticAssetsControllerMvcTest {
                 buildNodeSummary("http://publisher2", "publisher 2 name")))
             .subjects(List.of("some-subject", "some-other-subject"))
             .versionInfo("some-version-info")
-            .keyClasses(List.of(buildNodeSummary("http://Class1", "Class1"), buildNodeSummary("http://Class2", "Class2")))
+            .keyClasses(List.of(buildNodeSummary("http://Class1", "Class1"),
+                buildNodeSummary("http://Class2", "Class2")))
             .prefix("prefix")
-            .projects(List.of(buildNodeSummary("http://project1", "project1"), buildNodeSummary("http://project2", "project2")))
+            .projects(List.of(buildNodeSummary("http://project1", "project1"),
+                buildNodeSummary("http://project2", "project2")))
             .build());
 
         mockMvc.perform(get("/semantic-assets/details").param("iri", "some-iri"))

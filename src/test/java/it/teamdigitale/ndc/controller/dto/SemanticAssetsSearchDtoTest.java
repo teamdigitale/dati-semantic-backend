@@ -6,7 +6,7 @@ import it.teamdigitale.ndc.harvester.SemanticAssetType;
 import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
 import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
 import java.time.LocalDate;
-import org.elasticsearch.common.collect.List;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class SemanticAssetsSearchDtoTest {
