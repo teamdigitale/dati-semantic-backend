@@ -64,8 +64,8 @@ public class HarvesterServiceTest {
     @Test
     void shouldHarvestOntologyFiles() throws IOException {
         String repoUrl = "someRepoUri";
-        SemanticAssetPath path1 = new SemanticAssetPath("test1.ttl");
-        SemanticAssetPath path2 = new SemanticAssetPath("test2.ttl");
+        SemanticAssetPath path1 = SemanticAssetPath.of("test1.ttl");
+        SemanticAssetPath path2 = SemanticAssetPath.of("test2.ttl");
 
         when(agencyRepoService.cloneRepo(repoUrl)).thenReturn(clonedRepoPath);
         when(agencyRepoService.getOntologyPaths(clonedRepoPath)).thenReturn(List.of(path1, path2));
@@ -81,8 +81,8 @@ public class HarvesterServiceTest {
     @Test
     void shouldMoveOnToNextOntologyIfProcessingOneFails() throws IOException {
         String repoUrl = "someRepoUri";
-        SemanticAssetPath path1 = new SemanticAssetPath("test1.ttl");
-        SemanticAssetPath path2 = new SemanticAssetPath("test2.ttl");
+        SemanticAssetPath path1 = SemanticAssetPath.of("test1.ttl");
+        SemanticAssetPath path2 = SemanticAssetPath.of("test2.ttl");
 
         when(agencyRepoService.cloneRepo(repoUrl)).thenReturn(clonedRepoPath);
         when(agencyRepoService.getOntologyPaths(clonedRepoPath)).thenReturn(List.of(path1, path2));
@@ -136,7 +136,7 @@ public class HarvesterServiceTest {
     @Test
     void shouldClearNamedGraphAndMetadataBeforeProcessingData() throws IOException {
         String repoUrl = "someRepoUri";
-        SemanticAssetPath path1 = new SemanticAssetPath("test1.ttl");
+        SemanticAssetPath path1 = SemanticAssetPath.of("test1.ttl");
 
         when(agencyRepoService.cloneRepo(repoUrl)).thenReturn(clonedRepoPath);
         when(agencyRepoService.getOntologyPaths(clonedRepoPath)).thenReturn(List.of(path1));
@@ -152,7 +152,7 @@ public class HarvesterServiceTest {
     @Test
     void shouldCleanUpTemporaryFolderWithRepoAfterProcessing() throws IOException {
         String repoUrl = "someRepoUri";
-        SemanticAssetPath path1 = new SemanticAssetPath("test1.ttl");
+        SemanticAssetPath path1 = SemanticAssetPath.of("test1.ttl");
 
         when(agencyRepoService.cloneRepo(repoUrl)).thenReturn(clonedRepoPath);
         when(agencyRepoService.getOntologyPaths(clonedRepoPath)).thenReturn(List.of(path1));
@@ -165,7 +165,7 @@ public class HarvesterServiceTest {
     @Test
     void shouldCleanUpTemporaryFolderWithRepoAfterFailure() throws IOException {
         String repoUrl = "someRepoUri";
-        SemanticAssetPath path1 = new SemanticAssetPath("test1.ttl");
+        SemanticAssetPath path1 = SemanticAssetPath.of("test1.ttl");
 
         when(agencyRepoService.cloneRepo(repoUrl)).thenReturn(clonedRepoPath);
         when(agencyRepoService.getOntologyPaths(clonedRepoPath)).thenReturn(List.of(path1));

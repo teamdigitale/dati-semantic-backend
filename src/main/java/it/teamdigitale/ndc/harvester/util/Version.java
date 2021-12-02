@@ -15,6 +15,11 @@ import java.util.regex.Pattern;
 public class Version implements Comparable<Version> {
     private static final Pattern FULL_PATTERN = Pattern.compile("v?(\\d+)((?:\\.\\d+)*)");
     private static final Pattern SUB_VERSIONS_PATTERN = Pattern.compile("\\.(\\d+)");
+
+    public String getSourceString() {
+        return sourceString;
+    }
+
     private final String sourceString;
     private final boolean isLatest;
     private final List<Integer> tokens;

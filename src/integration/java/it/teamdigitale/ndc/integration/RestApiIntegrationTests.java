@@ -141,7 +141,7 @@ public class RestApiIntegrationTests {
         when(agencyRepositoryService.cloneRepo(repositoryUrl)).thenReturn(cloneDir);
         when(agencyRepositoryService.getControlledVocabularyPaths(cloneDir)).thenReturn(
             List.of(CvPath.of(dir + "/cv.ttl", dir + "/cv.csv")));
-        when(agencyRepositoryService.getOntologyPaths(cloneDir)).thenReturn(List.of(new SemanticAssetPath(dir + "/onto.ttl")));
+        when(agencyRepositoryService.getOntologyPaths(cloneDir)).thenReturn(List.of(SemanticAssetPath.of(dir + "/onto.ttl")));
         harvesterService.harvest(repositoryUrl);
     }
 }

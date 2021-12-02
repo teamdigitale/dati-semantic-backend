@@ -25,7 +25,7 @@ class OntologyFolderScannerTest extends BaseFolderScannerTest {
 
         List<SemanticAssetPath> ontologyPaths = scanner.scanFolder(folder);
 
-        assertThat(ontologyPaths).containsOnly(new SemanticAssetPath("onto.ttl"));
+        assertThat(ontologyPaths).containsOnly(SemanticAssetPath.of("onto.ttl"));
     }
 
     @ParameterizedTest
@@ -35,7 +35,7 @@ class OntologyFolderScannerTest extends BaseFolderScannerTest {
 
         List<SemanticAssetPath> ontologyPaths = scanner.scanFolder(folder);
 
-        assertThat(ontologyPaths).containsOnly(new SemanticAssetPath("onto.ttl"));
+        assertThat(ontologyPaths).containsOnly(SemanticAssetPath.of("onto.ttl"));
     }
 
     @ParameterizedTest
@@ -45,6 +45,6 @@ class OntologyFolderScannerTest extends BaseFolderScannerTest {
 
         List<SemanticAssetPath> ontologyPaths = scanner.scanFolder(folder);
 
-        assertThat(ontologyPaths).containsOnly(new SemanticAssetPath(fileName));
+        assertThat(ontologyPaths).containsOnly(SemanticAssetPath.of(fileName));
     }
 }

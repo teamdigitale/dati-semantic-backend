@@ -26,7 +26,7 @@ public class OntologyFolderScanner implements FolderScanner<SemanticAssetPath> {
                 .min(Comparator.comparingInt(p -> p.toString().length()));
 
         return ttl
-                .map(path -> new SemanticAssetPath(path.toString()))
+                .map(path -> SemanticAssetPath.of(path.toString()))
                 .stream().collect(Collectors.toList());
     }
 }

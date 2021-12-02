@@ -58,7 +58,7 @@ class SemanticAssetPathProcessorTest {
         final String repoUrl = "https://github.com/italia/daf-ontologie-vocabolari-controllati";
         String ttlFile = "somefile.ttl";
         TestSemanticAssetPathProcessor processor = new TestSemanticAssetPathProcessor(tripleStoreRepository, metadataRepository);
-        SemanticAssetPath path = new SemanticAssetPath(ttlFile);
+        SemanticAssetPath path = SemanticAssetPath.of(ttlFile);
         SemanticAssetMetadata metadata = SemanticAssetMetadata.builder().build();
         when(modelDecorator.getRdfModel()).thenReturn(model);
         when(modelDecorator.extractMetadata()).thenReturn(metadata);
@@ -75,7 +75,7 @@ class SemanticAssetPathProcessorTest {
         final String repoUrl = "https://github.com/italia/daf-ontologie-vocabolari-controllati";
         String ttlFile = "somefile.ttl";
         TestSemanticAssetPathProcessor processor = new TestSemanticAssetPathProcessor(tripleStoreRepository, metadataRepository);
-        SemanticAssetPath path = new SemanticAssetPath(ttlFile);
+        SemanticAssetPath path = SemanticAssetPath.of(ttlFile);
         SemanticAssetMetadata metadata = SemanticAssetMetadata.builder().build();
         when(modelDecorator.getRdfModel()).thenReturn(model);
         TripleStoreRepositoryException repositoryException = new TripleStoreRepositoryException("Oops!");
@@ -94,7 +94,7 @@ class SemanticAssetPathProcessorTest {
         final String repoUrl = "https://github.com/italia/daf-ontologie-vocabolari-controllati";
         String ttlFile = "somefile.ttl";
         TestSemanticAssetPathProcessor processor = spy(new TestSemanticAssetPathProcessor(tripleStoreRepository, metadataRepository));
-        SemanticAssetPath path = new SemanticAssetPath(ttlFile);
+        SemanticAssetPath path = SemanticAssetPath.of(ttlFile);
         InvalidModelException invalidModelException = new InvalidModelException("Cannot load model", new RuntimeException("Malformed TTL"));
         when(processor.loadModel(ttlFile, repoUrl)).thenThrow(invalidModelException);
 
@@ -111,7 +111,7 @@ class SemanticAssetPathProcessorTest {
         final String repoUrl = "https://github.com/italia/daf-ontologie-vocabolari-controllati";
         String ttlFile = "somefile.ttl";
         TestSemanticAssetPathProcessor processor = new TestSemanticAssetPathProcessor(tripleStoreRepository, metadataRepository);
-        SemanticAssetPath path = new SemanticAssetPath(ttlFile);
+        SemanticAssetPath path = SemanticAssetPath.of(ttlFile);
         InvalidModelException invalidModelException = new InvalidModelException("Cannot find main resource");
         when(modelDecorator.getMainResource()).thenThrow(invalidModelException);
 
@@ -128,7 +128,7 @@ class SemanticAssetPathProcessorTest {
         final String repoUrl = "https://github.com/italia/daf-ontologie-vocabolari-controllati";
         String ttlFile = "somefile.ttl";
         TestSemanticAssetPathProcessor processor = new TestSemanticAssetPathProcessor(tripleStoreRepository, metadataRepository);
-        SemanticAssetPath path = new SemanticAssetPath(ttlFile);
+        SemanticAssetPath path = SemanticAssetPath.of(ttlFile);
         RuntimeException enrichmentException = new RuntimeException("Something went wrong calculating enrichments");
         doThrow(enrichmentException).when(modelEnricher).accept(modelDecorator);
 

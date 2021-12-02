@@ -36,7 +36,7 @@ class OntologyPathProcessorTest {
     @Test
     void shouldProcessOntology() {
         String ttlFile = "cities.ttl";
-        SemanticAssetPath path = new SemanticAssetPath(ttlFile);
+        SemanticAssetPath path = SemanticAssetPath.of(ttlFile);
 
         when(modelFactory.createOntology(ttlFile, "some-repo")).thenReturn(ontologyModel);
         when(ontologyModel.getMainResource()).thenReturn(ontology);
