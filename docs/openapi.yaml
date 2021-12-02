@@ -1,50 +1,105 @@
 openapi: 3.0.1
 info:
-  title: OpenAPI definition
-  version: v0
+  title: NDC Semantic Backend
+  version: 0.0.1
+  description: |-
+    NDC Semantic Backend
+  termsOfService: /tos 
+  contact:
+    name: NDC Semantic Backend
+    email: info@teamdigitale.governo.it
+  license:
+    name: BSD-3-Clause
+    url: https://opensource.org/licenses/BSD-3-Clause
+  x-api-id: 000-000-000
+  x-summary: NDC Semantic Backend
+tags:
+- name: scheduled-jobs-controller
+  description: Scheduled Jobs Controller
+- name: vocabulary-data-controller
+- name: semantic-assets-controller
+- name: healthcheck
 servers:
   - url: https://ndc-dev.apps.cloudpub.testedev.istat.it/
     description: Generated server url
 paths:
+  /status:
+    get:
+      security: []
+      operationId: status
+      summary: Get server status
+      description: |-
+        Get server status. Unauthenticated.
+      tags:
+      - healthcheck
+      responses:
+        '200':
+          description: OK
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
   /scheduler/harvester:
     post:
+      security: []
       tags:
         - scheduled-jobs-controller
       operationId: csv
+      description: |-
+        What does it do?
       parameters:
         - name: repoURI
           in: query
           required: true
           schema:
             type: string
+            maxLength: 255
+            minLength: 8
+            pattern: ^https://[^\s/$.?#].[^\s]*$
       responses:
         "200":
           description: OK
-  "/vocabularies/{rights_holder}/{key_concept}":
+          content:
+            application/json:
+              schema:
+                type: object
+                description: |-
+                  What does it return?
+  "/vocabularies/{rightsholder}/{key_concept}":
     get:
+      security: []
       tags:
         - vocabulary-data-controller
       operationId: fetchVocabularyData
+      description: |-
+        What does it do?
       parameters:
-        - name: rights_holder
+        - name: rightsholder
           in: path
           required: true
           schema:
             type: string
+            pattern: >-
+              ^[^\s]{,64}$
+            maxLength: 64
         - name: key_concept
           in: path
           required: true
           schema:
             type: string
-        - name: page_number
+            pattern: >-
+              ^[^\s]{,64}$
+            maxLength: 64
+        - &cursor
+          name: "cursor" 
           in: query
           required: false
-          schema:
-            minimum: 1
-            type: integer
-            format: int32
-            default: 1
-        - name: page_size
+          schema: &cursor-schema
+            type: string
+            pattern: ^[^\s]{,64}$
+            maxLength: 64
+        - &limit
+          name: "limit" 
           in: query
           required: false
           schema:
@@ -57,42 +112,31 @@ paths:
         "200":
           description: OK
           content:
-            "*/*":
+            "application/json":
               schema:
                 $ref: "#/components/schemas/VocabularyDataDto"
   /semantic-assets/search:
     get:
+      security: []
       tags:
         - semantic-assets-controller
       operationId: search
+      description: |-
+        Search for semantic assets.
       parameters:
-        - name: term
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: page_number
-          in: query
-          required: false
-          schema:
-            minimum: 1
-            type: integer
-            format: int32
-            default: 1
-        - name: page_size
-          in: query
-          required: false
-          schema:
-            maximum: 200
-            minimum: 1
-            type: integer
-            format: int32
-            default: 10
+      - name: q
+        in: query
+        required: true
+        schema:
+          type: string
+          maxLength: 120
+      - <<: *limit
+      - <<: *cursor
       responses:
         "200":
           description: OK
           content:
-            "*/*":
+            "application/json":
               schema:
                 $ref: "#/components/schemas/SemanticAssetSearchResult"
   /semantic-assets/details:
@@ -110,9 +154,9 @@ paths:
         "200":
           description: OK
           content:
-            "*/*":
+            "application/json":
               schema:
-                $ref: "#/components/schemas/SemanticAssetDetailsDto"
+                $ref: "#/components/schemas/SemanticAsset"
 components:
   schemas:
     VocabularyDataDto:
@@ -121,9 +165,8 @@ components:
         totalResults:
           type: integer
           format: int64
-        pageNumber:
-          type: integer
-          format: int32
+        cursor:
+          <<: *cursor-schema
         data:
           type: array
           items:
@@ -135,8 +178,10 @@ components:
       properties:
         iri:
           type: string
+          format: uri
         summary:
           type: string
+          minLength: 0
     SemanticAssetSearchResult:
       type: object
       properties:
@@ -174,8 +219,11 @@ components:
             type: string
         rightsHolder:
           $ref: "#/components/schemas/NodeSummary"
-    SemanticAssetDetailsDto:
+    SemanticAsset:
       type: object
+      required:
+        - title
+        - description
       properties:
         assetIri:
           type: string
@@ -189,14 +237,14 @@ components:
             - ontology
             - controlled vocabulary
             - schema
-        modifiedOn:
+        modified_on:
           type: string
           format: date
         themes:
           type: array
           items:
             type: string
-        rightsHolder:
+        rightsholder:
           $ref: "#/components/schemas/NodeSummary"
         accrualPeriodicity:
           type: string
@@ -204,6 +252,8 @@ components:
           type: array
           items:
             type: string
+            minLength: 0
+            maxLength: 100
         subjects:
           type: array
           items:
@@ -247,3 +297,63 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/NodeSummary"
+    Problem:
+      additionalProperties: false
+      description: |-
+        This schema describes RFC7807 Problem Details for HTTP APIs.
+        The specification is intentionally flexible, and allows to adapt
+        the schema adding further properties, or not enforcing any of the properties
+        below.
+
+        To make this schema safe by default, additionalProperties are forbidden though.
+        In case you need them, you can either re-define Problem or extend it
+        using `allOf`.
+      properties:
+        detail:
+          description: |
+            A human readable explanation specific to this occurrence of the
+            problem. You MUST NOT expose internal informations, personal
+            data or implementation details through this field.
+
+            `detail` supports localized patterns whereas `title` pattern is only in ascii.
+          example: Request took too long to complete.
+          maxLength: 4096
+          pattern: ^.{0,1024}$
+          type: string
+        instance:
+          description: |
+            An absolute URI that identifies the specific occurrence of the problem.
+            It may or may not yield further information if dereferenced.
+          format: uri
+          maxLength: 2048
+          type: string
+        status:
+          description: |
+            The HTTP status code generated by the origin server for this occurrence
+            of the problem.
+          example: 503
+          exclusiveMaximum: true
+          format: int32
+          maximum: 600
+          minimum: 100
+          type: integer
+        title:
+          description: |
+            A short, summary of the problem type. Written in english and readable
+            for engineers (usually not suited for non technical stakeholders and
+            not localized): the expressed pattern does not support unicode characters.
+          example: Service Unavailable
+          maxLength: 64
+          pattern: ^[ -~]{0,64}$
+          type: string
+        type:
+          default: about:blank
+          description: |
+            An absolute URI that identifies the problem type.  When dereferenced,
+            it SHOULD provide human-readable documentation for the problem type
+            (e.g., using HTML).
+          example: https://tools.ietf.org/html/rfc7231#section-6.6.4
+          format: uri
+          maxLength: 2048
+          type: string
+      type: object
