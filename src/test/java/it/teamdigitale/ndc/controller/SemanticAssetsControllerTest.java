@@ -8,6 +8,8 @@ import static org.mockito.Mockito.when;
 import it.teamdigitale.ndc.controller.dto.SemanticAssetDetailsDto;
 import it.teamdigitale.ndc.controller.dto.SemanticAssetSearchResult;
 import it.teamdigitale.ndc.service.SemanticAssetSearchService;
+import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -24,11 +26,17 @@ public class SemanticAssetsControllerTest {
     void shouldFetchResultsFromRepositoryForGivenKeyword() {
         SemanticAssetsController controller = new SemanticAssetsController(service);
         SemanticAssetSearchResult expectedResult = SemanticAssetSearchResult.builder().build();
-        when(service.search(any(), any())).thenReturn(expectedResult);
+        when(service.search(any(), any(), any(), any())).thenReturn(expectedResult);
 
-        SemanticAssetSearchResult actualResult = controller.search("searchTerm", 2, 10);
+        SemanticAssetSearchResult actualResult =
+            controller.search("searchTerm", 2, 10,
+                Set.of("CONTROLLED_VOCABULARY"),
+                Set.of("EDUC"));
 
-        verify(service).search("searchTerm", Pageable.ofSize(10).withPage(1));
+        verify(service).search("searchTerm",
+            Set.of("CONTROLLED_VOCABULARY"),
+            Set.of("EDUC"),
+            Pageable.ofSize(10).withPage(1));
         assertThat(actualResult).isEqualTo(expectedResult);
     }
 

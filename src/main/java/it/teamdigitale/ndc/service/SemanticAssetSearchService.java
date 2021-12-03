@@ -6,33 +6,30 @@ import it.teamdigitale.ndc.controller.dto.SemanticAssetsSearchDto;
 import it.teamdigitale.ndc.controller.exception.SemanticAssetNotFoundException;
 import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.teamdigitale.ndc.repository.SemanticAssetMetadataRepository;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.elasticsearch.core.SearchPage;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
 
 @Service
 @RequiredArgsConstructor
 public class SemanticAssetSearchService {
     private final SemanticAssetMetadataRepository metadataRepository;
 
-    public SemanticAssetSearchResult search(String term, Pageable pageable) {
-        Page<SemanticAssetMetadata> resultPage;
+    public SemanticAssetSearchResult search(String term, Set<String> types,
+                                            Set<String> themes, Pageable pageable) {
 
-        //TODO find a way to do this with elasticsearch
-        if (ObjectUtils.isEmpty(term)) {
-            resultPage = metadataRepository.findAll(pageable);
-        } else {
-            resultPage = metadataRepository.findBySearchableText(term, pageable);
-        }
+        SearchPage<SemanticAssetMetadata> searchResults =
+            metadataRepository.search(term, types, themes, pageable);
 
         return SemanticAssetSearchResult.builder()
-            .pageNumber(resultPage.getNumber() + 1)
-            .totalPages(resultPage.getTotalPages())
-            .data(resultPage.stream()
-                .map(SemanticAssetsSearchDto::from)
+            .pageNumber(searchResults.getPageable().getPageNumber() + 1)
+            .totalPages(searchResults.getTotalPages())
+            .data(searchResults.getContent()
+                .stream()
+                .map(s -> SemanticAssetsSearchDto.from(s.getContent()))
                 .collect(Collectors.toList()))
             .build();
     }

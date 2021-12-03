@@ -73,7 +73,8 @@ public class HarvesterService {
 
     private void cleanUpIndexedMetadata(String repoUrl) {
         log.debug("Cleaning up indexed metadata for {}", repoUrl);
-        semanticAssetMetadataRepository.deleteByRepoUrl(repoUrl);
+        long deletedCount = semanticAssetMetadataRepository.deleteByRepoUrl(repoUrl);
+        log.debug("Deleted {} indexed metadata for {}", deletedCount, repoUrl);
     }
 
     private void harvestOntologies(String repoUrl, Path rootPath) {

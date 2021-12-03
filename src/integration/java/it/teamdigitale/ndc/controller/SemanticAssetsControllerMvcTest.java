@@ -1,6 +1,8 @@
 package it.teamdigitale.ndc.controller;
 
 import static it.teamdigitale.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -17,14 +19,16 @@ import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
 import it.teamdigitale.ndc.service.SemanticAssetSearchService;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
-@WebMvcTest(SemanticAssetsController.class)
+@WebMvcTest(value = SemanticAssetsController.class)
 public class SemanticAssetsControllerMvcTest {
 
     @Autowired
@@ -138,23 +142,36 @@ public class SemanticAssetsControllerMvcTest {
 
     @Test
     void shouldReturnMatchingAssetsUsingDefaultPageParams() throws Exception {
-        when(searchService.search("searchText", Pageable.ofSize(10).withPage(0))).thenReturn(
-            SemanticAssetSearchResult.builder()
-                .pageNumber(1)
-                .totalPages(5)
-                .data(List.of(SemanticAssetsSearchDto.builder()
-                    .assetIri("some-iri")
-                    .description("some-description")
-                    .modified(LocalDate.parse("2020-01-01"))
-                    .rightsHolder(buildNodeSummary("https://example.com/rightsHolder",
-                        "example rights holder"))
-                    .themes(List.of("study", "sports"))
-                    .title("searchText contains")
-                    .type(CONTROLLED_VOCABULARY)
-                    .build()))
-                .build());
+        when(searchService.search(any(), any(), any(), any())
+        ).thenReturn(SemanticAssetSearchResult.builder()
+            .pageNumber(1)
+            .totalPages(5)
+            .data(List.of(SemanticAssetsSearchDto.builder()
+                .assetIri("some-iri")
+                .description("some-description")
+                .modified(LocalDate.parse("2020-01-01"))
+                .rightsHolder(buildNodeSummary("https://example.com/rightsHolder",
+                    "example rights holder"))
+                .themes(List.of("EDUC", "AGRI"))
+                .title("searchText contains")
+                .type(CONTROLLED_VOCABULARY)
+                .build()))
+            .build());
 
-        mockMvc.perform(get("/semantic-assets/search").param("term", "searchText"))
+        ResultActions apiResult = mockMvc.perform(get("/semantic-assets/search")
+            .param("term", "searchText")
+            .param("type", "CONTROLLED_VOCABULARY")
+            .param("type", "ONTOLOGY")
+            .param("theme", "AGRI")
+            .param("theme", "EDUC")
+        );
+
+        verify(searchService).search("searchText",
+            Set.of("CONTROLLED_VOCABULARY", "ONTOLOGY"),
+            Set.of("EDUC", "AGRI"),
+            Pageable.ofSize(10).withPage(0));
+
+        apiResult
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(content().contentType("application/json"))
@@ -166,10 +183,19 @@ public class SemanticAssetsControllerMvcTest {
             .andExpect(
                 jsonPath("$.data[0].rightsHolder.iri").value("https://example.com/rightsHolder"))
             .andExpect(jsonPath("$.data[0].rightsHolder.summary").value("example rights holder"))
-            .andExpect(jsonPath("$.data[0].themes[0]").value("study"))
-            .andExpect(jsonPath("$.data[0].themes[1]").value("sports"))
+            .andExpect(jsonPath("$.data[0].themes[0]").value("EDUC"))
+            .andExpect(jsonPath("$.data[0].themes[1]").value("AGRI"))
             .andExpect(jsonPath("$.data[0].title").value("searchText contains"))
             .andExpect(jsonPath("$.data[0].type").value("CONTROLLED_VOCABULARY"));
+    }
+
+    @Test
+    void shouldSearchWithDefaultWhenNoParamsProvided() throws Exception {
+        mockMvc.perform(get("/semantic-assets/search"))
+            .andDo(print())
+            .andExpect(status().isOk());
+
+        verify(searchService).search("", Set.of(), Set.of(), Pageable.ofSize(10).withPage(0));
     }
 
     @Test

@@ -13,13 +13,16 @@ import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.teamdigitale.ndc.repository.SemanticAssetMetadataRepository;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.elasticsearch.core.SearchHit;
+import org.springframework.data.elasticsearch.core.SearchPage;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -27,6 +30,12 @@ class SemanticAssetSearchServiceTest {
 
     @Mock
     private SemanticAssetMetadataRepository metadataRepository;
+
+    @Mock
+    SearchPage<SemanticAssetMetadata> searchPageMock;
+
+    @Mock
+    SearchHit<SemanticAssetMetadata> searchHitMock;
 
     @InjectMocks
     private SemanticAssetSearchService searchService;
@@ -37,38 +46,25 @@ class SemanticAssetSearchServiceTest {
             .iri("1").build();
         SemanticAssetMetadata expectedData2 = SemanticAssetMetadata.builder()
             .iri("2").build();
-        Pageable pageable = Pageable.ofSize(10).withPage(0);
-        when(metadataRepository.findBySearchableText(any(), any()))
-            .thenReturn(new PageImpl<>(List.of(expectedData1, expectedData2), pageable, 2));
 
-        SemanticAssetSearchResult result = searchService.search("term", pageable);
+        Pageable pageable = Pageable.ofSize(10).withPage(0);
+        when(metadataRepository.search(any(), any(), any(), any())).thenReturn(searchPageMock);
+        when(searchPageMock.getPageable()).thenReturn(PageRequest.of(0, 10));
+        when(searchPageMock.getTotalPages()).thenReturn(1);
+        when(searchPageMock.getContent()).thenReturn(List.of(searchHitMock, searchHitMock));
+        when(searchHitMock.getContent()).thenReturn(expectedData1).thenReturn(expectedData2);
+
+        SemanticAssetSearchResult result =
+            searchService.search("term", Set.of("ONTOLOGY", "SCHEMA"),
+                Set.of("EDUC", "AGRI"), pageable);
 
         assertThat(result.getTotalPages()).isEqualTo(1);
         assertThat(result.getPageNumber()).isEqualTo(1);
         assertThat(result.getData()).hasSize(2);
         assertThat(result.getData().stream().filter(e -> e.getAssetIri().equals("1"))).isNotNull();
         assertThat(result.getData().stream().filter(e -> e.getAssetIri().equals("2"))).isNotNull();
-        verify(metadataRepository).findBySearchableText("term", pageable);
-    }
-
-    @Test
-    void shouldGetAllWhenSearchTermIsEmpty() {
-        SemanticAssetMetadata expectedData1 = SemanticAssetMetadata.builder()
-            .iri("1").build();
-        SemanticAssetMetadata expectedData2 = SemanticAssetMetadata.builder()
-            .iri("2").build();
-        Pageable pageable = Pageable.ofSize(10).withPage(0);
-        when(metadataRepository.findAll(pageable))
-            .thenReturn(new PageImpl<>(List.of(expectedData1, expectedData2), pageable, 2));
-
-        SemanticAssetSearchResult result = searchService.search("", pageable);
-
-        assertThat(result.getTotalPages()).isEqualTo(1);
-        assertThat(result.getPageNumber()).isEqualTo(1);
-        assertThat(result.getData()).hasSize(2);
-        assertThat(result.getData().stream().filter(e -> e.getAssetIri().equals("1"))).isNotNull();
-        assertThat(result.getData().stream().filter(e -> e.getAssetIri().equals("2"))).isNotNull();
-        verify(metadataRepository).findAll(pageable);
+        verify(metadataRepository).search("term", Set.of("ONTOLOGY", "SCHEMA"),
+            Set.of("EDUC", "AGRI"), pageable);
     }
 
     @Test

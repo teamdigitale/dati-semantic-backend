@@ -1,5 +1,9 @@
 package it.teamdigitale.ndc.harvester.model.index;
 
+import static org.springframework.data.elasticsearch.annotations.FieldType.Date;
+import static org.springframework.data.elasticsearch.annotations.FieldType.Keyword;
+import static org.springframework.data.elasticsearch.annotations.FieldType.Text;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.teamdigitale.ndc.harvester.SemanticAssetType;
 import java.time.LocalDate;
@@ -10,9 +14,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
-import static org.springframework.data.elasticsearch.annotations.FieldType.Date;
-import static org.springframework.data.elasticsearch.annotations.FieldType.Keyword;
-import static org.springframework.data.elasticsearch.annotations.FieldType.Text;
 import org.springframework.data.elasticsearch.annotations.Setting;
 
 @Document(indexName = "semantic-asset-metadata")
