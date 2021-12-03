@@ -29,14 +29,14 @@ public class SemanticAssetsControllerTest {
         when(service.search(any(), any(), any(), any())).thenReturn(expectedResult);
 
         SemanticAssetSearchResult actualResult =
-            controller.search("searchTerm", 2, 10,
+            controller.search("searchTerm", 0, 10,
                 Set.of("CONTROLLED_VOCABULARY"),
                 Set.of("EDUC"));
 
         verify(service).search("searchTerm",
             Set.of("CONTROLLED_VOCABULARY"),
             Set.of("EDUC"),
-            Pageable.ofSize(10).withPage(1));
+            Pageable.ofSize(10).withPage(0));
         assertThat(actualResult).isEqualTo(expectedResult);
     }
 

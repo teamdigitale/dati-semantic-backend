@@ -7,7 +7,8 @@ import lombok.Data;
 @Data
 @Builder
 public class SemanticAssetSearchResult {
-    Integer totalPages;
-    Integer pageNumber;
+    Long totalCount;
+    Integer limit;
+    Long offset;
     List<SemanticAssetsSearchDto> data;
 }

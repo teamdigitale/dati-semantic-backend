@@ -49,8 +49,8 @@ class SemanticAssetSearchServiceTest {
 
         Pageable pageable = Pageable.ofSize(10).withPage(0);
         when(metadataRepository.search(any(), any(), any(), any())).thenReturn(searchPageMock);
-        when(searchPageMock.getPageable()).thenReturn(PageRequest.of(0, 10));
-        when(searchPageMock.getTotalPages()).thenReturn(1);
+        when(searchPageMock.getPageable()).thenReturn(PageRequest.of(1, 10));
+        when(searchPageMock.getTotalElements()).thenReturn(11L);
         when(searchPageMock.getContent()).thenReturn(List.of(searchHitMock, searchHitMock));
         when(searchHitMock.getContent()).thenReturn(expectedData1).thenReturn(expectedData2);
 
@@ -58,8 +58,9 @@ class SemanticAssetSearchServiceTest {
             searchService.search("term", Set.of("ONTOLOGY", "SCHEMA"),
                 Set.of("EDUC", "AGRI"), pageable);
 
-        assertThat(result.getTotalPages()).isEqualTo(1);
-        assertThat(result.getPageNumber()).isEqualTo(1);
+        assertThat(result.getTotalCount()).isEqualTo(11L);
+        assertThat(result.getLimit()).isEqualTo(10);
+        assertThat(result.getOffset()).isEqualTo(10L);
         assertThat(result.getData()).hasSize(2);
         assertThat(result.getData().stream().filter(e -> e.getAssetIri().equals("1"))).isNotNull();
         assertThat(result.getData().stream().filter(e -> e.getAssetIri().equals("2"))).isNotNull();

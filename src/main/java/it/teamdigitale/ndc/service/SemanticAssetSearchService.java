@@ -18,15 +18,17 @@ import org.springframework.stereotype.Service;
 public class SemanticAssetSearchService {
     private final SemanticAssetMetadataRepository metadataRepository;
 
-    public SemanticAssetSearchResult search(String term, Set<String> types,
+    public SemanticAssetSearchResult search(String queryPattern, Set<String> types,
                                             Set<String> themes, Pageable pageable) {
 
         SearchPage<SemanticAssetMetadata> searchResults =
-            metadataRepository.search(term, types, themes, pageable);
+            metadataRepository.search(queryPattern, types, themes, pageable);
 
+        Pageable resultPage = searchResults.getPageable();
         return SemanticAssetSearchResult.builder()
-            .pageNumber(searchResults.getPageable().getPageNumber() + 1)
-            .totalPages(searchResults.getTotalPages())
+            .totalCount(searchResults.getTotalElements())
+            .limit(resultPage.getPageSize())
+            .offset(resultPage.getOffset())
             .data(searchResults.getContent()
                 .stream()
                 .map(s -> SemanticAssetsSearchDto.from(s.getContent()))

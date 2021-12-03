@@ -70,7 +70,7 @@ public class SemanticAssetsControllerMvcTest {
                 buildNodeSummary("http://project2", "project2")))
             .build());
 
-        mockMvc.perform(get("/semantic-assets/details").param("iri", "some-iri"))
+        mockMvc.perform(get("/semantic-assets/byIri").param("iri", "some-iri"))
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(content().contentType("application/json"))
@@ -133,7 +133,7 @@ public class SemanticAssetsControllerMvcTest {
         when(searchService.findByIri("some-iri")).thenThrow(
             new SemanticAssetNotFoundException("some-iri"));
 
-        mockMvc.perform(get("/semantic-assets/details").param("iri", "some-iri"))
+        mockMvc.perform(get("/semantic-assets/byIri").param("iri", "some-iri"))
             .andDo(print())
             .andExpect(status().isNotFound())
             .andExpect(content().contentType("application/json"))
@@ -144,8 +144,9 @@ public class SemanticAssetsControllerMvcTest {
     void shouldReturnMatchingAssetsUsingDefaultPageParams() throws Exception {
         when(searchService.search(any(), any(), any(), any())
         ).thenReturn(SemanticAssetSearchResult.builder()
-            .pageNumber(1)
-            .totalPages(5)
+            .limit(10)
+            .offset(0L)
+            .totalCount(1L)
             .data(List.of(SemanticAssetsSearchDto.builder()
                 .assetIri("some-iri")
                 .description("some-description")
@@ -158,8 +159,8 @@ public class SemanticAssetsControllerMvcTest {
                 .build()))
             .build());
 
-        ResultActions apiResult = mockMvc.perform(get("/semantic-assets/search")
-            .param("term", "searchText")
+        ResultActions apiResult = mockMvc.perform(get("/semantic-assets")
+            .param("q", "searchText")
             .param("type", "CONTROLLED_VOCABULARY")
             .param("type", "ONTOLOGY")
             .param("theme", "AGRI")
@@ -175,8 +176,9 @@ public class SemanticAssetsControllerMvcTest {
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(content().contentType("application/json"))
-            .andExpect(jsonPath("$.pageNumber").value(1))
-            .andExpect(jsonPath("$.totalPages").value(5))
+            .andExpect(jsonPath("$.totalCount").value(1))
+            .andExpect(jsonPath("$.limit").value(10))
+            .andExpect(jsonPath("$.offset").value(0))
             .andExpect(jsonPath("$.data[0].assetIri").value("some-iri"))
             .andExpect(jsonPath("$.data[0].description").value("some-description"))
             .andExpect(jsonPath("$.data[0].modified").value("2020-01-01"))
@@ -190,8 +192,36 @@ public class SemanticAssetsControllerMvcTest {
     }
 
     @Test
+    void shouldReturnMatchingAssetsUsingProvidedPageParams() throws Exception {
+        when(searchService.search(any(), any(), any(), any())
+        ).thenReturn(SemanticAssetSearchResult.builder()
+            .limit(20)
+            .offset(100L)
+            .totalCount(101L)
+            .data(List.of(SemanticAssetsSearchDto.builder()
+                .assetIri("some-iri")
+                .build()))
+            .build());
+
+        ResultActions apiResult = mockMvc.perform(get("/semantic-assets")
+            .param("limit", "20")
+            .param("offset", "100")
+        );
+
+        verify(searchService).search("", Set.of(), Set.of(), Pageable.ofSize(20).withPage(5));
+
+        apiResult
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(content().contentType("application/json"))
+            .andExpect(jsonPath("$.totalCount").value(101))
+            .andExpect(jsonPath("$.limit").value(20))
+            .andExpect(jsonPath("$.offset").value(100));
+    }
+
+    @Test
     void shouldSearchWithDefaultWhenNoParamsProvided() throws Exception {
-        mockMvc.perform(get("/semantic-assets/search"))
+        mockMvc.perform(get("/semantic-assets"))
             .andDo(print())
             .andExpect(status().isOk());
 
@@ -199,10 +229,10 @@ public class SemanticAssetsControllerMvcTest {
     }
 
     @Test
-    void shouldReturn400WhenPageNumberIsLessThan1() throws Exception {
-        mockMvc.perform(get("/semantic-assets/search")
-                .param("term", "searchText")
-                .param("page_number", "0"))
+    void shouldReturn400WhenOffsetIsLessThan0() throws Exception {
+        mockMvc.perform(get("/semantic-assets")
+                .param("q", "searchText")
+                .param("offset", "-1"))
             .andDo(print())
             .andExpect(status().isBadRequest())
             .andExpect(content().contentType("application/json"));
@@ -211,10 +241,10 @@ public class SemanticAssetsControllerMvcTest {
     }
 
     @Test
-    void shouldReturn400WhenPageSizeIsLessThan1() throws Exception {
-        mockMvc.perform(get("/semantic-assets/search")
-                .param("term", "searchText")
-                .param("page_size", "0"))
+    void shouldReturn400WhenLimitIsLessThan1() throws Exception {
+        mockMvc.perform(get("/semantic-assets")
+                .param("q", "searchText")
+                .param("limit", "0"))
             .andDo(print())
             .andExpect(status().isBadRequest())
             .andExpect(content().contentType("application/json"));
@@ -223,10 +253,10 @@ public class SemanticAssetsControllerMvcTest {
     }
 
     @Test
-    void shouldReturn400WhenPageSizeIsMoreThan200() throws Exception {
-        mockMvc.perform(get("/semantic-assets/search")
-                .param("term", "searchText")
-                .param("page_size", "201"))
+    void shouldReturn400WhenLimitIsMoreThan200() throws Exception {
+        mockMvc.perform(get("/semantic-assets")
+                .param("q", "searchText")
+                .param("limit", "201"))
             .andDo(print())
             .andExpect(status().isBadRequest())
             .andExpect(content().contentType("application/json"));

@@ -21,23 +21,23 @@ import org.springframework.web.bind.annotation.RestController;
 public class SemanticAssetsController {
     private final SemanticAssetSearchService searchService;
 
-    @GetMapping("/search")
+    @GetMapping
     public SemanticAssetSearchResult search(
-        @RequestParam(value = "term", defaultValue = "") String term,
-        @RequestParam(value = "page_number", defaultValue = "1")
-        @Min(1) Integer pageNumber,
-        @RequestParam(value = "page_size", defaultValue = "10")
-        @Min(1) @Max(200) Integer pageSize,
+        @RequestParam(value = "q", defaultValue = "") String queryPattern,
+        @RequestParam(value = "offset", defaultValue = "0")
+        @Min(0) @Max(30000) Integer offset,
+        @RequestParam(value = "limit", defaultValue = "10")
+        @Min(1) @Max(200) Integer limit,
         @RequestParam(value = "type", defaultValue = "") Set<String> types,
         @RequestParam(value = "theme", defaultValue = "") Set<String> themes) {
 
-        int pageIndex = pageNumber - 1;
-        Pageable pageable = Pageable.ofSize(pageSize).withPage(pageIndex);
+        int pageIndex = offset / limit;
+        Pageable pageable = Pageable.ofSize(limit).withPage(pageIndex);
 
-        return searchService.search(term, types, themes, pageable);
+        return searchService.search(queryPattern, types, themes, pageable);
     }
 
-    @GetMapping("/details")
+    @GetMapping("/byIri")
     public SemanticAssetDetailsDto getDetails(@RequestParam("iri") String iri) {
         return searchService.findByIri(iri);
     }

@@ -27,10 +27,10 @@ import org.springframework.util.ObjectUtils;
 public class SemanticAssetMetadataRepository {
     private final ElasticsearchOperations esOps;
 
-    public SearchPage<SemanticAssetMetadata> search(String searchTerm, Set<String> types,
+    public SearchPage<SemanticAssetMetadata> search(String queryPattern, Set<String> types,
                                                     Set<String> themes, Pageable pageable) {
         BoolQueryBuilder boolQuery =
-            new BoolQueryBuilder().must(matchQuery("searchableText", searchTerm));
+            new BoolQueryBuilder().must(matchQuery("searchableText", queryPattern));
 
         addFilters(types, themes, boolQuery);
 
