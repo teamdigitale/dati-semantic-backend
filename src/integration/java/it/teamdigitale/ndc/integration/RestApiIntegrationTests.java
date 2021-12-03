@@ -73,14 +73,14 @@ public class RestApiIntegrationTests {
 
         //when
         Response searchResponseForLicenza =
-            getSemanticAsset("Licenza", SemanticAssetType.CONTROLLED_VOCABULARY);
+            getSemanticAsset("Licenza", SemanticAssetType.CONTROLLED_VOCABULARY, 2);
 
         //then
         searchResponseForLicenza.then()
             .statusCode(200)
             .body("totalCount", equalTo(1))
             .body("offset", equalTo(0))
-            .body("limit", equalTo(10))
+            .body("limit", equalTo(2))
             .body("data.size()", equalTo(1))
             .body("data[0].assetIri",
                 equalTo("https://w3id.org/italia/controlled-vocabulary/licences"))
@@ -103,14 +103,14 @@ public class RestApiIntegrationTests {
 
         //when
         Response searchResponseForRicettivita =
-            getSemanticAsset("Ricettività", SemanticAssetType.ONTOLOGY);
+            getSemanticAsset("Ricettività", SemanticAssetType.ONTOLOGY, 3);
 
         //then
         searchResponseForRicettivita.then()
             .statusCode(200)
             .body("totalCount", equalTo(1))
             .body("offset", equalTo(0))
-            .body("limit", equalTo(10))
+            .body("limit", equalTo(3))
             .body("data.size()", equalTo(1))
             .body("data[0].assetIri", equalTo("https://w3id.org/italia/onto/ACCO"))
             .body("data[0].rightsHolder.iri",
@@ -133,14 +133,14 @@ public class RestApiIntegrationTests {
 
         //when
         Response searchResponse =
-            getSemanticAsset("Istruzione", SemanticAssetType.CONTROLLED_VOCABULARY);
+            getSemanticAsset("Istruzione", SemanticAssetType.CONTROLLED_VOCABULARY, 4);
 
         //then
         searchResponse.then()
             .statusCode(200)
             .body("totalCount", equalTo(1))
             .body("offset", equalTo(0))
-            .body("limit", equalTo(10))
+            .body("limit", equalTo(4))
             .body("data.size()", equalTo(1))
             .body("data[0].assetIri", equalTo(
                 "https://w3id.org/italia/controlled-vocabulary/classifications-for-people/education-level"))
@@ -165,14 +165,14 @@ public class RestApiIntegrationTests {
 
         //when
         Response searchResponse =
-            getSemanticAsset("Appellativo", SemanticAssetType.CONTROLLED_VOCABULARY);
+            getSemanticAsset("Appellativo", SemanticAssetType.CONTROLLED_VOCABULARY, 5);
 
         //then
         searchResponse.then()
             .statusCode(200)
             .body("totalCount", equalTo(0))
             .body("offset", equalTo(0))
-            .body("limit", equalTo(10))
+            .body("limit", equalTo(5))
             .body("data.size()", equalTo(0));
 
         when().get(String.format("http://localhost:%d/agid/personTitle", port)).then()
@@ -186,14 +186,14 @@ public class RestApiIntegrationTests {
 
         //when
         Response searchResponse =
-            getSemanticAsset("scientifiche", SemanticAssetType.CONTROLLED_VOCABULARY);
+            getSemanticAsset("scientifiche", SemanticAssetType.CONTROLLED_VOCABULARY, 6);
 
         //then
         searchResponse.then()
             .statusCode(200)
             .body("totalCount", equalTo(0))
             .body("offset", equalTo(0))
-            .body("limit", equalTo(10))
+            .body("limit", equalTo(6))
             .body("data.size()", equalTo(0));
     }
 
@@ -221,9 +221,10 @@ public class RestApiIntegrationTests {
         elasticsearchOperations.indexOps(SemanticAssetMetadata.class).refresh();
     }
 
-    private Response getSemanticAsset(String searchTerm, SemanticAssetType semanticAssetType) {
-        return when().get(format("http://localhost:%d/semantic-assets?q=%s&type=%s", port,
-            searchTerm, semanticAssetType.name()));
+    private Response getSemanticAsset(String searchTerm, SemanticAssetType semanticAssetType,
+                                      int limit) {
+        return when().get(format("http://localhost:%d/semantic-assets?q=%s&type=%s&limit=%s", port,
+            searchTerm, semanticAssetType.name(), limit));
     }
 
     private Response getSemanticAssetDetails(String iri) {
