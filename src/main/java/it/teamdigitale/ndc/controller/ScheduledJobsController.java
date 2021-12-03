@@ -1,5 +1,6 @@
 package it.teamdigitale.ndc.controller;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import it.teamdigitale.ndc.harvester.HarvesterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 
+@Hidden
 @RestController
 @RequestMapping("/scheduler")
 public class ScheduledJobsController {
