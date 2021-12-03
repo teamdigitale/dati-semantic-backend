@@ -1,9 +1,9 @@
 package it.teamdigitale.ndc.harvester.pathprocessors;
 
 import it.teamdigitale.ndc.harvester.exception.SinglePathProcessingException;
-import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetModel;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
+import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.teamdigitale.ndc.repository.SemanticAssetMetadataRepository;
 import it.teamdigitale.ndc.repository.TripleStoreRepository;
 import lombok.RequiredArgsConstructor;
@@ -36,9 +36,10 @@ public abstract class SemanticAssetPathProcessor<P extends SemanticAssetPath, M 
     }
 
     protected void processWithModel(String repoUrl, P path, M model) {
-        persistModelToTripleStore(repoUrl, path, model);
-
+        log.debug("Enriching model before persisting");
+        enrichModelBeforePersisting(model, path);
         indexMetadataForSearch(model);
+        persistModelToTripleStore(repoUrl, path, model);
     }
 
     protected void enrichModelBeforePersisting(M model, P path) {
@@ -54,9 +55,6 @@ public abstract class SemanticAssetPathProcessor<P extends SemanticAssetPath, M 
     }
 
     private void persistModelToTripleStore(String repoUrl, P path, M model) {
-        log.debug("Enriching model before persisting");
-        enrichModelBeforePersisting(model, path);
-
         log.debug("Storing RDF content for {} in Virtuoso", model.getMainResource());
         tripleStoreRepository.save(repoUrl, model.getRdfModel());
     }
