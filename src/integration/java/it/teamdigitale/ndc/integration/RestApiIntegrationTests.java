@@ -73,10 +73,11 @@ public class RestApiIntegrationTests {
         dataIsHarvested();
 
         //when
-        Response searchResponse = getSemanticAsset("Licenza", SemanticAssetType.CONTROLLED_VOCABULARY);
+        Response searchResponseForLicenza =
+            getSemanticAsset("Licenza", SemanticAssetType.CONTROLLED_VOCABULARY);
 
         //then
-        searchResponse.then()
+        searchResponseForLicenza.then()
                 .statusCode(200)
                 .body("totalPages", equalTo(1))
                 .body("pageNumber", equalTo(1))
@@ -85,7 +86,7 @@ public class RestApiIntegrationTests {
                 .body("data[0].rightsHolder.iri", equalTo("https://w3id.org/italia/data/public-organization/agid"))
                 .body("data[0].rightsHolder.summary", equalTo("Agenzia per l'Italia Digitale"));
 
-        getSemanticAssetDetails(getAssetIri(searchResponse)).then()
+        getSemanticAssetDetails(getAssetIri(searchResponseForLicenza)).then()
                 .statusCode(200)
                 .body("assetIri", equalTo("https://w3id.org/italia/controlled-vocabulary/licences"))
                 .body("type", equalTo(SemanticAssetType.CONTROLLED_VOCABULARY.name()))
@@ -99,10 +100,11 @@ public class RestApiIntegrationTests {
         dataIsHarvested();
 
         //when
-        Response searchResponse = getSemanticAsset("Ricettività", SemanticAssetType.ONTOLOGY);
+        Response searchResponseForRicettivita =
+            getSemanticAsset("Ricettività", SemanticAssetType.ONTOLOGY);
 
         //then
-        searchResponse.then()
+        searchResponseForRicettivita.then()
                 .statusCode(200)
                 .body("totalPages", equalTo(1))
                 .body("pageNumber", equalTo(1))
@@ -111,7 +113,7 @@ public class RestApiIntegrationTests {
                 .body("data[0].rightsHolder.iri", equalTo("http://spcdata.digitpa.gov.it/browse/page/Amministrazione/agid"))
                 .body("data[0].rightsHolder.summary", equalTo("Agenzia per l'Italia Digitale"));
 
-        getSemanticAssetDetails(getAssetIri(searchResponse)).then()
+        getSemanticAssetDetails(getAssetIri(searchResponseForRicettivita)).then()
                 .statusCode(200)
                 .body("assetIri", equalTo("https://w3id.org/italia/onto/ACCO"))
                 .body("type", equalTo(SemanticAssetType.ONTOLOGY.name()))
