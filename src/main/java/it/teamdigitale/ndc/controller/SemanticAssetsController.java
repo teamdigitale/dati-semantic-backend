@@ -31,8 +31,7 @@ public class SemanticAssetsController {
         @RequestParam(value = "type", defaultValue = "") Set<String> types,
         @RequestParam(value = "theme", defaultValue = "") Set<String> themes) {
 
-        int pageIndex = offset / limit;
-        Pageable pageable = Pageable.ofSize(limit).withPage(pageIndex);
+        Pageable pageable = OffsetBasedPageRequest.of(offset, limit);
 
         return searchService.search(queryPattern, types, themes, pageable);
     }
