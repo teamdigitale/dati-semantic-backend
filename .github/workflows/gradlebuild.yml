@@ -32,6 +32,7 @@ jobs:
           VALIDATE_BASH: false
           VALIDATE_JAVA: false
           VALIDATE_GOOGLE_JAVA_FORMAT: false
+          VALIDATE_SQLFLUFF: false
 
   build:
     runs-on: ubuntu-latest

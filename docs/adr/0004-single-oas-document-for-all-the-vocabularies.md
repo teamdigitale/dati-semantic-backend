@@ -11,7 +11,7 @@ Accepted
 As one of the core feature of the NDC, we will be publishing the (flattened) content of Controlled Vocabularies via REST
 APIs.
 
-A developer who is willing to consume these APIs, will need to have access to the API's OpenAPI document. Usually such
+A developer who is willing to consume these APIs, will need to have access to the APIs OpenAPI document. Usually such
 documents illustrate a lot of information around the API; among other details, we can find `paths`
 (/Endpoints). Path specify what endpoints are available; within a Path definition, we can also find the shape of its
 response, expressed as references to the Component section. The Component section defines the schema of such elements.
