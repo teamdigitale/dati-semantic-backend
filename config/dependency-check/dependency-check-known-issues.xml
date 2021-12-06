@@ -21,4 +21,10 @@
         <sha1>0e73e461aa0da6a1779bba31f90011cfbd4e4233</sha1>
         <cve>CVE-2021-42340</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: mysql-connector-java-8.0.26.jar
+   ]]></notes>
+        <cve>CVE-2021-2471</cve>
+    </suppress>
 </suppressions>

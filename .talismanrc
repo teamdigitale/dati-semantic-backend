@@ -17,7 +17,11 @@ fileignoreconfig:
   checksum: a55ea1884845d520c72d97775fc8ec88d4a586700ff2d38efd0adcb9ac46db1e
 - filename: src/main/resources/elasticsearch-settings.json
   checksum: 28664f692ef237326fb88c7106b59e3cbb1e636f4c1ebae4377a021ec4bb910e
+- filename: src/main/resources/db/schema-mysql.sql
+  checksum: 3ffdf5c20a55e7bdaa0b0377aa543658045a9f41a3585e2474338caabcc3dda5
 - filename: docker-compose.yaml
-  checksum: 5aee0b94ce02da97b69f4e9efaa3c3cc8d792b791d59655673312cfde3dbc281
+  checksum: c6f016418e48dff18f3f73cc5b1eddba8420eb001372154ab2e3e7dd1e798b34
+- filename: src/main/resources/application-dev.properties
+  checksum: 235fcffb0c7dff5401b3267743fd5cc5a64900876043d5beea90454145ac3a8e
 allowed_patterns:
 - keyClasses

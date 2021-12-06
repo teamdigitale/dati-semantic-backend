@@ -23,6 +23,15 @@ services:
       - discovery.type=single-node
       - ES_JAVA_OPTS=-Xms512m -Xmx512m
 
+  mysql:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+
   backend:
     image: gcr.io/distroless/java:11-debug-nonroot
     restart: on-failure
@@ -34,6 +43,7 @@ services:
     command: [ "/jar/dati-semantic-backend-0.0.1-SNAPSHOT.jar" ]
     ports:
       - 8080:8080
+      - 8081:8081
     environment:
       - ELASTICSEARCH_HOST=elasticsearch
       - ELASTICSEARCH_PORT=9200

@@ -14,5 +14,6 @@ docker run \
   -e VALIDATE_BASH=false \
   -e VALIDATE_JAVA=false \
   -e VALIDATE_GOOGLE_JAVA_FORMAT=false \
+  -e VALIDATE_SQLFLUFF=false \
   --rm \
   -v "$(pwd)":/tmp/lint github/super-linter:slim-v4
