@@ -31,9 +31,10 @@ public class VocabularyDataControllerMvcTest {
 
     @Test
     public void shouldReturnVocabularyDataUsingDefaultPagination() throws Exception {
-        when(vocabularyDataService.getData(any(), any(), any(), any()))
+        when(vocabularyDataService.getData(any(), any(), any()))
             .thenReturn(VocabularyDataDto.builder()
-                .pageNumber(1)
+                .offset(1L)
+                .limit(10)
                 .totalResults(5L)
                 .data(List.of(Map.of("key", "val")))
                 .build());
@@ -41,17 +42,18 @@ public class VocabularyDataControllerMvcTest {
         mockMvc.perform(get("/vocabularies/agid/testKeyConcept"))
             .andDo(print())
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.pageNumber").value(1))
+            .andExpect(jsonPath("$.offset").value(1))
+            .andExpect(jsonPath("$.limit").value(10))
             .andExpect(jsonPath("$.totalResults").value(5))
             .andExpect(jsonPath("$.data[0].key").value("val"));
 
         verify(vocabularyDataService).getData("agid", "testKeyConcept",
-            0, 10);
+                OffsetBasedPageRequest.of(0, 10));
     }
 
     @Test
     public void shouldReturnNotFound() throws Exception {
-        when(vocabularyDataService.getData(any(), any(), any(), any()))
+        when(vocabularyDataService.getData(any(), any(), any()))
             .thenThrow(new VocabularyDataNotFoundException("agid.testkeyconcept"));
 
         mockMvc.perform(get("/vocabularies/agid/testKeyConcept"))
@@ -61,13 +63,13 @@ public class VocabularyDataControllerMvcTest {
                 "Unable to find vocabulary data for : agid.testkeyconcept"));
 
         verify(vocabularyDataService).getData("agid", "testKeyConcept",
-            0, 10);
+                OffsetBasedPageRequest.of(0, 10));
     }
 
     @Test
-    void shouldFailWhenPageNumberIsLessThan1() throws Exception {
+    void shouldFailWhenOffsetIsLessThan0() throws Exception {
         mockMvc.perform(get("/vocabularies/agid/testKeyConcept")
-                .param("page_number", "0"))
+                .param("offset", "-1"))
             .andDo(print())
             .andExpect(status().isBadRequest());
 
@@ -75,9 +77,9 @@ public class VocabularyDataControllerMvcTest {
     }
 
     @Test
-    void shouldFailWhenPageSizeIsLessThan1() throws Exception {
+    void shouldFailWhenLimitIsLessThan1() throws Exception {
         mockMvc.perform(get("/vocabularies/agid/testKeyConcept")
-                .param("page_size", "0"))
+                .param("limit", "0"))
             .andDo(print())
             .andExpect(status().isBadRequest());
 
@@ -87,7 +89,7 @@ public class VocabularyDataControllerMvcTest {
     @Test
     void shouldFailWhenPageSizeIsMoreThan200() throws Exception {
         mockMvc.perform(get("/vocabularies/agid/testKeyConcept")
-                .param("page_size", "201"))
+                .param("limit", "201"))
             .andDo(print())
             .andExpect(status().isBadRequest());
 

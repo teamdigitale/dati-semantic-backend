@@ -8,6 +8,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import it.teamdigitale.ndc.controller.OffsetBasedPageRequest;
 import it.teamdigitale.ndc.controller.dto.VocabularyDataDto;
 import it.teamdigitale.ndc.controller.exception.VocabularyDataNotFoundException;
 import java.util.List;
@@ -52,17 +53,19 @@ public class VocabularyDataServiceTest {
         when(elasticsearchOperations.search(captor.capture(), any(Class.class),
             any(IndexCoordinates.class))).thenReturn(hits);
 
-        VocabularyDataDto data = vocabularyDataService.getData("agid", "testKeyConcept", 0, 10);
+        VocabularyDataDto data = vocabularyDataService.getData("agid", "testKeyConcept", OffsetBasedPageRequest.of(2, 10));
 
         assertThat(data.getData()).containsExactlyInAnyOrder(Map.of("key", "value"));
         assertThat(data.getTotalResults()).isEqualTo(1L);
-        assertThat(data.getPageNumber()).isEqualTo(1);
+        assertThat(data.getOffset()).isEqualTo(2);
+        assertThat(data.getLimit()).isEqualTo(10);
         IndexCoordinates indexCoordinates = IndexCoordinates.of("agid.testkeyconcept");
         verify(elasticsearchOperations).indexOps(indexCoordinates);
         verify(indexOperations).exists();
         Query actualQuery = captor.getValue();
         verify(elasticsearchOperations).search(actualQuery, Map.class, indexCoordinates);
-        assertThat(actualQuery.getPageable()).isEqualTo(PageRequest.of(0, 10));
+        assertThat(actualQuery.getPageable().getOffset()).isEqualTo(2L);
+        assertThat(actualQuery.getPageable().getPageSize()).isEqualTo(10);
         assertThat(actualQuery.getFields()).isEmpty();
     }
 
@@ -73,7 +76,7 @@ public class VocabularyDataServiceTest {
         when(indexOperations.exists()).thenReturn(false);
         IndexCoordinates indexCoordinates = IndexCoordinates.of("agid.testkeyconcept");
 
-        assertThatThrownBy(() -> vocabularyDataService.getData("agid", "testKeyConcept", 0, 10))
+        assertThatThrownBy(() -> vocabularyDataService.getData("agid", "testKeyConcept", OffsetBasedPageRequest.of(0, 10)))
             .isInstanceOf(VocabularyDataNotFoundException.class)
             .hasMessage("Unable to find vocabulary data for : agid.testkeyconcept");
         verify(elasticsearchOperations).indexOps(indexCoordinates);

@@ -11,6 +11,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @ExtendWith(MockitoExtension.class)
 public class VocabularyDataControllerTest {
@@ -22,17 +24,13 @@ public class VocabularyDataControllerTest {
     @Test
     void shouldReturnControlledVocabulary() {
         String concept = "person-title";
-        final int pageNumber = 1;
-        final int pageSize = 2;
+        final int offset = 1;
+        final int limit = 2;
         String rightsHolder = "agid";
         VocabularyDataDto expected = mock(VocabularyDataDto.class);
-        when(vocabularyDataService.getData(rightsHolder, concept, pageNumber - 1,
-            pageSize)).thenReturn(expected);
+        when(vocabularyDataService.getData(rightsHolder, concept, OffsetBasedPageRequest.of(offset, limit))).thenReturn(expected);
 
-        VocabularyDataDto actual = vocabularyDataController.fetchVocabularyData(rightsHolder,
-            concept,
-            pageNumber,
-            pageSize);
+        VocabularyDataDto actual = vocabularyDataController.fetchVocabularyData(rightsHolder, concept, offset, limit);
 
         assertEquals(expected, actual);
     }

@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
@@ -28,18 +28,17 @@ public class VocabularyDataService {
         this.elasticsearchOperations = elasticsearchOperations;
     }
 
-    public VocabularyDataDto getData(String rightsHolder, String keyConcept, Integer pageIndex,
-                                     Integer pageSize) {
+    public VocabularyDataDto getData(String rightsHolder, String keyConcept, Pageable pageable) {
         String index = String.join(".", rightsHolder, keyConcept).toLowerCase();
         if (exists(index)) {
-            Query findAll = Query.findAll().setPageable(PageRequest.of(pageIndex, pageSize));
-            SearchHits<Map> results =
-                elasticsearchOperations.search(findAll, Map.class, IndexCoordinates.of(index));
+            Query findAll = Query.findAll().setPageable(pageable);
+            SearchHits<Map> results = elasticsearchOperations.search(findAll, Map.class, IndexCoordinates.of(index));
 
             List<Map> data = results.getSearchHits().stream()
                 .map(SearchHit::getContent)
                 .collect(Collectors.toList());
-            return new VocabularyDataDto(results.getTotalHits(), pageIndex + 1, data);
+
+            return new VocabularyDataDto(results.getTotalHits(), pageable.getPageSize(), pageable.getOffset(), data);
         } else {
             log.error("Controlled Vocabulary not found for {}/{}", rightsHolder, keyConcept);
             throw new VocabularyDataNotFoundException(index);

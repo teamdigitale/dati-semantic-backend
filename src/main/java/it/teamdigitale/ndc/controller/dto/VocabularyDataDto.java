@@ -1,8 +1,11 @@
 package it.teamdigitale.ndc.controller.dto;
 
 
+import java.awt.print.Pageable;
 import java.util.List;
 import java.util.Map;
+
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -10,15 +13,11 @@ import lombok.EqualsAndHashCode;
 @Data
 @Builder
 @EqualsAndHashCode
+@AllArgsConstructor
 public class VocabularyDataDto {
     Long totalResults;
-    Integer pageNumber;
+    Integer limit;
+    Long offset;
     List<Map> data;
-
-    public VocabularyDataDto(Long totalResults, Integer pageIndex, List<Map> data) {
-        this.totalResults = totalResults;
-        this.pageNumber = pageIndex;
-        this.data = data;
-    }
 }
 
