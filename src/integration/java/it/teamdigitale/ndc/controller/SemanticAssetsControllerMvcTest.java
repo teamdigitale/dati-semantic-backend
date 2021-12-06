@@ -24,7 +24,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
@@ -170,7 +169,7 @@ public class SemanticAssetsControllerMvcTest {
         verify(searchService).search("searchText",
             Set.of("CONTROLLED_VOCABULARY", "ONTOLOGY"),
             Set.of("EDUC", "AGRI"),
-            Pageable.ofSize(10).withPage(0));
+            OffsetBasedPageRequest.of(0, 10));
 
         apiResult
             .andDo(print())
@@ -208,7 +207,7 @@ public class SemanticAssetsControllerMvcTest {
             .param("offset", "100")
         );
 
-        verify(searchService).search("", Set.of(), Set.of(), Pageable.ofSize(20).withPage(5));
+        verify(searchService).search("", Set.of(), Set.of(), OffsetBasedPageRequest.of(100, 20));
 
         apiResult
             .andDo(print())
@@ -225,7 +224,7 @@ public class SemanticAssetsControllerMvcTest {
             .andDo(print())
             .andExpect(status().isOk());
 
-        verify(searchService).search("", Set.of(), Set.of(), Pageable.ofSize(10).withPage(0));
+        verify(searchService).search("", Set.of(), Set.of(), OffsetBasedPageRequest.of(0, 10));
     }
 
     @Test

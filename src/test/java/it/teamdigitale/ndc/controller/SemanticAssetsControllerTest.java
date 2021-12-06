@@ -8,13 +8,11 @@ import static org.mockito.Mockito.when;
 import it.teamdigitale.ndc.controller.dto.SemanticAssetDetailsDto;
 import it.teamdigitale.ndc.controller.dto.SemanticAssetSearchResult;
 import it.teamdigitale.ndc.service.SemanticAssetSearchService;
-import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Pageable;
 
 @ExtendWith(MockitoExtension.class)
 public class SemanticAssetsControllerTest {
@@ -36,7 +34,7 @@ public class SemanticAssetsControllerTest {
         verify(service).search("searchTerm",
             Set.of("CONTROLLED_VOCABULARY"),
             Set.of("EDUC"),
-            Pageable.ofSize(10).withPage(0));
+            OffsetBasedPageRequest.of(0, 10));
         assertThat(actualResult).isEqualTo(expectedResult);
     }
 
