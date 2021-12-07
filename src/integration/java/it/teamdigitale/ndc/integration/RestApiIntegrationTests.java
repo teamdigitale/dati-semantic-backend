@@ -1,31 +1,38 @@
 package it.teamdigitale.ndc.integration;
 
 import static io.restassured.RestAssured.when;
+import static it.teamdigitale.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
+import static it.teamdigitale.ndc.harvester.SemanticAssetType.ONTOLOGY;
 import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 
 import io.restassured.response.Response;
 import it.teamdigitale.ndc.controller.dto.SemanticAssetSearchResult;
+import it.teamdigitale.ndc.controller.dto.SemanticAssetsSearchDto;
 import it.teamdigitale.ndc.harvester.AgencyRepositoryService;
 import it.teamdigitale.ndc.harvester.HarvesterService;
 import it.teamdigitale.ndc.harvester.SemanticAssetType;
 import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
-import it.teamdigitale.ndc.repository.TripleStoreRepository;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -35,6 +42,8 @@ public class RestApiIntegrationTests {
 
     private static final ElasticsearchContainer elasticsearchContainer =
         Containers.buildElasticsearchContainer();
+    private static final GenericContainer virtuoso = Containers.buildVirtuosoContainer();
+    private boolean harvested = false;
 
     @LocalServerPort
     private int port;
@@ -48,32 +57,38 @@ public class RestApiIntegrationTests {
     @SpyBean
     AgencyRepositoryService agencyRepositoryService;
 
-    @MockBean
-    TripleStoreRepository tripleStoreRepository;
-
     @BeforeAll
     public static void beforeAll() {
+        virtuoso.start();
         elasticsearchContainer.start();
+    }
+
+    @BeforeEach
+    public void beforeEach() throws IOException {
+        if (!harvested) {
+            dataIsHarvested();
+            harvested = true;
+        }
     }
 
     @AfterAll
     public static void tearDown() {
+        virtuoso.stop();
         elasticsearchContainer.stop();
     }
 
     @DynamicPropertySource
     static void updateTestcontainersProperties(DynamicPropertyRegistry registry) {
+        String url = "http://localhost:" + virtuoso.getMappedPort(Containers.VIRTUOSO_PORT);
+        registry.add("virtuoso.sparql.url", () ->  url + "/sparql");
+        registry.add("virtuoso.sparql-graph-store.url", () -> url + "/sparql-graph-crud/");
         registry.add("spring.elasticsearch.rest.uris", elasticsearchContainer::getHttpHostAddress);
     }
 
     @Test
-    void shouldBeAbleToHarvestAndSearchControlledVocabularySuccessfully() throws IOException {
-        //given
-        dataIsHarvested();
-
+    void shouldBeAbleToHarvestAndSearchControlledVocabularySuccessfully() {
         //when
-        Response searchResponseForLicenza =
-            getSemanticAsset("Licenza", SemanticAssetType.CONTROLLED_VOCABULARY, 2);
+        Response searchResponseForLicenza = getSemanticAsset("Licenza", CONTROLLED_VOCABULARY, 2);
 
         //then
         searchResponseForLicenza.then()
@@ -91,19 +106,15 @@ public class RestApiIntegrationTests {
         getSemanticAssetDetails(getAssetIri(searchResponseForLicenza)).then()
             .statusCode(200)
             .body("assetIri", equalTo("https://w3id.org/italia/controlled-vocabulary/licences"))
-            .body("type", equalTo(SemanticAssetType.CONTROLLED_VOCABULARY.name()))
+            .body("type", equalTo(CONTROLLED_VOCABULARY.name()))
             .body("keyConcept", equalTo("licences"))
             .body("endpointUrl", equalTo("http://localhost:8080/vocabularies/agid/licences"));
     }
 
     @Test
-    void shouldBeAbleToHarvestAndSearchOntologieSuccessfully() throws IOException {
-        //given
-        dataIsHarvested();
-
+    void shouldBeAbleToHarvestAndSearchOntologieSuccessfully() {
         //when
-        Response searchResponseForRicettivita =
-            getSemanticAsset("Ricettività", SemanticAssetType.ONTOLOGY, 3);
+        Response searchResponseForRicettivita = getSemanticAsset("Ricettività", ONTOLOGY, 3);
 
         //then
         searchResponseForRicettivita.then()
@@ -120,20 +131,100 @@ public class RestApiIntegrationTests {
         getSemanticAssetDetails(getAssetIri(searchResponseForRicettivita)).then()
             .statusCode(200)
             .body("assetIri", equalTo("https://w3id.org/italia/onto/ACCO"))
-            .body("type", equalTo(SemanticAssetType.ONTOLOGY.name()))
+            .body("type", equalTo(ONTOLOGY.name()))
             .body("modifiedOn", equalTo("2018-07-31"))
             .body("keyClasses[0].iri",
                 equalTo("https://w3id.org/italia/onto/ACCO/AccommodationRoom"));
     }
 
     @Test
-    void shouldBeAbleToHarvestAndSearchSemanticAssetWhenFlatFileIsMissing() throws IOException {
-        //given
-        dataIsHarvested();
-
+    void shouldBeAbleToHarvestOnlyLatestFolderOfSemanticAssetAndSearchSuccessfully() {
         //when
-        Response searchResponse =
-            getSemanticAsset("Istruzione", SemanticAssetType.CONTROLLED_VOCABULARY, 4);
+        getSemanticAsset("alberghiere", ONTOLOGY, 2).then()
+                .statusCode(200)
+                .body("totalCount", equalTo(0))
+                .body("offset", equalTo(0))
+                .body("limit", equalTo(2))
+                .body("data.size()", equalTo(0));
+
+        //then
+        getSemanticAsset("Ricettività", ONTOLOGY, 3).then()
+                .statusCode(200)
+                .body("totalCount", equalTo(1))
+                .body("offset", equalTo(0))
+                .body("limit", equalTo(3))
+                .body("data.size()", equalTo(1))
+                .body("data[0].assetIri", equalTo("https://w3id.org/italia/onto/ACCO"))
+                .body("data[0].rightsHolder.iri",
+                        equalTo("http://spcdata.digitpa.gov.it/browse/page/Amministrazione/agid"))
+                .body("data[0].rightsHolder.summary", equalTo("Agenzia per l'Italia Digitale"));
+    }
+
+    @Test
+    void shouldBeAbleToHarvestLatestVersionOfSemanticAssetAndSearchSuccessfully() {
+        //when
+        getSemanticAsset("vecchia versione", ONTOLOGY, 2).then()
+                .statusCode(200)
+                .body("totalCount", equalTo(0))
+                .body("offset", equalTo(0))
+                .body("limit", equalTo(2))
+                .body("data.size()", equalTo(0));
+
+        //then
+        getSemanticAsset("Indirizzo", ONTOLOGY, 3).then()
+                .statusCode(200)
+                .body("totalCount", equalTo(1))
+                .body("offset", equalTo(0))
+                .body("limit", equalTo(3))
+                .body("data.size()", equalTo(1))
+                .body("data[0].assetIri", equalTo("https://w3id.org/italia/onto/CLV"))
+                .body("data[0].rightsHolder.iri",
+                        equalTo("http://spcdata.digitpa.gov.it/browse/page/Amministrazione/ISTAT"))
+                .body("data[0].rightsHolder.summary", equalTo("Istituto Nazionale di Statistica - ISTAT"));
+    }
+
+    @Test
+    void shouldBeAbleToFilterSemanticAssetByTypeSuccessfully() {
+        List<SemanticAssetsSearchDto> semanticAssets = getSemanticAsset("", ONTOLOGY, 5)
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(SemanticAssetSearchResult.class)
+                .getData();
+
+        assertTrue(semanticAssets.stream().allMatch(semanticAssetsSearchDto ->
+                semanticAssetsSearchDto.getType().equals(ONTOLOGY)));
+    }
+
+    @Test
+    void shouldBeAbleToRetrieveSemanticAssetByOffsetSuccessfully() {
+        List<SemanticAssetsSearchDto> semanticAssetsSearch = when()
+                .get(format("http://localhost:%d/semantic-assets?q=%s&limit=%s",
+                        port, "", 2))
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(SemanticAssetSearchResult.class)
+                .getData();
+        semanticAssetsSearch.remove(0);
+
+        SemanticAssetSearchResult semanticAssetSearchResult = when()
+                .get(format("http://localhost:%d/semantic-assets?q=%s&limit=%s&offset=%s",
+                        port, "", 1, 1))
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(SemanticAssetSearchResult.class);
+
+        assertEquals(1, semanticAssetSearchResult.getOffset());
+        assertEquals(1, semanticAssetSearchResult.getLimit());
+        assertEquals(semanticAssetsSearch, semanticAssetSearchResult.getData());
+    }
+
+    @Test
+    void shouldBeAbleToHarvestAndSearchSemanticAssetWhenFlatFileIsMissing() {
+        //when
+        Response searchResponse = getSemanticAsset("Istruzione", CONTROLLED_VOCABULARY, 4);
 
         //then
         searchResponse.then()
@@ -153,19 +244,15 @@ public class RestApiIntegrationTests {
             .statusCode(200)
             .body("assetIri", equalTo(
                 "https://w3id.org/italia/controlled-vocabulary/classifications-for-people/education-level"))
-            .body("type", equalTo(SemanticAssetType.CONTROLLED_VOCABULARY.name()))
+            .body("type", equalTo(CONTROLLED_VOCABULARY.name()))
             .body("keyConcept", equalTo("educationTitle"))
             .body("endpointUrl", equalTo(""));
     }
 
     @Test
-    void shouldNotHarvestCorruptedControlledVocabulary() throws IOException {
-        //given
-        dataIsHarvested();
-
+    void shouldNotHarvestCorruptedControlledVocabulary() {
         //when
-        Response searchResponse =
-            getSemanticAsset("Appellativo", SemanticAssetType.CONTROLLED_VOCABULARY, 5);
+        Response searchResponse = getSemanticAsset("Appellativo", CONTROLLED_VOCABULARY, 5);
 
         //then
         searchResponse.then()
@@ -180,13 +267,9 @@ public class RestApiIntegrationTests {
     }
 
     @Test
-    void shouldNotHarvestControlledVocabularyIfKeyConceptIsMissing() throws IOException {
-        //given
-        dataIsHarvested();
-
+    void shouldNotHarvestControlledVocabularyIfKeyConceptIsMissing() {
         //when
-        Response searchResponse =
-            getSemanticAsset("scientifiche", SemanticAssetType.CONTROLLED_VOCABULARY, 6);
+        Response searchResponse = getSemanticAsset("scientifiche", CONTROLLED_VOCABULARY, 6);
 
         //then
         searchResponse.then()
@@ -198,10 +281,7 @@ public class RestApiIntegrationTests {
     }
 
     @Test
-    void shouldFailWhenAssetIsNotFoundByIri() throws IOException {
-        //when
-        dataIsHarvested();
-
+    void shouldFailWhenAssetIsNotFoundByIri() {
         //then
         Response detailsResponse = getSemanticAssetDetails("https://wrong-iri");
 
@@ -213,10 +293,10 @@ public class RestApiIntegrationTests {
     private void dataIsHarvested() throws IOException {
         String dir = "src/test/resources/testdata";
         Path cloneDir = Path.of(dir);
-        doReturn(cloneDir).when(agencyRepositoryService).cloneRepo("testRepoURL");
+        doReturn(cloneDir).when(agencyRepositoryService).cloneRepo("http://testRepoURL");
         doNothing().when(agencyRepositoryService).removeClonedRepo(cloneDir);
 
-        harvesterService.harvest("testRepoURL");
+        harvesterService.harvest("http://testRepoURL");
 
         elasticsearchOperations.indexOps(SemanticAssetMetadata.class).refresh();
     }

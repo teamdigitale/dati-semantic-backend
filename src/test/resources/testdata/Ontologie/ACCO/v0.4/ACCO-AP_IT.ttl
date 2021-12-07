@@ -36,7 +36,7 @@
                                      admsapit:hasTask admsapit:AnnotationTask ,
                                                       admsapit:QueryFormulationTask ;
                                      admsapit:hasKeyClass :Accommodation ;
-                                     dcat:keyword "Strutture ricettive"@it , "Hotel"@it , "Ricettività"@it  , "Strutture alberghiere"@it ;
+                                     dcat:keyword "alberghiere"@it ;
                                      admsapit:acronym "ACCO-AP_IT" ;
                                      dct:modified "2018-07-31"^^xsd:date ;
                                      rdfs:label "Accommodation Facilities Ontology"@en ;
