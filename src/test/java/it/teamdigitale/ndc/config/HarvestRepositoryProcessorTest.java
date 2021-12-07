@@ -18,7 +18,7 @@ import static org.mockito.Mockito.verify;
 class HarvestRepositoryProcessorTest {
 
     @Test
-    void shouldHarvestAllRepos() throws IOException {
+    void shouldHarvestAllRepos() throws Exception {
         HarvesterService harvesterService = mock(HarvesterService.class);
         List<String> reposToHarvest = List.of("repo1", "repo2");
         HarvestRepositoryProcessor harvesterJob = new HarvestRepositoryProcessor(harvesterService, reposToHarvest);
@@ -31,7 +31,7 @@ class HarvestRepositoryProcessorTest {
     }
 
     @Test
-    void shouldHarvestAllReposContinueToNextInCaseOfFailure() throws GitAPIException, IOException {
+    void shouldHarvestAllReposContinueToNextInCaseOfFailure() throws Exception {
         HarvesterService harvesterService = mock(HarvesterService.class);
         List<String> reposToHarvest = List.of("repo1", "repo2");
         doThrow(new IOException()).when(harvesterService).harvest("repo1");

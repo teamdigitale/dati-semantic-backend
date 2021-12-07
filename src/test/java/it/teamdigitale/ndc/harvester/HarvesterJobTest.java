@@ -31,6 +31,7 @@ import org.springframework.batch.core.repository.JobExecutionAlreadyRunningExcep
 import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
 import org.springframework.batch.core.repository.JobRestartException;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class HarvesterJobTest {
@@ -43,12 +44,15 @@ class HarvesterJobTest {
 
     @InjectMocks
     HarvesterJob harvesterJob;
+    String repositories = "repo1,repo2";
 
     @BeforeEach
     void setup() {
         Clock fixedClock = Clock.fixed(LocalDate.of(2021, 12, 1).atStartOfDay(ZoneId.systemDefault()).toInstant(), ZoneId.systemDefault());
         doReturn(fixedClock.instant()).when(clock).instant();
         doReturn(fixedClock.getZone()).when(clock).getZone();
+
+        ReflectionTestUtils.setField(harvesterJob, "repositories", repositories);
     }
 
     @Test
@@ -60,6 +64,7 @@ class HarvesterJobTest {
 
         JobParameters actualJobParams = paramCaptor.getValue();
         assertEquals("2021-12-01 12:00", actualJobParams.getString("harvestTime"));
+        assertEquals(repositories, actualJobParams.getString("repositories"));
     }
 
     @Test
