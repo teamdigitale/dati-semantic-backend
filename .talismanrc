@@ -22,6 +22,6 @@ fileignoreconfig:
 - filename: docker-compose.yaml
   checksum: c6f016418e48dff18f3f73cc5b1eddba8420eb001372154ab2e3e7dd1e798b34
 - filename: src/main/resources/application-dev.properties
-  checksum: 235fcffb0c7dff5401b3267743fd5cc5a64900876043d5beea90454145ac3a8e
+  checksum: 9607b425ab481f81869e0c172b5ff25546a4217645fd5a5f2087f5b8ffc6af58
 allowed_patterns:
 - keyClasses
