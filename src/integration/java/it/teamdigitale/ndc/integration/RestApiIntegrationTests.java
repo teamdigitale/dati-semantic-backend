@@ -153,11 +153,11 @@ public class RestApiIntegrationTests {
     @Test
     void shouldBeAbleToHarvestLatestVersionOfSemanticAssetAndSearchSuccessfully() {
         //vecchia versione is the keyword in testdata/Ontologie/CLV/0.8/CLV-AP_IT.ttl
-        getSemanticAsset("vecchia versione", ONTOLOGY, 2).then()
+        getSemanticAsset("vecchia versione", ONTOLOGY, 3).then()
                 .statusCode(200)
                 .body("totalCount", equalTo(0))
                 .body("offset", equalTo(0))
-                .body("limit", equalTo(2))
+                .body("limit", equalTo(3))
                 .body("data.size()", equalTo(0));
 
         getSemanticAsset("Indirizzo", ONTOLOGY, 3).then()
