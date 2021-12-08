@@ -1,33 +1,21 @@
 package it.teamdigitale.ndc.harvester;
 
-import static it.teamdigitale.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
-import static it.teamdigitale.ndc.harvester.SemanticAssetType.ONTOLOGY;
-import static it.teamdigitale.ndc.harvester.SemanticAssetType.SCHEMA;
-
-import it.teamdigitale.ndc.harvester.exception.SinglePathProcessingException;
-import it.teamdigitale.ndc.harvester.model.SemanticAssetModel;
-import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
-import it.teamdigitale.ndc.harvester.pathprocessors.ControlledVocabularyPathProcessor;
-import it.teamdigitale.ndc.harvester.pathprocessors.OntologyPathProcessor;
-import it.teamdigitale.ndc.harvester.pathprocessors.SchemaPathProcessor;
-import it.teamdigitale.ndc.harvester.pathprocessors.SemanticAssetPathProcessor;
 import it.teamdigitale.ndc.repository.SemanticAssetMetadataRepository;
 import it.teamdigitale.ndc.repository.TripleStoreRepository;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class HarvesterService {
     private final AgencyRepositoryService agencyRepositoryService;
-    private final ControlledVocabularyPathProcessor controlledVocabularyPathProcessor;
-    private final SchemaPathProcessor schemaPathProcessor;
-    private final OntologyPathProcessor ontologyPathProcessor;
+    private final List<SemanticAssetHarvester> semanticAssetHarvesters;
     private final TripleStoreRepository tripleStoreRepository;
     private final SemanticAssetMetadataRepository semanticAssetMetadataRepository;
 
@@ -57,11 +45,13 @@ public class HarvesterService {
         cleanUpTripleStore(repoUrl);
         cleanUpIndexedMetadata(repoUrl);
 
-        harvestControlledVocabularies(repoUrl, path);
-        harvestOntologies(repoUrl, path);
-        harvestSchemas(repoUrl, path);
+        harvestSemanticAssets(repoUrl, path);
 
         log.info("Repo {} processed", repoUrl);
+    }
+
+    private void harvestSemanticAssets(String repoUrl, Path path) {
+        semanticAssetHarvesters.forEach(h -> h.harvest(repoUrl, path));
     }
 
     private Path cloneRepoToTempPath(String repoUrl) throws IOException {
@@ -80,45 +70,4 @@ public class HarvesterService {
         long deletedCount = semanticAssetMetadataRepository.deleteByRepoUrl(repoUrl);
         log.debug("Deleted {} indexed metadata for {}", deletedCount, repoUrl);
     }
-
-    private void harvestOntologies(String repoUrl, Path rootPath) {
-        harvestAssetsOfType(ONTOLOGY, repoUrl, rootPath,
-            agencyRepositoryService::getOntologyPaths,
-            ontologyPathProcessor);
-    }
-
-    private void harvestControlledVocabularies(String repoUrl, Path rootPath) {
-        harvestAssetsOfType(CONTROLLED_VOCABULARY, repoUrl, rootPath,
-            agencyRepositoryService::getControlledVocabularyPaths,
-            controlledVocabularyPathProcessor);
-    }
-
-    private void harvestSchemas(String repoUrl, Path rootPath) {
-        harvestAssetsOfType(SCHEMA, repoUrl, rootPath,
-            agencyRepositoryService::getSchemaPaths, schemaPathProcessor);
-    }
-
-    private interface PathSupplier<P extends SemanticAssetPath> {
-        List<P> get(Path rootPath);
-    }
-
-    private <P extends SemanticAssetPath, M extends SemanticAssetModel> void harvestAssetsOfType(
-        SemanticAssetType type, String repoUrl, Path rootPath,
-        PathSupplier<P> pathSupplier,
-        SemanticAssetPathProcessor<P, M> pathProcessor) {
-        log.debug("Looking for {} paths", type);
-
-        List<P> paths = pathSupplier.get(rootPath);
-        log.debug("Found {} {} path(s) for processing", paths.size(), type);
-
-        for (P path : paths) {
-            try {
-                pathProcessor.process(repoUrl, path);
-            } catch (SinglePathProcessingException e) {
-                log.error("Error processing {} {} in repo {}", type, path, repoUrl, e);
-            }
-        }
-    }
-
-
 }

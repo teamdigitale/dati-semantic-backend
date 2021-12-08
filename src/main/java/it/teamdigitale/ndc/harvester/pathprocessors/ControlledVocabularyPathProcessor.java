@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-public class ControlledVocabularyPathProcessor extends SemanticAssetPathProcessor<CvPath, ControlledVocabularyModel> {
+public class ControlledVocabularyPathProcessor extends BaseSemanticAssetPathProcessor<CvPath, ControlledVocabularyModel> {
     private final SemanticAssetModelFactory modelFactory;
     private final CsvParser csvParser;
     private final VocabularyDataService vocabularyDataService;

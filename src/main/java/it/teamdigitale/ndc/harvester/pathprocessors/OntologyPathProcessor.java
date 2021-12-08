@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
-public class OntologyPathProcessor extends SemanticAssetPathProcessor<SemanticAssetPath, OntologyModel> {
+public class OntologyPathProcessor extends BaseSemanticAssetPathProcessor<SemanticAssetPath, OntologyModel> {
     private final SemanticAssetModelFactory modelFactory;
 
     public OntologyPathProcessor(TripleStoreRepository tripleStoreRepository, SemanticAssetModelFactory modelFactory,

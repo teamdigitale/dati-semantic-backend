@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 public class SchemaPathProcessor
-    extends SemanticAssetPathProcessor<SemanticAssetPath, SchemaModel> {
+    extends BaseSemanticAssetPathProcessor<SemanticAssetPath, SchemaModel> {
 
     private final SemanticAssetModelFactory modelFactory;
 

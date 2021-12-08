@@ -1,14 +1,5 @@
 package it.teamdigitale.ndc.harvester.pathprocessors;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
-
 import it.teamdigitale.ndc.harvester.exception.SinglePathProcessingException;
 import it.teamdigitale.ndc.harvester.model.OntologyModel;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
@@ -17,7 +8,6 @@ import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.teamdigitale.ndc.repository.SemanticAssetMetadataRepository;
 import it.teamdigitale.ndc.repository.TripleStoreRepository;
 import it.teamdigitale.ndc.repository.TripleStoreRepositoryException;
-import java.util.function.Consumer;
 import org.apache.jena.rdf.model.Model;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,10 +16,20 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.function.Consumer;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
 @ExtendWith(MockitoExtension.class)
 class SemanticAssetPathProcessorTest {
     private class TestSemanticAssetPathProcessor
-        extends SemanticAssetPathProcessor<SemanticAssetPath, OntologyModel> {
+        extends BaseSemanticAssetPathProcessor<SemanticAssetPath, OntologyModel> {
         public TestSemanticAssetPathProcessor(TripleStoreRepository tripleStoreRepository,
                                               SemanticAssetMetadataRepository metadataRepository) {
             super(tripleStoreRepository, metadataRepository);
