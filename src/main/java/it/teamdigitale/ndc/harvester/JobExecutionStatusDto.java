@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.List;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
+import static java.util.Objects.isNull;
 
 @Data
 @JsonInclude(NON_NULL)
@@ -27,8 +28,8 @@ public class JobExecutionStatusDto {
     public JobExecutionStatusDto(JobExecution jobExecution) {
         jobInstance = jobExecution.getJobInstance();
         jobParameters = jobExecution.getJobParameters();
-        startTime = jobExecution.getStartTime().toString();
-        endTime = jobExecution.getEndTime().toString();
+        startTime = isNull(jobExecution.getStartTime()) ? "" : jobExecution.getStartTime().toString();
+        endTime = isNull(jobExecution.getEndTime()) ? "" : jobExecution.getEndTime().toString();
         status = jobExecution.getStatus();
         exitStatus = jobExecution.getExitStatus();
     }
