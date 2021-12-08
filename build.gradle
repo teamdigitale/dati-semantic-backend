@@ -52,10 +52,10 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
     testImplementation 'org.mockito:mockito-inline:3.9.0'
 
-    testImplementation "org.testcontainers:elasticsearch:1.16.2"
-    testImplementation "org.testcontainers:testcontainers:1.16.0"
-    testImplementation "org.testcontainers:junit-jupiter:1.16.0"
-    testImplementation "com.h2database:h2:1.4.192"
+    integrationImplementation "org.testcontainers:elasticsearch:1.16.2"
+    integrationImplementation "org.testcontainers:testcontainers:1.16.0"
+    integrationImplementation "org.testcontainers:junit-jupiter:1.16.0"
+    integrationImplementation "com.h2database:h2:1.4.192"
 
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 }
