@@ -1,13 +1,13 @@
 package it.teamdigitale.ndc.harvester.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import it.teamdigitale.ndc.harvester.model.exception.InvalidModelException;
 import org.apache.jena.rdf.model.Resource;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @ExtendWith(MockitoExtension.class)
 class SemanticAssetModelFactoryTest {
@@ -40,6 +40,17 @@ class SemanticAssetModelFactoryTest {
     }
 
     @Test
+    void canBuildSchemaModel() {
+        String ttlFile = "src/test/resources/testdata/schema.ttl";
+
+        SchemaModel model = factory.createSchema(ttlFile, REPO_URL);
+
+        Resource resource = model.getMainResource();
+
+        assertThat(resource.toString()).isEqualTo("https://w3id.org/italia/schema/person/v202108.01/person.oas3.yaml");
+    }
+
+    @Test
     void shouldFailForInvalidControlledVocabularyModel() {
         assertThatThrownBy(() -> factory.createControlledVocabulary("src/main/resources/application.properties",
             REPO_URL))
@@ -51,5 +62,12 @@ class SemanticAssetModelFactoryTest {
         assertThatThrownBy(() -> factory.createOntology("src/main/resources/application.properties",
             REPO_URL))
                 .isInstanceOf(InvalidModelException.class);
+    }
+
+    @Test
+    void shouldFailForInvalidSchemaModel() {
+        assertThatThrownBy(
+            () -> factory.createSchema("src/main/resources/application.properties", REPO_URL))
+            .isInstanceOf(InvalidModelException.class);
     }
 }

@@ -2,12 +2,14 @@ package it.teamdigitale.ndc.harvester;
 
 import static it.teamdigitale.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
 import static it.teamdigitale.ndc.harvester.SemanticAssetType.ONTOLOGY;
+import static it.teamdigitale.ndc.harvester.SemanticAssetType.SCHEMA;
 
 import it.teamdigitale.ndc.harvester.exception.SinglePathProcessingException;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetModel;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
 import it.teamdigitale.ndc.harvester.pathprocessors.ControlledVocabularyPathProcessor;
 import it.teamdigitale.ndc.harvester.pathprocessors.OntologyPathProcessor;
+import it.teamdigitale.ndc.harvester.pathprocessors.SchemaPathProcessor;
 import it.teamdigitale.ndc.harvester.pathprocessors.SemanticAssetPathProcessor;
 import it.teamdigitale.ndc.repository.SemanticAssetMetadataRepository;
 import it.teamdigitale.ndc.repository.TripleStoreRepository;
@@ -24,6 +26,7 @@ import org.springframework.stereotype.Component;
 public class HarvesterService {
     private final AgencyRepositoryService agencyRepositoryService;
     private final ControlledVocabularyPathProcessor controlledVocabularyPathProcessor;
+    private final SchemaPathProcessor schemaPathProcessor;
     private final OntologyPathProcessor ontologyPathProcessor;
     private final TripleStoreRepository tripleStoreRepository;
     private final SemanticAssetMetadataRepository semanticAssetMetadataRepository;
@@ -56,6 +59,7 @@ public class HarvesterService {
 
         harvestControlledVocabularies(repoUrl, path);
         harvestOntologies(repoUrl, path);
+        harvestSchemas(repoUrl, path);
 
         log.info("Repo {} processed", repoUrl);
     }
@@ -87,6 +91,11 @@ public class HarvesterService {
         harvestAssetsOfType(CONTROLLED_VOCABULARY, repoUrl, rootPath,
             agencyRepositoryService::getControlledVocabularyPaths,
             controlledVocabularyPathProcessor);
+    }
+
+    private void harvestSchemas(String repoUrl, Path rootPath) {
+        harvestAssetsOfType(SCHEMA, repoUrl, rootPath,
+            agencyRepositoryService::getSchemaPaths, schemaPathProcessor);
     }
 
     private interface PathSupplier<P extends SemanticAssetPath> {

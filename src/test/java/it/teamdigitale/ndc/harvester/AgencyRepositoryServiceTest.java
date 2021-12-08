@@ -1,26 +1,27 @@
 package it.teamdigitale.ndc.harvester;
 
-import it.teamdigitale.ndc.harvester.model.CvPath;
-import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
-import it.teamdigitale.ndc.harvester.scanners.ControlledVocabularyFolderScanner;
-import it.teamdigitale.ndc.harvester.scanners.OntologyFolderScanner;
-import it.teamdigitale.ndc.harvester.util.FileUtils;
-import it.teamdigitale.ndc.harvester.util.GitUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
-
 import static it.teamdigitale.ndc.harvester.AgencyRepositoryService.TEMP_DIR_PREFIX;
 import static it.teamdigitale.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
 import static it.teamdigitale.ndc.harvester.SemanticAssetType.ONTOLOGY;
+import static it.teamdigitale.ndc.harvester.SemanticAssetType.SCHEMA;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import it.teamdigitale.ndc.harvester.model.CvPath;
+import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
+import it.teamdigitale.ndc.harvester.scanners.ControlledVocabularyFolderScanner;
+import it.teamdigitale.ndc.harvester.scanners.OntologyFolderScanner;
+import it.teamdigitale.ndc.harvester.scanners.SchemaFolderScanner;
+import it.teamdigitale.ndc.harvester.util.FileUtils;
+import it.teamdigitale.ndc.harvester.util.GitUtils;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class AgencyRepositoryServiceTest {
     FileUtils fileUtils;
@@ -33,7 +34,9 @@ public class AgencyRepositoryServiceTest {
         gitUtils = mock(GitUtils.class);
         OntologyFolderScanner ontologyScanner = new OntologyFolderScanner(fileUtils);
         ControlledVocabularyFolderScanner cvScanner = new ControlledVocabularyFolderScanner(fileUtils);
-        agencyRepoService = new AgencyRepositoryService(fileUtils, gitUtils, ontologyScanner, cvScanner);
+        SchemaFolderScanner schemaScanner = new SchemaFolderScanner(fileUtils);
+        agencyRepoService = new AgencyRepositoryService(fileUtils, gitUtils, ontologyScanner,
+                cvScanner, schemaScanner);
     }
 
     @Test
@@ -127,6 +130,35 @@ public class AgencyRepositoryServiceTest {
     }
 
     @Test
+    void shouldFindAllSchemas() throws IOException {
+        Path schemaFolder = Path.of("/temp/ndc-1", SCHEMA.getFolderName());
+        String schema1 = "group1/sc1/index.ttl";
+        String schema2 = "sc2/index.ttl";
+
+        Path group1 =
+            dir("group1",
+                dir("group1/sc1",
+                    file(schema1)
+                )
+            );
+        Path sc2 =
+            dir("sc2",
+                file(schema2)
+            );
+
+        when(fileUtils.folderExists(schemaFolder)).thenReturn(true);
+        when(fileUtils.isDirectory(schemaFolder)).thenReturn(true);
+        when(fileUtils.listContents(schemaFolder)).thenReturn(List.of(group1, sc2));
+
+        List<SemanticAssetPath> schemaPaths =
+            agencyRepoService.getSchemaPaths(Path.of("/temp/ndc-1"));
+
+        assertThat(schemaPaths).hasSize(2);
+        assertThat(schemaPaths).containsAll(
+            List.of(SemanticAssetPath.of(schema1), SemanticAssetPath.of(schema2)));
+    }
+
+    @Test
     void shouldIgnoreFilesInNonLeafFolders() throws IOException {
         String root = "/temp/ndc-1";
         Path ontoFolder = Path.of(root, ONTOLOGY.getFolderName());
@@ -162,6 +194,14 @@ public class AgencyRepositoryServiceTest {
         when(fileUtils.folderExists(ontologyFolder)).thenReturn(false);
 
         assertThat(agencyRepoService.getOntologyPaths(ontologyFolder)).isEmpty();
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenSchemaFolderIsNotPresent() {
+        Path ontologyFolder = Path.of("/temp/ndc-1", SCHEMA.getFolderName());
+        when(fileUtils.folderExists(ontologyFolder)).thenReturn(false);
+
+        assertThat(agencyRepoService.getSchemaPaths(ontologyFolder)).isEmpty();
     }
 
     @Test

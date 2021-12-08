@@ -1,18 +1,16 @@
 package it.teamdigitale.ndc.harvester;
 
+import static java.util.function.Predicate.not;
+
 import it.teamdigitale.ndc.harvester.model.CvPath;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
 import it.teamdigitale.ndc.harvester.scanners.ControlledVocabularyFolderScanner;
 import it.teamdigitale.ndc.harvester.scanners.FolderScanner;
 import it.teamdigitale.ndc.harvester.scanners.OntologyFolderScanner;
+import it.teamdigitale.ndc.harvester.scanners.SchemaFolderScanner;
 import it.teamdigitale.ndc.harvester.util.FileUtils;
 import it.teamdigitale.ndc.harvester.util.GitUtils;
 import it.teamdigitale.ndc.harvester.util.Version;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Comparator;
@@ -20,8 +18,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-
-import static java.util.function.Predicate.not;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
@@ -32,6 +32,7 @@ public class AgencyRepositoryService {
     private final GitUtils gitUtils;
     private final OntologyFolderScanner ontologyFolderScanner;
     private final ControlledVocabularyFolderScanner controlledVocabularyFolderScanner;
+    private final SchemaFolderScanner schemaFolderScanner;
 
     public Path cloneRepo(String repoUrl) throws IOException {
         Path cloneDir = fileUtils.createTempDirectory(TEMP_DIR_PREFIX);
@@ -46,6 +47,14 @@ public class AgencyRepositoryService {
 
     public List<SemanticAssetPath> getOntologyPaths(Path clonedRepo) {
         return findPaths(clonedRepo, SemanticAssetType.ONTOLOGY, ontologyFolderScanner);
+    }
+
+    public void removeClonedRepo(Path repoPath) throws IOException {
+        fileUtils.removeDirectory(repoPath);
+    }
+
+    public List<SemanticAssetPath> getSchemaPaths(Path clonedRepoPath) {
+        return findPaths(clonedRepoPath, SemanticAssetType.SCHEMA, schemaFolderScanner);
     }
 
     private <P extends SemanticAssetPath> List<P> findPaths(Path clonedRepo, SemanticAssetType type, FolderScanner<P> scanner) {
@@ -99,9 +108,5 @@ public class AgencyRepositoryService {
             boolean hasValidVersion = Version.of(fileName).isPresent();
             return hasValidVersion && !latestVersionString.equals(fileName);
         };
-    }
-
-    public void removeClonedRepo(Path repoPath) throws IOException {
-        fileUtils.removeDirectory(repoPath);
     }
 }

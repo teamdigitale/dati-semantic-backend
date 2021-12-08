@@ -12,6 +12,7 @@ import it.teamdigitale.ndc.harvester.model.CvPath;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
 import it.teamdigitale.ndc.harvester.pathprocessors.ControlledVocabularyPathProcessor;
 import it.teamdigitale.ndc.harvester.pathprocessors.OntologyPathProcessor;
+import it.teamdigitale.ndc.harvester.pathprocessors.SchemaPathProcessor;
 import it.teamdigitale.ndc.repository.SemanticAssetMetadataRepository;
 import it.teamdigitale.ndc.repository.TripleStoreRepository;
 import java.io.IOException;
@@ -32,6 +33,8 @@ public class HarvesterServiceTest {
     ControlledVocabularyPathProcessor controlledVocabularyPathProcessor;
     @Mock
     OntologyPathProcessor ontologyPathProcessor;
+    @Mock
+    SchemaPathProcessor schemaPathProcessor;
     @Mock
     TripleStoreRepository tripleStoreRepository;
     @Mock
@@ -76,6 +79,23 @@ public class HarvesterServiceTest {
         verify(agencyRepoService).getOntologyPaths(clonedRepoPath);
         verify(ontologyPathProcessor).process(repoUrl, path1);
         verify(ontologyPathProcessor).process(repoUrl, path2);
+    }
+
+    @Test
+    void shouldHarvestSchemaFiles() throws IOException {
+        String repoUrl = "someRepoUri";
+        SemanticAssetPath path1 = SemanticAssetPath.of("test1.ttl");
+        SemanticAssetPath path2 = SemanticAssetPath.of("test2.ttl");
+
+        when(agencyRepoService.cloneRepo(repoUrl)).thenReturn(clonedRepoPath);
+        when(agencyRepoService.getSchemaPaths(clonedRepoPath)).thenReturn(List.of(path1, path2));
+
+        harvester.harvest(repoUrl);
+
+        verify(agencyRepoService).cloneRepo("someRepoUri");
+        verify(agencyRepoService).getSchemaPaths(clonedRepoPath);
+        verify(schemaPathProcessor).process(repoUrl, path1);
+        verify(schemaPathProcessor).process(repoUrl, path2);
     }
 
     @Test
