@@ -3,6 +3,7 @@ package it.teamdigitale.ndc.integration;
 import static io.restassured.RestAssured.when;
 import static it.teamdigitale.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
 import static it.teamdigitale.ndc.harvester.SemanticAssetType.ONTOLOGY;
+import static it.teamdigitale.ndc.harvester.SemanticAssetType.SCHEMA;
 import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -131,6 +132,31 @@ public class RestApiIntegrationTests {
             .body("modifiedOn", equalTo("2018-07-31"))
             .body("keyClasses[0].iri",
                 equalTo("https://w3id.org/italia/onto/ACCO/AccommodationRoom"));
+    }
+
+    @Test
+    void shouldBeAbleToHarvestAndSearchSchemaSuccessfully() {
+        Response schemaResponse = getSemanticAsset("The Person schema", SCHEMA, 2);
+
+        schemaResponse.then()
+                .statusCode(200)
+                .body("totalCount", equalTo(1))
+                .body("limit", equalTo(2))
+                .body("data.size()", equalTo(1))
+                .body("data[0].assetIri",
+                        equalTo("https://w3id.org/italia/schema/person/v202108.01/person.oas3.yaml"))
+                .body("data[0].rightsHolder.iri",
+                        equalTo("http://spcdata.digitpa.gov.it/browse/page/Amministrazione/agid"))
+                .body("data[0].rightsHolder.summary", equalTo("Agenzia per l'Italia Digitale"));
+
+        getSemanticAssetDetails(getAssetIri(schemaResponse)).then()
+                .statusCode(200)
+                .body("assetIri",
+                        equalTo("https://w3id.org/italia/schema/person/v202108.01/person.oas3.yaml"))
+                .body("type", equalTo(SCHEMA.name()))
+                .body("modifiedOn", equalTo("2021-12-06"))
+                .body("distributionUrls[0]",
+                        equalTo("https://github.com/ioggstream/json-semantic-playground/tree/master/assets/schemas/person/v202108.01"));
     }
 
     @Test
