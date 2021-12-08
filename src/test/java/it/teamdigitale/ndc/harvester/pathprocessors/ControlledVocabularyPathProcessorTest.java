@@ -8,6 +8,7 @@ import it.teamdigitale.ndc.harvester.model.SemanticAssetModelFactory;
 import it.teamdigitale.ndc.repository.SemanticAssetMetadataRepository;
 import it.teamdigitale.ndc.repository.TripleStoreRepository;
 import it.teamdigitale.ndc.service.VocabularyDataService;
+import it.teamdigitale.ndc.service.VocabularyIdentifier;
 import org.apache.jena.rdf.model.Model;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -69,7 +70,8 @@ class ControlledVocabularyPathProcessorTest {
         verify(semanticAssetModelFactory).createControlledVocabulary(ttlFile, "some-repo");
         verify(csvParser).convertCsvToMapList(csvFile);
         verify(tripleStoreRepository).save("some-repo", jenaModel);
-        verify(vocabularyDataService).indexData("rightsHolderId", "keyConcept", List.of(Map.of("key", "val")));
+        verify(vocabularyDataService).indexData(new VocabularyIdentifier("rightsHolderId", "keyConcept"),
+                List.of(Map.of("key", "val")));
         verify(cvModel).extractMetadata();
         verify(metadataRepository).save(metadata);
     }

@@ -2,6 +2,7 @@ package it.teamdigitale.ndc.controller;
 
 import it.teamdigitale.ndc.controller.dto.VocabularyDataDto;
 import it.teamdigitale.ndc.service.VocabularyDataService;
+import it.teamdigitale.ndc.service.VocabularyIdentifier;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.validation.annotation.Validated;
@@ -29,6 +30,6 @@ public class VocabularyDataController {
         @Min(1) @Max(200) Integer limit) {
 
         Pageable pageable = OffsetBasedPageRequest.of(offset, limit);
-        return vocabularyDataService.getData(rightsHolder, keyConcept, pageable);
+        return vocabularyDataService.getData(new VocabularyIdentifier(rightsHolder, keyConcept), pageable);
     }
 }

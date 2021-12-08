@@ -28,11 +28,11 @@ public class VocabularyDataService {
         this.elasticsearchOperations = elasticsearchOperations;
     }
 
-    public VocabularyDataDto getData(String rightsHolder, String keyConcept, Pageable pageable) {
-        String index = String.join(".", rightsHolder, keyConcept).toLowerCase();
-        if (exists(index)) {
+    public VocabularyDataDto getData(VocabularyIdentifier vocabularyIdentifier, Pageable pageable) {
+        String indexName = vocabularyIdentifier.getIndexName();
+        if (exists(indexName)) {
             Query findAll = Query.findAll().setPageable(pageable);
-            SearchHits<Map> results = elasticsearchOperations.search(findAll, Map.class, IndexCoordinates.of(index));
+            SearchHits<Map> results = elasticsearchOperations.search(findAll, Map.class, IndexCoordinates.of(indexName));
 
             List<Map> data = results.getSearchHits().stream()
                 .map(SearchHit::getContent)
@@ -40,14 +40,14 @@ public class VocabularyDataService {
 
             return new VocabularyDataDto(results.getTotalHits(), pageable.getPageSize(), pageable.getOffset(), data);
         } else {
-            log.error("Controlled Vocabulary not found for {}/{}", rightsHolder, keyConcept);
-            throw new VocabularyDataNotFoundException(index);
+            log.error("Controlled Vocabulary not found for {}", vocabularyIdentifier);
+            throw new VocabularyDataNotFoundException(indexName);
         }
     }
 
-    public void indexData(String rightsHolder, String keyConcept,
+    public void indexData(VocabularyIdentifier vocabularyIdentifier,
                           List<Map<String, String>> data) {
-        String indexName = String.join(".", rightsHolder, keyConcept).toLowerCase();
+        String indexName = vocabularyIdentifier.getIndexName();
         ensureCleanIndex(indexName);
         elasticsearchOperations.save(data, IndexCoordinates.of(indexName));
     }

@@ -14,6 +14,8 @@ import it.teamdigitale.ndc.controller.dto.VocabularyDataDto;
 import it.teamdigitale.ndc.service.VocabularyDataService;
 import java.util.List;
 import java.util.Map;
+
+import it.teamdigitale.ndc.service.VocabularyIdentifier;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -31,7 +33,7 @@ public class VocabularyDataControllerMvcTest {
 
     @Test
     public void shouldReturnVocabularyDataUsingDefaultPagination() throws Exception {
-        when(vocabularyDataService.getData(any(), any(), any()))
+        when(vocabularyDataService.getData(any(), any()))
             .thenReturn(VocabularyDataDto.builder()
                 .offset(1L)
                 .limit(10)
@@ -47,13 +49,13 @@ public class VocabularyDataControllerMvcTest {
             .andExpect(jsonPath("$.totalResults").value(5))
             .andExpect(jsonPath("$.data[0].key").value("val"));
 
-        verify(vocabularyDataService).getData("agid", "testKeyConcept",
-                OffsetBasedPageRequest.of(0, 10));
+        verify(vocabularyDataService).getData(
+                new VocabularyIdentifier("agid", "testKeyConcept"), OffsetBasedPageRequest.of(0, 10));
     }
 
     @Test
     public void shouldReturnNotFound() throws Exception {
-        when(vocabularyDataService.getData(any(), any(), any()))
+        when(vocabularyDataService.getData(any(), any()))
             .thenThrow(new VocabularyDataNotFoundException("agid.testkeyconcept"));
 
         mockMvc.perform(get("/vocabularies/agid/testKeyConcept"))
@@ -62,8 +64,8 @@ public class VocabularyDataControllerMvcTest {
             .andExpect(jsonPath("$.message").value(
                 "Unable to find vocabulary data for : agid.testkeyconcept"));
 
-        verify(vocabularyDataService).getData("agid", "testKeyConcept",
-                OffsetBasedPageRequest.of(0, 10));
+        verify(vocabularyDataService).getData(
+                new VocabularyIdentifier("agid", "testKeyConcept"), OffsetBasedPageRequest.of(0, 10));
     }
 
     @Test

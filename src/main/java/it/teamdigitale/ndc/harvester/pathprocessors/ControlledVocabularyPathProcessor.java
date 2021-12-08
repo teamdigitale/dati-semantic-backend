@@ -7,6 +7,7 @@ import it.teamdigitale.ndc.harvester.model.SemanticAssetModelFactory;
 import it.teamdigitale.ndc.repository.SemanticAssetMetadataRepository;
 import it.teamdigitale.ndc.repository.TripleStoreRepository;
 import it.teamdigitale.ndc.service.VocabularyDataService;
+import it.teamdigitale.ndc.service.VocabularyIdentifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -36,10 +37,11 @@ public class ControlledVocabularyPathProcessor extends BaseSemanticAssetPathProc
         super.processWithModel(repoUrl, path, model);
 
         path.getCsvPath().ifPresent(p -> {
-            String vocabularyId = model.getKeyConcept();
+            String keyConcept = model.getKeyConcept();
             String rightsHolder = model.getRightsHolderId();
+            VocabularyIdentifier vocabularyIdentifier = new VocabularyIdentifier(rightsHolder, keyConcept);
 
-            parseAndIndexCsv(vocabularyId, rightsHolder, p);
+            parseAndIndexCsv(vocabularyIdentifier, p);
         });
     }
 
@@ -53,8 +55,8 @@ public class ControlledVocabularyPathProcessor extends BaseSemanticAssetPathProc
         path.getCsvPath().ifPresent(p -> model.addNdcUrlProperty(baseUrl));
     }
 
-    private void parseAndIndexCsv(String vocabularyId, String rightsHolder, String csvPath) {
+    private void parseAndIndexCsv(VocabularyIdentifier vocabularyIdentifier, String csvPath) {
         List<Map<String, String>> flatData = csvParser.convertCsvToMapList(csvPath);
-        vocabularyDataService.indexData(rightsHolder, vocabularyId, flatData);
+        vocabularyDataService.indexData(vocabularyIdentifier, flatData);
     }
 }

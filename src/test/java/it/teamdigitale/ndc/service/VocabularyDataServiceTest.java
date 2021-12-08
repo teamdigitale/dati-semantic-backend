@@ -11,15 +11,16 @@ import static org.mockito.Mockito.when;
 import it.teamdigitale.ndc.controller.OffsetBasedPageRequest;
 import it.teamdigitale.ndc.controller.dto.VocabularyDataDto;
 import it.teamdigitale.ndc.controller.exception.VocabularyDataNotFoundException;
+
 import java.util.List;
 import java.util.Map;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.IndexOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
@@ -47,13 +48,13 @@ public class VocabularyDataServiceTest {
         when(hits.getTotalHits()).thenReturn(1L);
         when(hit.getContent()).thenReturn(Map.of("key", "value"));
         when(elasticsearchOperations.indexOps(any(IndexCoordinates.class)))
-            .thenReturn(indexOperations);
+                .thenReturn(indexOperations);
         when(indexOperations.exists()).thenReturn(true);
         ArgumentCaptor<Query> captor = ArgumentCaptor.forClass(Query.class);
         when(elasticsearchOperations.search(captor.capture(), any(Class.class),
-            any(IndexCoordinates.class))).thenReturn(hits);
+                any(IndexCoordinates.class))).thenReturn(hits);
 
-        VocabularyDataDto data = vocabularyDataService.getData("agid", "testKeyConcept", OffsetBasedPageRequest.of(2, 10));
+        VocabularyDataDto data = vocabularyDataService.getData(new VocabularyIdentifier("agid", "testKeyConcept"), OffsetBasedPageRequest.of(2, 10));
 
         assertThat(data.getData()).containsExactlyInAnyOrder(Map.of("key", "value"));
         assertThat(data.getTotalResults()).isEqualTo(1L);
@@ -72,13 +73,13 @@ public class VocabularyDataServiceTest {
     @Test
     void shouldThrowExceptionWhenIndexDoesNotExists() {
         when(elasticsearchOperations.indexOps(any(IndexCoordinates.class)))
-            .thenReturn(indexOperations);
+                .thenReturn(indexOperations);
         when(indexOperations.exists()).thenReturn(false);
         IndexCoordinates indexCoordinates = IndexCoordinates.of("agid.testkeyconcept");
 
-        assertThatThrownBy(() -> vocabularyDataService.getData("agid", "testKeyConcept", OffsetBasedPageRequest.of(0, 10)))
-            .isInstanceOf(VocabularyDataNotFoundException.class)
-            .hasMessage("Unable to find vocabulary data for : agid.testkeyconcept");
+        assertThatThrownBy(() -> vocabularyDataService.getData(new VocabularyIdentifier("agid", "testKeyConcept"), OffsetBasedPageRequest.of(0, 10)))
+                .isInstanceOf(VocabularyDataNotFoundException.class)
+                .hasMessage("Unable to find vocabulary data for : agid.testkeyconcept");
         verify(elasticsearchOperations).indexOps(indexCoordinates);
         verify(indexOperations).exists();
     }
@@ -86,34 +87,35 @@ public class VocabularyDataServiceTest {
     @Test
     void shouldIndexTheNewDataWhenIndexIsAlreadyPresent() {
         when(elasticsearchOperations.indexOps(any(IndexCoordinates.class)))
-            .thenReturn(indexOperations);
+                .thenReturn(indexOperations);
         when(indexOperations.exists()).thenReturn(true);
 
-        vocabularyDataService.indexData("agid", "testKeyConcept", List.of(Map.of("key", "value")));
+        vocabularyDataService.indexData(new VocabularyIdentifier("agid", "testKeyConcept"),
+                List.of(Map.of("key", "value")));
 
         verify(elasticsearchOperations, times(3)).indexOps(
-            IndexCoordinates.of("agid.testkeyconcept"));
+                IndexCoordinates.of("agid.testkeyconcept"));
         verify(indexOperations).exists();
         verify(indexOperations).delete();
         verify(indexOperations).create();
         verify(elasticsearchOperations).save(List.of(Map.of("key", "value")),
-            IndexCoordinates.of("agid.testkeyconcept"));
+                IndexCoordinates.of("agid.testkeyconcept"));
     }
 
     @Test
     void shouldIndexTheNewDataWhenIndexIsNotPresent() {
         when(elasticsearchOperations.indexOps(any(IndexCoordinates.class)))
-            .thenReturn(indexOperations);
+                .thenReturn(indexOperations);
         when(indexOperations.exists()).thenReturn(false);
 
-        vocabularyDataService.indexData("agid", "testKeyConcept", List.of(Map.of("key", "value")));
+        vocabularyDataService.indexData(new VocabularyIdentifier("agid", "testKeyConcept"), List.of(Map.of("key", "value")));
 
         verify(elasticsearchOperations, times(2)).indexOps(
-            IndexCoordinates.of("agid.testkeyconcept"));
+                IndexCoordinates.of("agid.testkeyconcept"));
         verify(indexOperations).exists();
         verify(indexOperations, times(0)).delete();
         verify(indexOperations).create();
         verify(elasticsearchOperations).save(List.of(Map.of("key", "value")),
-            IndexCoordinates.of("agid.testkeyconcept"));
+                IndexCoordinates.of("agid.testkeyconcept"));
     }
 }
