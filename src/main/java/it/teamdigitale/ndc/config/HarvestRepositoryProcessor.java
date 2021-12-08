@@ -1,6 +1,8 @@
 package it.teamdigitale.ndc.config;
 
 import it.teamdigitale.ndc.harvester.HarvesterService;
+import it.teamdigitale.ndc.repository.HarvestJobException;
+import it.teamdigitale.ndc.repository.TripleStoreRepositoryException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.JobParameters;
@@ -52,16 +54,14 @@ public class HarvestRepositoryProcessor implements Tasklet, StepExecutionListene
                 failedRepos.add(repo);
             }
         }
+        if (!failedRepos.isEmpty()) {
+            throw new HarvestJobException(String.format("Harvesting failed for repos '%s'", repos));
+        }
         return RepeatStatus.FINISHED;
     }
 
     @Override
     public ExitStatus afterStep(StepExecution stepExecution) {
-        if (failedRepos.isEmpty()) {
-            return ExitStatus.COMPLETED;
-        } else {
-            log.error("Harvesting failed for repos " + failedRepos);
-            return new ExitStatus("COMPLETED WITH ERRORS");
-        }
+        return failedRepos.isEmpty() ? ExitStatus.COMPLETED : ExitStatus.FAILED;
     }
 }
