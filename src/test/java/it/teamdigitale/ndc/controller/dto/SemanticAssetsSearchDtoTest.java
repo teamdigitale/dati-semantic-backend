@@ -24,6 +24,7 @@ class SemanticAssetsSearchDtoTest {
                 .build())
             .modifiedOn(LocalDate.parse("2020-01-01"))
             .themes(List.of("education", "health"))
+            .versionInfo("versionInfo")
             .build();
 
         SemanticAssetsSearchDto entry =
@@ -33,9 +34,10 @@ class SemanticAssetsSearchDtoTest {
         assertThat(entry.getType()).isEqualTo(SemanticAssetType.ONTOLOGY);
         assertThat(entry.getRightsHolder().getIri()).isEqualTo("http://rightsHolder");
         assertThat(entry.getRightsHolder().getSummary()).isEqualTo("rights holder name");
-        assertThat(entry.getModified()).isEqualTo(LocalDate.parse("2020-01-01"));
+        assertThat(entry.getModifiedOn()).isEqualTo(LocalDate.parse("2020-01-01"));
         assertThat(entry.getThemes()).isEqualTo(List.of("education", "health"));
         assertThat(entry.getTitle()).isEqualTo("title");
         assertThat(entry.getDescription()).isEqualTo("description");
+        assertThat(entry.getVersionInfo()).isEqualTo("versionInfo");
     }
 }

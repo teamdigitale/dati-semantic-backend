@@ -149,12 +149,13 @@ public class SemanticAssetsControllerMvcTest {
             .data(List.of(SemanticAssetsSearchDto.builder()
                 .assetIri("some-iri")
                 .description("some-description")
-                .modified(LocalDate.parse("2020-01-01"))
+                .modifiedOn(LocalDate.parse("2020-01-01"))
                 .rightsHolder(buildNodeSummary("https://example.com/rightsHolder",
                     "example rights holder"))
                 .themes(List.of("EDUC", "AGRI"))
                 .title("searchText contains")
                 .type(CONTROLLED_VOCABULARY)
+                .versionInfo("some-version-info")
                 .build()))
             .build());
 
@@ -180,14 +181,15 @@ public class SemanticAssetsControllerMvcTest {
             .andExpect(jsonPath("$.offset").value(0))
             .andExpect(jsonPath("$.data[0].assetIri").value("some-iri"))
             .andExpect(jsonPath("$.data[0].description").value("some-description"))
-            .andExpect(jsonPath("$.data[0].modified").value("2020-01-01"))
+            .andExpect(jsonPath("$.data[0].modifiedOn").value("2020-01-01"))
             .andExpect(
                 jsonPath("$.data[0].rightsHolder.iri").value("https://example.com/rightsHolder"))
             .andExpect(jsonPath("$.data[0].rightsHolder.summary").value("example rights holder"))
             .andExpect(jsonPath("$.data[0].themes[0]").value("EDUC"))
             .andExpect(jsonPath("$.data[0].themes[1]").value("AGRI"))
             .andExpect(jsonPath("$.data[0].title").value("searchText contains"))
-            .andExpect(jsonPath("$.data[0].type").value("CONTROLLED_VOCABULARY"));
+            .andExpect(jsonPath("$.data[0].type").value("CONTROLLED_VOCABULARY"))
+            .andExpect(jsonPath("$.data[0].versionInfo").value("some-version-info"));
     }
 
     @Test
