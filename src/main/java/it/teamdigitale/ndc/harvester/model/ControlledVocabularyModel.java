@@ -2,15 +2,18 @@ package it.teamdigitale.ndc.harvester.model;
 
 import static it.teamdigitale.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
 import static it.teamdigitale.ndc.harvester.model.extractors.NodeExtractor.extractNodes;
+import static it.teamdigitale.ndc.harvester.model.vocabulary.EuropaVocabulary.RDF_TURTLE;
 import static java.util.Objects.isNull;
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.vocabulary.DCAT.accessURL;
 import static org.apache.jena.vocabulary.DCAT.distribution;
+import static org.apache.jena.vocabulary.DCTerms.format;
 
 import it.teamdigitale.ndc.harvester.model.exception.InvalidModelException;
 import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.teamdigitale.ndc.harvester.model.vocabulary.EuropaVocabulary;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.jena.rdf.model.Model;
@@ -90,8 +93,8 @@ public class ControlledVocabularyModel extends BaseSemanticAssetModel {
 
     private List<String> getDistributionUrls() {
         return extractNodes(getMainResource(), distribution).stream()
-            .filter(node -> node.getProperty(DCTerms.format).getResource().getURI()
-                .equals(EuropaVocabulary.RDF_TURTLE.getURI()))
+            .filter(node -> Objects.nonNull(node.getProperty(format))
+                    && node.getProperty(format).getResource().getURI().equals(RDF_TURTLE.getURI()))
             .map(node -> node.getProperty(accessURL).getResource().getURI())
             .collect(Collectors.toList());
     }

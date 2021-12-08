@@ -24,6 +24,7 @@ import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
 import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.teamdigitale.ndc.harvester.model.vocabulary.EuropaVocabulary;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
@@ -70,8 +71,8 @@ public class SchemaModel extends BaseSemanticAssetModel {
 
     private List<String> getDistributionUrls() {
         return extractNodes(getMainResource(), distribution).stream()
-            .filter(node -> node.getProperty(DCTerms.format).getResource().getURI()
-                .equals(EuropaVocabulary.JSON.getURI()))
+            .filter(node -> Objects.nonNull(node.getProperty(DCTerms.format))
+                    && node.getProperty(DCTerms.format).getResource().getURI().equals(EuropaVocabulary.JSON.getURI()))
             .map(node -> node.getProperty(accessURL).getResource().getURI())
             .collect(Collectors.toList());
     }

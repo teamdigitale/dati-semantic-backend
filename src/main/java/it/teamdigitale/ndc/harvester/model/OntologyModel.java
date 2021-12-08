@@ -14,6 +14,7 @@ import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
 import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.vocabulary.DCAT;
@@ -49,8 +50,8 @@ public class OntologyModel extends BaseSemanticAssetModel {
 
     private List<String> getDistributionUrls() {
         return extractNodes(getMainResource(), hasSemanticAssetDistribution).stream()
-            .filter(node -> node.getProperty(DCTerms.format).getResource().getURI()
-                .equals(RDF_TURTLE.getURI()))
+            .filter(node -> Objects.nonNull(node.getProperty(DCTerms.format))
+                    && node.getProperty(DCTerms.format).getResource().getURI().equals(RDF_TURTLE.getURI()))
             .map(node -> node.getProperty(DCAT.accessURL).getResource().getURI())
             .collect(Collectors.toList());
     }
