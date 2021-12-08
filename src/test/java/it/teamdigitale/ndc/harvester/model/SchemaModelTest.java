@@ -1,17 +1,10 @@
 package it.teamdigitale.ndc.harvester.model;
 
 import static it.teamdigitale.ndc.harvester.SemanticAssetType.SCHEMA;
-import it.teamdigitale.ndc.harvester.model.exception.InvalidModelException;
-import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
-import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
 import static it.teamdigitale.ndc.harvester.model.vocabulary.Admsapit.hasKeyClass;
-import java.time.LocalDate;
-import org.apache.jena.rdf.model.Model;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
-import org.apache.jena.rdf.model.Resource;
 import static org.apache.jena.rdf.model.ResourceFactory.createLangLiteral;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-import org.apache.jena.sparql.vocabulary.FOAF;
 import static org.apache.jena.vocabulary.DCAT.accessURL;
 import static org.apache.jena.vocabulary.DCAT.contactPoint;
 import static org.apache.jena.vocabulary.DCAT.distribution;
@@ -28,11 +21,20 @@ import static org.apache.jena.vocabulary.DCTerms.rightsHolder;
 import static org.apache.jena.vocabulary.DCTerms.subject;
 import static org.apache.jena.vocabulary.DCTerms.title;
 import static org.apache.jena.vocabulary.OWL.versionInfo;
-import org.apache.jena.vocabulary.RDF;
 import static org.apache.jena.vocabulary.RDFS.label;
-import org.apache.jena.vocabulary.VCARD4;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import it.teamdigitale.ndc.harvester.model.exception.InvalidModelException;
+import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
+import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
+import it.teamdigitale.ndc.harvester.model.vocabulary.EuropaVocabulary;
+import java.time.LocalDate;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.sparql.vocabulary.FOAF;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.VCARD4;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -53,11 +55,11 @@ public class SchemaModelTest {
             .addProperty(FOAF.name, "agid");
         Resource distribution1 = jenaModel
             .createResource("distribution1")
-            .addProperty(format, jenaModel.createResource("http://publications.europa.eu/resource/authority/file-type/JSON"))
+            .addProperty(format, EuropaVocabulary.JSON)
             .addProperty(accessURL, jenaModel.createResource("accessURL1"));
         Resource distribution2 = jenaModel
             .createResource("distribution2")
-            .addProperty(format, jenaModel.createResource("http://publications.europa.eu/resource/authority/file-type/RDF_TURTLE"))
+            .addProperty(format, EuropaVocabulary.RDF_TURTLE)
             .addProperty(accessURL, jenaModel.createResource("accessURL2"));
         jenaModel
             .createResource(SCHEMA_IRI)
@@ -92,8 +94,10 @@ public class SchemaModelTest {
                 .createResource("downloadURL1"))
             .addProperty(downloadURL, jenaModel
                 .createResource("downloadURL2"))
-            .addProperty(hasKeyClass, jenaModel.createResource("http://keyClasses1").addProperty(label, "keyClasses1"))
-            .addProperty(hasKeyClass, jenaModel.createResource("http://keyClasses2").addProperty(label, "keyClasses2"));
+            .addProperty(hasKeyClass,
+                jenaModel.createResource("http://keyClasses1").addProperty(label, "keyClasses1"))
+            .addProperty(hasKeyClass,
+                jenaModel.createResource("http://keyClasses2").addProperty(label, "keyClasses2"));
     }
 
     @Test

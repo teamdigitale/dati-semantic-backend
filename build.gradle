@@ -105,7 +105,8 @@ jacocoTestCoverageVerification {
                     'it.teamdigitale.ndc.config.*',
                     'it.teamdigitale.ndc.Application',
                     'it.teamdigitale.ndc.harvester.util.*',
-                    'it.teamdigitale.ndc.harvester.model.vocabulary.Admsapit'
+                    'it.teamdigitale.ndc.harvester.model.vocabulary.Admsapit',
+                    'it.teamdigitale.ndc.harvester.model.vocabulary.EuropaVocabulary'
             ]
         }
     }

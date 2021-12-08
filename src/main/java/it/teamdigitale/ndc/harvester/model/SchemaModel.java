@@ -5,21 +5,12 @@ import static it.teamdigitale.ndc.harvester.model.extractors.LiteralExtractor.ex
 import static it.teamdigitale.ndc.harvester.model.extractors.LiteralExtractor.extractAll;
 import static it.teamdigitale.ndc.harvester.model.extractors.LiteralExtractor.extractOptional;
 import static it.teamdigitale.ndc.harvester.model.extractors.NodeExtractor.extractNodes;
-import it.teamdigitale.ndc.harvester.model.extractors.NodeSummaryExtractor;
 import static it.teamdigitale.ndc.harvester.model.extractors.NodeSummaryExtractor.maybeNodeSummaries;
-import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
-import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
 import static it.teamdigitale.ndc.harvester.model.vocabulary.Admsapit.hasKeyClass;
-import java.util.List;
-import java.util.stream.Collectors;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.sparql.vocabulary.FOAF;
 import static org.apache.jena.vocabulary.DCAT.accessURL;
 import static org.apache.jena.vocabulary.DCAT.distribution;
 import static org.apache.jena.vocabulary.DCAT.keyword;
 import static org.apache.jena.vocabulary.DCAT.theme;
-import org.apache.jena.vocabulary.DCTerms;
 import static org.apache.jena.vocabulary.DCTerms.conformsTo;
 import static org.apache.jena.vocabulary.DCTerms.description;
 import static org.apache.jena.vocabulary.DCTerms.issued;
@@ -27,6 +18,17 @@ import static org.apache.jena.vocabulary.DCTerms.modified;
 import static org.apache.jena.vocabulary.DCTerms.rightsHolder;
 import static org.apache.jena.vocabulary.DCTerms.title;
 import static org.apache.jena.vocabulary.OWL.versionInfo;
+
+import it.teamdigitale.ndc.harvester.model.extractors.NodeSummaryExtractor;
+import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
+import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
+import it.teamdigitale.ndc.harvester.model.vocabulary.EuropaVocabulary;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.sparql.vocabulary.FOAF;
+import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDFS;
 
 public class SchemaModel extends BaseSemanticAssetModel {
@@ -68,7 +70,8 @@ public class SchemaModel extends BaseSemanticAssetModel {
 
     private List<String> getDistributionUrls() {
         return extractNodes(getMainResource(), distribution).stream()
-            .filter(node -> node.getProperty(DCTerms.format).getResource().getURI().equals("http://publications.europa.eu/resource/authority/file-type/JSON"))
+            .filter(node -> node.getProperty(DCTerms.format).getResource().getURI()
+                .equals(EuropaVocabulary.JSON.getURI()))
             .map(node -> node.getProperty(accessURL).getResource().getURI())
             .collect(Collectors.toList());
     }

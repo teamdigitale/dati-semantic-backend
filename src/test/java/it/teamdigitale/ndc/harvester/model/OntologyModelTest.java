@@ -2,22 +2,19 @@ package it.teamdigitale.ndc.harvester.model;
 
 import static it.teamdigitale.ndc.harvester.SemanticAssetType.ONTOLOGY;
 import static it.teamdigitale.ndc.harvester.model.ControlledVocabularyModel.KEY_CONCEPT_IRI;
-import it.teamdigitale.ndc.harvester.model.exception.InvalidModelException;
-import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
-import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
 import static it.teamdigitale.ndc.harvester.model.vocabulary.Admsapit.hasKeyClass;
 import static it.teamdigitale.ndc.harvester.model.vocabulary.Admsapit.hasSemanticAssetDistribution;
 import static it.teamdigitale.ndc.harvester.model.vocabulary.Admsapit.prefix;
 import static it.teamdigitale.ndc.harvester.model.vocabulary.Admsapit.project;
 import static it.teamdigitale.ndc.harvester.model.vocabulary.Admsapit.semanticAssetInUse;
-import org.apache.jena.rdf.model.Model;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
-import org.apache.jena.rdf.model.Resource;
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
+import static org.apache.jena.vocabulary.DCAT.accessURL;
 import static org.apache.jena.vocabulary.DCAT.theme;
 import static org.apache.jena.vocabulary.DCTerms.accrualPeriodicity;
 import static org.apache.jena.vocabulary.DCTerms.description;
+import static org.apache.jena.vocabulary.DCTerms.format;
 import static org.apache.jena.vocabulary.DCTerms.identifier;
 import static org.apache.jena.vocabulary.DCTerms.modified;
 import static org.apache.jena.vocabulary.DCTerms.rightsHolder;
@@ -26,6 +23,13 @@ import static org.apache.jena.vocabulary.RDF.type;
 import static org.apache.jena.vocabulary.RDFS.label;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import it.teamdigitale.ndc.harvester.model.exception.InvalidModelException;
+import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
+import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
+import it.teamdigitale.ndc.harvester.model.vocabulary.EuropaVocabulary;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -54,10 +58,20 @@ class OntologyModelTest {
             .addProperty(modified, "2021-03-02")
             .addProperty(theme, createResource("theme"))
             .addProperty(accrualPeriodicity, createResource("IRREG"))
-            .addProperty(hasSemanticAssetDistribution, createResource("rdf file path"))
-            .addProperty(hasSemanticAssetDistribution, createResource("ttl file path"))
-            .addProperty(hasKeyClass, jenaModel.createResource("http://Class1").addProperty(label, "Class1"))
-            .addProperty(hasKeyClass, jenaModel.createResource("http://Class2").addProperty(label, "Class2"))
+            .addProperty(hasSemanticAssetDistribution,
+                jenaModel.createResource("http://rdf_distribution")
+                    .addProperty(format, EuropaVocabulary.RDF_TURTLE)
+                    .addProperty(accessURL, createResource("http://repo/test.ttl"))
+            )
+            .addProperty(hasSemanticAssetDistribution,
+                jenaModel.createResource("ttl file path")
+                    .addProperty(format, EuropaVocabulary.JSON)
+                    .addProperty(accessURL, createResource("http://repo/test.json"))
+            )
+            .addProperty(hasKeyClass,
+                jenaModel.createResource("http://Class1").addProperty(label, "Class1"))
+            .addProperty(hasKeyClass,
+                jenaModel.createResource("http://Class2").addProperty(label, "Class2"))
             .addProperty(semanticAssetInUse, jenaModel.createResource("http://project1")
                 .addProperty(createProperty("https://w3id.org/italia/onto/l0/name"), "project1")
                 .addProperty(type, project))
@@ -82,13 +96,15 @@ class OntologyModelTest {
 
         SemanticAssetMetadata metadata = ontologyModel.extractMetadata();
 
-        assertThat(metadata.getDistributionUrls()).containsExactlyInAnyOrder("rdf file path", "ttl file path");
+        assertThat(metadata.getDistributionUrls()).containsExactlyInAnyOrder(
+            "http://repo/test.ttl");
     }
 
     @Test
     void shouldFailWhenExtractingMetadataWithOutDistribution() {
         jenaModel.getResource(ONTOLOGY_IRI).removeAll(hasSemanticAssetDistribution);
-        ControlledVocabularyModel model = new ControlledVocabularyModel(jenaModel, TTL_FILE, REPO_URL);
+        ControlledVocabularyModel model =
+            new ControlledVocabularyModel(jenaModel, TTL_FILE, REPO_URL);
 
         assertThatThrownBy(model::extractMetadata).isInstanceOf(
             InvalidModelException.class);
