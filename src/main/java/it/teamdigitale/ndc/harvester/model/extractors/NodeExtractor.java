@@ -49,7 +49,7 @@ public class NodeExtractor {
         }
     }
 
-    private static InvalidModelException invalidModelException(Resource resource,
+    public static InvalidModelException invalidModelException(Resource resource,
                                                                Property property) {
         return new InvalidModelException(
             format("Cannot find node '%s' for resource '%s'", property, resource));

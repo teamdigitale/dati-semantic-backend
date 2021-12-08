@@ -68,6 +68,15 @@ class OntologyModelTest {
     }
 
     @Test
+    void shouldExtractMetadataWithSemanticAssetType() {
+        OntologyModel model = new OntologyModel(jenaModel, TTL_FILE, REPO_URL);
+
+        SemanticAssetMetadata metadata = model.extractMetadata();
+
+        assertThat(metadata.getType()).isEqualTo(ONTOLOGY);
+    }
+
+    @Test
     void shouldExtractHasSemanticAssetDistributionProperty() {
         OntologyModel ontologyModel = new OntologyModel(jenaModel, TTL_FILE, REPO_URL);
 

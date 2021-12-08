@@ -32,8 +32,8 @@ public class NodeSummaryExtractor {
             .collect(Collectors.toList());
     }
 
-    private static InvalidModelException invalidModelException(Resource resource,
-                                                               Property property) {
+    public static InvalidModelException invalidModelException(Resource resource,
+                                                              Property property) {
         return new InvalidModelException(
             format("Unable to extract node summary from resource '%s' using '%s'", resource,
                 property));

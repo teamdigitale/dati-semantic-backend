@@ -25,3 +25,4 @@ fileignoreconfig:
   checksum: 9607b425ab481f81869e0c172b5ff25546a4217645fd5a5f2087f5b8ffc6af58
 allowed_patterns:
 - keyClasses
+- hasKeyClass

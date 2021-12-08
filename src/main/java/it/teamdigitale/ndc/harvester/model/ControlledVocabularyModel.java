@@ -76,10 +76,11 @@ public class ControlledVocabularyModel extends BaseSemanticAssetModel {
     @Override
     public SemanticAssetMetadata extractMetadata() {
         return super.extractMetadata().toBuilder()
-                .distributionUrls(getDistributionUrls())
-                .keyConcept(getKeyConcept())
-                .endpointUrl(getNdcEndpointUrl()) // assumption is that ndc endpoint url will be added to model before indexing
-                .build();
+            .type(CONTROLLED_VOCABULARY)
+            .distributionUrls(getDistributionUrls())
+            .keyConcept(getKeyConcept())
+            .endpointUrl(getNdcEndpointUrl()) // assumption is that ndc endpoint url will be added to model before indexing
+            .build();
     }
 
     private List<String> getDistributionUrls() {

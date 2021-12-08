@@ -1,6 +1,5 @@
 package it.teamdigitale.ndc.harvester.model;
 
-import it.teamdigitale.ndc.harvester.SemanticAssetType;
 import it.teamdigitale.ndc.harvester.model.exception.InvalidModelException;
 import static it.teamdigitale.ndc.harvester.model.extractors.LiteralExtractor.extract;
 import static it.teamdigitale.ndc.harvester.model.extractors.LiteralExtractor.extractAll;
@@ -47,7 +46,7 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
     protected final Model rdfModel;
     protected final String source;
     private Resource mainResource;
-    private String repoUrl;
+    protected final String repoUrl;
 
     public BaseSemanticAssetModel(Model rdfModel, String source, String repoUrl) {
         this.rdfModel = rdfModel;
@@ -102,7 +101,6 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
             .repoUrl(repoUrl)
             .rightsHolder(
                 NodeSummaryExtractor.mustExtractNodeSummary(mainResource, rightsHolder, FOAF.name))
-            .type(getType())
             .title(extract(mainResource, title))
             .description(extract(mainResource, description))
             .modifiedOn(parseDate(extract(mainResource, modified)))
@@ -121,7 +119,7 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
             .build();
     }
 
-    private NodeSummary getContactPoint(Resource mainResource) {
+    public NodeSummary getContactPoint(Resource mainResource) {
         Resource contactPointNode = extractMaybeNode(mainResource, contactPoint);
         if (Objects.nonNull(contactPointNode)) {
             Resource email = extractMaybeNode(contactPointNode, VCARD4.hasEmail);
@@ -135,12 +133,12 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
         return null;
     }
 
-    private List<String> asIriList(List<Resource> resources) {
+    public List<String> asIriList(List<Resource> resources) {
         return resources.stream().map(Resource::getURI)
             .collect(Collectors.toList());
     }
 
-    private LocalDate parseDate(String date) {
+    public LocalDate parseDate(String date) {
         if (Objects.isNull(date)) {
             return null;
         }
@@ -148,7 +146,4 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
             .toLocalDate();
     }
 
-    private SemanticAssetType getType() {
-        return SemanticAssetType.getByIri(getMainResourceTypeIri());
-    }
 }

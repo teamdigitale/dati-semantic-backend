@@ -71,6 +71,15 @@ class ControlledVocabularyModelTest {
     }
 
     @Test
+    void shouldExtractMetadataWithSemanticAssetType() {
+        ControlledVocabularyModel model = new ControlledVocabularyModel(jenaModel, TTL_FILE, REPO_URL);
+
+        SemanticAssetMetadata metadata = model.extractMetadata();
+
+        assertThat(metadata.getType()).isEqualTo(CONTROLLED_VOCABULARY);
+    }
+
+    @Test
     void shouldFailWhenModelDoesNotContainControlledVocabulary() {
         List<Statement> conceptStatements = jenaModel
                 .listStatements(null, RDF.type, (RDFNode) null)

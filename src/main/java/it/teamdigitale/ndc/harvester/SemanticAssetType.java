@@ -1,14 +1,13 @@
 package it.teamdigitale.ndc.harvester;
 
-import it.teamdigitale.ndc.harvester.exception.UnknownTypeIriException;
 import lombok.Getter;
 
 @Getter
 public enum SemanticAssetType {
     ONTOLOGY("ontology", "Ontologie", "http://www.w3.org/2002/07/owl#Ontology", true),
     CONTROLLED_VOCABULARY("controlled vocabulary", "VocabolariControllati",
-            "http://dati.gov.it/onto/dcatapit#Dataset", false),
-    SCHEMA("schema", null, "to be added", false);
+        "http://dati.gov.it/onto/dcatapit#Dataset", false),
+    SCHEMA("schema", "Schema", "to be added", false);
 
     private final String description;
     private final String folderName;
@@ -20,15 +19,6 @@ public enum SemanticAssetType {
         this.folderName = folderName;
         this.typeIri = typeIri;
         this.isIgnoringObsoleteVersions = isIgnoringObsoleteVersions;
-    }
-
-    public static SemanticAssetType getByIri(String typeIri) {
-        for (SemanticAssetType type : SemanticAssetType.values()) {
-            if (type.getTypeIri().equals(typeIri)) {
-                return type;
-            }
-        }
-        throw new UnknownTypeIriException(typeIri);
     }
 
     @Override

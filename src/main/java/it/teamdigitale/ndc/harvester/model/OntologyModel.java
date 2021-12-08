@@ -31,6 +31,7 @@ public class OntologyModel extends BaseSemanticAssetModel {
     @Override
     public SemanticAssetMetadata extractMetadata() {
         return super.extractMetadata().toBuilder()
+            .type(ONTOLOGY)
             .distributionUrls(getDistributionUrls())
             .keyClasses(getKeyClass())
             .prefix(extractOptional(getMainResource(), prefix))
