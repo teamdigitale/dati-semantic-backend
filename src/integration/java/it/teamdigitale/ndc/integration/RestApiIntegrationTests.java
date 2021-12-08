@@ -87,10 +87,8 @@ public class RestApiIntegrationTests {
 
     @Test
     void shouldBeAbleToHarvestAndSearchControlledVocabularySuccessfully() {
-        //when
         Response searchResponseForLicenza = getSemanticAsset("Licenza", CONTROLLED_VOCABULARY, 2);
 
-        //then
         searchResponseForLicenza.then()
             .statusCode(200)
             .body("totalCount", equalTo(1))
@@ -113,10 +111,8 @@ public class RestApiIntegrationTests {
 
     @Test
     void shouldBeAbleToHarvestAndSearchOntologieSuccessfully() {
-        //when
         Response searchResponseForRicettivita = getSemanticAsset("Ricettività", ONTOLOGY, 3);
 
-        //then
         searchResponseForRicettivita.then()
             .statusCode(200)
             .body("totalCount", equalTo(1))
@@ -139,7 +135,7 @@ public class RestApiIntegrationTests {
 
     @Test
     void shouldBeAbleToHarvestOnlyLatestFolderOfSemanticAssetAndSearchSuccessfully() {
-        //when
+        //alberghiere is the keyword in testdata/Ontologie/ACCO/v0.4/ACCO-AP_IT.ttl
         getSemanticAsset("alberghiere", ONTOLOGY, 2).then()
                 .statusCode(200)
                 .body("totalCount", equalTo(0))
@@ -147,22 +143,16 @@ public class RestApiIntegrationTests {
                 .body("limit", equalTo(2))
                 .body("data.size()", equalTo(0));
 
-        //then
         getSemanticAsset("Ricettività", ONTOLOGY, 3).then()
                 .statusCode(200)
                 .body("totalCount", equalTo(1))
-                .body("offset", equalTo(0))
-                .body("limit", equalTo(3))
                 .body("data.size()", equalTo(1))
-                .body("data[0].assetIri", equalTo("https://w3id.org/italia/onto/ACCO"))
-                .body("data[0].rightsHolder.iri",
-                        equalTo("http://spcdata.digitpa.gov.it/browse/page/Amministrazione/agid"))
-                .body("data[0].rightsHolder.summary", equalTo("Agenzia per l'Italia Digitale"));
+                .body("data[0].assetIri", equalTo("https://w3id.org/italia/onto/ACCO"));
     }
 
     @Test
     void shouldBeAbleToHarvestLatestVersionOfSemanticAssetAndSearchSuccessfully() {
-        //when
+        //vecchia versione is the keyword in testdata/Ontologie/CLV/0.8/CLV-AP_IT.ttl
         getSemanticAsset("vecchia versione", ONTOLOGY, 2).then()
                 .statusCode(200)
                 .body("totalCount", equalTo(0))
@@ -170,17 +160,11 @@ public class RestApiIntegrationTests {
                 .body("limit", equalTo(2))
                 .body("data.size()", equalTo(0));
 
-        //then
         getSemanticAsset("Indirizzo", ONTOLOGY, 3).then()
                 .statusCode(200)
                 .body("totalCount", equalTo(1))
-                .body("offset", equalTo(0))
-                .body("limit", equalTo(3))
                 .body("data.size()", equalTo(1))
-                .body("data[0].assetIri", equalTo("https://w3id.org/italia/onto/CLV"))
-                .body("data[0].rightsHolder.iri",
-                        equalTo("http://spcdata.digitpa.gov.it/browse/page/Amministrazione/ISTAT"))
-                .body("data[0].rightsHolder.summary", equalTo("Istituto Nazionale di Statistica - ISTAT"));
+                .body("data[0].assetIri", equalTo("https://w3id.org/italia/onto/CLV"));
     }
 
     @Test
@@ -223,10 +207,8 @@ public class RestApiIntegrationTests {
 
     @Test
     void shouldBeAbleToHarvestAndSearchSemanticAssetWhenFlatFileIsMissing() {
-        //when
         Response searchResponse = getSemanticAsset("Istruzione", CONTROLLED_VOCABULARY, 4);
 
-        //then
         searchResponse.then()
             .statusCode(200)
             .body("totalCount", equalTo(1))
@@ -251,10 +233,8 @@ public class RestApiIntegrationTests {
 
     @Test
     void shouldNotHarvestCorruptedControlledVocabulary() {
-        //when
         Response searchResponse = getSemanticAsset("Appellativo", CONTROLLED_VOCABULARY, 5);
 
-        //then
         searchResponse.then()
             .statusCode(200)
             .body("totalCount", equalTo(0))
@@ -268,10 +248,8 @@ public class RestApiIntegrationTests {
 
     @Test
     void shouldNotHarvestControlledVocabularyIfKeyConceptIsMissing() {
-        //when
         Response searchResponse = getSemanticAsset("scientifiche", CONTROLLED_VOCABULARY, 6);
 
-        //then
         searchResponse.then()
             .statusCode(200)
             .body("totalCount", equalTo(0))
@@ -282,7 +260,6 @@ public class RestApiIntegrationTests {
 
     @Test
     void shouldFailWhenAssetIsNotFoundByIri() {
-        //then
         Response detailsResponse = getSemanticAssetDetails("https://wrong-iri");
 
         detailsResponse.then()
