@@ -55,7 +55,7 @@ public class HarvestRepositoryProcessor implements Tasklet, StepExecutionListene
             }
         }
         if (!failedRepos.isEmpty()) {
-            throw new HarvestJobException(String.format("Harvesting failed for repos '%s'", repos));
+            throw new HarvestJobException(String.format("Harvesting failed for repos '%s'", failedRepos));
         }
         return RepeatStatus.FINISHED;
     }
