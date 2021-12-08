@@ -25,7 +25,7 @@ jobs:
       - name: checkout code
         uses: actions/checkout@v2
       - name: Linting with Super-Linter
-        uses: github/super-linter@v4.8.1
+        uses: github/super-linter/slim@v4.8.1
         env:
           VALIDATE_MARKDOWN: false
           IGNORE_GITIGNORED_FILES: true
