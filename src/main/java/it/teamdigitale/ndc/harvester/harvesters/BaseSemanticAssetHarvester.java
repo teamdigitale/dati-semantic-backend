@@ -16,6 +16,11 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
     private final SemanticAssetType type;
 
     @Override
+    public SemanticAssetType getType() {
+        return type;
+    }
+
+    @Override
     public void harvest(String repoUrl, Path rootPath) {
         log.debug("Looking for {} paths", type);
 
@@ -25,6 +30,8 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
         for (P path : paths) {
             try {
                 processPath(repoUrl, path);
+                log.debug("Path {} processed correctly for {}", path, type);
+
             } catch (SinglePathProcessingException e) {
                 log.error("Error processing {} {} in repo {}", type, path, repoUrl, e);
             }

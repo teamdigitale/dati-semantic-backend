@@ -51,7 +51,12 @@ public class HarvesterService {
     }
 
     private void harvestSemanticAssets(String repoUrl, Path path) {
-        semanticAssetHarvesters.forEach(h -> h.harvest(repoUrl, path));
+        semanticAssetHarvesters.forEach(h -> {
+            log.debug("Harvesting {} for {} assets", path, h.getType());
+            h.harvest(repoUrl, path);
+
+            log.debug("Harvested {} for {} assets", path, h.getType());
+        });
     }
 
     private Path cloneRepoToTempPath(String repoUrl) throws IOException {
