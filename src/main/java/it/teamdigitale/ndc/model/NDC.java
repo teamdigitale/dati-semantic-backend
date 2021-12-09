@@ -6,6 +6,9 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 
 public class NDC {
+    private NDC() {
+    }
+
     private static final Model model = ModelFactory.createDefaultModel();
 
     public static final String NS = "https://w3id.org/italia/onto/ndc-profile/";
