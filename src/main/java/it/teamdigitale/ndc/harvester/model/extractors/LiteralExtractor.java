@@ -23,6 +23,7 @@ public class LiteralExtractor {
     public static String extract(Resource resource, Property property) {
         List<Statement> properties = resource.listProperties(property).toList();
         return properties.stream()
+            .filter(s -> s.getObject().isLiteral())
             .filter(filterItalianOrEnglishOrDefault())
             .max((o1, o2) -> o1.getLanguage().compareToIgnoreCase(o2.getLanguage()))
             .map(Statement::getString)
