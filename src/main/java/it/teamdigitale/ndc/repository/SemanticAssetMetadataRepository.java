@@ -3,8 +3,12 @@ package it.teamdigitale.ndc.repository;
 import static org.springframework.data.elasticsearch.core.SearchHitSupport.searchPageFor;
 
 import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
+
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.common.unit.Fuzziness;
@@ -15,6 +19,8 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.TermsQueryBuilder;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.SearchHit;
+import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.SearchPage;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
@@ -30,14 +36,14 @@ public class SemanticAssetMetadataRepository {
     public SearchPage<SemanticAssetMetadata> search(String queryPattern, Set<String> types,
                                                     Set<String> themes, Pageable pageable) {
         BoolQueryBuilder boolQuery =
-            new BoolQueryBuilder().must(matchQuery("searchableText", queryPattern));
+                new BoolQueryBuilder().must(matchQuery("searchableText", queryPattern));
 
         addFilters(types, themes, boolQuery);
 
         NativeSearchQuery query = new NativeSearchQueryBuilder()
-            .withQuery(boolQuery)
-            .withPageable(pageable)
-            .build();
+                .withQuery(boolQuery)
+                .withPageable(pageable)
+                .build();
         return searchPageFor(esOps.search(query, SemanticAssetMetadata.class), pageable);
     }
 
@@ -47,7 +53,7 @@ public class SemanticAssetMetadataRepository {
 
     public long deleteByRepoUrl(String repoUrl) {
         return esOps.delete(new NativeSearchQuery(matchQuery("repoUrl", repoUrl)),
-            SemanticAssetMetadata.class).getDeleted();
+                SemanticAssetMetadata.class).getDeleted();
     }
 
     public void save(SemanticAssetMetadata metadata) {
@@ -69,8 +75,14 @@ public class SemanticAssetMetadataRepository {
             textSearch = new MatchAllQueryBuilder();
         } else {
             textSearch = new MatchQueryBuilder(field, value)
-                .fuzziness(Fuzziness.AUTO);
+                    .fuzziness(Fuzziness.AUTO);
         }
         return textSearch;
+    }
+
+    public List<SemanticAssetMetadata> findVocabulariesForRepoUrl(String repoUrl) {
+        NativeSearchQuery query = new NativeSearchQuery(matchQuery("repoUrl", repoUrl));
+        SearchHits<SemanticAssetMetadata> hits = esOps.search(query, SemanticAssetMetadata.class);
+        return hits.get().map(SearchHit::getContent).collect(Collectors.toList());
     }
 }

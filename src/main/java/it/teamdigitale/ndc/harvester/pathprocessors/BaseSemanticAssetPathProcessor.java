@@ -14,7 +14,7 @@ import org.apache.jena.rdf.model.Resource;
 @Slf4j
 public abstract class BaseSemanticAssetPathProcessor<P extends SemanticAssetPath, M extends SemanticAssetModel> implements SemanticAssetPathProcessor<P> {
     private final TripleStoreRepository tripleStoreRepository;
-    private final SemanticAssetMetadataRepository metadataRepository;
+    protected final SemanticAssetMetadataRepository metadataRepository;
 
     @Override
     public void process(String repoUrl, P path) {

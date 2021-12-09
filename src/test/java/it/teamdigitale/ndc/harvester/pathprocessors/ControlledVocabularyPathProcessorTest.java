@@ -18,7 +18,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -26,6 +28,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ControlledVocabularyPathProcessorTest {
+    public static final String REPO_URL = "my-repo.git";
     @Mock
     SemanticAssetModelFactory semanticAssetModelFactory;
     @Mock
@@ -109,5 +112,40 @@ class ControlledVocabularyPathProcessorTest {
     void shouldNotAddNdcEndpointUrlToModelBeforePersistingWhenNoCsvIsPresent() {
         pathProcessor.enrichModelBeforePersisting(cvModel, CvPath.of("cities.ttl", null));
         verify(cvModel, never()).addNdcUrlProperty(baseUrl);
+    }
+
+    @Test
+    void shouldDropIndicesForRepo() {
+        String agencyId = "istat";
+        String concept1 = "accomodation-ratings";
+        String concept2 = "education-levels";
+        List<SemanticAssetMetadata> vocabsMetadata = buildVocabsMetadataWithAgencyAndConcepts(agencyId, List.of(concept1, concept2));
+        when(metadataRepository.findVocabulariesForRepoUrl(REPO_URL)).thenReturn(vocabsMetadata);
+
+        pathProcessor.dropCsvIndicesForRepo(REPO_URL);
+
+        verify(metadataRepository).findVocabulariesForRepoUrl(REPO_URL);
+        verify(vocabularyDataService).dropIndex(new VocabularyIdentifier(agencyId, concept1));
+        verify(vocabularyDataService).dropIndex(new VocabularyIdentifier(agencyId, concept2));
+    }
+
+    @Test
+    void shouldTryAndDropSubsequentIndicesEvenAfterFailingToDropOne() {
+        String agencyId = "istat";
+        String concept1 = "accomodation-ratings";
+        String concept2 = "education-levels";
+        List<SemanticAssetMetadata> vocabsMetadata = buildVocabsMetadataWithAgencyAndConcepts(agencyId, List.of(concept1, concept2));
+        when(metadataRepository.findVocabulariesForRepoUrl(REPO_URL)).thenReturn(vocabsMetadata);
+        doThrow(new RuntimeException("Could not drop index")).when(vocabularyDataService).dropIndex(new VocabularyIdentifier(agencyId, concept1));
+
+        pathProcessor.dropCsvIndicesForRepo(REPO_URL);
+
+        verify(vocabularyDataService).dropIndex(new VocabularyIdentifier(agencyId, concept1));
+        verify(vocabularyDataService).dropIndex(new VocabularyIdentifier(agencyId, concept2));
+    }
+
+    private List<SemanticAssetMetadata> buildVocabsMetadataWithAgencyAndConcepts(String agencyId, List<String> keyConcepts) {
+        SemanticAssetMetadata template = SemanticAssetMetadata.builder().repoUrl(REPO_URL).agencyId(agencyId).build();
+        return keyConcepts.stream().map(c -> template.toBuilder().keyConcept(c).build()).collect(Collectors.toList());
     }
 }

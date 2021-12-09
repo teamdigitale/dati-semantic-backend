@@ -38,4 +38,13 @@ class ControlledVocabularyHarvesterTest {
         verify(pathProcessor).process(repoUrl, path1);
         verify(pathProcessor).process(repoUrl, path2);
     }
+
+    @Test
+    void shouldCleanIndicesBeforeHarvesting() {
+        String repoUrl = "my-repo.git";
+
+        harvester.cleanUpBeforeHarvesting(repoUrl);
+
+        verify(pathProcessor).dropCsvIndicesForRepo(repoUrl);
+    }
 }

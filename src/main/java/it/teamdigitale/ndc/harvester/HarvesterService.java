@@ -42,12 +42,22 @@ public class HarvesterService {
     }
 
     private void harvestClonedRepo(String repoUrl, Path path) {
+        cleanUpWithHarvesters(repoUrl);
         cleanUpTripleStore(repoUrl);
         cleanUpIndexedMetadata(repoUrl);
 
         harvestSemanticAssets(repoUrl, path);
 
         log.info("Repo {} processed", repoUrl);
+    }
+
+    private void cleanUpWithHarvesters(String repoUrl) {
+        semanticAssetHarvesters.forEach(h -> {
+            log.debug("Cleaning for {} before harvesting {}", h.getType(), repoUrl);
+            h.cleanUpBeforeHarvesting(repoUrl);
+
+            log.debug("Cleaned for {}", h.getType());
+        });
     }
 
     private void harvestSemanticAssets(String repoUrl, Path path) {

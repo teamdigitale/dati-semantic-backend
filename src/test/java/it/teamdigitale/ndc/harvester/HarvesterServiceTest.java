@@ -74,7 +74,8 @@ public class HarvesterServiceTest {
 
         harvesterService.harvest(repoUrl);
 
-        InOrder order = inOrder(tripleStoreRepository, metadataRepository, harvester);
+        InOrder order = inOrder(harvester, tripleStoreRepository, metadataRepository, harvester);
+        order.verify(harvester).cleanUpBeforeHarvesting(repoUrl);
         order.verify(tripleStoreRepository).clearExistingNamedGraph(repoUrl);
         order.verify(metadataRepository).deleteByRepoUrl(repoUrl);
         order.verify(harvester).harvest(repoUrl, clonedRepoPath);

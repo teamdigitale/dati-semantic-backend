@@ -29,4 +29,9 @@ public class ControlledVocabularyHarvester extends BaseSemanticAssetHarvester<Cv
     protected List<CvPath> scanForPaths(Path rootPath) {
         return agencyRepositoryService.getControlledVocabularyPaths(rootPath);
     }
+
+    @Override
+    public void cleanUpBeforeHarvesting(String repoUrl) {
+        pathProcessor.dropCsvIndicesForRepo(repoUrl);
+    }
 }

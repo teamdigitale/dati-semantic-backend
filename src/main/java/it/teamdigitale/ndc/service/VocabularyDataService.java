@@ -52,6 +52,10 @@ public class VocabularyDataService {
         elasticsearchOperations.save(data, IndexCoordinates.of(indexName));
     }
 
+    public void dropIndex(VocabularyIdentifier vocabularyIdentifier) {
+        elasticsearchOperations.indexOps(IndexCoordinates.of(vocabularyIdentifier.getIndexName())).delete();
+    }
+
     @SneakyThrows
     private void ensureCleanIndex(String indexName) {
         if (exists(indexName)) {

@@ -38,6 +38,11 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
         }
     }
 
+    @Override
+    public void cleanUpBeforeHarvesting(String repoUrl) {
+        // by default nothing specific
+    }
+
     protected abstract void processPath(String repoUrl, P path);
 
     protected abstract List<P> scanForPaths(Path rootPath);
