@@ -28,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import it.teamdigitale.ndc.harvester.model.exception.InvalidModelException;
 import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
 import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
-import it.teamdigitale.ndc.harvester.model.vocabulary.EuropaVocabulary;
+import it.teamdigitale.ndc.harvester.model.vocabulary.EuropePublicationVocabulary;
 import java.time.LocalDate;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
@@ -55,11 +55,11 @@ public class SchemaModelTest {
             .addProperty(FOAF.name, "agid");
         Resource distribution1 = jenaModel
             .createResource("distribution1")
-            .addProperty(format, EuropaVocabulary.JSON)
+            .addProperty(format, EuropePublicationVocabulary.FILE_TYPE_JSON)
             .addProperty(accessURL, jenaModel.createResource("accessURL1"));
         Resource distribution2 = jenaModel
             .createResource("distribution2")
-            .addProperty(format, EuropaVocabulary.RDF_TURTLE)
+            .addProperty(format, EuropePublicationVocabulary.FILE_TYPE_RDF_TURTLE)
             .addProperty(accessURL, jenaModel.createResource("accessURL2"));
         jenaModel
             .createResource(SCHEMA_IRI)

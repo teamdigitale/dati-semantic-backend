@@ -27,7 +27,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import it.teamdigitale.ndc.harvester.model.exception.InvalidModelException;
 import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
 import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
-import it.teamdigitale.ndc.harvester.model.vocabulary.EuropaVocabulary;
+import it.teamdigitale.ndc.harvester.model.vocabulary.EuropePublicationVocabulary;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,13 +60,17 @@ class OntologyModelTest {
             .addProperty(accrualPeriodicity, createResource("IRREG"))
             .addProperty(hasSemanticAssetDistribution,
                 jenaModel.createResource("http://rdf_distribution")
-                    .addProperty(format, EuropaVocabulary.RDF_TURTLE)
+                    .addProperty(format, EuropePublicationVocabulary.FILE_TYPE_RDF_TURTLE)
                     .addProperty(accessURL, createResource("http://repo/test.ttl"))
             )
             .addProperty(hasSemanticAssetDistribution,
-                jenaModel.createResource("ttl file path")
-                    .addProperty(format, EuropaVocabulary.JSON)
+                jenaModel.createResource("json file path")
+                    .addProperty(format, EuropePublicationVocabulary.FILE_TYPE_JSON)
                     .addProperty(accessURL, createResource("http://repo/test.json"))
+            )
+            .addProperty(hasSemanticAssetDistribution,
+                jenaModel.createResource("ttl file path 2")
+                    .addProperty(accessURL, createResource("http://repo/test2.ttl"))
             )
             .addProperty(hasKeyClass,
                 jenaModel.createResource("http://Class1").addProperty(label, "Class1"))

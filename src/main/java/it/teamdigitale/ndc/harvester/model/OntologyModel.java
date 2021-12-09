@@ -8,7 +8,7 @@ import static it.teamdigitale.ndc.harvester.model.vocabulary.Admsapit.hasKeyClas
 import static it.teamdigitale.ndc.harvester.model.vocabulary.Admsapit.hasSemanticAssetDistribution;
 import static it.teamdigitale.ndc.harvester.model.vocabulary.Admsapit.prefix;
 import static it.teamdigitale.ndc.harvester.model.vocabulary.Admsapit.semanticAssetInUse;
-import static it.teamdigitale.ndc.harvester.model.vocabulary.EuropaVocabulary.RDF_TURTLE;
+import static it.teamdigitale.ndc.harvester.model.vocabulary.EuropePublicationVocabulary.FILE_TYPE_RDF_TURTLE;
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 
 import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
@@ -51,7 +51,8 @@ public class OntologyModel extends BaseSemanticAssetModel {
     private List<String> getDistributionUrls() {
         return extractNodes(getMainResource(), hasSemanticAssetDistribution).stream()
             .filter(node -> Objects.nonNull(node.getProperty(DCTerms.format))
-                    && node.getProperty(DCTerms.format).getResource().getURI().equals(RDF_TURTLE.getURI()))
+                    && node.getProperty(DCTerms.format).getResource().getURI().equals(
+                FILE_TYPE_RDF_TURTLE.getURI()))
             .map(node -> node.getProperty(DCAT.accessURL).getResource().getURI())
             .collect(Collectors.toList());
     }

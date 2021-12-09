@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import it.teamdigitale.ndc.harvester.model.exception.InvalidModelException;
 import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
-import it.teamdigitale.ndc.harvester.model.vocabulary.EuropaVocabulary;
+import it.teamdigitale.ndc.harvester.model.vocabulary.EuropePublicationVocabulary;
 import java.util.List;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
@@ -62,11 +62,11 @@ class ControlledVocabularyModelTest {
             .addProperty(accrualPeriodicity, createResource("IRREG"))
             .addProperty(distribution, jenaModel.createResource("rdf file path")
                 .addProperty(accessURL, createResource("http://repo/file.rdf"))
-                .addProperty(format, EuropaVocabulary.RDF_TURTLE)
+                .addProperty(format, EuropePublicationVocabulary.FILE_TYPE_RDF_TURTLE)
             )
             .addProperty(distribution, jenaModel.createResource("json file path")
                 .addProperty(accessURL, createResource("http://repo/file.json"))
-                .addProperty(format, EuropaVocabulary.JSON)
+                .addProperty(format, EuropePublicationVocabulary.FILE_TYPE_JSON)
             );
 
     }

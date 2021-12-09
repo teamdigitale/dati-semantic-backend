@@ -22,7 +22,7 @@ import static org.apache.jena.vocabulary.OWL.versionInfo;
 import it.teamdigitale.ndc.harvester.model.extractors.NodeSummaryExtractor;
 import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
 import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
-import it.teamdigitale.ndc.harvester.model.vocabulary.EuropaVocabulary;
+import it.teamdigitale.ndc.harvester.model.vocabulary.EuropePublicationVocabulary;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -72,7 +72,8 @@ public class SchemaModel extends BaseSemanticAssetModel {
     private List<String> getDistributionUrls() {
         return extractNodes(getMainResource(), distribution).stream()
             .filter(node -> Objects.nonNull(node.getProperty(DCTerms.format))
-                    && node.getProperty(DCTerms.format).getResource().getURI().equals(EuropaVocabulary.JSON.getURI()))
+                    && node.getProperty(DCTerms.format).getResource().getURI().equals(
+                EuropePublicationVocabulary.FILE_TYPE_JSON.getURI()))
             .map(node -> node.getProperty(accessURL).getResource().getURI())
             .collect(Collectors.toList());
     }
