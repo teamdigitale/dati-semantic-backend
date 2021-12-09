@@ -6,6 +6,7 @@ import static it.teamdigitale.ndc.harvester.SemanticAssetType.ONTOLOGY;
 import static it.teamdigitale.ndc.harvester.SemanticAssetType.SCHEMA;
 import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doNothing;
@@ -107,7 +108,7 @@ public class RestApiIntegrationTests {
             .body("assetIri", equalTo("https://w3id.org/italia/controlled-vocabulary/licences"))
             .body("type", equalTo(CONTROLLED_VOCABULARY.name()))
             .body("keyConcept", equalTo("licences"))
-            .body("endpointUrl", equalTo("http://localhost:8080/vocabularies/agid/licences"));
+            .body("endpointUrl", containsString("vocabularies/agid/licences"));
     }
 
     @Test
