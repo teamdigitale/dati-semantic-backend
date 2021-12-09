@@ -4,11 +4,11 @@ import static it.teamdigitale.ndc.harvester.SemanticAssetType.ONTOLOGY;
 import static it.teamdigitale.ndc.harvester.model.extractors.LiteralExtractor.extractOptional;
 import static it.teamdigitale.ndc.harvester.model.extractors.NodeExtractor.extractNodes;
 import static it.teamdigitale.ndc.harvester.model.extractors.NodeSummaryExtractor.maybeNodeSummaries;
-import static it.teamdigitale.ndc.harvester.model.vocabulary.Admsapit.hasKeyClass;
-import static it.teamdigitale.ndc.harvester.model.vocabulary.Admsapit.hasSemanticAssetDistribution;
-import static it.teamdigitale.ndc.harvester.model.vocabulary.Admsapit.prefix;
-import static it.teamdigitale.ndc.harvester.model.vocabulary.Admsapit.semanticAssetInUse;
-import static it.teamdigitale.ndc.harvester.model.vocabulary.EuropePublicationVocabulary.FILE_TYPE_RDF_TURTLE;
+import static it.teamdigitale.ndc.model.profiles.Admsapit.hasKeyClass;
+import static it.teamdigitale.ndc.model.profiles.Admsapit.hasSemanticAssetDistribution;
+import static it.teamdigitale.ndc.model.profiles.Admsapit.prefix;
+import static it.teamdigitale.ndc.model.profiles.Admsapit.semanticAssetInUse;
+import static it.teamdigitale.ndc.model.profiles.EuropePublicationVocabulary.FILE_TYPE_RDF_TURTLE;
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 
 import it.teamdigitale.ndc.harvester.model.index.NodeSummary;

@@ -1,7 +1,7 @@
 package it.teamdigitale.ndc.harvester.model;
 
 import static it.teamdigitale.ndc.harvester.SemanticAssetType.SCHEMA;
-import static it.teamdigitale.ndc.harvester.model.vocabulary.Admsapit.hasKeyClass;
+import static it.teamdigitale.ndc.model.profiles.Admsapit.hasKeyClass;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.apache.jena.rdf.model.ResourceFactory.createLangLiteral;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
@@ -28,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import it.teamdigitale.ndc.harvester.model.exception.InvalidModelException;
 import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
 import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
-import it.teamdigitale.ndc.harvester.model.vocabulary.EuropePublicationVocabulary;
+import it.teamdigitale.ndc.model.profiles.EuropePublicationVocabulary;
 import java.time.LocalDate;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;

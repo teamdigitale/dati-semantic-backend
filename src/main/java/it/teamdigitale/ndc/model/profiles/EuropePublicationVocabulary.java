@@ -1,4 +1,4 @@
-package it.teamdigitale.ndc.harvester.model.vocabulary;
+package it.teamdigitale.ndc.model.profiles;
 
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.ResourceFactory;

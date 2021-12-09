@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 import static it.teamdigitale.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
 import static it.teamdigitale.ndc.harvester.model.extractors.NodeExtractor.extractNodes;
-import static it.teamdigitale.ndc.harvester.model.vocabulary.EuropePublicationVocabulary.FILE_TYPE_RDF_TURTLE;
+import static it.teamdigitale.ndc.model.profiles.EuropePublicationVocabulary.FILE_TYPE_RDF_TURTLE;
 import static java.util.Objects.isNull;
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.vocabulary.DCAT.accessURL;

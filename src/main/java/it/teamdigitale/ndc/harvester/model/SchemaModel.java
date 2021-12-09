@@ -2,7 +2,7 @@ package it.teamdigitale.ndc.harvester.model;
 
 import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
 import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
-import it.teamdigitale.ndc.harvester.model.vocabulary.EuropePublicationVocabulary;
+import it.teamdigitale.ndc.model.profiles.EuropePublicationVocabulary;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.vocabulary.FOAF;
@@ -20,7 +20,7 @@ import static it.teamdigitale.ndc.harvester.model.extractors.LiteralExtractor.ex
 import static it.teamdigitale.ndc.harvester.model.extractors.NodeExtractor.extractNodes;
 import static it.teamdigitale.ndc.harvester.model.extractors.NodeSummaryExtractor.extractRequiredNodeSummary;
 import static it.teamdigitale.ndc.harvester.model.extractors.NodeSummaryExtractor.maybeNodeSummaries;
-import static it.teamdigitale.ndc.harvester.model.vocabulary.Admsapit.hasKeyClass;
+import static it.teamdigitale.ndc.model.profiles.Admsapit.hasKeyClass;
 import static org.apache.jena.vocabulary.DCAT.accessURL;
 import static org.apache.jena.vocabulary.DCAT.distribution;
 import static org.apache.jena.vocabulary.DCAT.keyword;
