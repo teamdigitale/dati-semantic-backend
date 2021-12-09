@@ -105,13 +105,13 @@ class ControlledVocabularyPathProcessorTest {
     @Test
     void shouldAddNdcEndpointUrlToModelBeforePersisting() {
         pathProcessor.enrichModelBeforePersisting(cvModel, CvPath.of("cities.ttl", "cities.csv"));
-        verify(cvModel).addNdcDataServiceProperties(baseUrl);
+        verify(cvModel).addNdcUrlProperty(baseUrl);
     }
 
     @Test
     void shouldNotAddNdcEndpointUrlToModelBeforePersistingWhenNoCsvIsPresent() {
         pathProcessor.enrichModelBeforePersisting(cvModel, CvPath.of("cities.ttl", null));
-        verify(cvModel, never()).addNdcDataServiceProperties(baseUrl);
+        verify(cvModel, never()).addNdcUrlProperty(baseUrl);
     }
 
     @Test
