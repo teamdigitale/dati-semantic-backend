@@ -20,9 +20,9 @@ import javax.validation.constraints.Min;
 public class VocabularyDataController {
     final VocabularyDataService vocabularyDataService;
 
-    @GetMapping("vocabularies/{rights_holder}/{key_concept}")
+    @GetMapping("vocabularies/{agency_id}/{key_concept}")
     public VocabularyDataDto fetchVocabularyData(
-        @PathVariable("rights_holder") String rightsHolder,
+        @PathVariable("agency_id") String agencyId,
         @PathVariable("key_concept") String keyConcept,
         @RequestParam(value = "offset", defaultValue = "0")
         @Min(0) @Max(30000) Integer offset,
@@ -30,6 +30,6 @@ public class VocabularyDataController {
         @Min(1) @Max(200) Integer limit) {
 
         Pageable pageable = OffsetBasedPageRequest.of(offset, limit);
-        return vocabularyDataService.getData(new VocabularyIdentifier(rightsHolder, keyConcept), pageable);
+        return vocabularyDataService.getData(new VocabularyIdentifier(agencyId, keyConcept), pageable);
     }
 }

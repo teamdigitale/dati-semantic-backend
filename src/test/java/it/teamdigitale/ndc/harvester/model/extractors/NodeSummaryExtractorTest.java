@@ -24,7 +24,7 @@ class NodeSummaryExtractorTest {
 
 
         NodeSummary nodeSummary =
-            NodeSummaryExtractor.mustExtractNodeSummary(resource, rightsHolder, FOAF.name);
+            NodeSummaryExtractor.extractRequiredNodeSummary(resource, rightsHolder, FOAF.name);
 
         assertThat(nodeSummary.getSummary()).isEqualTo("rightsHolderName");
         assertThat(nodeSummary.getIri()).isEqualTo("http://rightsHolderUri");
@@ -39,7 +39,7 @@ class NodeSummaryExtractorTest {
 
 
         assertThatThrownBy(
-            () -> NodeSummaryExtractor.mustExtractNodeSummary(resource, publisher, FOAF.name))
+            () -> NodeSummaryExtractor.extractRequiredNodeSummary(resource, publisher, FOAF.name))
             .isInstanceOf(InvalidModelException.class);
     }
 }

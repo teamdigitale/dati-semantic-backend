@@ -1,6 +1,21 @@
 package it.teamdigitale.ndc.harvester.model;
 
 import it.teamdigitale.ndc.harvester.model.exception.InvalidModelException;
+import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
+import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.sparql.vocabulary.FOAF;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.VCARD4;
+
+import javax.xml.bind.DatatypeConverter;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 import static it.teamdigitale.ndc.harvester.model.extractors.LiteralExtractor.extract;
 import static it.teamdigitale.ndc.harvester.model.extractors.LiteralExtractor.extractAll;
 import static it.teamdigitale.ndc.harvester.model.extractors.LiteralExtractor.extractOptional;
@@ -8,21 +23,10 @@ import static it.teamdigitale.ndc.harvester.model.extractors.NodeExtractor.extra
 import static it.teamdigitale.ndc.harvester.model.extractors.NodeExtractor.extractMaybeNodes;
 import static it.teamdigitale.ndc.harvester.model.extractors.NodeExtractor.extractNode;
 import static it.teamdigitale.ndc.harvester.model.extractors.NodeExtractor.extractNodes;
-import it.teamdigitale.ndc.harvester.model.extractors.NodeSummaryExtractor;
+import static it.teamdigitale.ndc.harvester.model.extractors.NodeSummaryExtractor.extractRequiredNodeSummary;
 import static it.teamdigitale.ndc.harvester.model.extractors.NodeSummaryExtractor.maybeNodeSummaries;
-import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
-import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
 import static java.lang.String.format;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import javax.xml.bind.DatatypeConverter;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-import org.apache.jena.sparql.vocabulary.FOAF;
 import static org.apache.jena.vocabulary.DCAT.contactPoint;
 import static org.apache.jena.vocabulary.DCAT.keyword;
 import static org.apache.jena.vocabulary.DCAT.theme;
@@ -39,8 +43,6 @@ import static org.apache.jena.vocabulary.DCTerms.subject;
 import static org.apache.jena.vocabulary.DCTerms.temporal;
 import static org.apache.jena.vocabulary.DCTerms.title;
 import static org.apache.jena.vocabulary.OWL.versionInfo;
-import org.apache.jena.vocabulary.RDF;
-import org.apache.jena.vocabulary.VCARD4;
 
 public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
     protected final Model rdfModel;
@@ -99,8 +101,7 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
         return SemanticAssetMetadata.builder()
             .iri(mainResource.getURI())
             .repoUrl(repoUrl)
-            .rightsHolder(
-                NodeSummaryExtractor.mustExtractNodeSummary(mainResource, rightsHolder, FOAF.name))
+            .rightsHolder(extractRequiredNodeSummary(mainResource, rightsHolder, FOAF.name))
             .title(extract(mainResource, title))
             .description(extract(mainResource, description))
             .modifiedOn(parseDate(extract(mainResource, modified)))

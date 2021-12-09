@@ -13,8 +13,8 @@ import org.apache.jena.rdf.model.Resource;
 
 public class NodeSummaryExtractor {
 
-    public static NodeSummary mustExtractNodeSummary(Resource resource, Property nodeProperty,
-                                                     Property summaryProperty) {
+    public static NodeSummary extractRequiredNodeSummary(Resource resource, Property nodeProperty,
+                                                         Property summaryProperty) {
         return maybeNodeSummaries(resource, nodeProperty, summaryProperty)
             .stream()
             .findFirst()

@@ -179,7 +179,7 @@ class ControlledVocabularyModelTest {
         ControlledVocabularyModel model = new ControlledVocabularyModel(jenaModel, TTL_FILE,
             REPO_URL);
 
-        assertThat(model.getRightsHolderId()).isEqualTo("agid");
+        assertThat(model.getAgencyId()).isEqualTo("agid");
     }
 
     @Test
@@ -190,6 +190,16 @@ class ControlledVocabularyModelTest {
         SemanticAssetMetadata semanticAssetMetadata = model.extractMetadata();
 
         assertThat(semanticAssetMetadata.getKeyConcept()).isEqualTo("test-concept");
+    }
+
+    @Test
+    void shouldExtractAgencyIdMetaData() {
+        ControlledVocabularyModel model = new ControlledVocabularyModel(jenaModel, TTL_FILE,
+                REPO_URL);
+
+        SemanticAssetMetadata semanticAssetMetadata = model.extractMetadata();
+
+        assertThat(semanticAssetMetadata.getAgencyId()).isEqualTo("agid");
     }
 
     @Test

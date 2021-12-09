@@ -38,8 +38,8 @@ public class ControlledVocabularyPathProcessor extends BaseSemanticAssetPathProc
 
         path.getCsvPath().ifPresent(p -> {
             String keyConcept = model.getKeyConcept();
-            String rightsHolder = model.getRightsHolderId();
-            VocabularyIdentifier vocabularyIdentifier = new VocabularyIdentifier(rightsHolder, keyConcept);
+            String agencyId = model.getAgencyId();
+            VocabularyIdentifier vocabularyIdentifier = new VocabularyIdentifier(agencyId, keyConcept);
 
             parseAndIndexCsv(vocabularyIdentifier, p);
         });

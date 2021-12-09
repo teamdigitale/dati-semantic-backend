@@ -60,7 +60,7 @@ class ControlledVocabularyPathProcessorTest {
         when(semanticAssetModelFactory.createControlledVocabulary(ttlFile, "some-repo")).thenReturn(cvModel);
         when(cvModel.getRdfModel()).thenReturn(jenaModel);
         when(cvModel.getKeyConcept()).thenReturn("keyConcept");
-        when(cvModel.getRightsHolderId()).thenReturn("rightsHolderId");
+        when(cvModel.getAgencyId()).thenReturn("agencyId");
         when(csvParser.convertCsvToMapList(csvFile)).thenReturn(List.of(Map.of("key", "val")));
         SemanticAssetMetadata metadata = SemanticAssetMetadata.builder().build();
         when(cvModel.extractMetadata()).thenReturn(metadata);
@@ -70,7 +70,7 @@ class ControlledVocabularyPathProcessorTest {
         verify(semanticAssetModelFactory).createControlledVocabulary(ttlFile, "some-repo");
         verify(csvParser).convertCsvToMapList(csvFile);
         verify(tripleStoreRepository).save("some-repo", jenaModel);
-        verify(vocabularyDataService).indexData(new VocabularyIdentifier("rightsHolderId", "keyConcept"),
+        verify(vocabularyDataService).indexData(new VocabularyIdentifier("agencyId", "keyConcept"),
                 List.of(Map.of("key", "val")));
         verify(cvModel).extractMetadata();
         verify(metadataRepository).save(metadata);
@@ -92,7 +92,7 @@ class ControlledVocabularyPathProcessorTest {
         verify(tripleStoreRepository).save("some-repo", jenaModel);
         verify(cvModel).extractMetadata();
 
-        verify(cvModel, never()).getRightsHolderId();
+        verify(cvModel, never()).getAgencyId();
         verify(cvModel, never()).getKeyConcept();
         verify(metadataRepository).save(metadata);
         verifyNoInteractions(csvParser);

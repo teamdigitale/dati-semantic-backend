@@ -1,5 +1,19 @@
 package it.teamdigitale.ndc.harvester.model;
 
+import it.teamdigitale.ndc.harvester.model.exception.InvalidModelException;
+import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.vocabulary.DCTerms;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 import static it.teamdigitale.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
 import static it.teamdigitale.ndc.harvester.model.extractors.NodeExtractor.extractNodes;
 import static it.teamdigitale.ndc.harvester.model.vocabulary.EuropePublicationVocabulary.FILE_TYPE_RDF_TURTLE;
@@ -8,19 +22,6 @@ import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.vocabulary.DCAT.accessURL;
 import static org.apache.jena.vocabulary.DCAT.distribution;
 import static org.apache.jena.vocabulary.DCTerms.format;
-
-import it.teamdigitale.ndc.harvester.model.exception.InvalidModelException;
-import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.Statement;
-import org.apache.jena.rdf.model.StmtIterator;
-import org.apache.jena.vocabulary.DCTerms;
 
 @Slf4j
 public class ControlledVocabularyModel extends BaseSemanticAssetModel {
@@ -40,17 +41,17 @@ public class ControlledVocabularyModel extends BaseSemanticAssetModel {
         try {
             if (!stmtIterator.hasNext()) {
                 log.warn("No key concept ({}) statement for controlled vocabulary '{}'",
-                    KEY_CONCEPT_IRI, mainResource);
+                        KEY_CONCEPT_IRI, mainResource);
                 throw new InvalidModelException(
-                    "No key concept property for controlled vocabulary " + mainResource);
+                        "No key concept property for controlled vocabulary " + mainResource);
             }
 
             Statement statement = stmtIterator.nextStatement();
             if (stmtIterator.hasNext()) {
                 log.warn("Multiple key concept ({}) statements for controlled vocabulary '{}'",
-                    KEY_CONCEPT_IRI, mainResource);
+                        KEY_CONCEPT_IRI, mainResource);
                 throw new InvalidModelException(
-                    "Multiple key concept properties for controlled vocabulary " + mainResource);
+                        "Multiple key concept properties for controlled vocabulary " + mainResource);
             }
 
             return statement.getObject().toString();
@@ -59,17 +60,17 @@ public class ControlledVocabularyModel extends BaseSemanticAssetModel {
         }
     }
 
-    public String getRightsHolderId() {
+    public String getAgencyId() {
         return getMainResource()
-            .getRequiredProperty(DCTerms.rightsHolder)
-            .getProperty(DCTerms.identifier)
-            .getString();
+                .getRequiredProperty(DCTerms.rightsHolder)
+                .getProperty(DCTerms.identifier)
+                .getString();
     }
 
     public void addNdcUrlProperty(String baseUrl) {
         Property endpointUrlProperty = createProperty(REST_ENDPOINT_IRI);
         String ndcUrl =
-            String.format(NDC_ENDPOINT_URL, baseUrl, getRightsHolderId(), getKeyConcept());
+            String.format(NDC_ENDPOINT_URL, baseUrl, getAgencyId(), getKeyConcept());
 
         this.getMainResource().addProperty(endpointUrlProperty, ndcUrl);
     }
@@ -82,12 +83,13 @@ public class ControlledVocabularyModel extends BaseSemanticAssetModel {
     @Override
     public SemanticAssetMetadata extractMetadata() {
         return super.extractMetadata().toBuilder()
-            .type(CONTROLLED_VOCABULARY)
-            .distributionUrls(getDistributionUrls())
-            .keyConcept(getKeyConcept())
-            .endpointUrl(
+                .type(CONTROLLED_VOCABULARY)
+                .distributionUrls(getDistributionUrls())
+                .keyConcept(getKeyConcept())
+                .agencyId(getAgencyId())
+                .endpointUrl(
                 getNdcEndpointUrl()) // assumption is that ndc endpoint url will be added to model before indexing
-            .build();
+                .build();
     }
 
     private List<String> getDistributionUrls() {

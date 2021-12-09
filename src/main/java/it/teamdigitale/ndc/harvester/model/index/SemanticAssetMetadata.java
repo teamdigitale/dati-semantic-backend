@@ -69,6 +69,8 @@ public class SemanticAssetMetadata {
     @Field(index = false, type = Keyword)
     private String keyConcept;
     @Field(index = false, type = Keyword)
+    private String agencyId;
+    @Field(index = false, type = Keyword)
     private String endpointUrl;
 
     //Ontology specific

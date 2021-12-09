@@ -4,15 +4,15 @@ import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode
 public class VocabularyIdentifier {
-    private final String rightsHolder;
+    private final String agencyId;
     private final String keyConcept;
 
     private final String indexName;
 
-    public VocabularyIdentifier(String rightsHolder, String keyConcept) {
-        this.rightsHolder = rightsHolder;
+    public VocabularyIdentifier(String agencyId, String keyConcept) {
+        this.agencyId = agencyId;
         this.keyConcept = keyConcept;
-        this.indexName = String.join(".", rightsHolder, keyConcept).toLowerCase();
+        this.indexName = String.join(".", agencyId, keyConcept).toLowerCase();
     }
 
     public String getIndexName() {
