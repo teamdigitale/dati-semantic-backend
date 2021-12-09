@@ -1,5 +1,20 @@
 package it.teamdigitale.ndc.harvester;
 
+import it.teamdigitale.ndc.harvester.model.CvPath;
+import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
+import it.teamdigitale.ndc.harvester.scanners.ControlledVocabularyFolderScanner;
+import it.teamdigitale.ndc.harvester.scanners.OntologyFolderScanner;
+import it.teamdigitale.ndc.harvester.scanners.SchemaFolderScanner;
+import it.teamdigitale.ndc.harvester.util.FileUtils;
+import it.teamdigitale.ndc.harvester.util.GitUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
+
 import static it.teamdigitale.ndc.harvester.AgencyRepositoryService.TEMP_DIR_PREFIX;
 import static it.teamdigitale.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
 import static it.teamdigitale.ndc.harvester.SemanticAssetType.ONTOLOGY;
@@ -8,20 +23,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import it.teamdigitale.ndc.harvester.model.CvPath;
-import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
-import it.teamdigitale.ndc.harvester.scanners.ControlledVocabularyFolderScanner;
-import it.teamdigitale.ndc.harvester.scanners.OntologyFolderScanner;
-import it.teamdigitale.ndc.harvester.scanners.SchemaFolderScanner;
-import it.teamdigitale.ndc.harvester.util.FileUtils;
-import it.teamdigitale.ndc.harvester.util.GitUtils;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 public class AgencyRepositoryServiceTest {
     FileUtils fileUtils;
@@ -130,32 +131,62 @@ public class AgencyRepositoryServiceTest {
     }
 
     @Test
+    void shouldContinueScanningAfterEncounteringMalformedFolder() throws IOException {
+        Path ontoFolder = Path.of("/temp/ndc-1", CONTROLLED_VOCABULARY.getFolderName());
+        String cvTtl1 = "correct-vocab/test2.ttl";
+        String cvCsv1 = "correct-vocab/test2.csv";
+
+        Path group1 =
+                dir("chaotic-vocab",
+                        file("chaotic-vocab/test1.ttl"),
+                        file("chaotic-vocab/test1.csv"),
+                        file("chaotic-vocab/test2.ttl"),
+                        file("chaotic-vocab/test2.csv")
+                );
+        Path ot2 =
+                dir("correct-vocab",
+                        file(cvTtl1),
+                        file(cvCsv1)
+                );
+
+        when(fileUtils.folderExists(ontoFolder)).thenReturn(true);
+        when(fileUtils.isDirectory(ontoFolder)).thenReturn(true);
+        when(fileUtils.listContents(ontoFolder)).thenReturn(List.of(group1, ot2));
+
+        List<CvPath> cvPaths =
+                agencyRepoService.getControlledVocabularyPaths(Path.of("/temp/ndc-1"));
+
+        assertThat(cvPaths).hasSize(1);
+        assertThat(cvPaths).contains(CvPath.of(cvTtl1, cvCsv1));
+    }
+
+    @Test
     void shouldFindAllSchemas() throws IOException {
         Path schemaFolder = Path.of("/temp/ndc-1", SCHEMA.getFolderName());
         String schema1 = "group1/sc1/index.ttl";
         String schema2 = "sc2/index.ttl";
 
         Path group1 =
-            dir("group1",
-                dir("group1/sc1",
-                    file(schema1)
-                )
-            );
+                dir("group1",
+                        dir("group1/sc1",
+                                file(schema1)
+                        )
+                );
         Path sc2 =
-            dir("sc2",
-                file(schema2)
-            );
+                dir("sc2",
+                        file(schema2)
+                );
 
         when(fileUtils.folderExists(schemaFolder)).thenReturn(true);
         when(fileUtils.isDirectory(schemaFolder)).thenReturn(true);
         when(fileUtils.listContents(schemaFolder)).thenReturn(List.of(group1, sc2));
 
         List<SemanticAssetPath> schemaPaths =
-            agencyRepoService.getSchemaPaths(Path.of("/temp/ndc-1"));
+                agencyRepoService.getSchemaPaths(Path.of("/temp/ndc-1"));
 
         assertThat(schemaPaths).hasSize(2);
         assertThat(schemaPaths).containsAll(
-            List.of(SemanticAssetPath.of(schema1), SemanticAssetPath.of(schema2)));
+                List.of(SemanticAssetPath.of(schema1), SemanticAssetPath.of(schema2)));
     }
 
     @Test

@@ -2,6 +2,7 @@ package it.teamdigitale.ndc.harvester;
 
 import static java.util.function.Predicate.not;
 
+import it.teamdigitale.ndc.harvester.exception.InvalidAssetFolderException;
 import it.teamdigitale.ndc.harvester.model.CvPath;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
 import it.teamdigitale.ndc.harvester.scanners.ControlledVocabularyFolderScanner;
@@ -13,6 +14,7 @@ import it.teamdigitale.ndc.harvester.util.GitUtils;
 import it.teamdigitale.ndc.harvester.util.Version;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -58,21 +60,21 @@ public class AgencyRepositoryService {
     }
 
     private <P extends SemanticAssetPath> List<P> findPaths(Path clonedRepo, SemanticAssetType type, FolderScanner<P> scanner) {
-        Path rootFolder = Path.of(clonedRepo.toString(), type.getFolderName());
-        if (!fileUtils.folderExists(rootFolder)) {
+        Path assetRootPath = Path.of(clonedRepo.toString(), type.getFolderName());
+        if (!fileUtils.folderExists(assetRootPath)) {
             log.warn("No {} folder found in {}", type.getDescription(), clonedRepo);
             return List.of();
         }
 
-        return createSemanticAssetPaths(rootFolder, scanner, type.isIgnoringObsoleteVersions());
+        return createSemanticAssetPaths(assetRootPath, scanner, type.isIgnoringObsoleteVersions());
     }
 
     @SneakyThrows
-    private <P extends SemanticAssetPath> List<P> createSemanticAssetPaths(Path dir, FolderScanner<P> scanner, boolean ignoreObsoleteVersions) {
-        List<Path> dirContents = fileUtils.listContents(dir);
+    private <P extends SemanticAssetPath> List<P> createSemanticAssetPaths(Path path, FolderScanner<P> scanner, boolean ignoreObsoleteVersions) {
+        List<Path> dirContents = fileUtils.listContents(path);
         boolean hasSubDir = dirContents.stream().anyMatch(fileUtils::isDirectory);
         if (!hasSubDir) {
-            return scanner.scanFolder(dir);
+            return tryScanDir(path, scanner);
         }
 
         Predicate<Path> isObsoleteVersion = p -> false;
@@ -93,6 +95,15 @@ public class AgencyRepositoryService {
                 .flatMap(subDir -> createSemanticAssetPaths(subDir, scanner, ignoreObsoleteVersions).stream())
                 // then collect
                 .collect(Collectors.toList());
+    }
+
+    private <P extends SemanticAssetPath> List<P> tryScanDir(Path dir, FolderScanner<P> scanner) throws IOException {
+        try {
+            return scanner.scanFolder(dir);
+        } catch (InvalidAssetFolderException e) {
+            log.warn("Invalid folder {}; skipping", dir, e);
+            return Collections.emptyList();
+        }
     }
 
     private Optional<Version> getLatestVersion(List<Path> dirContents) {
