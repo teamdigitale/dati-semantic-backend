@@ -10,6 +10,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 
@@ -27,6 +28,7 @@ import java.util.List;
 
 import it.teamdigitale.ndc.model.NDC;
 import it.teamdigitale.ndc.repository.TripleStoreRepositoryProperties;
+import junit.framework.AssertionFailedError;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.RDFNode;
@@ -46,6 +48,8 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
+
+import javax.validation.constraints.NotNull;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
@@ -308,8 +312,7 @@ public class RestApiIntegrationTests {
 
     @Test
     void shouldRetrieveDataServiceFromQueryingSparql() {
-        RDFConnection connection = getVirtuosoConnection();
-        try {
+        try (RDFConnection connection = getVirtuosoConnection()) {
             String enrichedDataset = "https://w3id.org/italia/controlled-vocabulary/licences";
             String keyConcept = "licences";
             String agencyId = "agid";
@@ -330,15 +333,17 @@ public class RestApiIntegrationTests {
             RDFNode downloadUrl = querySolution.get("du");
             assertThat(downloadUrl).isNotNull();
             assertThat(downloadUrl.toString()).isEqualTo(expectedEndpointUrl);
-        } finally {
-            connection.close();
         }
     }
 
     private RDFConnection getVirtuosoConnection() {
         String sparql = virtuosoProps.getSparql().getUrl();
         String graphProtocolUrl = virtuosoProps.getSparqlGraphStore().getUrl();
-        return RDFConnectionFactory.connect(sparql, sparql, graphProtocolUrl);
+        RDFConnection connection = RDFConnectionFactory.connect(sparql, sparql, graphProtocolUrl);
+        if (connection == null) {
+            throw new AssertionFailedError("Could not connect to Virtuoso");
+        }
+        return connection;
     }
 
     private void dataIsHarvested() throws IOException {
