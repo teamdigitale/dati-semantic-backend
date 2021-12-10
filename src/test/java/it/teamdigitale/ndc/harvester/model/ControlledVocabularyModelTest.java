@@ -30,6 +30,7 @@ import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -73,7 +74,6 @@ class ControlledVocabularyModelTest {
                 .addProperty(accessURL, createResource("http://repo/file.json"))
                 .addProperty(format, EuropePublicationVocabulary.FILE_TYPE_JSON)
             );
-
     }
 
     @Test
@@ -227,7 +227,7 @@ class ControlledVocabularyModelTest {
     }
 
     @Test
-    void shouldAddNdcDataServiceProperties() {
+    void shouldAddDataService() {
         ControlledVocabularyModel model = new ControlledVocabularyModel(jenaModel, TTL_FILE,
                 REPO_URL);
 
@@ -239,9 +239,11 @@ class ControlledVocabularyModelTest {
         assertThat(dataServices).hasSize(1);
         Resource dataService = dataServices.get(0);
 
-        Resource servedDataset = dataService.getPropertyResourceValue(NDC.servesDataset);
-        assertThat(servedDataset).isNotNull();
-        assertThat(servedDataset).isEqualTo(model.getMainResource());
+        Resource mainResource = model.getMainResource();
+        assertThat(dataService.getPropertyResourceValue(NDC.servesDataset)).isEqualTo(mainResource);
+        assertThat(mainResource.getPropertyResourceValue(NDC.hasDataService)).isEqualTo(dataService);
+        String endpointUrl = dataService.getProperty(NDC.endpointURL).getObject().toString();
+        assertThat(endpointUrl).isEqualTo("http://ndc/vocabularies/agid/test-concept");
     }
 
     private List<Resource> findResourceByClass(Model enrichedRdfModel, Resource clazz) {

@@ -18,7 +18,7 @@ import it.teamdigitale.ndc.harvester.SemanticAssetType;
 
 import java.util.List;
 
-import it.teamdigitale.ndc.model.NDC;
+import it.teamdigitale.ndc.model.profiles.NDC;
 import junit.framework.AssertionFailedError;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
