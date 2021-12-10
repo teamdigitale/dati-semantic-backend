@@ -10,101 +10,32 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
 
 import io.restassured.response.Response;
 import it.teamdigitale.ndc.controller.dto.SemanticAssetSearchResult;
 import it.teamdigitale.ndc.controller.dto.SemanticAssetsSearchDto;
-import it.teamdigitale.ndc.harvester.AgencyRepositoryService;
-import it.teamdigitale.ndc.harvester.HarvesterService;
 import it.teamdigitale.ndc.harvester.SemanticAssetType;
-import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
 
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.List;
 
 import it.teamdigitale.ndc.model.NDC;
-import it.teamdigitale.ndc.repository.TripleStoreRepositoryProperties;
 import junit.framework.AssertionFailedError;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.rdfconnection.RDFConnectionFactory;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.elasticsearch.ElasticsearchContainer;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
-import javax.validation.constraints.NotNull;
-
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Testcontainers
-public class RestApiIntegrationTests {
-
-    private static final ElasticsearchContainer elasticsearchContainer =
-            Containers.buildElasticsearchContainer();
-    private static final GenericContainer virtuoso = Containers.buildVirtuosoContainer();
-    private boolean harvested = false;
-
-    @LocalServerPort
-    private int port;
-
-    @Autowired
-    ElasticsearchOperations elasticsearchOperations;
-
-    @Autowired
-    HarvesterService harvesterService;
-
-    @SpyBean
-    AgencyRepositoryService agencyRepositoryService;
-
-    @Autowired
-    TripleStoreRepositoryProperties virtuosoProps;
-
-    @BeforeAll
-    public static void beforeAll() {
-        virtuoso.start();
-        elasticsearchContainer.start();
-    }
-
-    @BeforeEach
-    public void beforeEach() throws IOException {
-        if (!harvested) {
-            dataIsHarvested();
-            harvested = true;
-        }
-    }
-
-    @AfterAll
-    public static void tearDown() {
-        virtuoso.stop();
-        elasticsearchContainer.stop();
-    }
-
-    @DynamicPropertySource
-    static void updateTestcontainersProperties(DynamicPropertyRegistry registry) {
-        String url = "http://localhost:" + virtuoso.getMappedPort(Containers.VIRTUOSO_PORT);
-        registry.add("virtuoso.sparql.url", () -> url + "/sparql");
-        registry.add("virtuoso.sparql-graph-store.url", () -> url + "/sparql-graph-crud/");
-        registry.add("spring.elasticsearch.rest.uris", elasticsearchContainer::getHttpHostAddress);
-    }
+public class RestApiIntegrationTests extends BaseIntegrationTest {
 
     @Test
     void shouldBeAbleToHarvestAndSearchControlledVocabularySuccessfully() {
+        final String assetIri = "https://w3id.org/italia/controlled-vocabulary/licences";
+        final String rightsHolderName = "Agenzia per l'Italia Digitale";
+        final String rightsHolderIri = "https://w3id.org/italia/data/public-organization/agid";
+        final String rightsHolder = "http://purl.org/dc/terms/rightsHolder";
+
         Response searchResponseForLicenza = getSemanticAsset("Licenza", CONTROLLED_VOCABULARY, 2);
 
         searchResponseForLicenza.then()
@@ -113,22 +44,34 @@ public class RestApiIntegrationTests {
                 .body("offset", equalTo(0))
                 .body("limit", equalTo(2))
                 .body("data.size()", equalTo(1))
-                .body("data[0].assetIri",
-                        equalTo("https://w3id.org/italia/controlled-vocabulary/licences"))
-                .body("data[0].rightsHolder.iri",
-                        equalTo("https://w3id.org/italia/data/public-organization/agid"))
-                .body("data[0].rightsHolder.summary", equalTo("Agenzia per l'Italia Digitale"));
+                .body("data[0].assetIri", equalTo(assetIri))
+                .body("data[0].rightsHolder.iri", equalTo(rightsHolderIri))
+                .body("data[0].rightsHolder.summary", equalTo(rightsHolderName));
 
         getSemanticAssetDetails(getAssetIri(searchResponseForLicenza)).then()
                 .statusCode(200)
-                .body("assetIri", equalTo("https://w3id.org/italia/controlled-vocabulary/licences"))
+                .body("assetIri", equalTo(assetIri))
                 .body("type", equalTo(CONTROLLED_VOCABULARY.name()))
                 .body("keyConcept", equalTo("licences"))
                 .body("endpointUrl", containsString("vocabularies/agid/licences"));
+
+        try (RDFConnection connection = getVirtuosoConnection()) {
+            String query = format("SELECT ?o WHERE { <%s> <%s> ?o }", assetIri, rightsHolder);
+            ResultSet resultSet = connection.query(query).execSelect();
+            assertThat(resultSet.hasNext()).isTrue();
+
+            QuerySolution querySolution = resultSet.next();
+            assertThat(querySolution).isNotNull();
+            assertThat(querySolution.get("o").toString()).isEqualTo(rightsHolderIri);
+        }
     }
 
     @Test
     void shouldBeAbleToHarvestAndSearchOntologieSuccessfully() {
+        final String assetIri = "https://w3id.org/italia/onto/ACCO";
+        final String rightsHolderIri = "http://spcdata.digitpa.gov.it/browse/page/Amministrazione/agid";
+        final String title = "http://purl.org/dc/terms/title";
+
         Response searchResponseForRicettivita = getSemanticAsset("Ricettività", ONTOLOGY, 3);
 
         searchResponseForRicettivita.then()
@@ -137,22 +80,37 @@ public class RestApiIntegrationTests {
                 .body("offset", equalTo(0))
                 .body("limit", equalTo(3))
                 .body("data.size()", equalTo(1))
-                .body("data[0].assetIri", equalTo("https://w3id.org/italia/onto/ACCO"))
-                .body("data[0].rightsHolder.iri",
-                        equalTo("http://spcdata.digitpa.gov.it/browse/page/Amministrazione/agid"))
+                .body("data[0].assetIri", equalTo(assetIri))
+                .body("data[0].rightsHolder.iri", equalTo(rightsHolderIri))
                 .body("data[0].rightsHolder.summary", equalTo("Agenzia per l'Italia Digitale"));
 
         getSemanticAssetDetails(getAssetIri(searchResponseForRicettivita)).then()
                 .statusCode(200)
-                .body("assetIri", equalTo("https://w3id.org/italia/onto/ACCO"))
+                .body("assetIri", equalTo(assetIri))
                 .body("type", equalTo(ONTOLOGY.name()))
                 .body("modifiedOn", equalTo("2018-07-31"))
                 .body("keyClasses[0].iri",
                         equalTo("https://w3id.org/italia/onto/ACCO/AccommodationRoom"));
+
+        try (RDFConnection connection = getVirtuosoConnection()) {
+            String query = format("SELECT ?o WHERE { <%s> <%s> ?o }", assetIri, title);
+            ResultSet resultSet = connection.query(query).execSelect();
+            assertThat(resultSet.hasNext()).isTrue();
+
+            QuerySolution querySolution = resultSet.next();
+            assertThat(querySolution).isNotNull();
+            assertThat(querySolution.get("o").toString())
+                    .isEqualTo("Accommodation Facilities Ontology - Italian Application Profile@en");
+        }
     }
 
     @Test
     void shouldBeAbleToHarvestAndSearchSchemaSuccessfully() {
+        final String assetIri = "https://w3id.org/italia/schema/person/v202108.01/person.oas3.yaml";
+        final String rightsHolderIri = "http://spcdata.digitpa.gov.it/browse/page/Amministrazione/agid";
+        final String rightsHolderName = "Agenzia per l'Italia Digitale";
+        final String title = "http://purl.org/dc/terms/title";
+
         Response schemaResponse = getSemanticAsset("The Person schema", SCHEMA, 2);
 
         schemaResponse.then()
@@ -160,20 +118,27 @@ public class RestApiIntegrationTests {
                 .body("totalCount", equalTo(1))
                 .body("limit", equalTo(2))
                 .body("data.size()", equalTo(1))
-                .body("data[0].assetIri",
-                        equalTo("https://w3id.org/italia/schema/person/v202108.01/person.oas3.yaml"))
-                .body("data[0].rightsHolder.iri",
-                        equalTo("http://spcdata.digitpa.gov.it/browse/page/Amministrazione/agid"))
-                .body("data[0].rightsHolder.summary", equalTo("Agenzia per l'Italia Digitale"));
+                .body("data[0].assetIri", equalTo(assetIri))
+                .body("data[0].rightsHolder.iri", equalTo(rightsHolderIri))
+                .body("data[0].rightsHolder.summary", equalTo(rightsHolderName));
 
         getSemanticAssetDetails(getAssetIri(schemaResponse)).then()
                 .statusCode(200)
-                .body("assetIri",
-                        equalTo("https://w3id.org/italia/schema/person/v202108.01/person.oas3.yaml"))
+                .body("assetIri", equalTo(assetIri))
                 .body("type", equalTo(SCHEMA.name()))
                 .body("modifiedOn", equalTo("2021-12-06"))
                 .body("distributionUrls[0]",
                         equalTo("https://github.com/ioggstream/json-semantic-playground/tree/master/assets/schemas/person/v202108.01"));
+
+        try (RDFConnection connection = getVirtuosoConnection()) {
+            String query = format("SELECT ?o WHERE { <%s> <%s> ?o }", assetIri, title);
+            ResultSet resultSet = connection.query(query).execSelect();
+            assertThat(resultSet.hasNext()).isTrue();
+
+            QuerySolution querySolution = resultSet.next();
+            assertThat(querySolution).isNotNull();
+            assertThat(querySolution.get("o").toString()).isEqualTo("The Person schema");
+        }
     }
 
     @Test
@@ -344,17 +309,6 @@ public class RestApiIntegrationTests {
             throw new AssertionFailedError("Could not connect to Virtuoso");
         }
         return connection;
-    }
-
-    private void dataIsHarvested() throws IOException {
-        String dir = "src/test/resources/testdata";
-        Path cloneDir = Path.of(dir);
-        doReturn(cloneDir).when(agencyRepositoryService).cloneRepo("http://testRepoURL");
-        doNothing().when(agencyRepositoryService).removeClonedRepo(cloneDir);
-
-        harvesterService.harvest("http://testRepoURL");
-
-        elasticsearchOperations.indexOps(SemanticAssetMetadata.class).refresh();
     }
 
     private Response getSemanticAsset(String searchTerm, SemanticAssetType semanticAssetType,
