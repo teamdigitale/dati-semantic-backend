@@ -19,21 +19,6 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: checkout code
-        uses: actions/checkout@v2
-      - name: Linting with Super-Linter
-        uses: github/super-linter/slim@v4.8.1
-        env:
-          VALIDATE_MARKDOWN: false
-          IGNORE_GITIGNORED_FILES: true
-          VALIDATE_BASH: false
-          VALIDATE_JAVA: false
-          VALIDATE_GOOGLE_JAVA_FORMAT: false
-          VALIDATE_SQLFLUFF: false
-
   build:
     runs-on: ubuntu-latest
     steps:
