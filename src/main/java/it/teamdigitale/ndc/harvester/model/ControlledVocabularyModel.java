@@ -29,6 +29,7 @@ public class ControlledVocabularyModel extends BaseSemanticAssetModel {
     public static final String NDC_PREFIX = "https://w3id.org/italia/onto/ndc-profile/";
     public static final String KEY_CONCEPT_IRI = NDC_PREFIX + "keyConcept";
     public static final String NDC_ENDPOINT_URL_TEMPLATE = "%s/vocabularies/%s/%s";
+    public static final String KEY_CONCEPT_VALIDATION_PATTERN = "^\\w(:?[\\w-]+\\w)*$";
 
     private String endpointUrl = "";
 
@@ -40,6 +41,7 @@ public class ControlledVocabularyModel extends BaseSemanticAssetModel {
         Property keyConceptProperty = createProperty(KEY_CONCEPT_IRI);
         Resource mainResource = getMainResource();
         StmtIterator stmtIterator = mainResource.listProperties(keyConceptProperty);
+        String keyConcept;
         try {
             if (!stmtIterator.hasNext()) {
                 log.warn("No key concept ({}) statement for controlled vocabulary '{}'",
@@ -56,17 +58,29 @@ public class ControlledVocabularyModel extends BaseSemanticAssetModel {
                         "Multiple key concept properties for controlled vocabulary " + mainResource);
             }
 
-            return statement.getObject().toString();
+            keyConcept = statement.getObject().toString();
         } finally {
             stmtIterator.close();
+        }
+
+        validateKeyConcept(keyConcept, mainResource);
+        return keyConcept;
+    }
+
+    private void validateKeyConcept(String keyConcept, Resource mainResource) {
+        if (!keyConcept.matches(KEY_CONCEPT_VALIDATION_PATTERN)) {
+            log.warn("Key concept string ({}) invalid for controlled vocabulary '{}'",
+                    keyConcept, mainResource);
+            throw new InvalidModelException(String.format("Key concept '%s' value does not meet expected pattern", keyConcept));
         }
     }
 
     public String getAgencyId() {
-        return getMainResource()
+        String agencyId = getMainResource()
                 .getRequiredProperty(DCTerms.rightsHolder)
                 .getProperty(DCTerms.identifier)
                 .getString();
+        return agencyId;
     }
 
     public void addNdcDataServiceProperties(String baseUrl) {
@@ -108,10 +122,10 @@ public class ControlledVocabularyModel extends BaseSemanticAssetModel {
 
     private List<String> getDistributionUrls() {
         return extractNodes(getMainResource(), distribution).stream()
-            .filter(node -> Objects.nonNull(node.getProperty(format))
-                    && node.getProperty(format).getResource().getURI().equals(FILE_TYPE_RDF_TURTLE.getURI()))
-            .map(node -> node.getProperty(accessURL).getResource().getURI())
-            .collect(Collectors.toList());
+                .filter(node -> Objects.nonNull(node.getProperty(format))
+                        && node.getProperty(format).getResource().getURI().equals(FILE_TYPE_RDF_TURTLE.getURI()))
+                .map(node -> node.getProperty(accessURL).getResource().getURI())
+                .collect(Collectors.toList());
     }
 
 }

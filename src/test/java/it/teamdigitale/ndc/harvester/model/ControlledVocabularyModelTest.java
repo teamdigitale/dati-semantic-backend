@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import it.teamdigitale.ndc.harvester.model.exception.InvalidModelException;
 import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.teamdigitale.ndc.model.profiles.EuropePublicationVocabulary;
+
 import java.util.List;
 
 import it.teamdigitale.ndc.model.profiles.NDC;
@@ -33,6 +34,8 @@ import org.apache.jena.vocabulary.RDF;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -151,11 +154,18 @@ class ControlledVocabularyModelTest {
 
     @Test
     void shouldFailWithMissingKeyConcept() {
-        List<Statement> conceptStatements = jenaModel
-                .listStatements(null, createProperty(KEY_CONCEPT_IRI), (String) null)
-                .toList();
-        assertThat(conceptStatements.size()).isEqualTo(1);
-        conceptStatements.forEach(s -> jenaModel.remove(s));
+        jenaModel.getResource(CV_IRI).removeAll(createProperty(KEY_CONCEPT_IRI));
+
+        ControlledVocabularyModel model = new ControlledVocabularyModel(jenaModel, TTL_FILE,
+                REPO_URL);
+
+        assertThatThrownBy(() -> model.getKeyConcept()).isInstanceOf(InvalidModelException.class);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"accomodation details", "education-", "-levels"})
+    void shouldFailWithInvalidKeyConcept(String keyConcept) {
+        jenaModel.getResource(CV_IRI).getProperty(createProperty(KEY_CONCEPT_IRI)).changeObject(keyConcept);
 
         ControlledVocabularyModel model = new ControlledVocabularyModel(jenaModel, TTL_FILE,
                 REPO_URL);
@@ -177,7 +187,7 @@ class ControlledVocabularyModelTest {
     }
 
     @Test
-    void shouldExtractRightsHolder() {
+    void shouldExtractAgencyId() {
         ControlledVocabularyModel model = new ControlledVocabularyModel(jenaModel, TTL_FILE,
                 REPO_URL);
 
