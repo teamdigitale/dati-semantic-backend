@@ -79,7 +79,7 @@ public class ControlledVocabularyModel extends BaseSemanticAssetModel {
     }
 
     private String buildDataServiceIndividualUri() {
-        return getMainResource().getURI() + "/DataService";
+        return String.format("https://w3id.org/italia/data/data-service/%s-%s", getAgencyId(), getKeyConcept());
     }
 
     public String getEndpointUrl() {

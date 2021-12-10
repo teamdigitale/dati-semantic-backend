@@ -316,7 +316,7 @@ public class RestApiIntegrationTests {
             String enrichedDataset = "https://w3id.org/italia/controlled-vocabulary/licences";
             String keyConcept = "licences";
             String agencyId = "agid";
-            String expectedDataService = "https://w3id.org/italia/controlled-vocabulary/licences/DataService";
+            String expectedDataService = "https://w3id.org/italia/data/data-service/agid-licences";
             String expectedEndpointUrl = String.format("https://ndc-dev.apps.cloudpub.testedev.istat.it/api/vocabularies/%s/%s", agencyId, keyConcept);
 
             String query = format("SELECT ?ds ?du WHERE { ?ds <%s> <%s> ; <%s> ?du }",
