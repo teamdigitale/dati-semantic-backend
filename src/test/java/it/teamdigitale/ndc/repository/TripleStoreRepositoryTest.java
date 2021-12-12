@@ -136,7 +136,6 @@ class TripleStoreRepositoryTest {
         }
 
         verify(connection).query(selectBuilder.build());
-        verify(queryExecution).execSelect();
     }
 
     @Test

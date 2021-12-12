@@ -1,10 +1,11 @@
 package it.teamdigitale.ndc.integration;
 
 import it.teamdigitale.ndc.repository.TripleStoreRepository;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.query.ResultSet;
+import org.apache.jena.query.QueryExecution;
 import org.apache.jena.sparql.engine.http.QueryExceptionHTTP;
 import org.springframework.boot.actuate.autoconfigure.health.ConditionalOnEnabledHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
@@ -38,10 +39,10 @@ public class VirtuosoHealthIndicator implements HealthIndicator {
                 "<http://www.w3.org/2000/01/rdf-schema#type>",
                 "<http://www.disney.com/characters/Character>");
 
-        ResultSet resultSet = repository.select(queryBuilder);
-
-        if (resultSet.hasNext()) {
-            log.warn("What?! We found Fethry Duck");
+        try (QueryExecution execution = repository.select(queryBuilder)) {
+            if (Objects.nonNull(execution) && execution.execSelect().hasNext()) {
+                log.warn("What?! We found Fethry Duck");
+            }
         }
     }
 }

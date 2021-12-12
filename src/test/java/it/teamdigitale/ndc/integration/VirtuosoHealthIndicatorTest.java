@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 
 import it.teamdigitale.ndc.repository.TripleStoreRepository;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.sparql.engine.http.QueryExceptionHTTP;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,19 +19,20 @@ class VirtuosoHealthIndicatorTest {
 
     private VirtuosoHealthIndicator virtuosoHealthIndicator;
     private TripleStoreRepository repository;
-    private ResultSet resultSet;
+    private QueryExecution queryExecution;
 
     @BeforeEach
     public void beforeEach() {
         repository = mock(TripleStoreRepository.class);
-        resultSet = mock(ResultSet.class);
+        queryExecution = mock(QueryExecution.class);
         virtuosoHealthIndicator = new VirtuosoHealthIndicator(repository);
     }
 
     @Test
     void shouldReportHealthy() {
         ArgumentCaptor<SelectBuilder> queryCaptor = ArgumentCaptor.forClass(SelectBuilder.class);
-        when(repository.select(queryCaptor.capture())).thenReturn(resultSet);
+        when(repository.select(queryCaptor.capture())).thenReturn(queryExecution);
+        when(queryExecution.execSelect()).thenReturn(mock(ResultSet.class));
 
         Health health = virtuosoHealthIndicator.health();
 
@@ -47,7 +49,8 @@ class VirtuosoHealthIndicatorTest {
         Health health = virtuosoHealthIndicator.health();
 
         assertThat(health.getStatus()).isEqualTo(Status.DOWN);
-        assertThat(health.getDetails().get("error")).isEqualTo("java.lang.RuntimeException: random");
+        assertThat(health.getDetails().get("error")).isEqualTo(
+            "java.lang.RuntimeException: random");
     }
 
     @Test
@@ -58,6 +61,7 @@ class VirtuosoHealthIndicatorTest {
         Health health = virtuosoHealthIndicator.health();
 
         assertThat(health.getStatus()).isEqualTo(Status.DOWN);
-        assertThat(health.getDetails().get("error")).isEqualTo("java.lang.RuntimeException: random");
+        assertThat(health.getDetails().get("error")).isEqualTo(
+            "java.lang.RuntimeException: random");
     }
 }

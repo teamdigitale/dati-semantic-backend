@@ -3,7 +3,7 @@ package it.teamdigitale.ndc.repository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.atlas.web.HttpException;
-import org.apache.jena.query.ResultSet;
+import org.apache.jena.query.QueryExecution;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.rdfconnection.RDFConnectionFactory;
@@ -54,9 +54,9 @@ public class TripleStoreRepository {
         }
     }
 
-    public ResultSet select(SelectBuilder selectBuilder) {
+    public QueryExecution select(SelectBuilder selectBuilder) {
         try (RDFConnection connection = getConnection()) {
-            return connection.query(selectBuilder.build()).execSelect();
+            return connection.query(selectBuilder.build());
         } catch (Exception e) {
             log.error(String.format("Could not execute select! - %s", selectBuilder), e);
             throw new TripleStoreRepositoryException(

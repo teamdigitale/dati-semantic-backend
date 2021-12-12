@@ -133,7 +133,7 @@ public class TripleStoreRepositoryTest {
         UpdateExecutionFactory.createRemote(updateRequest, sparqlUrl).execute();
 
         //when
-        ResultSet resultSet = repository.select(findTitle);
+        ResultSet resultSet = repository.select(findTitle).execSelect();
         assertThat(resultSet.hasNext()).isTrue();
         assertThat(resultSet.next().get("b").asResource().getURI()).isEqualTo(
             "http://example/egbook");
@@ -141,7 +141,7 @@ public class TripleStoreRepositoryTest {
 
         // when
         repository.clearExistingNamedGraph("http://agid");
-        resultSet = repository.select(findTitle);
+        resultSet = repository.select(findTitle).execSelect();
 
         // then
         assertThat(resultSet.hasNext()).isFalse();
