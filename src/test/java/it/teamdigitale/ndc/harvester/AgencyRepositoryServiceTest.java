@@ -4,6 +4,7 @@ import it.teamdigitale.ndc.harvester.model.CvPath;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetPath;
 import it.teamdigitale.ndc.harvester.scanners.ControlledVocabularyFolderScanner;
 import it.teamdigitale.ndc.harvester.scanners.OntologyFolderScanner;
+import it.teamdigitale.ndc.harvester.scanners.OntologyFolderScannerProperties;
 import it.teamdigitale.ndc.harvester.scanners.SchemaFolderScanner;
 import it.teamdigitale.ndc.harvester.util.FileUtils;
 import it.teamdigitale.ndc.harvester.util.GitUtils;
@@ -33,7 +34,7 @@ public class AgencyRepositoryServiceTest {
     public void setup() {
         fileUtils = mock(FileUtils.class);
         gitUtils = mock(GitUtils.class);
-        OntologyFolderScanner ontologyScanner = new OntologyFolderScanner(fileUtils);
+        OntologyFolderScanner ontologyScanner = new OntologyFolderScanner(fileUtils, OntologyFolderScannerProperties.forWords("aligns"));
         ControlledVocabularyFolderScanner cvScanner = new ControlledVocabularyFolderScanner(fileUtils);
         SchemaFolderScanner schemaScanner = new SchemaFolderScanner(fileUtils);
         agencyRepoService = new AgencyRepositoryService(fileUtils, gitUtils, ontologyScanner,
