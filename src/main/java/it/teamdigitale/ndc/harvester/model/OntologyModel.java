@@ -37,14 +37,14 @@ public class OntologyModel extends BaseSemanticAssetModel {
         return super.extractMetadata().toBuilder()
             .type(ONTOLOGY)
             .distributionUrls(getDistributionUrls())
-            .keyClasses(getKeyClass())
+            .keyClasses(getKeyClasses())
             .prefix(extractOptional(getMainResource(), prefix))
             .projects(maybeNodeSummaries(getMainResource(), semanticAssetInUse,
                 createProperty("https://w3id.org/italia/onto/l0/name")))
             .build();
     }
 
-    private List<NodeSummary> getKeyClass() {
+    private List<NodeSummary> getKeyClasses() {
         return maybeNodeSummaries(getMainResource(), hasKeyClass, RDFS.label);
     }
 

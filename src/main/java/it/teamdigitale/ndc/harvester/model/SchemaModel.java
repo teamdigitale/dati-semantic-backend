@@ -61,11 +61,11 @@ public class SchemaModel extends BaseSemanticAssetModel {
             .versionInfo(extract(mainResource, versionInfo))
             .keywords(extractAll(mainResource, keyword))
             .conformsTo(maybeNodeSummaries(mainResource, conformsTo, FOAF.name))
-            .keyClasses(getKeyClass())
+            .keyClasses(getKeyClasses())
             .build();
     }
 
-    private List<NodeSummary> getKeyClass() {
+    private List<NodeSummary> getKeyClasses() {
         return maybeNodeSummaries(getMainResource(), hasKeyClass, RDFS.label);
     }
 
