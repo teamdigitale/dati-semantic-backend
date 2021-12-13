@@ -5,7 +5,6 @@ import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.teamdigitale.ndc.model.profiles.NDC;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
@@ -19,15 +18,13 @@ import java.util.stream.Collectors;
 import static it.teamdigitale.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
 import static it.teamdigitale.ndc.harvester.model.extractors.NodeExtractor.extractNodes;
 import static it.teamdigitale.ndc.model.profiles.EuropePublicationVocabulary.FILE_TYPE_RDF_TURTLE;
-import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
+import static java.lang.String.format;
 import static org.apache.jena.vocabulary.DCAT.accessURL;
 import static org.apache.jena.vocabulary.DCAT.distribution;
 import static org.apache.jena.vocabulary.DCTerms.format;
 
 @Slf4j
 public class ControlledVocabularyModel extends BaseSemanticAssetModel {
-    public static final String NDC_PREFIX = "https://w3id.org/italia/onto/ndc-profile/";
-    public static final String KEY_CONCEPT_IRI = NDC_PREFIX + "keyConcept";
     public static final String NDC_ENDPOINT_URL_TEMPLATE = "%s/vocabularies/%s/%s";
     public static final String KEY_CONCEPT_VALIDATION_PATTERN = "^\\w(:?[\\w-]+\\w)*$";
 
@@ -38,14 +35,13 @@ public class ControlledVocabularyModel extends BaseSemanticAssetModel {
     }
 
     public String getKeyConcept() {
-        Property keyConceptProperty = createProperty(KEY_CONCEPT_IRI);
         Resource mainResource = getMainResource();
-        StmtIterator stmtIterator = mainResource.listProperties(keyConceptProperty);
+        StmtIterator stmtIterator = mainResource.listProperties(NDC.keyConcept);
         String keyConcept;
         try {
             if (!stmtIterator.hasNext()) {
                 log.warn("No key concept ({}) statement for controlled vocabulary '{}'",
-                        KEY_CONCEPT_IRI, mainResource);
+                        NDC.keyConcept, mainResource);
                 throw new InvalidModelException(
                         "No key concept property for controlled vocabulary " + mainResource);
             }
@@ -53,7 +49,7 @@ public class ControlledVocabularyModel extends BaseSemanticAssetModel {
             Statement statement = stmtIterator.nextStatement();
             if (stmtIterator.hasNext()) {
                 log.warn("Multiple key concept ({}) statements for controlled vocabulary '{}'",
-                        KEY_CONCEPT_IRI, mainResource);
+                        NDC.keyConcept, mainResource);
                 throw new InvalidModelException(
                         "Multiple key concept properties for controlled vocabulary " + mainResource);
             }
@@ -71,16 +67,25 @@ public class ControlledVocabularyModel extends BaseSemanticAssetModel {
         if (!keyConcept.matches(KEY_CONCEPT_VALIDATION_PATTERN)) {
             log.warn("Key concept string ({}) invalid for controlled vocabulary '{}'",
                     keyConcept, mainResource);
-            throw new InvalidModelException(String.format("Key concept '%s' value does not meet expected pattern", keyConcept));
+            throw new InvalidModelException(format("Key concept '%s' value does not meet expected pattern", keyConcept));
         }
     }
 
     public String getAgencyId() {
-        String agencyId = getMainResource()
-                .getRequiredProperty(DCTerms.rightsHolder)
-                .getProperty(DCTerms.identifier)
-                .getString();
-        return agencyId;
+        Statement rightsHolder;
+        try {
+            rightsHolder = getMainResource().getRequiredProperty(DCTerms.rightsHolder);
+        } catch (Exception e) {
+            throw new InvalidModelException(format("Cannot find required rightsHolder property (%s)", DCTerms.rightsHolder));
+        }
+        Statement idProperty;
+        try {
+            idProperty = rightsHolder.getProperty(DCTerms.identifier);
+        } catch (Exception e) {
+            String rightsHolderIri = rightsHolder.getObject().toString();
+            throw new InvalidModelException(format("Cannot find required id (%s) for rightsHolder '%s'", DCTerms.identifier, rightsHolderIri));
+        }
+        return idProperty.getString();
     }
 
     public void addNdcDataServiceProperties(String baseUrl) {
@@ -93,7 +98,7 @@ public class ControlledVocabularyModel extends BaseSemanticAssetModel {
     }
 
     private String buildDataServiceIndividualUri() {
-        return String.format("https://w3id.org/italia/data/data-service/%s-%s", getAgencyId(), getKeyConcept());
+        return format("https://w3id.org/italia/data/data-service/%s-%s", getAgencyId(), getKeyConcept());
     }
 
     public String getEndpointUrl() {
@@ -101,7 +106,7 @@ public class ControlledVocabularyModel extends BaseSemanticAssetModel {
     }
 
     private String buildEndpointUrl(String baseUrl) {
-        return String.format(NDC_ENDPOINT_URL_TEMPLATE, baseUrl, getAgencyId(), getKeyConcept());
+        return format(NDC_ENDPOINT_URL_TEMPLATE, baseUrl, getAgencyId(), getKeyConcept());
     }
 
     @Override
@@ -122,10 +127,25 @@ public class ControlledVocabularyModel extends BaseSemanticAssetModel {
 
     private List<String> getDistributionUrls() {
         return extractNodes(getMainResource(), distribution).stream()
-                .filter(node -> Objects.nonNull(node.getProperty(format))
-                        && node.getProperty(format).getResource().getURI().equals(FILE_TYPE_RDF_TURTLE.getURI()))
-                .map(node -> node.getProperty(accessURL).getResource().getURI())
+                .filter(this::isTurtleDistribution)
+                .map(node -> requireAccessUrl(node))
                 .collect(Collectors.toList());
+    }
+
+    private String requireAccessUrl(Resource node) {
+        Statement accessUrlProperty = node.getProperty(accessURL);
+        if (accessUrlProperty == null) {
+            throw new InvalidModelException(String.format("Invalid turtle distribution '%s': missing %s", node.getURI(), accessURL));
+        }
+        return accessUrlProperty.getResource().getURI();
+    }
+
+    private boolean isTurtleDistribution(Resource node) {
+        Statement formatProperty = node.getProperty(format);
+        if (Objects.isNull(formatProperty)) {
+            return false;
+        }
+        return formatProperty.getResource().getURI().equals(FILE_TYPE_RDF_TURTLE.getURI());
     }
 
 }

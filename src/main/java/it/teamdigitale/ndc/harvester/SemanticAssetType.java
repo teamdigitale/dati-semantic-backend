@@ -4,10 +4,18 @@ import lombok.Getter;
 
 @Getter
 public enum SemanticAssetType {
-    ONTOLOGY("ontology", "Ontologie", "http://www.w3.org/2002/07/owl#Ontology", true),
-    CONTROLLED_VOCABULARY("controlled vocabulary", "VocabolariControllati",
-        "http://dati.gov.it/onto/dcatapit#Dataset", false),
-    SCHEMA("schema", "Schema", "http://dati.gov.it/onto/dcatapit#Dataset", false);
+    ONTOLOGY("ontology",
+            "Ontologie",
+            "http://www.w3.org/2002/07/owl#Ontology",
+            true),
+    CONTROLLED_VOCABULARY("controlled vocabulary",
+            "VocabolariControllati",
+            "http://dati.gov.it/onto/dcatapit#Dataset",
+            false),
+    SCHEMA("schema",
+            "Schema",
+            "http://dati.gov.it/onto/dcatapit#Dataset",
+            false);
 
     private final String description;
     private final String folderName;

@@ -1,7 +1,16 @@
 package it.teamdigitale.ndc.harvester.model;
 
+import it.teamdigitale.ndc.harvester.model.exception.InvalidModelException;
+import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
+import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
+import it.teamdigitale.ndc.model.profiles.EuropePublicationVocabulary;
+import it.teamdigitale.ndc.model.profiles.NDC;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import static it.teamdigitale.ndc.harvester.SemanticAssetType.ONTOLOGY;
-import static it.teamdigitale.ndc.harvester.model.ControlledVocabularyModel.KEY_CONCEPT_IRI;
 import static it.teamdigitale.ndc.model.profiles.Admsapit.hasKeyClass;
 import static it.teamdigitale.ndc.model.profiles.Admsapit.hasSemanticAssetDistribution;
 import static it.teamdigitale.ndc.model.profiles.Admsapit.prefix;
@@ -24,15 +33,6 @@ import static org.apache.jena.vocabulary.RDFS.label;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import it.teamdigitale.ndc.harvester.model.exception.InvalidModelException;
-import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
-import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
-import it.teamdigitale.ndc.model.profiles.EuropePublicationVocabulary;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 class OntologyModelTest {
     private static final String TTL_FILE = "some-file";
     public static final String ONTOLOGY_IRI = "https://w3id.org/italia/ontology/test";
@@ -50,7 +50,7 @@ class OntologyModelTest {
         jenaModel
             .createResource(ONTOLOGY_IRI)
             .addProperty(type, createResource(ONTOLOGY.getTypeIri()))
-            .addProperty(createProperty(KEY_CONCEPT_IRI), "test-concept")
+            .addProperty(NDC.keyConcept, "test-concept")
             .addProperty(rightsHolder, agid)
             .addProperty(identifier, "test-identifier")
             .addProperty(title, "title")

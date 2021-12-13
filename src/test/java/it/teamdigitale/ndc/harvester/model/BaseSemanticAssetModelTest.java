@@ -1,17 +1,22 @@
 package it.teamdigitale.ndc.harvester.model;
 
-import static it.teamdigitale.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
-import static it.teamdigitale.ndc.harvester.model.ControlledVocabularyModel.KEY_CONCEPT_IRI;
 import it.teamdigitale.ndc.harvester.model.exception.InvalidModelException;
 import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
 import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
-import java.time.LocalDate;
+import it.teamdigitale.ndc.model.profiles.NDC;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.sparql.vocabulary.FOAF;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.VCARD4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.time.LocalDate;
+
+import static it.teamdigitale.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.apache.jena.rdf.model.ResourceFactory.createLangLiteral;
-import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-import org.apache.jena.sparql.vocabulary.FOAF;
 import static org.apache.jena.vocabulary.DCAT.contactPoint;
 import static org.apache.jena.vocabulary.DCAT.keyword;
 import static org.apache.jena.vocabulary.DCAT.theme;
@@ -29,12 +34,8 @@ import static org.apache.jena.vocabulary.DCTerms.subject;
 import static org.apache.jena.vocabulary.DCTerms.temporal;
 import static org.apache.jena.vocabulary.DCTerms.title;
 import static org.apache.jena.vocabulary.OWL.versionInfo;
-import org.apache.jena.vocabulary.RDF;
-import org.apache.jena.vocabulary.VCARD4;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 class BaseSemanticAssetModelTest {
 
@@ -52,7 +53,7 @@ class BaseSemanticAssetModelTest {
             .createResource(CV_IRI)
             .addProperty(RDF.type,
                 createResource(CONTROLLED_VOCABULARY.getTypeIri()))
-            .addProperty(createProperty(KEY_CONCEPT_IRI), "test-concept")
+            .addProperty(NDC.keyConcept, "test-concept")
             .addProperty(rightsHolder, jenaModel.createResource(RIGHTS_HOLDER_IRI)
                 .addProperty(identifier, "agid")
                 .addProperty(FOAF.name, "AgID"))
