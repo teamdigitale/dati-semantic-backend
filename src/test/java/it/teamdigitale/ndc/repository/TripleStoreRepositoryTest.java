@@ -4,23 +4,27 @@ import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import org.apache.http.client.HttpClient;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.atlas.web.HttpException;
 import org.apache.jena.query.Query;
-import org.apache.jena.query.QueryExecution;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdfconnection.RDFConnection;
-import org.apache.jena.rdfconnection.RDFConnectionFactory;
+import org.apache.jena.update.Update;
+import org.apache.jena.update.UpdateExecutionFactory;
+import org.apache.jena.update.UpdateProcessor;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -29,132 +33,112 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class TripleStoreRepositoryTest {
     private static final String REPO_URL = "http://www.repos.org/reponame";
-    public static final TripleStoreRepositoryProperties REPO_PROPERTIES =
-        TripleStoreRepositoryProperties.forAnonymousBaseUrl("http://localhost/");
-
-    private final TripleStoreRepository repository = new TripleStoreRepository(REPO_PROPERTIES);
 
     @Mock
     RDFConnection connection;
+    @Mock
+    UpdateProcessor updateProcessor;
+    @Mock
+    HttpClient httpClient;
+    @Mock
+    VirtuosoClient virtuosoClient;
+
+    @InjectMocks
+    TripleStoreRepository tripleStoreRepository;
 
     @Test
     void shouldConnectAndLoadModelWhenSaving() {
         Model model = createSimpleModel();
+        when(virtuosoClient.getConnection()).thenReturn(connection);
 
-        try (
-            MockedStatic<RDFConnectionFactory> connectionFactoryMockedStatic = mockConnectionFactory()) {
+        tripleStoreRepository.save(REPO_URL, model);
 
-            repository.save(REPO_URL, model);
-
-            connectionFactoryMockedStatic.verify(
-                () -> RDFConnectionFactory.connect(anyString(), anyString(), anyString()));
-        }
-
+        verify(virtuosoClient).getConnection();
         verify(connection).load(REPO_URL, model);
     }
 
     @Test
-    void shouldThrowWhenLoadingFailsWithHttpException() {
+    void shouldThrowWhenLoadingFails() {
         Model model = createSimpleModel();
         doThrow(new HttpException("Something bad happened")).when(connection).load(REPO_URL, model);
+        when(virtuosoClient.getConnection()).thenReturn(connection);
 
-        try (
-            MockedStatic<RDFConnectionFactory> connectionFactoryMockedStatic = mockConnectionFactory()) {
-            assertThatThrownBy(() -> repository.save(REPO_URL, model))
-                .isInstanceOf(TripleStoreRepositoryException.class);
-        }
+        assertThatThrownBy(() -> tripleStoreRepository.save(REPO_URL, model))
+            .isInstanceOf(TripleStoreRepositoryException.class)
+            .hasMessage(String.format("Could not save model to '%s'", REPO_URL));
+
+        verify(virtuosoClient).getConnection();
+        verify(connection).load(REPO_URL, model);
     }
 
     @Test
-    void shouldThrowWhenLoadingFailsWithGenericException() {
-        Model model = createSimpleModel();
-        doThrow(new RuntimeException("Something bad happened")).when(connection)
-            .load(REPO_URL, model);
+    void shouldDeleteGraphSilently() {
+        when(virtuosoClient.getSparqlEndpoint()).thenReturn("http://www.sparql.org");
+        when(virtuosoClient.getHttpClient()).thenReturn(httpClient);
 
-        try (
-            MockedStatic<RDFConnectionFactory> connectionFactoryMockedStatic = mockConnectionFactory()) {
-            assertThatThrownBy(() -> repository.save(REPO_URL, model))
-                .isInstanceOf(TripleStoreRepositoryException.class);
-        }
-    }
-
-    @Test
-    void shouldDeleteGraphWhenExists() {
-        when(connection.queryAsk(anyString())).thenReturn(true);
-        try (
-            MockedStatic<RDFConnectionFactory> connectionFactoryMockedStatic = mockConnectionFactory()) {
-
-            repository.clearExistingNamedGraph(REPO_URL);
-
-            connectionFactoryMockedStatic.verify(
-                () -> RDFConnectionFactory.connect(anyString(), anyString(), anyString()));
+        try (MockedStatic<UpdateExecutionFactory> mock = mockUpdateFactory()) {
+            tripleStoreRepository.clearExistingNamedGraph(REPO_URL);
+            mock.verify(() -> UpdateExecutionFactory.createRemote(any(Update.class),
+                eq("http://www.sparql.org"),
+                eq(httpClient)));
         }
 
-        verify(connection).delete(REPO_URL);
-    }
-
-    @Test
-    void shouldNotDeleteGraphWhenNotExists() {
-        when(connection.queryAsk(anyString())).thenReturn(false);
-        try (
-            MockedStatic<RDFConnectionFactory> connectionFactoryMockedStatic = mockConnectionFactory()) {
-
-            repository.clearExistingNamedGraph(REPO_URL);
-
-            connectionFactoryMockedStatic.verify(
-                () -> RDFConnectionFactory.connect(anyString(), anyString(), anyString()));
-        }
-
-        verify(connection, times(0)).delete(REPO_URL);
+        verify(virtuosoClient, times(0)).getConnection();
+        verifyNoInteractions(connection);
     }
 
     @Test
     void shouldThrowWhenDeletionFails() {
-        when(connection.queryAsk(anyString())).thenReturn(true);
+        when(virtuosoClient.getSparqlEndpoint()).thenReturn("http://www.sparql.org");
+        when(virtuosoClient.getHttpClient()).thenReturn(httpClient);
 
-        doThrow(new RuntimeException("Something bad happened")).when(connection).delete(REPO_URL);
+        try (MockedStatic<UpdateExecutionFactory> mock = mockUpdateFactory()) {
+            mock.when(() -> UpdateExecutionFactory.createRemote(any(Update.class), anyString(),
+                any(HttpClient.class))).thenThrow(new HttpException("Something bad happened"));
 
-        try (
-            MockedStatic<RDFConnectionFactory> connectionFactoryMockedStatic = mockConnectionFactory()) {
-            assertThatThrownBy(() -> repository.clearExistingNamedGraph(REPO_URL))
+            assertThatThrownBy(() -> tripleStoreRepository.clearExistingNamedGraph(REPO_URL))
                 .isInstanceOf(TripleStoreRepositoryException.class);
+
+            mock.verify(() -> UpdateExecutionFactory.createRemote(any(Update.class),
+                eq("http://www.sparql.org"),
+                eq(httpClient)));
         }
+
+        verify(virtuosoClient, times(0)).getConnection();
+        verifyNoInteractions(connection);
     }
 
     @Test
     void shouldExecuteSelect() {
-        QueryExecution queryExecution = mock(QueryExecution.class);
-        SelectBuilder selectBuilder = new SelectBuilder();
-        when(connection.query(selectBuilder.build())).thenReturn(queryExecution);
-        try (
-            MockedStatic<RDFConnectionFactory> connectionFactoryMockedStatic = mockConnectionFactory()) {
+        when(virtuosoClient.getConnection()).thenReturn(connection);
 
-            repository.select(selectBuilder);
+        tripleStoreRepository.select(new SelectBuilder());
 
-            connectionFactoryMockedStatic.verify(
-                () -> RDFConnectionFactory.connect(anyString(), anyString(), anyString()));
-        }
-
-        verify(connection).query(selectBuilder.build());
+        verify(virtuosoClient).getConnection();
+        verify(connection).query(new SelectBuilder().build());
     }
 
     @Test
     void shouldThrowWhenExecuteSelectFails() {
-        doThrow(new RuntimeException("Something bad happened")).when(connection)
-            .query(any(Query.class));
+        when(virtuosoClient.getConnection()).thenReturn(connection);
+        when(connection.query(any(Query.class))).thenThrow(
+            new HttpException("Something bad happened"));
+        SelectBuilder selectBuilder = new SelectBuilder();
 
-        try (
-            MockedStatic<RDFConnectionFactory> connectionFactoryMockedStatic = mockConnectionFactory()) {
-            assertThatThrownBy(() -> repository.select(new SelectBuilder()))
-                .isInstanceOf(TripleStoreRepositoryException.class);
-        }
+        assertThatThrownBy(() -> tripleStoreRepository.select(selectBuilder))
+            .isInstanceOf(TripleStoreRepositoryException.class);
+
+        verify(virtuosoClient).getConnection();
+        verify(connection).query(selectBuilder.build());
     }
 
-    private MockedStatic<RDFConnectionFactory> mockConnectionFactory() {
-        MockedStatic<RDFConnectionFactory> mockedStatic =
-            Mockito.mockStatic(RDFConnectionFactory.class);
-        mockedStatic.when(() -> RDFConnectionFactory.connect(anyString(), anyString(), anyString()))
-            .thenReturn(connection);
+    private MockedStatic<UpdateExecutionFactory> mockUpdateFactory() {
+        MockedStatic<UpdateExecutionFactory> mockedStatic =
+            Mockito.mockStatic(UpdateExecutionFactory.class);
+        mockedStatic.when(
+                () -> UpdateExecutionFactory.createRemote(any(Update.class), anyString(),
+                    any(HttpClient.class)))
+            .thenReturn(updateProcessor);
         return mockedStatic;
     }
 
@@ -167,5 +151,4 @@ class TripleStoreRepositoryTest {
         );
         return model;
     }
-
 }

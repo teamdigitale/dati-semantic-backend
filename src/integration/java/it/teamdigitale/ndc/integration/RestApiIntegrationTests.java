@@ -302,8 +302,8 @@ public class RestApiIntegrationTests extends BaseIntegrationTest {
     }
 
     private RDFConnection getVirtuosoConnection() {
-        String sparql = virtuosoProps.getSparql().getUrl();
-        String graphProtocolUrl = virtuosoProps.getSparqlGraphStore().getUrl();
+        String sparql = virtuosoProps.getSparql();
+        String graphProtocolUrl = virtuosoProps.getSparqlGraphStore();
         RDFConnection connection = RDFConnectionFactory.connect(sparql, sparql, graphProtocolUrl);
         if (connection == null) {
             throw new AssertionFailedError("Could not connect to Virtuoso");

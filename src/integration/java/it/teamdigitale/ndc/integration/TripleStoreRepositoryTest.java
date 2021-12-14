@@ -2,8 +2,9 @@ package it.teamdigitale.ndc.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import it.teamdigitale.ndc.repository.TripleStoreProperties;
 import it.teamdigitale.ndc.repository.TripleStoreRepository;
-import it.teamdigitale.ndc.repository.TripleStoreRepositoryProperties;
+import it.teamdigitale.ndc.repository.VirtuosoClient;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.query.Query;
@@ -40,9 +41,16 @@ public class TripleStoreRepositoryTest {
         virtuoso.start();
         String baseUrl = "http://localhost:" + virtuoso.getMappedPort(Containers.VIRTUOSO_PORT);
         sparqlUrl = baseUrl + "/sparql";
-        sparqlGraphUrl = baseUrl + "/sparql-graph-crud/";
-        repository = new TripleStoreRepository(TripleStoreRepositoryProperties.forAnonymousBaseUrl(
-            baseUrl));
+        sparqlGraphUrl = baseUrl + "/sparql-graph-crud";
+        TripleStoreProperties properties =
+            TripleStoreProperties.builder()
+                .sparql(sparqlUrl)
+                .sparqlGraphStore(sparqlGraphUrl)
+                .username("")
+                .password("")
+                .build();
+
+        repository = new TripleStoreRepository(new VirtuosoClient(properties));
     }
 
     @BeforeEach

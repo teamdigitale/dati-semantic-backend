@@ -3,9 +3,7 @@ package it.teamdigitale.ndc.integration;
 import it.teamdigitale.ndc.harvester.AgencyRepositoryService;
 import it.teamdigitale.ndc.harvester.HarvesterService;
 import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
-import it.teamdigitale.ndc.repository.TripleStoreRepositoryProperties;
-import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.query.Query;
+import it.teamdigitale.ndc.repository.TripleStoreProperties;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,7 +47,7 @@ public class BaseIntegrationTest {
     AgencyRepositoryService agencyRepositoryService;
 
     @Autowired
-    TripleStoreRepositoryProperties virtuosoProps;
+    TripleStoreProperties virtuosoProps;
 
     @BeforeAll
     public static void beforeAll() {
@@ -74,8 +72,8 @@ public class BaseIntegrationTest {
     @DynamicPropertySource
     static void updateTestcontainersProperties(DynamicPropertyRegistry registry) {
         String url = "http://localhost:" + virtuoso.getMappedPort(Containers.VIRTUOSO_PORT);
-        registry.add("virtuoso.sparql.url", () -> url + "/sparql");
-        registry.add("virtuoso.sparql-graph-store.url", () -> url + "/sparql-graph-crud/");
+        registry.add("virtuoso.sparql", () -> url + "/sparql");
+        registry.add("virtuoso.sparql-graph-store", () -> url + "/sparql-graph-crud/");
         registry.add("spring.elasticsearch.rest.uris", elasticsearchContainer::getHttpHostAddress);
     }
 
