@@ -49,7 +49,7 @@ OR Run tests locally using `docker-compose -f docker-compose-test.yaml up`
 
 ### Segnalazione bug e richieste di aiuto
 
-# Manutenzione 
+# Maintenance 
 
 # License
 
