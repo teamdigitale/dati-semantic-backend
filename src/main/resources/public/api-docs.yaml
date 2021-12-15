@@ -25,6 +25,7 @@ paths:
       tags:
         - vocabulary-data-controller
       operationId: fetchVocabularyData
+      description: Retrieves the (paginated) items of a Controlled Vocabulary.
       parameters:
         - name: agency_id
           in: path
@@ -67,6 +68,7 @@ paths:
       tags:
         - vocabulary-data-controller
       operationId: fetchVocabularyItem
+      description: Retrieves one item from a Controlled Vocabulary, based on its id.
       parameters:
         - name: agency_id
           in: path
@@ -98,6 +100,7 @@ paths:
       tags:
         - application-status-controller
       operationId: getStatus
+      description: Service status
       responses:
         '200':
           description: OK
@@ -111,6 +114,7 @@ paths:
       tags:
         - semantic-assets-controller
       operationId: search
+      description: Search across the catalog for semantic assets, based on the provided criteria.
       parameters:
         - name: q
           in: query
@@ -167,6 +171,7 @@ paths:
       tags:
         - semantic-assets-controller
       operationId: getDetails
+      description: Retrieves the details of a semantic asset.
       parameters:
         - name: iri
           in: query
