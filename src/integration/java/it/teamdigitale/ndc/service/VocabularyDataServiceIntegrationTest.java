@@ -55,10 +55,10 @@ public class VocabularyDataServiceIntegrationTest {
         assertThatThrownBy(() -> vocabularyDataService.getData(VOCABULARY_IDENTIFIER, Pageable.ofSize(20)))
                 .isInstanceOf(VocabularyDataNotFoundException.class);
 
-        CsvParser.CsvData data = new CsvParser.CsvData(List.of(
-                Map.of("id", "kent", "name", "Kent Beck"),
-                Map.of("id", "martin", "name", "Martin Fowler")
-        ), "id");
+        Map<String, String> martinRecord = Map.of("id", "martin", "name", "Martin Fowler");
+        Map<String, String> kentRecord = Map.of("id", "kent", "name", "Kent Beck");
+        CsvParser.CsvData data = new CsvParser.CsvData(List.of(kentRecord, martinRecord), "id");
+
         vocabularyDataService.indexData(VOCABULARY_IDENTIFIER, data);
 
         forceIndexFlush();
@@ -67,6 +67,9 @@ public class VocabularyDataServiceIntegrationTest {
         assertThat(searchResultAfterIndexing.getTotalResults()).isEqualTo(2);
         List<Map<String, String>> dataAfterIndexing = searchResultAfterIndexing.getData();
         assertThat(dataAfterIndexing).isEqualTo(data.getRecords());
+
+        Map<String, String> item = vocabularyDataService.getItem(VOCABULARY_IDENTIFIER, "martin");
+        assertThat(item).isEqualTo(martinRecord);
 
         vocabularyDataService.dropIndex(VOCABULARY_IDENTIFIER);
 

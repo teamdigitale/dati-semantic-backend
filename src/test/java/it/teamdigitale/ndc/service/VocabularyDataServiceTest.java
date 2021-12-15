@@ -3,7 +3,10 @@ package it.teamdigitale.ndc.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -99,8 +102,7 @@ public class VocabularyDataServiceTest {
         verify(indexOperations).exists();
         verify(indexOperations).delete();
         verify(indexOperations).create();
-        verify(elasticsearchOperations).save(List.of(Map.of("key", "value")),
-                IndexCoordinates.of("agid.testkeyconcept"));
+        verify(elasticsearchOperations).bulkIndex(anyList(), eq(IndexCoordinates.of("agid.testkeyconcept")));
     }
 
     @Test
@@ -114,9 +116,8 @@ public class VocabularyDataServiceTest {
         verify(elasticsearchOperations, times(2)).indexOps(
                 IndexCoordinates.of("agid.testkeyconcept"));
         verify(indexOperations).exists();
-        verify(indexOperations, times(0)).delete();
+        verify(indexOperations, never()).delete();
         verify(indexOperations).create();
-        verify(elasticsearchOperations).save(List.of(Map.of("key", "value")),
-                IndexCoordinates.of("agid.testkeyconcept"));
+        verify(elasticsearchOperations).bulkIndex(anyList(), eq(IndexCoordinates.of("agid.testkeyconcept")));
     }
 }

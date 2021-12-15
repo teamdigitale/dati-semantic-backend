@@ -18,6 +18,8 @@ import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
+import org.springframework.data.elasticsearch.core.query.IndexQuery;
+import org.springframework.data.elasticsearch.core.query.IndexQueryBuilder;
 import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.stereotype.Service;
 
@@ -60,7 +62,21 @@ public class VocabularyDataService {
                           CsvParser.CsvData data) {
         String indexName = vocabularyIdentifier.getIndexName();
         ensureCleanIndex(indexName);
-        elasticsearchOperations.save(data.getRecords(), IndexCoordinates.of(indexName));
+        String idName = data.getIdName();
+
+        List<IndexQuery> indexQueries = data.getRecords().stream()
+                .map(r -> buildIndexQuery(idName, r))
+                .collect(Collectors.toList());
+
+        elasticsearchOperations.bulkIndex(indexQueries, IndexCoordinates.of(indexName));
+    }
+
+    private IndexQuery buildIndexQuery(String idName, Map<String, String> record) {
+        String id = record.get(idName);
+        return new IndexQueryBuilder()
+                .withId(id)
+                .withObject(record)
+                .build();
     }
 
     public void dropIndex(VocabularyIdentifier vocabularyIdentifier) {
@@ -78,5 +94,9 @@ public class VocabularyDataService {
     @SneakyThrows
     private boolean exists(String indexName) {
         return elasticsearchOperations.indexOps(IndexCoordinates.of(indexName)).exists();
+    }
+
+    public Map<String, String> getItem(VocabularyIdentifier vocabularyIdentifier, String id) {
+        return elasticsearchOperations.get(id, Map.class, IndexCoordinates.of(vocabularyIdentifier.getIndexName()));
     }
 }
