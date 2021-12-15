@@ -1,5 +1,6 @@
 package it.teamdigitale.ndc.model;
 
+import it.teamdigitale.ndc.gen.model.AssetType;
 import it.teamdigitale.ndc.gen.model.SemanticAssetDetailsDto;
 import it.teamdigitale.ndc.gen.model.SemanticAssetsSearchDto;
 import it.teamdigitale.ndc.harvester.SemanticAssetType;
@@ -55,7 +56,7 @@ class SemanticAssetsMetadataMapperTest {
         assertThat(dto.getAssetIri()).isEqualTo("https://example.com/asset");
         assertThat(dto.getTitle()).isEqualTo("Asset");
         assertThat(dto.getDescription()).isEqualTo("Asset description");
-        assertThat(dto.getType()).isEqualTo(SemanticAssetDetailsDto.TypeEnum.CONTROLLED_VOCABULARY);
+        assertThat(dto.getType()).isEqualTo(AssetType.CONTROLLED_VOCABULARY);
         assertThat(dto.getModifiedOn()).isEqualTo("2020-01-01");
         assertThat(dto.getThemes()).containsExactlyInAnyOrder("study", "science");
         assertThat(dto.getRightsHolder().getIri()).isEqualTo("https://example.com/rightsHolder");
@@ -134,7 +135,7 @@ class SemanticAssetsMetadataMapperTest {
         SemanticAssetsSearchDto dto = mapper.searchToDto(model);
 
         assertThat(dto.getAssetIri()).isEqualTo("iri");
-        assertThat(dto.getType()).isEqualTo(SemanticAssetsSearchDto.TypeEnum.ONTOLOGY);
+        assertThat(dto.getType()).isEqualTo(AssetType.ONTOLOGY);
         assertThat(dto.getRightsHolder().getIri()).isEqualTo("http://rightsHolder");
         assertThat(dto.getRightsHolder().getSummary()).isEqualTo("rights holder name");
         assertThat(dto.getModifiedOn()).isEqualTo(LocalDate.parse("2020-01-01"));

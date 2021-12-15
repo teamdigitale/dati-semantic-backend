@@ -1,6 +1,7 @@
 package it.teamdigitale.ndc.integration;
 
 import io.restassured.response.Response;
+import it.teamdigitale.ndc.gen.model.AssetType;
 import it.teamdigitale.ndc.gen.model.SemanticAssetSearchResult;
 import it.teamdigitale.ndc.gen.model.SemanticAssetsSearchDto;
 import it.teamdigitale.ndc.harvester.SemanticAssetType;
@@ -184,7 +185,7 @@ public class RestApiIntegrationTests extends BaseIntegrationTest {
                 .getData();
 
         assertTrue(semanticAssets.stream().allMatch(semanticAssetsSearchDto ->
-                semanticAssetsSearchDto.getType().equals(SemanticAssetsSearchDto.TypeEnum.ONTOLOGY)));
+                semanticAssetsSearchDto.getType().equals(AssetType.ONTOLOGY)));
     }
 
     @Test

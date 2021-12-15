@@ -193,11 +193,7 @@ components:
         description:
           type: string
         type:
-          type: string
-          enum:
-            - ONTOLOGY
-            - CONTROLLED_VOCABULARY
-            - SCHEMA
+          $ref: "#/components/schemas/AssetType"
         modifiedOn:
           type: string
           format: date
@@ -219,11 +215,7 @@ components:
         description:
           type: string
         type:
-          type: string
-          enum:
-            - ONTOLOGY
-            - CONTROLLED_VOCABULARY
-            - SCHEMA
+          $ref: "#/components/schemas/AssetType"
         modifiedOn:
           type: string
           format: date
@@ -282,3 +274,9 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/NodeSummary"
+    AssetType:
+      type: string
+      enum:
+        - ONTOLOGY
+        - CONTROLLED_VOCABULARY
+        - SCHEMA
