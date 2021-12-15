@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.net.URI;
 import java.util.Objects;
 import java.util.Set;
 
@@ -25,8 +26,8 @@ public class SemanticAssetsController implements SemanticAssetsApi {
     }
 
     @Override
-    public ResponseEntity<SemanticAssetDetailsDto> getDetails(String iri) {
-        return ResponseEntity.ok(searchService.findByIri(iri));
+    public ResponseEntity<SemanticAssetDetailsDto> getDetails(URI iri) {
+        return ResponseEntity.ok(searchService.findByIri(iri.toString()));
     }
 
     private Set<String> nullToEmpty(Set<String> s) {

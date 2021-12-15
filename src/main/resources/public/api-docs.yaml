@@ -31,12 +31,12 @@ paths:
           in: path
           required: true
           schema:
-            type: string
+            $ref: "#/components/schemas/UrlToken"
         - name: key_concept
           in: path
           required: true
           schema:
-            type: string
+            $ref: "#/components/schemas/UrlToken"
         - name: offset
           in: query
           required: false
@@ -50,9 +50,9 @@ paths:
           in: query
           required: false
           schema:
+            type: integer
             maximum: 200
             minimum: 1
-            type: integer
             format: int32
             default: 10
       responses:
@@ -74,12 +74,12 @@ paths:
           in: path
           required: true
           schema:
-            type: string
+            $ref: "#/components/schemas/UrlToken"
         - name: key_concept
           in: path
           required: true
           schema:
-            type: string
+            $ref: "#/components/schemas/UrlToken"
         - name: id
           in: path
           required: true
@@ -178,6 +178,7 @@ paths:
           required: true
           schema:
             type: string
+            format: uri
       responses:
         "200":
           description: OK
@@ -333,3 +334,7 @@ components:
         - ONTOLOGY
         - CONTROLLED_VOCABULARY
         - SCHEMA
+    UrlToken:
+      type: string
+      pattern: ^\w[^\s]{0,64}$
+
