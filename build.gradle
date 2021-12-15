@@ -60,7 +60,7 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 }
 
-ext['log4j2.version'] = '2.15.0'
+ext['log4j2.version'] = '2.16.0'
 
 test {
     useJUnitPlatform()
