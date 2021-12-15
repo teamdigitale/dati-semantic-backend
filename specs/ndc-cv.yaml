@@ -12,12 +12,16 @@ info:
     name: BSD-3-Clause
     url: https://opensource.org/licenses/BSD-3-Clause
   x-summary: NDC Semantic Backend
+tags:
+  - name: vocabulary-data-controller
+    description: Entry point for Vocabulary related data
 servers:
   - url: https://schema.gov.it/
     description: Public server
 paths:
   "/vocabularies/{agency_id}/{key_concept}":
     get:
+      security: []
       tags:
         - vocabulary-data-controller
       operationId: fetchVocabularyData
@@ -59,6 +63,7 @@ paths:
                 $ref: "#/components/schemas/VocabularyData"
   /status:
     get:
+      security: []
       tags:
         - application-status-controller
       operationId: getStatus
@@ -71,6 +76,7 @@ paths:
                 "$ref": "#/components/schemas/Health"
   /semantic-assets:
     get:
+      security: []
       tags:
         - semantic-assets-controller
       operationId: search
@@ -126,6 +132,7 @@ paths:
                 $ref: "#/components/schemas/SearchResult"
   /semantic-assets/byIri:
     get:
+      security: []
       tags:
         - semantic-assets-controller
       operationId: getDetails
