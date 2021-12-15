@@ -1,7 +1,7 @@
 package it.teamdigitale.ndc.service;
 
 import it.teamdigitale.ndc.controller.exception.VocabularyDataNotFoundException;
-import it.teamdigitale.ndc.gen.model.VocabularyDataDto;
+import it.teamdigitale.ndc.gen.dto.VocabularyData;
 import it.teamdigitale.ndc.integration.Containers;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -16,7 +16,6 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
 
@@ -63,7 +62,7 @@ public class VocabularyDataServiceIntegrationTest {
 
         forceIndexFlush();
 
-        VocabularyDataDto searchResultAfterIndexing = vocabularyDataService.getData(VOCABULARY_IDENTIFIER, Pageable.ofSize(20));
+        VocabularyData searchResultAfterIndexing = vocabularyDataService.getData(VOCABULARY_IDENTIFIER, Pageable.ofSize(20));
         assertThat(searchResultAfterIndexing.getTotalResults()).isEqualTo(2);
         List<Map<String, String>> dataAfterIndexing = searchResultAfterIndexing.getData();
         assertThat(dataAfterIndexing).isEqualTo(data);

@@ -1,6 +1,6 @@
 package it.teamdigitale.ndc.controller;
 
-import it.teamdigitale.ndc.gen.model.VocabularyDataDto;
+import it.teamdigitale.ndc.gen.dto.VocabularyData;
 import it.teamdigitale.ndc.service.VocabularyDataService;
 import it.teamdigitale.ndc.service.VocabularyIdentifier;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ public class VocabularyDataController {
     final VocabularyDataService vocabularyDataService;
 
     @GetMapping("vocabularies/{agency_id}/{key_concept}")
-    public VocabularyDataDto fetchVocabularyData(
+    public VocabularyData fetchVocabularyData(
         @PathVariable("agency_id") String agencyId,
         @PathVariable("key_concept") String keyConcept,
         @RequestParam(value = "offset", defaultValue = "0")

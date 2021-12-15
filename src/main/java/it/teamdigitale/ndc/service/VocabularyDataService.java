@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import it.teamdigitale.ndc.gen.model.VocabularyDataDto;
+import it.teamdigitale.ndc.gen.dto.VocabularyData;
 import it.teamdigitale.ndc.model.ModelBuilder;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +32,7 @@ public class VocabularyDataService {
         this.elasticsearchOperations = elasticsearchOperations;
     }
 
-    public VocabularyDataDto getData(VocabularyIdentifier vocabularyIdentifier, Pageable pageable) {
+    public VocabularyData getData(VocabularyIdentifier vocabularyIdentifier, Pageable pageable) {
         String indexName = vocabularyIdentifier.getIndexName();
         if (exists(indexName)) {
             Query findAll = Query.findAll().setPageable(pageable);

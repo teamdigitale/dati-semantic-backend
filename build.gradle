@@ -86,7 +86,7 @@ openApiGenerate {
     outputDir = "$buildDir/generated".toString()
     apiPackage = 'it.teamdigitale.ndc.gen.api'
     invokerPackage = 'it.teamdigitale.ndc.gen.invoker'
-    modelPackage = 'it.teamdigitale.ndc.gen.model'
+    modelPackage = 'it.teamdigitale.ndc.gen.dto'
     configOptions = [
             library              : 'spring-boot',
             performBeanValidation: 'true',

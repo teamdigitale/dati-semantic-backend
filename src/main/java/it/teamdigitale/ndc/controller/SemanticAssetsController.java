@@ -1,8 +1,8 @@
 package it.teamdigitale.ndc.controller;
 
 import it.teamdigitale.ndc.gen.api.SemanticAssetsApi;
-import it.teamdigitale.ndc.gen.model.SemanticAssetDetailsDto;
-import it.teamdigitale.ndc.gen.model.SemanticAssetSearchResult;
+import it.teamdigitale.ndc.gen.dto.SearchResult;
+import it.teamdigitale.ndc.gen.dto.SemanticAssetDetailsDto;
 import it.teamdigitale.ndc.service.SemanticAssetSearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -18,7 +18,7 @@ public class SemanticAssetsController implements SemanticAssetsApi {
     private final SemanticAssetSearchService searchService;
 
     @Override
-    public ResponseEntity<SemanticAssetSearchResult> search(String q, Integer offset, Integer limit, Set<String> type, Set<String> theme) {
+    public ResponseEntity<SearchResult> search(String q, Integer offset, Integer limit, Set<String> type, Set<String> theme) {
         Pageable pageable = OffsetBasedPageRequest.of(offset, limit);
 
         return ResponseEntity.ok(searchService.search(q, nullToEmpty(type), nullToEmpty(theme), pageable));

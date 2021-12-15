@@ -1,10 +1,20 @@
 openapi: 3.0.1
 info:
-  title: OpenAPI definition
-  version: v0
+  title: NDC Semantic Backend
+  version: 0.0.1
+  description: |-
+    NDC Semantic Backend
+  termsOfService: /tos
+  contact:
+    name: NDC Semantic Backend
+    email: info@teamdigitale.governo.it
+  license:
+    name: BSD-3-Clause
+    url: https://opensource.org/licenses/BSD-3-Clause
+  x-summary: NDC Semantic Backend
 servers:
-  - url: https://ndc-dev.apps.cloudpub.testedev.istat.it/
-    description: Generated server url
+  - url: https://schema.gov.it/
+    description: Public server
 paths:
   "/vocabularies/{agency_id}/{key_concept}":
     get:
@@ -46,7 +56,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/VocabularyDataDto"
+                $ref: "#/components/schemas/VocabularyData"
   /status:
     get:
       tags:
@@ -113,7 +123,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SemanticAssetSearchResult"
+                $ref: "#/components/schemas/SearchResult"
   /semantic-assets/byIri:
     get:
       tags:
@@ -134,7 +144,7 @@ paths:
                 $ref: "#/components/schemas/SemanticAssetDetailsDto"
 components:
   schemas:
-    VocabularyDataDto:
+    VocabularyData:
       type: object
       properties:
         totalResults:
@@ -167,7 +177,7 @@ components:
           type: string
         summary:
           type: string
-    SemanticAssetSearchResult:
+    SearchResult:
       type: object
       properties:
         totalCount:
@@ -182,8 +192,8 @@ components:
         data:
           type: array
           items:
-            $ref: "#/components/schemas/SemanticAssetsSearchDto"
-    SemanticAssetsSearchDto:
+            $ref: "#/components/schemas/SearchResultItem"
+    SearchResultItem:
       type: object
       properties:
         assetIri:

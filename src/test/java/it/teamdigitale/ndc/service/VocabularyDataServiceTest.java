@@ -14,7 +14,7 @@ import it.teamdigitale.ndc.controller.exception.VocabularyDataNotFoundException;
 import java.util.List;
 import java.util.Map;
 
-import it.teamdigitale.ndc.gen.model.VocabularyDataDto;
+import it.teamdigitale.ndc.gen.dto.VocabularyData;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -54,7 +54,7 @@ public class VocabularyDataServiceTest {
         when(elasticsearchOperations.search(captor.capture(), any(Class.class),
                 any(IndexCoordinates.class))).thenReturn(hits);
 
-        VocabularyDataDto data = vocabularyDataService.getData(new VocabularyIdentifier("agid", "testKeyConcept"), OffsetBasedPageRequest.of(2, 10));
+        VocabularyData data = vocabularyDataService.getData(new VocabularyIdentifier("agid", "testKeyConcept"), OffsetBasedPageRequest.of(2, 10));
 
         assertThat(data.getData()).containsExactlyInAnyOrder(Map.of("key", "value"));
         assertThat(data.getTotalResults()).isEqualTo(1L);

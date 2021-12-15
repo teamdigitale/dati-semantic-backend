@@ -1,9 +1,9 @@
 package it.teamdigitale.ndc.integration;
 
 import io.restassured.response.Response;
-import it.teamdigitale.ndc.gen.model.AssetType;
-import it.teamdigitale.ndc.gen.model.SemanticAssetSearchResult;
-import it.teamdigitale.ndc.gen.model.SemanticAssetsSearchDto;
+import it.teamdigitale.ndc.gen.dto.AssetType;
+import it.teamdigitale.ndc.gen.dto.SearchResult;
+import it.teamdigitale.ndc.gen.dto.SearchResultItem;
 import it.teamdigitale.ndc.harvester.SemanticAssetType;
 import it.teamdigitale.ndc.model.profiles.NDC;
 import junit.framework.AssertionFailedError;
@@ -177,36 +177,35 @@ public class RestApiIntegrationTests extends BaseIntegrationTest {
 
     @Test
     void shouldBeAbleToFilterSemanticAssetByTypeSuccessfully() {
-        List<SemanticAssetsSearchDto> semanticAssets = getSemanticAsset("", ONTOLOGY, 5)
+        List<SearchResultItem> semanticAssets = getSemanticAsset("", ONTOLOGY, 5)
                 .then()
                 .statusCode(200)
                 .extract()
-                .as(SemanticAssetSearchResult.class)
+                .as(SearchResult.class)
                 .getData();
 
-        assertTrue(semanticAssets.stream().allMatch(semanticAssetsSearchDto ->
-                semanticAssetsSearchDto.getType().equals(AssetType.ONTOLOGY)));
+        assertTrue(semanticAssets.stream().allMatch(dto -> dto.getType().equals(AssetType.ONTOLOGY)));
     }
 
     @Test
     void shouldBeAbleToRetrieveSemanticAssetByOffsetSuccessfully() {
-        List<SemanticAssetsSearchDto> semanticAssetsSearch = when()
+        List<SearchResultItem> semanticAssetsSearch = when()
                 .get(format("http://localhost:%d/semantic-assets?q=%s&limit=%s",
                         port, "", 2))
                 .then()
                 .statusCode(200)
                 .extract()
-                .as(SemanticAssetSearchResult.class)
+                .as(SearchResult.class)
                 .getData();
         semanticAssetsSearch.remove(0);
 
-        SemanticAssetSearchResult semanticAssetSearchResult = when()
+        SearchResult semanticAssetSearchResult = when()
                 .get(format("http://localhost:%d/semantic-assets?q=%s&limit=%s&offset=%s",
                         port, "", 1, 1))
                 .then()
                 .statusCode(200)
                 .extract()
-                .as(SemanticAssetSearchResult.class);
+                .as(SearchResult.class);
 
         assertEquals(1, semanticAssetSearchResult.getOffset());
         assertEquals(1, semanticAssetSearchResult.getLimit());
@@ -322,7 +321,7 @@ public class RestApiIntegrationTests extends BaseIntegrationTest {
     }
 
     private String getAssetIri(Response searchResponse) {
-        return searchResponse.getBody().as(SemanticAssetSearchResult.class).getData().get(0)
+        return searchResponse.getBody().as(SearchResult.class).getData().get(0)
                 .getAssetIri();
     }
 }

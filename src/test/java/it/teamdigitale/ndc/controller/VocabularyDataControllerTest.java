@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import it.teamdigitale.ndc.gen.model.VocabularyDataDto;
+import it.teamdigitale.ndc.gen.dto.VocabularyData;
 import it.teamdigitale.ndc.service.VocabularyDataService;
 import it.teamdigitale.ndc.service.VocabularyIdentifier;
 import org.junit.jupiter.api.Test;
@@ -27,12 +27,12 @@ public class VocabularyDataControllerTest {
         final int offset = 1;
         final int limit = 2;
         String agencyId = "agid";
-        VocabularyDataDto expected = mock(VocabularyDataDto.class);
+        VocabularyData expected = mock(VocabularyData.class);
         VocabularyIdentifier vocabId = new VocabularyIdentifier(agencyId, concept);
         Pageable pageable = OffsetBasedPageRequest.of(offset, limit);
         when(vocabularyDataService.getData(vocabId, pageable)).thenReturn(expected);
 
-        VocabularyDataDto actual = vocabularyDataController.fetchVocabularyData(agencyId, concept, offset, limit);
+        VocabularyData actual = vocabularyDataController.fetchVocabularyData(agencyId, concept, offset, limit);
 
         assertEquals(expected, actual);
     }

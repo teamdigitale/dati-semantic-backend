@@ -1,8 +1,8 @@
 package it.teamdigitale.ndc.model;
 
-import it.teamdigitale.ndc.gen.model.AssetType;
-import it.teamdigitale.ndc.gen.model.SemanticAssetDetailsDto;
-import it.teamdigitale.ndc.gen.model.SemanticAssetsSearchDto;
+import it.teamdigitale.ndc.gen.dto.AssetType;
+import it.teamdigitale.ndc.gen.dto.SearchResultItem;
+import it.teamdigitale.ndc.gen.dto.SemanticAssetDetailsDto;
 import it.teamdigitale.ndc.harvester.SemanticAssetType;
 import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
 import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
@@ -132,7 +132,7 @@ class SemanticAssetsMetadataMapperTest {
                 .versionInfo("versionInfo")
                 .build();
 
-        SemanticAssetsSearchDto dto = mapper.searchToDto(model);
+        SearchResultItem dto = mapper.resultItemToDto(model);
 
         assertThat(dto.getAssetIri()).isEqualTo("iri");
         assertThat(dto.getType()).isEqualTo(AssetType.ONTOLOGY);

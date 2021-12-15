@@ -10,7 +10,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import it.teamdigitale.ndc.controller.exception.VocabularyDataNotFoundException;
-import it.teamdigitale.ndc.gen.model.VocabularyDataDto;
 import it.teamdigitale.ndc.model.ModelBuilder;
 import it.teamdigitale.ndc.service.VocabularyDataService;
 import java.util.List;
