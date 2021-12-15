@@ -54,7 +54,7 @@ public class VocabularyDataControllerMvcTest {
     }
 
     @Test
-    public void shouldReturnNotFound() throws Exception {
+    public void shouldReturnNotFoundForWholeVocabulary() throws Exception {
         when(vocabularyDataService.getData(any(), any()))
             .thenThrow(new VocabularyDataNotFoundException("agid.testkeyconcept"));
 

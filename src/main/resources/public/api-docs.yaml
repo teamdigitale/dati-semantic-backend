@@ -61,6 +61,37 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/VocabularyData"
+  "/vocabularies/{agency_id}/{key_concept}/{id}":
+    get:
+      security: []
+      tags:
+        - vocabulary-data-controller
+      operationId: fetchVocabularyItem
+      parameters:
+        - name: agency_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: key_concept
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
   /status:
     get:
       security: []
