@@ -1,5 +1,20 @@
 package it.teamdigitale.ndc.integration;
 
+import io.restassured.response.Response;
+import it.teamdigitale.ndc.gen.model.SemanticAssetSearchResult;
+import it.teamdigitale.ndc.gen.model.SemanticAssetsSearchDto;
+import it.teamdigitale.ndc.harvester.SemanticAssetType;
+import it.teamdigitale.ndc.model.profiles.NDC;
+import junit.framework.AssertionFailedError;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.query.ResultSet;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdfconnection.RDFConnection;
+import org.apache.jena.rdfconnection.RDFConnectionFactory;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
 import static io.restassured.RestAssured.when;
 import static it.teamdigitale.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
 import static it.teamdigitale.ndc.harvester.SemanticAssetType.ONTOLOGY;
@@ -10,22 +25,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import io.restassured.response.Response;
-import it.teamdigitale.ndc.controller.dto.SemanticAssetSearchResult;
-import it.teamdigitale.ndc.controller.dto.SemanticAssetsSearchDto;
-import it.teamdigitale.ndc.harvester.SemanticAssetType;
-
-import java.util.List;
-
-import it.teamdigitale.ndc.model.profiles.NDC;
-import junit.framework.AssertionFailedError;
-import org.apache.jena.query.QuerySolution;
-import org.apache.jena.query.ResultSet;
-import org.apache.jena.rdf.model.RDFNode;
-import org.apache.jena.rdfconnection.RDFConnection;
-import org.apache.jena.rdfconnection.RDFConnectionFactory;
-import org.junit.jupiter.api.Test;
 
 public class RestApiIntegrationTests extends BaseIntegrationTest {
 
@@ -185,7 +184,7 @@ public class RestApiIntegrationTests extends BaseIntegrationTest {
                 .getData();
 
         assertTrue(semanticAssets.stream().allMatch(semanticAssetsSearchDto ->
-                semanticAssetsSearchDto.getType().equals(ONTOLOGY)));
+                semanticAssetsSearchDto.getType().equals(SemanticAssetsSearchDto.TypeEnum.ONTOLOGY)));
     }
 
     @Test

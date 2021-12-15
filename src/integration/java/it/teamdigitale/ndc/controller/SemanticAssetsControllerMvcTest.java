@@ -1,6 +1,23 @@
 package it.teamdigitale.ndc.controller;
 
-import static it.teamdigitale.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
+import it.teamdigitale.ndc.controller.exception.SemanticAssetNotFoundException;
+import it.teamdigitale.ndc.gen.model.SemanticAssetDetailsDto;
+import it.teamdigitale.ndc.gen.model.SemanticAssetsSearchDto;
+import it.teamdigitale.ndc.model.ModelBuilder;
+import it.teamdigitale.ndc.service.SemanticAssetSearchService;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Set;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -11,23 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import it.teamdigitale.ndc.controller.dto.SemanticAssetDetailsDto;
-import it.teamdigitale.ndc.controller.dto.SemanticAssetSearchResult;
-import it.teamdigitale.ndc.controller.dto.SemanticAssetsSearchDto;
-import it.teamdigitale.ndc.controller.exception.SemanticAssetNotFoundException;
-import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
-import it.teamdigitale.ndc.service.SemanticAssetSearchService;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Set;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
-
-@WebMvcTest(value = SemanticAssetsController.class)
+@WebMvcTest(SemanticAssetsController.class)
 public class SemanticAssetsControllerMvcTest {
 
     @Autowired
@@ -38,36 +39,11 @@ public class SemanticAssetsControllerMvcTest {
 
     @Test
     void shouldFindByIri() throws Exception {
-        when(searchService.findByIri("some-iri")).thenReturn(SemanticAssetDetailsDto.builder()
-            .assetIri("some-iri")
-            .title("some-title")
-            .description("some-description")
-            .themes(List.of("some-theme", "some-other-theme"))
-            .modifiedOn(LocalDate.parse("2020-01-01"))
-            .type(CONTROLLED_VOCABULARY)
-            .rightsHolder(
-                buildNodeSummary("https://example.com/rightsHolder", "example rights holder"))
-            .accrualPeriodicity("some-accrual-periodicity")
-            .conformsTo(List.of(buildNodeSummary("http://skos1", "skos1 name"),
-                buildNodeSummary("http://skos2", "skos2 name")))
-            .contactPoint(buildNodeSummary("https://example.com/contact", "mailto:test@test.com"))
-            .creators(List.of(buildNodeSummary("http://creator1", "creator 1 name"),
-                buildNodeSummary("http://creator2", "creator 2 name")))
-            .distributionUrls(List.of("some-distribution", "some-other-distribution"))
-            .issuedOn(LocalDate.parse("2020-01-02"))
-            .endpointUrl("some-endpoint-url")
-            .keyConcept("some-key-concept")
-            .languages(List.of("some-language", "some-other-language"))
-            .publishers(List.of(buildNodeSummary("http://publisher1", "publisher 1 name"),
-                buildNodeSummary("http://publisher2", "publisher 2 name")))
-            .subjects(List.of("some-subject", "some-other-subject"))
-            .versionInfo("some-version-info")
-            .keyClasses(List.of(buildNodeSummary("http://Class1", "Class1"),
-                buildNodeSummary("http://Class2", "Class2")))
-            .prefix("prefix")
-            .projects(List.of(buildNodeSummary("http://project1", "project1"),
-                buildNodeSummary("http://project2", "project2")))
-            .build());
+        SemanticAssetDetailsDto dto = new SemanticAssetDetailsDto();
+        dto.setAssetIri("some-iri");
+        dto.setTitle("some-title");
+        dto.setDescription("some-description");
+        when(searchService.findByIri("some-iri")).thenReturn(dto);
 
         mockMvc.perform(get("/semantic-assets/byIri").param("iri", "some-iri"))
             .andDo(print())
@@ -75,56 +51,7 @@ public class SemanticAssetsControllerMvcTest {
             .andExpect(content().contentType("application/json"))
             .andExpect(jsonPath("$.assetIri").value("some-iri"))
             .andExpect(jsonPath("$.title").value("some-title"))
-            .andExpect(jsonPath("$.description").value("some-description"))
-            .andExpect(jsonPath("$.themes").isArray())
-            .andExpect(jsonPath("$.themes[0]").value("some-theme"))
-            .andExpect(jsonPath("$.themes[1]").value("some-other-theme"))
-            .andExpect(jsonPath("$.modifiedOn").value("2020-01-01"))
-            .andExpect(jsonPath("$.type").value("CONTROLLED_VOCABULARY"))
-            .andExpect(jsonPath("$.accrualPeriodicity").value("some-accrual-periodicity"))
-            .andExpect(jsonPath("$.conformsTo").isArray())
-            .andExpect(jsonPath("$.conformsTo[0].iri").value("http://skos1"))
-            .andExpect(jsonPath("$.conformsTo[0].summary").value("skos1 name"))
-            .andExpect(jsonPath("$.conformsTo[1].iri").value("http://skos2"))
-            .andExpect(jsonPath("$.conformsTo[1].summary").value("skos2 name"))
-            .andExpect(jsonPath("$.contactPoint.iri").value("https://example.com/contact"))
-            .andExpect(jsonPath("$.contactPoint.summary").value("mailto:test@test.com"))
-            .andExpect(jsonPath("$.creators").isArray())
-            .andExpect(jsonPath("$.creators[0].iri").value("http://creator1"))
-            .andExpect(jsonPath("$.creators[0].summary").value("creator 1 name"))
-            .andExpect(jsonPath("$.creators[1].iri").value("http://creator2"))
-            .andExpect(jsonPath("$.creators[1].summary").value("creator 2 name"))
-            .andExpect(jsonPath("$.distributionUrls").isArray())
-            .andExpect(jsonPath("$.distributionUrls[0]").value("some-distribution"))
-            .andExpect(jsonPath("$.distributionUrls[1]").value("some-other-distribution"))
-            .andExpect(jsonPath("$.issuedOn").value("2020-01-02"))
-            .andExpect(jsonPath("$.endpointUrl").value("some-endpoint-url"))
-            .andExpect(jsonPath("$.keyConcept").value("some-key-concept"))
-            .andExpect(jsonPath("$.languages").isArray())
-            .andExpect(jsonPath("$.languages[0]").value("some-language"))
-            .andExpect(jsonPath("$.languages[1]").value("some-other-language"))
-            .andExpect(jsonPath("$.publishers").isArray())
-            .andExpect(jsonPath("$.publishers[0].iri").value("http://publisher1"))
-            .andExpect(jsonPath("$.publishers[0].summary").value("publisher 1 name"))
-            .andExpect(jsonPath("$.publishers[1].iri").value("http://publisher2"))
-            .andExpect(jsonPath("$.publishers[1].summary").value("publisher 2 name"))
-            .andExpect(jsonPath("$.subjects").isArray())
-            .andExpect(jsonPath("$.subjects[0]").value("some-subject"))
-            .andExpect(jsonPath("$.subjects[1]").value("some-other-subject"))
-            .andExpect(jsonPath("$.temporal").doesNotExist())
-            .andExpect(jsonPath("$.versionInfo").value("some-version-info"))
-            .andExpect(jsonPath("$.keyClasses").isArray())
-            .andExpect(jsonPath("$.keyClasses[0].iri").value("http://Class1"))
-            .andExpect(jsonPath("$.keyClasses[0].summary").value("Class1"))
-            .andExpect(jsonPath("$.keyClasses[1].iri").value("http://Class2"))
-            .andExpect(jsonPath("$.keyClasses[1].summary").value("Class2"))
-            .andExpect(jsonPath("$.prefix").value("prefix"))
-            .andExpect(jsonPath("$.projects").isArray())
-            .andExpect(jsonPath("$.projects[0].iri").value("http://project1"))
-            .andExpect(jsonPath("$.projects[0].summary").value("project1"))
-            .andExpect(jsonPath("$.projects[1].iri").value("http://project2"))
-            .andExpect(jsonPath("$.projects[1].summary").value("project2"));
-
+            .andExpect(jsonPath("$.description").value("some-description"));
     }
 
     @Test
@@ -132,7 +59,9 @@ public class SemanticAssetsControllerMvcTest {
         when(searchService.findByIri("some-iri")).thenThrow(
             new SemanticAssetNotFoundException("some-iri"));
 
-        mockMvc.perform(get("/semantic-assets/byIri").param("iri", "some-iri"))
+        mockMvc.perform(get("/semantic-assets/byIri")
+                        .param("iri", "some-iri")
+                        .accept(MediaType.APPLICATION_JSON))
             .andDo(print())
             .andExpect(status().isNotFound())
             .andExpect(content().contentType("application/json"))
@@ -141,22 +70,17 @@ public class SemanticAssetsControllerMvcTest {
 
     @Test
     void shouldReturnMatchingAssetsUsingDefaultPageParams() throws Exception {
+        SemanticAssetsSearchDto dto = new SemanticAssetsSearchDto();
+        dto.setAssetIri("some-iri");
+        dto.setDescription("some-description");
+        dto.setModifiedOn(LocalDate.parse("2020-01-01"));
+
         when(searchService.search(any(), any(), any(), any())
-        ).thenReturn(SemanticAssetSearchResult.builder()
+        ).thenReturn(ModelBuilder.searchResultBuilder()
             .limit(10)
             .offset(0L)
             .totalCount(1L)
-            .data(List.of(SemanticAssetsSearchDto.builder()
-                .assetIri("some-iri")
-                .description("some-description")
-                .modifiedOn(LocalDate.parse("2020-01-01"))
-                .rightsHolder(buildNodeSummary("https://example.com/rightsHolder",
-                    "example rights holder"))
-                .themes(List.of("EDUC", "AGRI"))
-                .title("searchText contains")
-                .type(CONTROLLED_VOCABULARY)
-                .versionInfo("some-version-info")
-                .build()))
+            .data(List.of(dto))
             .build());
 
         ResultActions apiResult = mockMvc.perform(get("/semantic-assets")
@@ -165,6 +89,7 @@ public class SemanticAssetsControllerMvcTest {
             .param("type", "ONTOLOGY")
             .param("theme", "AGRI")
             .param("theme", "EDUC")
+            .accept(MediaType.APPLICATION_JSON)
         );
 
         verify(searchService).search("searchText",
@@ -181,32 +106,24 @@ public class SemanticAssetsControllerMvcTest {
             .andExpect(jsonPath("$.offset").value(0))
             .andExpect(jsonPath("$.data[0].assetIri").value("some-iri"))
             .andExpect(jsonPath("$.data[0].description").value("some-description"))
-            .andExpect(jsonPath("$.data[0].modifiedOn").value("2020-01-01"))
-            .andExpect(
-                jsonPath("$.data[0].rightsHolder.iri").value("https://example.com/rightsHolder"))
-            .andExpect(jsonPath("$.data[0].rightsHolder.summary").value("example rights holder"))
-            .andExpect(jsonPath("$.data[0].themes[0]").value("EDUC"))
-            .andExpect(jsonPath("$.data[0].themes[1]").value("AGRI"))
-            .andExpect(jsonPath("$.data[0].title").value("searchText contains"))
-            .andExpect(jsonPath("$.data[0].type").value("CONTROLLED_VOCABULARY"))
-            .andExpect(jsonPath("$.data[0].versionInfo").value("some-version-info"));
+            .andExpect(jsonPath("$.data[0].modifiedOn").value("2020-01-01"));
     }
 
     @Test
     void shouldReturnMatchingAssetsUsingProvidedPageParams() throws Exception {
+        SemanticAssetsSearchDto dto = new SemanticAssetsSearchDto();
         when(searchService.search(any(), any(), any(), any())
-        ).thenReturn(SemanticAssetSearchResult.builder()
+        ).thenReturn(ModelBuilder.searchResultBuilder()
             .limit(20)
             .offset(100L)
             .totalCount(101L)
-            .data(List.of(SemanticAssetsSearchDto.builder()
-                .assetIri("some-iri")
-                .build()))
+            .data(List.of(dto))
             .build());
 
         ResultActions apiResult = mockMvc.perform(get("/semantic-assets")
             .param("limit", "20")
             .param("offset", "100")
+            .accept(MediaType.APPLICATION_JSON)
         );
 
         verify(searchService).search("", Set.of(), Set.of(), OffsetBasedPageRequest.of(100, 20));
@@ -222,7 +139,7 @@ public class SemanticAssetsControllerMvcTest {
 
     @Test
     void shouldSearchWithDefaultWhenNoParamsProvided() throws Exception {
-        mockMvc.perform(get("/semantic-assets"))
+        mockMvc.perform(get("/semantic-assets").accept(MediaType.APPLICATION_JSON))
             .andDo(print())
             .andExpect(status().isOk());
 
@@ -233,7 +150,8 @@ public class SemanticAssetsControllerMvcTest {
     void shouldReturn400WhenOffsetIsLessThan0() throws Exception {
         mockMvc.perform(get("/semantic-assets")
                 .param("q", "searchText")
-                .param("offset", "-1"))
+                .param("offset", "-1")
+                .accept(MediaType.APPLICATION_JSON))
             .andDo(print())
             .andExpect(status().isBadRequest())
             .andExpect(content().contentType("application/json"));
@@ -245,7 +163,8 @@ public class SemanticAssetsControllerMvcTest {
     void shouldReturn400WhenLimitIsLessThan1() throws Exception {
         mockMvc.perform(get("/semantic-assets")
                 .param("q", "searchText")
-                .param("limit", "0"))
+                .param("limit", "0")
+                .accept(MediaType.APPLICATION_JSON))
             .andDo(print())
             .andExpect(status().isBadRequest())
             .andExpect(content().contentType("application/json"));
@@ -257,19 +176,12 @@ public class SemanticAssetsControllerMvcTest {
     void shouldReturn400WhenLimitIsMoreThan200() throws Exception {
         mockMvc.perform(get("/semantic-assets")
                 .param("q", "searchText")
-                .param("limit", "201"))
+                .param("limit", "201")
+                .accept(MediaType.APPLICATION_JSON))
             .andDo(print())
             .andExpect(status().isBadRequest())
             .andExpect(content().contentType("application/json"));
 
         verifyNoInteractions(searchService);
     }
-
-    private NodeSummary buildNodeSummary(String iri, String summary) {
-        return NodeSummary.builder()
-            .iri(iri)
-            .summary(summary)
-            .build();
-    }
-
 }

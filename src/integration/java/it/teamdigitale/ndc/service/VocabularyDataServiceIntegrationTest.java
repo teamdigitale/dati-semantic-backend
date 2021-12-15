@@ -25,8 +25,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
 public class VocabularyDataServiceIntegrationTest {
-    public static final VocabularyIdentifier VOCABULARY_IDENTIFIER = new VocabularyIdentifier("agid", "testfacts");
-    private static ElasticsearchContainer elasticsearchContainer = Containers.buildElasticsearchContainer();
+    private static final VocabularyIdentifier VOCABULARY_IDENTIFIER = new VocabularyIdentifier("agid", "testfacts");
+    private static final ElasticsearchContainer elasticsearchContainer = Containers.buildElasticsearchContainer();
 
     @Autowired
     private VocabularyDataService vocabularyDataService;

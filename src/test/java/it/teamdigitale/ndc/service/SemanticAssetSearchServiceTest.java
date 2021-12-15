@@ -1,28 +1,30 @@
 package it.teamdigitale.ndc.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import it.teamdigitale.ndc.controller.dto.SemanticAssetDetailsDto;
-import it.teamdigitale.ndc.controller.dto.SemanticAssetSearchResult;
 import it.teamdigitale.ndc.controller.exception.SemanticAssetNotFoundException;
+import it.teamdigitale.ndc.gen.model.SemanticAssetDetailsDto;
+import it.teamdigitale.ndc.gen.model.SemanticAssetSearchResult;
 import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
+import it.teamdigitale.ndc.model.SemanticAssetsMetadataMapperImpl;
 import it.teamdigitale.ndc.repository.SemanticAssetMetadataRepository;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchPage;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -37,8 +39,12 @@ class SemanticAssetSearchServiceTest {
     @Mock
     SearchHit<SemanticAssetMetadata> searchHitMock;
 
-    @InjectMocks
     private SemanticAssetSearchService searchService;
+
+    @BeforeEach
+    void setUp() {
+        searchService = new SemanticAssetSearchService(metadataRepository, new SemanticAssetsMetadataMapperImpl());
+    }
 
     @Test
     void shouldGetSearchResultForTerm() {

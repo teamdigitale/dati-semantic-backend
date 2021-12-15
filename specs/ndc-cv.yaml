@@ -1,0 +1,284 @@
+openapi: 3.0.1
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+  - url: https://ndc-dev.apps.cloudpub.testedev.istat.it/
+    description: Generated server url
+paths:
+  "/vocabularies/{agency_id}/{key_concept}":
+    get:
+      tags:
+        - vocabulary-data-controller
+      operationId: fetchVocabularyData
+      parameters:
+        - name: agency_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: key_concept
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: offset
+          in: query
+          required: false
+          schema:
+            maximum: 30000
+            minimum: 0
+            type: integer
+            format: int32
+            default: 0
+        - name: limit
+          in: query
+          required: false
+          schema:
+            maximum: 200
+            minimum: 1
+            type: integer
+            format: int32
+            default: 10
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VocabularyDataDto"
+  /status:
+    get:
+      tags:
+        - application-status-controller
+      operationId: getStatus
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Health"
+  /semantic-assets:
+    get:
+      tags:
+        - semantic-assets-controller
+      operationId: search
+      parameters:
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+            default: ''
+        - name: offset
+          in: query
+          required: false
+          schema:
+            maximum: 30000
+            minimum: 0
+            type: integer
+            format: int32
+            default: 0
+        - name: limit
+          in: query
+          required: false
+          schema:
+            maximum: 200
+            minimum: 1
+            type: integer
+            format: int32
+            default: 10
+        - name: type
+          in: query
+          required: false
+          schema:
+            uniqueItems: true
+            type: array
+            items:
+              type: string
+            default: [ ]
+        - name: theme
+          in: query
+          required: false
+          schema:
+            uniqueItems: true
+            type: array
+            items:
+              type: string
+            default: [ ]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SemanticAssetSearchResult"
+  /semantic-assets/byIri:
+    get:
+      tags:
+        - semantic-assets-controller
+      operationId: getDetails
+      parameters:
+        - name: iri
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SemanticAssetDetailsDto"
+components:
+  schemas:
+    VocabularyDataDto:
+      type: object
+      properties:
+        totalResults:
+          type: integer
+          format: int64
+        limit:
+          type: integer
+          format: int32
+        offset:
+          type: integer
+          format: int64
+        data:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: object
+    Health:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        title:
+          type: string
+    NodeSummary:
+      type: object
+      properties:
+        iri:
+          type: string
+        summary:
+          type: string
+    SemanticAssetSearchResult:
+      type: object
+      properties:
+        totalCount:
+          type: integer
+          format: int64
+        limit:
+          type: integer
+          format: int32
+        offset:
+          type: integer
+          format: int64
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/SemanticAssetsSearchDto"
+    SemanticAssetsSearchDto:
+      type: object
+      properties:
+        assetIri:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum:
+            - ONTOLOGY
+            - CONTROLLED_VOCABULARY
+            - SCHEMA
+        modifiedOn:
+          type: string
+          format: date
+        versionInfo:
+          type: string
+        themes:
+          type: array
+          items:
+            type: string
+        rightsHolder:
+          $ref: "#/components/schemas/NodeSummary"
+    SemanticAssetDetailsDto:
+      type: object
+      properties:
+        assetIri:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum:
+            - ONTOLOGY
+            - CONTROLLED_VOCABULARY
+            - SCHEMA
+        modifiedOn:
+          type: string
+          format: date
+        themes:
+          type: array
+          items:
+            type: string
+        rightsHolder:
+          $ref: "#/components/schemas/NodeSummary"
+        accrualPeriodicity:
+          type: string
+        distributionUrls:
+          type: array
+          items:
+            type: string
+        subjects:
+          type: array
+          items:
+            type: string
+        contactPoint:
+          $ref: "#/components/schemas/NodeSummary"
+        publishers:
+          type: array
+          items:
+            $ref: "#/components/schemas/NodeSummary"
+        creators:
+          type: array
+          items:
+            $ref: "#/components/schemas/NodeSummary"
+        versionInfo:
+          type: string
+        issuedOn:
+          type: string
+          format: date
+        languages:
+          type: array
+          items:
+            type: string
+        temporal:
+          type: string
+        conformsTo:
+          type: array
+          items:
+            $ref: "#/components/schemas/NodeSummary"
+        keyConcept:
+          type: string
+        endpointUrl:
+          type: string
+        keyClasses:
+          type: array
+          items:
+            $ref: "#/components/schemas/NodeSummary"
+        prefix:
+          type: string
+        projects:
+          type: array
+          items:
+            $ref: "#/components/schemas/NodeSummary"

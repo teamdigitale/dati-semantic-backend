@@ -1,43 +1,35 @@
 package it.teamdigitale.ndc.controller;
 
-import it.teamdigitale.ndc.controller.dto.SemanticAssetDetailsDto;
-import it.teamdigitale.ndc.controller.dto.SemanticAssetSearchResult;
+import it.teamdigitale.ndc.gen.api.SemanticAssetsApi;
+import it.teamdigitale.ndc.gen.model.SemanticAssetDetailsDto;
+import it.teamdigitale.ndc.gen.model.SemanticAssetSearchResult;
 import it.teamdigitale.ndc.service.SemanticAssetSearchService;
-import java.util.Set;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController
-@RequestMapping("/semantic-assets")
+import java.util.Objects;
+import java.util.Set;
+
 @RequiredArgsConstructor
-@Validated
-public class SemanticAssetsController {
+@RestController
+public class SemanticAssetsController implements SemanticAssetsApi {
     private final SemanticAssetSearchService searchService;
 
-    @GetMapping
-    public SemanticAssetSearchResult search(
-        @RequestParam(value = "q", defaultValue = "") String queryPattern,
-        @RequestParam(value = "offset", defaultValue = "0")
-        @Min(0) @Max(30000) Integer offset,
-        @RequestParam(value = "limit", defaultValue = "10")
-        @Min(1) @Max(200) Integer limit,
-        @RequestParam(value = "type", defaultValue = "") Set<String> types,
-        @RequestParam(value = "theme", defaultValue = "") Set<String> themes) {
-
+    @Override
+    public ResponseEntity<SemanticAssetSearchResult> search(String q, Integer offset, Integer limit, Set<String> type, Set<String> theme) {
         Pageable pageable = OffsetBasedPageRequest.of(offset, limit);
 
-        return searchService.search(queryPattern, types, themes, pageable);
+        return ResponseEntity.ok(searchService.search(q, nullToEmpty(type), nullToEmpty(theme), pageable));
     }
 
-    @GetMapping("/byIri")
-    public SemanticAssetDetailsDto getDetails(@RequestParam("iri") String iri) {
-        return searchService.findByIri(iri);
+    @Override
+    public ResponseEntity<SemanticAssetDetailsDto> getDetails(String iri) {
+        return ResponseEntity.ok(searchService.findByIri(iri));
+    }
+
+    private Set<String> nullToEmpty(Set<String> s) {
+        return Objects.requireNonNullElseGet(s, Set::of);
     }
 }
