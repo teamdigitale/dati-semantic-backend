@@ -1,6 +1,5 @@
 package it.teamdigitale.ndc.controller;
 
-import io.swagger.v3.oas.annotations.Hidden;
 import it.teamdigitale.ndc.harvester.HarvesterJob;
 import it.teamdigitale.ndc.harvester.JobExecutionStatusDto;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +14,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
-@Hidden
 @RestController
 @RequestMapping
 public class HarvestJobController {
