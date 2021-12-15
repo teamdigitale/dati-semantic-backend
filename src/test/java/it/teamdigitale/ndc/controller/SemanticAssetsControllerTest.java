@@ -9,6 +9,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,12 +43,12 @@ public class SemanticAssetsControllerTest {
     }
 
     @Test
-    void shouldGetDetailsOfTheAssetByIri() {
+    void shouldGetDetailsOfTheAssetByIri() throws URISyntaxException {
         SemanticAssetsController controller = new SemanticAssetsController(service);
         SemanticAssetDetailsDto expected = new SemanticAssetDetailsDto();
         when(service.findByIri(any())).thenReturn(expected);
 
-        SemanticAssetDetailsDto actualResult = controller.getDetails("iri").getBody();
+        SemanticAssetDetailsDto actualResult = controller.getDetails(new URI("iri")).getBody();
 
         verify(service).findByIri("iri");
         assertThat(actualResult).isEqualTo(expected);

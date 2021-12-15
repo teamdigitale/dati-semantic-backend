@@ -1,6 +1,7 @@
 package it.teamdigitale.ndc.harvester.pathprocessors;
 
 import it.teamdigitale.ndc.harvester.CsvParser;
+import it.teamdigitale.ndc.harvester.CsvParser.CsvData;
 import it.teamdigitale.ndc.harvester.model.ControlledVocabularyModel;
 import it.teamdigitale.ndc.harvester.model.CvPath;
 import it.teamdigitale.ndc.harvester.model.SemanticAssetModelFactory;
@@ -14,7 +15,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Map;
 
 @Component
 @Slf4j
@@ -59,7 +59,7 @@ public class ControlledVocabularyPathProcessor extends BaseSemanticAssetPathProc
     }
 
     private void parseAndIndexCsv(VocabularyIdentifier vocabularyIdentifier, String csvPath) {
-        List<Map<String, String>> flatData = csvParser.convertCsvToMapList(csvPath);
+        CsvData flatData = csvParser.loadCsvDataFromFile(csvPath);
         vocabularyDataService.indexData(vocabularyIdentifier, flatData);
     }
 

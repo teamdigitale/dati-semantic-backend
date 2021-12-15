@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 import it.teamdigitale.ndc.gen.dto.VocabularyData;
+import it.teamdigitale.ndc.harvester.CsvParser;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -30,6 +31,7 @@ import org.springframework.data.elasticsearch.core.query.Query;
 
 @ExtendWith(MockitoExtension.class)
 public class VocabularyDataServiceTest {
+    public static final CsvParser.CsvData CSV_DATA = new CsvParser.CsvData(List.of(Map.of("key", "value")), "key");
     @Mock
     ElasticsearchOperations elasticsearchOperations;
 
@@ -90,8 +92,7 @@ public class VocabularyDataServiceTest {
                 .thenReturn(indexOperations);
         when(indexOperations.exists()).thenReturn(true);
 
-        vocabularyDataService.indexData(new VocabularyIdentifier("agid", "testKeyConcept"),
-                List.of(Map.of("key", "value")));
+        vocabularyDataService.indexData(new VocabularyIdentifier("agid", "testKeyConcept"), CSV_DATA);
 
         verify(elasticsearchOperations, times(3)).indexOps(
                 IndexCoordinates.of("agid.testkeyconcept"));
@@ -108,7 +109,7 @@ public class VocabularyDataServiceTest {
                 .thenReturn(indexOperations);
         when(indexOperations.exists()).thenReturn(false);
 
-        vocabularyDataService.indexData(new VocabularyIdentifier("agid", "testKeyConcept"), List.of(Map.of("key", "value")));
+        vocabularyDataService.indexData(new VocabularyIdentifier("agid", "testKeyConcept"), CSV_DATA);
 
         verify(elasticsearchOperations, times(2)).indexOps(
                 IndexCoordinates.of("agid.testkeyconcept"));

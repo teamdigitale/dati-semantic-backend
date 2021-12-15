@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import it.teamdigitale.ndc.gen.dto.VocabularyData;
+import it.teamdigitale.ndc.harvester.CsvParser;
 import it.teamdigitale.ndc.model.ModelBuilder;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -56,10 +57,10 @@ public class VocabularyDataService {
     }
 
     public void indexData(VocabularyIdentifier vocabularyIdentifier,
-                          List<Map<String, String>> data) {
+                          CsvParser.CsvData data) {
         String indexName = vocabularyIdentifier.getIndexName();
         ensureCleanIndex(indexName);
-        elasticsearchOperations.save(data, IndexCoordinates.of(indexName));
+        elasticsearchOperations.save(data.getRecords(), IndexCoordinates.of(indexName));
     }
 
     public void dropIndex(VocabularyIdentifier vocabularyIdentifier) {

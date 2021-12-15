@@ -1,6 +1,11 @@
 package it.teamdigitale.ndc.harvester;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.stereotype.Component;
 
@@ -14,20 +19,59 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Component
 public class CsvParser {
+    @RequiredArgsConstructor
+    @Getter
+    @EqualsAndHashCode
+    @ToString
+    public static class CsvData {
+        private final List<Map<String, String>> records;
+        private final String idName;
+    }
 
-    public List<Map<String, String>> convertCsvToMapList(String csvFile) {
+    public CsvData loadCsvDataFromFile(String csvFile) {
         try (FileReader csvReader = new FileReader(csvFile, UTF_8)) {
-            List<CSVRecord> records = CSVFormat.DEFAULT.builder()
-                    .setHeader()
-                    .setSkipHeaderRecord(true)
-                    .build()
-                    .parse(csvReader)
-                    .getRecords();
-            return records.stream()
-                    .map(CSVRecord::toMap)
-                    .collect(Collectors.toList());
+            return tryParseCsv(csvReader, csvFile);
+
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new InvalidCsvException(String.format("Cannot parse CSV file '%s'", csvFile), e);
         }
+    }
+
+    private CsvData tryParseCsv(FileReader csvReader, String csvFile) throws IOException {
+        CSVParser parser = parseReader(csvReader);
+        try {
+            return buildCsvDataFromParser(parser, csvFile);
+        } finally {
+            parser.close();
+        }
+    }
+
+    private CsvData buildCsvDataFromParser(CSVParser parser, String csvFile) {
+        String idName = getIdName(parser, csvFile);
+        List<Map<String, String>> records = readRecords(parser);
+
+        return new CsvData(records, idName);
+    }
+
+    private CSVParser parseReader(FileReader csvReader) throws IOException {
+        return CSVFormat.DEFAULT.builder()
+                .setHeader()
+                .setSkipHeaderRecord(true)
+                .build()
+                .parse(csvReader);
+    }
+
+    private List<Map<String, String>> readRecords(CSVParser parser) {
+        return parser.stream()
+                .map(CSVRecord::toMap)
+                .collect(Collectors.toList());
+    }
+
+    private String getIdName(CSVParser parser, String csvFile) {
+        List<String> headerNames = parser.getHeaderNames();
+        if (headerNames.isEmpty()) {
+            throw new InvalidCsvException(String.format("Cannot find any headers in '%s'", csvFile));
+        }
+        return headerNames.get(0);
     }
 }

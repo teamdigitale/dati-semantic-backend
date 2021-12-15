@@ -1,6 +1,7 @@
 package it.teamdigitale.ndc.harvester.pathprocessors;
 
 import it.teamdigitale.ndc.harvester.CsvParser;
+import it.teamdigitale.ndc.harvester.CsvParser.CsvData;
 import it.teamdigitale.ndc.harvester.model.ControlledVocabularyModel;
 import it.teamdigitale.ndc.harvester.model.CvPath;
 import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
@@ -64,17 +65,18 @@ class ControlledVocabularyPathProcessorTest {
         when(cvModel.getRdfModel()).thenReturn(jenaModel);
         when(cvModel.getKeyConcept()).thenReturn("keyConcept");
         when(cvModel.getAgencyId()).thenReturn("agencyId");
-        when(csvParser.convertCsvToMapList(csvFile)).thenReturn(List.of(Map.of("key", "val")));
+        CsvData csvData = new CsvData(List.of(Map.of("key", "val")), "key");
+        when(csvParser.loadCsvDataFromFile(csvFile)).thenReturn(csvData);
         SemanticAssetMetadata metadata = SemanticAssetMetadata.builder().build();
         when(cvModel.extractMetadata()).thenReturn(metadata);
 
         pathProcessor.process("some-repo", path);
 
         verify(semanticAssetModelFactory).createControlledVocabulary(ttlFile, "some-repo");
-        verify(csvParser).convertCsvToMapList(csvFile);
+        verify(csvParser).loadCsvDataFromFile(csvFile);
         verify(tripleStoreRepository).save("some-repo", jenaModel);
         verify(vocabularyDataService).indexData(new VocabularyIdentifier("agencyId", "keyConcept"),
-                List.of(Map.of("key", "val")));
+                new CsvData(List.of(Map.of("key", "val")), "key"));
         verify(cvModel).extractMetadata();
         verify(metadataRepository).save(metadata);
     }

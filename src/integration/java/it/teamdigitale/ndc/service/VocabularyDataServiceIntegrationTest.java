@@ -2,6 +2,7 @@ package it.teamdigitale.ndc.service;
 
 import it.teamdigitale.ndc.controller.exception.VocabularyDataNotFoundException;
 import it.teamdigitale.ndc.gen.dto.VocabularyData;
+import it.teamdigitale.ndc.harvester.CsvParser;
 import it.teamdigitale.ndc.integration.Containers;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -54,10 +55,10 @@ public class VocabularyDataServiceIntegrationTest {
         assertThatThrownBy(() -> vocabularyDataService.getData(VOCABULARY_IDENTIFIER, Pageable.ofSize(20)))
                 .isInstanceOf(VocabularyDataNotFoundException.class);
 
-        List<Map<String, String>> data = List.of(
+        CsvParser.CsvData data = new CsvParser.CsvData(List.of(
                 Map.of("id", "kent", "name", "Kent Beck"),
                 Map.of("id", "martin", "name", "Martin Fowler")
-        );
+        ), "id");
         vocabularyDataService.indexData(VOCABULARY_IDENTIFIER, data);
 
         forceIndexFlush();
@@ -65,7 +66,7 @@ public class VocabularyDataServiceIntegrationTest {
         VocabularyData searchResultAfterIndexing = vocabularyDataService.getData(VOCABULARY_IDENTIFIER, Pageable.ofSize(20));
         assertThat(searchResultAfterIndexing.getTotalResults()).isEqualTo(2);
         List<Map<String, String>> dataAfterIndexing = searchResultAfterIndexing.getData();
-        assertThat(dataAfterIndexing).isEqualTo(data);
+        assertThat(dataAfterIndexing).isEqualTo(data.getRecords());
 
         vocabularyDataService.dropIndex(VOCABULARY_IDENTIFIER);
 
