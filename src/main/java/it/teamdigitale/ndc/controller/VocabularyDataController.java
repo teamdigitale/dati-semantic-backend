@@ -1,6 +1,6 @@
 package it.teamdigitale.ndc.controller;
 
-import it.teamdigitale.ndc.controller.dto.VocabularyDataDto;
+import it.teamdigitale.ndc.gen.model.VocabularyDataDto;
 import it.teamdigitale.ndc.service.VocabularyDataService;
 import it.teamdigitale.ndc.service.VocabularyIdentifier;
 import lombok.RequiredArgsConstructor;

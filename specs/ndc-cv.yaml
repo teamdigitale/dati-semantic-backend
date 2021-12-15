@@ -151,7 +151,7 @@ components:
           items:
             type: object
             additionalProperties:
-              type: object
+              type: string
     Health:
       type: object
       properties:

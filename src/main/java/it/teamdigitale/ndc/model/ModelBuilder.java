@@ -2,9 +2,11 @@ package it.teamdigitale.ndc.model;
 
 import it.teamdigitale.ndc.gen.model.SemanticAssetSearchResult;
 import it.teamdigitale.ndc.gen.model.SemanticAssetsSearchDto;
+import it.teamdigitale.ndc.gen.model.VocabularyDataDto;
 import lombok.Builder;
 
 import java.util.List;
+import java.util.Map;
 
 public class ModelBuilder {
     private ModelBuilder() {
@@ -20,5 +22,17 @@ public class ModelBuilder {
         result.setData(data);
 
         return result;
+    }
+    
+    @Builder(builderMethodName = "vocabularyDataBuilder")
+    public static VocabularyDataDto newVocabularyDataDto(Long totalResults, Integer limit, Long offset, List<Map<String, String>> data) {
+        VocabularyDataDto dto = new VocabularyDataDto();
+
+        dto.setTotalResults(totalResults);
+        dto.setLimit(limit);
+        dto.setOffset(offset);
+        dto.setData(data);
+
+        return dto;
     }
 }

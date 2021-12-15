@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import it.teamdigitale.ndc.controller.dto.VocabularyDataDto;
+import it.teamdigitale.ndc.gen.model.VocabularyDataDto;
 import it.teamdigitale.ndc.service.VocabularyDataService;
 import it.teamdigitale.ndc.service.VocabularyIdentifier;
 import org.junit.jupiter.api.Test;

@@ -1,10 +1,14 @@
 package it.teamdigitale.ndc.service;
 
 import it.teamdigitale.ndc.controller.exception.VocabularyDataNotFoundException;
-import it.teamdigitale.ndc.controller.dto.VocabularyDataDto;
+
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import it.teamdigitale.ndc.gen.model.VocabularyDataDto;
+import it.teamdigitale.ndc.model.ModelBuilder;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +28,7 @@ public class VocabularyDataService {
 
     @Autowired
     public VocabularyDataService(
-        ElasticsearchOperations elasticsearchOperations) {
+            ElasticsearchOperations elasticsearchOperations) {
         this.elasticsearchOperations = elasticsearchOperations;
     }
 
@@ -34,11 +38,17 @@ public class VocabularyDataService {
             Query findAll = Query.findAll().setPageable(pageable);
             SearchHits<Map> results = elasticsearchOperations.search(findAll, Map.class, IndexCoordinates.of(indexName));
 
-            List<Map> data = results.getSearchHits().stream()
-                .map(SearchHit::getContent)
-                .collect(Collectors.toList());
+            List<Map<String, String>> data = results.getSearchHits().stream()
+                    .map(SearchHit::getContent)
+                    .map(m -> new HashMap<String, String>(m))
+                    .collect(Collectors.toList());
 
-            return new VocabularyDataDto(results.getTotalHits(), pageable.getPageSize(), pageable.getOffset(), data);
+            return ModelBuilder.vocabularyDataBuilder()
+                    .totalResults(results.getTotalHits())
+                    .offset(pageable.getOffset())
+                    .limit(pageable.getPageSize())
+                    .data(data)
+                    .build();
         } else {
             log.error("Controlled Vocabulary not found for {}", vocabularyIdentifier);
             throw new VocabularyDataNotFoundException(indexName);
