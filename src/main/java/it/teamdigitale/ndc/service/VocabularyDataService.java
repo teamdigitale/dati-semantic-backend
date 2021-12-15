@@ -1,12 +1,7 @@
 package it.teamdigitale.ndc.service;
 
 import it.teamdigitale.ndc.controller.exception.VocabularyDataNotFoundException;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
+import it.teamdigitale.ndc.controller.exception.VocabularyItemNotFoundException;
 import it.teamdigitale.ndc.gen.dto.VocabularyData;
 import it.teamdigitale.ndc.harvester.CsvParser;
 import it.teamdigitale.ndc.model.ModelBuilder;
@@ -23,6 +18,11 @@ import org.springframework.data.elasticsearch.core.query.IndexQueryBuilder;
 import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 @Service
 @Slf4j
 public class VocabularyDataService {
@@ -37,22 +37,26 @@ public class VocabularyDataService {
 
     public VocabularyData getData(VocabularyIdentifier vocabularyIdentifier, Pageable pageable) {
         String indexName = vocabularyIdentifier.getIndexName();
-        if (exists(indexName)) {
-            Query findAll = Query.findAll().setPageable(pageable);
-            SearchHits<Map> results = elasticsearchOperations.search(findAll, Map.class, IndexCoordinates.of(indexName));
+        requireIndex(vocabularyIdentifier, indexName);
 
-            List<Map<String, String>> data = results.getSearchHits().stream()
-                    .map(SearchHit::getContent)
-                    .map(m -> new HashMap<String, String>(m))
-                    .collect(Collectors.toList());
+        Query findAll = Query.findAll().setPageable(pageable);
+        SearchHits<Map> results = elasticsearchOperations.search(findAll, Map.class, IndexCoordinates.of(indexName));
 
-            return ModelBuilder.vocabularyDataBuilder()
-                    .totalResults(results.getTotalHits())
-                    .offset(pageable.getOffset())
-                    .limit(pageable.getPageSize())
-                    .data(data)
-                    .build();
-        } else {
+        List<Map<String, String>> data = results.getSearchHits().stream()
+                .map(SearchHit::getContent)
+                .map(m -> new HashMap<String, String>(m))
+                .collect(Collectors.toList());
+
+        return ModelBuilder.vocabularyDataBuilder()
+                .totalResults(results.getTotalHits())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .data(data)
+                .build();
+    }
+
+    private void requireIndex(VocabularyIdentifier vocabularyIdentifier, String indexName) {
+        if (!exists(indexName)) {
             log.error("Controlled Vocabulary not found for {}", vocabularyIdentifier);
             throw new VocabularyDataNotFoundException(indexName);
         }
@@ -97,6 +101,14 @@ public class VocabularyDataService {
     }
 
     public Map<String, String> getItem(VocabularyIdentifier vocabularyIdentifier, String id) {
-        return elasticsearchOperations.get(id, Map.class, IndexCoordinates.of(vocabularyIdentifier.getIndexName()));
+        String indexName = vocabularyIdentifier.getIndexName();
+        requireIndex(vocabularyIdentifier, indexName);
+
+        Map result = elasticsearchOperations.get(id, Map.class, IndexCoordinates.of(indexName));
+
+        if (result == null) {
+            throw new VocabularyItemNotFoundException(indexName, id);
+        }
+        return result;
     }
 }

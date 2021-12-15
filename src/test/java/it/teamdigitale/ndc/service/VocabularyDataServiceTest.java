@@ -1,22 +1,8 @@
 package it.teamdigitale.ndc.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import it.teamdigitale.ndc.controller.OffsetBasedPageRequest;
 import it.teamdigitale.ndc.controller.exception.VocabularyDataNotFoundException;
-
-import java.util.List;
-import java.util.Map;
-
+import it.teamdigitale.ndc.controller.exception.VocabularyItemNotFoundException;
 import it.teamdigitale.ndc.gen.dto.VocabularyData;
 import it.teamdigitale.ndc.harvester.CsvParser;
 import org.junit.jupiter.api.Test;
@@ -31,6 +17,20 @@ import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.elasticsearch.core.query.Query;
+
+import java.util.List;
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class VocabularyDataServiceTest {
@@ -90,6 +90,21 @@ public class VocabularyDataServiceTest {
     }
 
     @Test
+    void shouldThrowExceptionWhenItemDoesNotExists() {
+        when(elasticsearchOperations.indexOps(any(IndexCoordinates.class)))
+                .thenReturn(indexOperations);
+        when(indexOperations.exists()).thenReturn(true);
+        IndexCoordinates indexCoordinates = IndexCoordinates.of("agid.testkeyconcept");
+        when(elasticsearchOperations.get(eq("bugs-bunny"), any(), eq(indexCoordinates))).thenReturn(null);
+
+        VocabularyIdentifier vocabularyIdentifier = new VocabularyIdentifier("agid", "testKeyConcept");
+        assertThatThrownBy(() -> vocabularyDataService.getItem(vocabularyIdentifier, "bugs-bunny"))
+                .isInstanceOf(VocabularyItemNotFoundException.class)
+                .hasMessageContaining("bugs-bunny")
+                .hasMessageContaining("agid.testkeyconcept");
+    }
+
+    @Test
     void shouldIndexTheNewDataWhenIndexIsAlreadyPresent() {
         when(elasticsearchOperations.indexOps(any(IndexCoordinates.class)))
                 .thenReturn(indexOperations);
@@ -107,17 +122,17 @@ public class VocabularyDataServiceTest {
 
     @Test
     void shouldIndexTheNewDataWhenIndexIsNotPresent() {
+        IndexCoordinates indexCoordinates = IndexCoordinates.of("agid.testkeyconcept");
         when(elasticsearchOperations.indexOps(any(IndexCoordinates.class)))
                 .thenReturn(indexOperations);
         when(indexOperations.exists()).thenReturn(false);
 
         vocabularyDataService.indexData(new VocabularyIdentifier("agid", "testKeyConcept"), CSV_DATA);
 
-        verify(elasticsearchOperations, times(2)).indexOps(
-                IndexCoordinates.of("agid.testkeyconcept"));
+        verify(elasticsearchOperations, times(2)).indexOps(indexCoordinates);
         verify(indexOperations).exists();
         verify(indexOperations, never()).delete();
         verify(indexOperations).create();
-        verify(elasticsearchOperations).bulkIndex(anyList(), eq(IndexCoordinates.of("agid.testkeyconcept")));
+        verify(elasticsearchOperations).bulkIndex(anyList(), eq(indexCoordinates));
     }
 }

@@ -9,6 +9,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @RestController
 @RequiredArgsConstructor
 public class VocabularyDataController implements VocabulariesApi {
@@ -19,9 +21,9 @@ public class VocabularyDataController implements VocabulariesApi {
         Pageable pageable = OffsetBasedPageRequest.of(offset, limit);
         return ResponseEntity.ok(vocabularyDataService.getData(new VocabularyIdentifier(agencyId, keyConcept), pageable));
     }
-    //
-    //    @Override
-    //    public ResponseEntity<Map<String, String>> fetchVocabularyItem(String agencyId, String keyConcept, String id) {
-    //        return ResponseEntity.ok(Map.of("codice_1_livello", id, "label_ITA_1_livello", "Esempio"));
-    //    }
+
+    @Override
+    public ResponseEntity<Map<String, String>> fetchVocabularyItem(String agencyId, String keyConcept, String id) {
+        return ResponseEntity.ok(vocabularyDataService.getItem(new VocabularyIdentifier(agencyId, keyConcept), id));
+    }
 }

@@ -1,6 +1,7 @@
 package it.teamdigitale.ndc.service;
 
 import it.teamdigitale.ndc.controller.exception.VocabularyDataNotFoundException;
+import it.teamdigitale.ndc.controller.exception.VocabularyItemNotFoundException;
 import it.teamdigitale.ndc.gen.dto.VocabularyData;
 import it.teamdigitale.ndc.harvester.CsvParser;
 import it.teamdigitale.ndc.integration.Containers;
@@ -70,12 +71,16 @@ public class VocabularyDataServiceIntegrationTest {
 
         Map<String, String> item = vocabularyDataService.getItem(VOCABULARY_IDENTIFIER, "martin");
         assertThat(item).isEqualTo(martinRecord);
+        assertThatThrownBy(() -> vocabularyDataService.getItem(VOCABULARY_IDENTIFIER, "ward"))
+                .isInstanceOf(VocabularyItemNotFoundException.class);
 
         vocabularyDataService.dropIndex(VOCABULARY_IDENTIFIER);
 
         assertThatThrownBy(() -> vocabularyDataService.getData(VOCABULARY_IDENTIFIER, Pageable.ofSize(20)))
                 .isInstanceOf(VocabularyDataNotFoundException.class);
 
+        assertThatThrownBy(() -> vocabularyDataService.getItem(VOCABULARY_IDENTIFIER, "martin"))
+                .isInstanceOf(VocabularyDataNotFoundException.class);
     }
 
     private void forceIndexFlush() {
