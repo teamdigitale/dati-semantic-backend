@@ -192,7 +192,7 @@ vcard:hasEmail
       dcat:contactPoint <http://dati.gov.it/data/resource/ContactPoint/voc_AgID> ;
       dct:issued "2018-01-23"^^xsd:date ;
       dct:modified "2018-06-05"^^xsd:date ;
-      <https://w3id.org/italia/onto/ndc-profile/keyConcept> "educationTitle" ;
+      <https://w3id.org/italia/onto/NDC/keyConcept> "educationTitle" ;
       skos:hasTopConcept <https://w3id.org/italia/controlled-vocabulary/classifications-for-people/education-level/NED> , <https://w3id.org/italia/controlled-vocabulary/classifications-for-people/education-level/PSE> , <https://w3id.org/italia/controlled-vocabulary/classifications-for-people/education-level/LSE> ,
       <https://w3id.org/italia/controlled-vocabulary/classifications-for-people/education-level/USV> , <https://w3id.org/italia/controlled-vocabulary/classifications-for-people/education-level/IFP> , <https://w3id.org/italia/controlled-vocabulary/classifications-for-people/education-level/USG> , <https://w3id.org/italia/controlled-vocabulary/classifications-for-people/education-level/IFTS> ,
       <https://w3id.org/italia/controlled-vocabulary/classifications-for-people/education-level/ITS> , <https://w3id.org/italia/controlled-vocabulary/classifications-for-people/education-level/CDU> , <https://w3id.org/italia/controlled-vocabulary/classifications-for-people/education-level/L> , <https://w3id.org/italia/controlled-vocabulary/classifications-for-people/education-level/FLA> ,

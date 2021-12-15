@@ -26,3 +26,4 @@ fileignoreconfig:
 allowed_patterns:
 - keyClasses
 - hasKeyClass
+- keyConcept

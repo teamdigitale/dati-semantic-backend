@@ -194,7 +194,7 @@ vcard:hasEmail
       skos:hasTopConcept <https://w3id.org/italia/controlled-vocabulary/licences/A_OpenLicense> , <https://w3id.org/italia/controlled-vocabulary/licences/B_NonOpenLicense> , <https://w3id.org/italia/controlled-vocabulary/licences/C_Unknown> ;
       dct:issued "2018-01-16"^^xsd:date ;
       dct:modified "2019-07-25"^^xsd:date ;
-      <https://w3id.org/italia/onto/ndc-profile/keyConcept> "licences" ;
+      <https://w3id.org/italia/onto/NDC/keyConcept> "licences" ;
       owl:versionInfo "1.1 - introduzione della proprietà skos:hasTopConcept e correzione di un typo in una proprietà (narrowerT diventato narrower); revisione degli URI per i metadati"@it .
 
 <https://w3id.org/italia/data/public-organization/agid>

@@ -181,7 +181,7 @@ vcard:hasEmail
       dct:rightsHolder <http://spcdata.digitpa.gov.it/browse/page/Amministrazione/agid> ;
       dct:creator <http://spcdata.digitpa.gov.it/browse/page/Amministrazione/agid>  , <https://w3id.org/italia/data/organization/support-unit/cnr-Z6HZEH/stlab> ;
       dct:publisher <http://spcdata.digitpa.gov.it/browse/page/Amministrazione/agid> .
-      <https://w3id.org/italia/onto/ndc-profile/keyConcept> "personTitle" ;
+      <https://w3id.org/italia/onto/NDC/keyConcept> "personTitle" ;
       dcat:theme <http://publications.europa.eu/resource/authority/data-theme/SOCI> ;
       dct:conformsTo  <http://dati.gov.it/data/resource/Standard/SKOS> ;
       dct:language <http://publications.europa.eu/resource/authority/language/ITA> , <http://publications.europa.eu/resource/authority/language/ENG> ;

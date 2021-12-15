@@ -11,7 +11,6 @@ services:
     ports:
       - 8890:8890
     environment:
-      - DBA_PASSWORD=myDbaPassword
       - SPARQL_UPDATE=true
       - DEFAULT_GRAPH=http://www.ndc.com/test-graph
 

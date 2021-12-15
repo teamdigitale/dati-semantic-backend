@@ -8,12 +8,13 @@ import org.apache.jena.rdf.model.Resource;
 public class NDC {
     private static final Model model = ModelFactory.createDefaultModel();
 
-    public static final String NS = "https://w3id.org/italia/onto/ndc-profile/";
+    public static final String NS = "https://w3id.org/italia/onto/NDC/";
 
     /**
      * A description of the services available via the endpoints, including their operations, parameters etc.
      */
-    public static final Property endpointDescription = model.createProperty(NS + "endpointDescription");
+    public static final Property endpointDescription =
+        model.createProperty(NS + "endpointDescription");
     /**
      * The root location or primary endpoint of the service (a Web-resolvable IRI).
      */
