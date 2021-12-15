@@ -16,7 +16,7 @@ tags:
   - name: vocabulary-data-controller
     description: Entry point for Vocabulary related data
 servers:
-  - url: https://schema.gov.it/
+  - url: /
     description: Public server
 paths:
   "/vocabularies/{agency_id}/{key_concept}":

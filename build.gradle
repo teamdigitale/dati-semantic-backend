@@ -83,7 +83,7 @@ jib {
 
 openApiGenerate {
     generatorName = 'spring'
-    inputSpec = "$rootDir/specs/ndc-cv.yaml".toString()
+    inputSpec = "$rootDir/src/main/resources/public/api-docs.yaml".toString()
     outputDir = "$buildDir/generated".toString()
     apiPackage = 'it.teamdigitale.ndc.gen.api'
     invokerPackage = 'it.teamdigitale.ndc.gen.invoker'
