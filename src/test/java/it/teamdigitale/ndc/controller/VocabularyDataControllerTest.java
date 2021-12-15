@@ -32,7 +32,7 @@ public class VocabularyDataControllerTest {
         Pageable pageable = OffsetBasedPageRequest.of(offset, limit);
         when(vocabularyDataService.getData(vocabId, pageable)).thenReturn(expected);
 
-        VocabularyData actual = vocabularyDataController.fetchVocabularyData(agencyId, concept, offset, limit);
+        VocabularyData actual = vocabularyDataController.fetchVocabularyData(agencyId, concept, offset, limit).getBody();
 
         assertEquals(expected, actual);
     }
