@@ -26,7 +26,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         String errorMessage = "Validation for parameter failed " + ex.getMessage();
         Problem report = Builders.problem()
                 .errorClass(ConstraintViolationException.class.getSimpleName())
-                .status(HttpStatus.BAD_REQUEST.value())
+                .status(HttpStatus.BAD_REQUEST)
                 .title(errorMessage)
                 .build();
         return buildResponseEntityForAppProblem(HttpStatus.BAD_REQUEST, report);

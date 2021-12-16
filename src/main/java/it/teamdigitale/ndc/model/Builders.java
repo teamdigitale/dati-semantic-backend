@@ -6,6 +6,7 @@ import it.teamdigitale.ndc.gen.dto.SearchResultItem;
 import it.teamdigitale.ndc.gen.dto.VocabularyData;
 import lombok.Builder;
 import lombok.SneakyThrows;
+import org.springframework.http.HttpStatus;
 
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -42,9 +43,9 @@ public class Builders {
 
     @Builder(builderMethodName = "problem")
     @SneakyThrows
-    public static Problem build(String errorClass, String title, int status) {
+    public static Problem build(String errorClass, String title, HttpStatus status) {
         Problem problem = new Problem();
-        problem.setStatus(status);
+        problem.setStatus(status.value());
         problem.setType(new URI("https://schema.gov.it/tech/errors/" + errorClass));
         problem.setTitle(title);
         problem.setTimestamp(LocalDateTime.now().toString());

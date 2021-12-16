@@ -13,7 +13,7 @@ public abstract class ProblemBuildingException extends RuntimeException  {
 
     public Problem buildReport() {
         return Builders.problem()
-                .status(getStatus().value())
+                .status(getStatus())
                 .title(getMessage())
                 .errorClass(getClass().getSimpleName())
                 .build();

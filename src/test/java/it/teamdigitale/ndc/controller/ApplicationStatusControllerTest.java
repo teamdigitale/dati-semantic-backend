@@ -7,6 +7,8 @@ import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 
 import java.util.Objects;
+
+import it.teamdigitale.ndc.gen.dto.Problem;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthEndpoint;
@@ -23,7 +25,7 @@ class ApplicationStatusControllerTest {
         ApplicationStatusController applicationStatusController =
             new ApplicationStatusController(healthEndpoint);
 
-        ResponseEntity<ApplicationStatusController.Health> status =
+        ResponseEntity<Problem> status =
             applicationStatusController.getStatus();
 
         verify(healthEndpoint).health();
@@ -42,7 +44,7 @@ class ApplicationStatusControllerTest {
         ApplicationStatusController applicationStatusController =
             new ApplicationStatusController(healthEndpoint);
 
-        ResponseEntity<ApplicationStatusController.Health> status =
+        ResponseEntity<Problem> status =
             applicationStatusController.getStatus();
 
         verify(healthEndpoint).health();
@@ -61,7 +63,7 @@ class ApplicationStatusControllerTest {
         ApplicationStatusController applicationStatusController =
             new ApplicationStatusController(healthEndpoint);
 
-        ResponseEntity<ApplicationStatusController.Health> status =
+        ResponseEntity<Problem> status =
             applicationStatusController.getStatus();
 
         verify(healthEndpoint).health();
@@ -80,7 +82,7 @@ class ApplicationStatusControllerTest {
         ApplicationStatusController applicationStatusController =
             new ApplicationStatusController(healthEndpoint);
 
-        ResponseEntity<ApplicationStatusController.Health> status =
+        ResponseEntity<Problem> status =
             applicationStatusController.getStatus();
 
         verify(healthEndpoint).health();

@@ -71,6 +71,13 @@ paths:
             "application/problem+json":
               schema:
                 $ref: "#/components/schemas/Problem"
+        "400":
+          description: Bad input parameters
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/Problem"
+
   "/vocabularies/{agency_id}/{key_concept}/{id}":
     get:
       security: []
@@ -123,7 +130,7 @@ paths:
           content:
             application/problem+json:
               schema:
-                "$ref": "#/components/schemas/Health"
+                $ref: "#/components/schemas/Problem"
   /semantic-assets:
     get:
       security: []
@@ -222,14 +229,6 @@ components:
             type: object
             additionalProperties:
               type: string
-    Health:
-      type: object
-      properties:
-        status:
-          type: integer
-          format: int32
-        title:
-          type: string
     NodeSummary:
       type: object
       properties:
