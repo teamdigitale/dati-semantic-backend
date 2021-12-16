@@ -59,25 +59,20 @@ paths:
             format: int32
             default: 10
       responses:
-        "200":
+        '200':
           description: A list of items from the specified vocabulary
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/VocabularyData"
-        "404":
+        '404':
           description: The vocabulary cannot be found
           content:
             "application/problem+json":
               schema:
                 $ref: "#/components/schemas/Problem"
-        "400":
-          description: Bad input parameters
-          content:
-            "application/problem+json":
-              schema:
-                $ref: "#/components/schemas/Problem"
-
+        '400':
+          $ref: "#/components/responses/BadParameters"
   "/vocabularies/{agency_id}/{key_concept}/{id}":
     get:
       security: []
@@ -102,7 +97,7 @@ paths:
           schema:
             type: string
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
@@ -110,7 +105,7 @@ paths:
                 type: object
                 additionalProperties:
                   type: string
-        "404":
+        '404':
           description: The vocabulary or the item cannot be found
           content:
             "application/problem+json":
@@ -127,6 +122,12 @@ paths:
       responses:
         '200':
           description: OK
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        '500':
+          description: The service is not available
           content:
             application/problem+json:
               schema:
@@ -182,12 +183,15 @@ paths:
               type: string
             default: [ ]
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/SearchResult"
+        '400':
+          $ref: "#/components/responses/BadParameters"
+
   /semantic-assets/by-iri:
     get:
       security: []
@@ -203,7 +207,7 @@ paths:
             type: string
             format: uri
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
@@ -371,5 +375,12 @@ components:
         timestamp:
           type: string
           description: Timestamp for debugging purposes
+  responses:
+    BadParameters:
+      description: Bad input parameters
+      content:
+        "application/problem+json":
+          schema:
+            $ref: "#/components/schemas/Problem"
 
 
