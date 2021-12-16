@@ -1,5 +1,7 @@
 package it.teamdigitale.ndc.controller.exception;
 
+import it.teamdigitale.ndc.gen.dto.Problem;
+import it.teamdigitale.ndc.model.Builders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -12,25 +14,25 @@ import javax.validation.ConstraintViolationException;
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(value = {AppProblemGeneratingException.class})
-    public ResponseEntity<Object> handleExceptionWithAppProblem(AppProblemGeneratingException exception) {
+    @ExceptionHandler(value = {ProblemBuildingException.class})
+    public ResponseEntity<Object> handleExceptionWithAppProblem(ProblemBuildingException exception) {
         HttpStatus status = exception.getStatus();
-        ApplicationProblem report = exception.buildReport();
+        Problem report = exception.buildReport();
         return buildResponseEntityForAppProblem(status, report);
     }
 
     @ExceptionHandler(value = {ConstraintViolationException.class})
     public ResponseEntity<Object> handleValidationFailures(ConstraintViolationException ex) {
         String errorMessage = "Validation for parameter failed " + ex.getMessage();
-        ApplicationProblem report = ApplicationProblem.builder()
-                .type(ApplicationProblem.getErrorUri(ConstraintViolationException.class.getSimpleName()))
+        Problem report = Builders.problem()
+                .errorClass(ConstraintViolationException.class.getSimpleName())
                 .status(HttpStatus.BAD_REQUEST.value())
                 .title(errorMessage)
                 .build();
         return buildResponseEntityForAppProblem(HttpStatus.BAD_REQUEST, report);
     }
 
-    private ResponseEntity<Object> buildResponseEntityForAppProblem(HttpStatus status, ApplicationProblem report) {
+    private ResponseEntity<Object> buildResponseEntityForAppProblem(HttpStatus status, Problem report) {
         return ResponseEntity.status(status).contentType(MediaType.APPLICATION_PROBLEM_JSON).body(report);
     }
 }

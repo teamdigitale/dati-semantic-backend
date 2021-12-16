@@ -2,7 +2,6 @@ package it.teamdigitale.ndc.controller;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -13,13 +12,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import it.teamdigitale.ndc.controller.exception.VocabularyDataNotFoundException;
-import it.teamdigitale.ndc.model.ModelBuilder;
+import it.teamdigitale.ndc.model.Builders;
 import it.teamdigitale.ndc.service.VocabularyDataService;
 import java.util.List;
 import java.util.Map;
 
 import it.teamdigitale.ndc.service.VocabularyIdentifier;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -39,7 +37,7 @@ public class VocabularyDataControllerMvcTest {
     @Test
     public void shouldReturnVocabularyDataUsingDefaultPagination() throws Exception {
         when(vocabularyDataService.getData(any(), any()))
-            .thenReturn(ModelBuilder.vocabularyDataBuilder()
+            .thenReturn(Builders.vocabularyData()
                 .offset(1L)
                 .limit(10)
                 .totalResults(5L)

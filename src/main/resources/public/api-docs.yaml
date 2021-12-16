@@ -57,11 +57,17 @@ paths:
             default: 10
       responses:
         "200":
-          description: OK
+          description: A list of items from the specified vocabulary
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/VocabularyData"
+        "404":
+          description: The vocabulary cannot be found
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/Problem"
   "/vocabularies/{agency_id}/{key_concept}/{id}":
     get:
       security: []
@@ -94,6 +100,13 @@ paths:
                 type: object
                 additionalProperties:
                   type: string
+        "404":
+          description: The vocabulary or the item cannot be found
+          content:
+            "application/problem+json":
+              schema:
+                $ref: "#/components/schemas/Problem"
+
   /status:
     get:
       security: []
@@ -337,4 +350,21 @@ components:
     UrlToken:
       type: string
       pattern: ^\w[^\s]{0,64}$
+    Problem:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Human readable description of the issue
+        type:
+          type: string
+          format: uri
+          description: Unique identifier of the type of issue
+        status:
+          type: integer
+          description: Same as returned Http Status code
+        timestamp:
+          type: string
+          description: Timestamp for debugging purposes
+
 

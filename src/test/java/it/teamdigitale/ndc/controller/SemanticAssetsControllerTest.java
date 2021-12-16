@@ -2,7 +2,7 @@ package it.teamdigitale.ndc.controller;
 
 import it.teamdigitale.ndc.gen.dto.SearchResult;
 import it.teamdigitale.ndc.gen.dto.SemanticAssetDetailsDto;
-import it.teamdigitale.ndc.model.ModelBuilder;
+import it.teamdigitale.ndc.model.Builders;
 import it.teamdigitale.ndc.service.SemanticAssetSearchService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,7 +27,7 @@ public class SemanticAssetsControllerTest {
     @Test
     void shouldFetchResultsFromRepositoryForGivenKeyword() {
         SemanticAssetsController controller = new SemanticAssetsController(service);
-        SearchResult expectedResult = ModelBuilder.searchResultBuilder().build();
+        SearchResult expectedResult = Builders.searchResult().build();
         when(service.search(any(), any(), any(), any())).thenReturn(expectedResult);
 
         SearchResult actualResult =

@@ -3,7 +3,7 @@ package it.teamdigitale.ndc.controller;
 import it.teamdigitale.ndc.controller.exception.VocabularyDataNotFoundException;
 import it.teamdigitale.ndc.controller.exception.VocabularyItemNotFoundException;
 import it.teamdigitale.ndc.gen.dto.VocabularyData;
-import it.teamdigitale.ndc.model.ModelBuilder;
+import it.teamdigitale.ndc.model.Builders;
 import it.teamdigitale.ndc.service.VocabularyDataService;
 import it.teamdigitale.ndc.service.VocabularyIdentifier;
 import org.junit.jupiter.api.Test;
@@ -39,7 +39,7 @@ public class VocabularyDataControllerTest {
         String agencyId = "agid";
         VocabularyIdentifier vocabId = new VocabularyIdentifier(agencyId, concept);
         Pageable pageable = OffsetBasedPageRequest.of(offset, limit);
-        VocabularyData expectedVocabularyData = ModelBuilder.vocabularyDataBuilder()
+        VocabularyData expectedVocabularyData = Builders.vocabularyData()
                 .limit(limit)
                 .offset((long) offset)
                 .totalResults(10L)

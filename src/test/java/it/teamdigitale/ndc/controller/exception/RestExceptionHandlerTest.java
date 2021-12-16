@@ -1,5 +1,6 @@
 package it.teamdigitale.ndc.controller.exception;
 
+import it.teamdigitale.ndc.gen.dto.Problem;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -13,12 +14,11 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SuppressWarnings("unchecked")
 class RestExceptionHandlerTest {
 
     @ParameterizedTest
     @MethodSource("exceptionsToBeTested")
-    void shouldExceptionWithAppProblem(AppProblemGeneratingException exception) {
+    void shouldExceptionWithAppProblem(ProblemBuildingException exception) {
         RestExceptionHandler handler = new RestExceptionHandler();
 
         ResponseEntity<Object> responseEntity =
@@ -27,8 +27,8 @@ class RestExceptionHandlerTest {
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         Object body = responseEntity.getBody();
         assertThat(body).isNotNull();
-        assertThat(body).isInstanceOf(ApplicationProblem.class);
-        ApplicationProblem applicationProblem = (ApplicationProblem) body;
+        assertThat(body).isInstanceOf(Problem.class);
+        Problem applicationProblem = (Problem) body;
         assertThat(applicationProblem.getTitle()).isEqualTo(exception.getMessage());
     }
 
@@ -50,8 +50,8 @@ class RestExceptionHandlerTest {
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         Object body = responseEntity.getBody();
         assertThat(body).isNotNull();
-        assertThat(body).isInstanceOf(ApplicationProblem.class);
-        ApplicationProblem problem = (ApplicationProblem) body;
+        assertThat(body).isInstanceOf(Problem.class);
+        Problem problem = (Problem) body;
         assertThat(problem.getTitle()).isEqualTo("Validation for parameter failed 1234");
     }
 }

@@ -4,7 +4,7 @@ import it.teamdigitale.ndc.controller.exception.VocabularyDataNotFoundException;
 import it.teamdigitale.ndc.controller.exception.VocabularyItemNotFoundException;
 import it.teamdigitale.ndc.gen.dto.VocabularyData;
 import it.teamdigitale.ndc.harvester.CsvParser;
-import it.teamdigitale.ndc.model.ModelBuilder;
+import it.teamdigitale.ndc.model.Builders;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +47,7 @@ public class VocabularyDataService {
                 .map(m -> new HashMap<String, String>(m))
                 .collect(Collectors.toList());
 
-        return ModelBuilder.vocabularyDataBuilder()
+        return Builders.vocabularyData()
                 .totalResults(results.getTotalHits())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())

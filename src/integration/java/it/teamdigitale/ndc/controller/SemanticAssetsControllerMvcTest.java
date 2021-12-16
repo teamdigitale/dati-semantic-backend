@@ -3,7 +3,7 @@ package it.teamdigitale.ndc.controller;
 import it.teamdigitale.ndc.controller.exception.SemanticAssetNotFoundException;
 import it.teamdigitale.ndc.gen.dto.SearchResultItem;
 import it.teamdigitale.ndc.gen.dto.SemanticAssetDetailsDto;
-import it.teamdigitale.ndc.model.ModelBuilder;
+import it.teamdigitale.ndc.model.Builders;
 import it.teamdigitale.ndc.service.SemanticAssetSearchService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,7 +75,7 @@ public class SemanticAssetsControllerMvcTest {
         dto.setModifiedOn(LocalDate.parse("2020-01-01"));
 
         when(searchService.search(any(), any(), any(), any())
-        ).thenReturn(ModelBuilder.searchResultBuilder()
+        ).thenReturn(Builders.searchResult()
             .limit(10)
             .offset(0L)
             .totalCount(1L)
@@ -112,7 +112,7 @@ public class SemanticAssetsControllerMvcTest {
     void shouldReturnMatchingAssetsUsingProvidedPageParams() throws Exception {
         SearchResultItem dto = new SearchResultItem();
         when(searchService.search(any(), any(), any(), any())
-        ).thenReturn(ModelBuilder.searchResultBuilder()
+        ).thenReturn(Builders.searchResult()
             .limit(20)
             .offset(100L)
             .totalCount(101L)
