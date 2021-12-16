@@ -26,7 +26,7 @@ public class VirtuosoHealthIndicator implements HealthIndicator {
             performQuery();
             builder.up();
         } catch (QueryExceptionHTTP qeh) {
-            builder.down(qeh.getCause());
+            builder.down(Objects.requireNonNullElse(qeh.getCause(), qeh));
         } catch (Exception ex) {
             builder.down(ex);
         }
