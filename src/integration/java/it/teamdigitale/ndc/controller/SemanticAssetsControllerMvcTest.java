@@ -63,8 +63,8 @@ public class SemanticAssetsControllerMvcTest {
                         .accept(MediaType.APPLICATION_JSON))
             .andDo(print())
             .andExpect(status().isNotFound())
-            .andExpect(content().contentType("application/json"))
-            .andExpect(jsonPath("$.message").value("Semantic Asset not found for Iri : some-iri"));
+            .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON.toString()))
+            .andExpect(jsonPath("$.title").value("Semantic Asset not found for Iri : some-iri"));
     }
 
     @Test
@@ -153,7 +153,7 @@ public class SemanticAssetsControllerMvcTest {
                 .accept(MediaType.APPLICATION_JSON))
             .andDo(print())
             .andExpect(status().isBadRequest())
-            .andExpect(content().contentType("application/json"));
+            .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON.toString()));
 
         verifyNoInteractions(searchService);
     }
@@ -166,7 +166,7 @@ public class SemanticAssetsControllerMvcTest {
                 .accept(MediaType.APPLICATION_JSON))
             .andDo(print())
             .andExpect(status().isBadRequest())
-            .andExpect(content().contentType("application/json"));
+            .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON.toString()));
 
         verifyNoInteractions(searchService);
     }
@@ -179,7 +179,7 @@ public class SemanticAssetsControllerMvcTest {
                 .accept(MediaType.APPLICATION_JSON))
             .andDo(print())
             .andExpect(status().isBadRequest())
-            .andExpect(content().contentType("application/json"));
+            .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON.toString()));
 
         verifyNoInteractions(searchService);
     }

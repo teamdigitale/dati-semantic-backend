@@ -8,28 +8,29 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import javax.validation.ConstraintViolationException;
-import java.time.LocalDateTime;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(value = {VocabularyDataNotFoundException.class, VocabularyItemNotFoundException.class,
-        SemanticAssetNotFoundException.class})
-    public ResponseEntity<Object> handleNotFound(RuntimeException exception) {
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("message", exception.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).contentType(MediaType.APPLICATION_JSON).body(body);
+    @ExceptionHandler(value = {AppProblemGeneratingException.class})
+    public ResponseEntity<Object> handleExceptionWithAppProblem(AppProblemGeneratingException exception) {
+        HttpStatus status = exception.getStatus();
+        ApplicationProblem report = exception.buildReport();
+        return buildResponseEntityForAppProblem(status, report);
     }
 
     @ExceptionHandler(value = {ConstraintViolationException.class})
-    protected ResponseEntity<Object> handleValidationFailures(ConstraintViolationException ex) {
+    public ResponseEntity<Object> handleValidationFailures(ConstraintViolationException ex) {
         String errorMessage = "Validation for parameter failed " + ex.getMessage();
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("message", errorMessage);
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+        ApplicationProblem report = ApplicationProblem.builder()
+                .type(ApplicationProblem.getErrorUri(ConstraintViolationException.class.getSimpleName()))
+                .status(HttpStatus.BAD_REQUEST.value())
+                .title(errorMessage)
+                .build();
+        return buildResponseEntityForAppProblem(HttpStatus.BAD_REQUEST, report);
+    }
+
+    private ResponseEntity<Object> buildResponseEntityForAppProblem(HttpStatus status, ApplicationProblem report) {
+        return ResponseEntity.status(status).contentType(MediaType.APPLICATION_PROBLEM_JSON).body(report);
     }
 }

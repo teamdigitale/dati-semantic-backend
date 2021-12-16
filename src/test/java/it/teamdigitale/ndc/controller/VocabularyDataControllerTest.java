@@ -91,7 +91,7 @@ public class VocabularyDataControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(content().contentType("application/json"));
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON.toString()));
     }
 
     @Test
@@ -105,7 +105,7 @@ public class VocabularyDataControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(content().contentType("application/json"));
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON.toString()));
     }
 
     @Test
@@ -119,6 +119,6 @@ public class VocabularyDataControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(content().contentType("application/json"));
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON.toString()));
     }
 }

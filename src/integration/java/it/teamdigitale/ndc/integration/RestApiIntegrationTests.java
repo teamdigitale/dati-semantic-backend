@@ -13,6 +13,7 @@ import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.rdfconnection.RDFConnectionFactory;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
@@ -267,11 +268,12 @@ public class RestApiIntegrationTests extends BaseIntegrationTest {
 
     @Test
     void shouldFailWhenAssetIsNotFoundByIri() {
-        Response detailsResponse = getSemanticAssetDetails("https://wrong-iri");
+        String fakeUri = "https://wrong-iri";
+        Response detailsResponse = getSemanticAssetDetails(fakeUri);
 
         detailsResponse.then()
-                .statusCode(404)
-                .body("message", equalTo("Semantic Asset not found for Iri : https://wrong-iri"));
+                .statusCode(HttpStatus.NOT_FOUND.value())
+                .body("title", containsString(fakeUri));
     }
 
     @Test
