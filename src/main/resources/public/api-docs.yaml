@@ -358,6 +358,7 @@ components:
       pattern: ^\w[^\s]{0,64}$
     Problem:
       type: object
+      description: This schema describes RFC7807 Problem Details for HTTP APIs.
       properties:
         title:
           type: string
