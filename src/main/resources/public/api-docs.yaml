@@ -14,17 +14,19 @@ info:
   x-api-id: 000-000-000
   x-summary: NDC Semantic Backend
 tags:
-  - name: vocabulary-data-controller
+  - name: vocabulary-data
     description: Entry point for Vocabulary related data
+  - name: application-status
+  - name: semantic-assets
 servers:
-  - url: /
+  - url: https://schema.gov.it
     description: Public server
 paths:
   "/vocabularies/{agency_id}/{key_concept}":
     get:
       security: []
       tags:
-        - vocabulary-data-controller
+        - vocabulary-data
       operationId: fetchVocabularyData
       description: Retrieves the (paginated) items of a Controlled Vocabulary.
       parameters:
@@ -73,7 +75,7 @@ paths:
     get:
       security: []
       tags:
-        - vocabulary-data-controller
+        - vocabulary-data
       operationId: fetchVocabularyItem
       description: Retrieves one item from a Controlled Vocabulary, based on its id.
       parameters:
@@ -112,21 +114,21 @@ paths:
     get:
       security: []
       tags:
-        - application-status-controller
+        - application-status
       operationId: getStatus
       description: Service status
       responses:
         '200':
           description: OK
           content:
-            application/json:
+            application/problem+json:
               schema:
                 "$ref": "#/components/schemas/Health"
   /semantic-assets:
     get:
       security: []
       tags:
-        - semantic-assets-controller
+        - semantic-assets
       operationId: search
       description: Search across the catalog for semantic assets, based on the provided criteria.
       parameters:
@@ -183,7 +185,7 @@ paths:
     get:
       security: []
       tags:
-        - semantic-assets-controller
+        - semantic-assets
       operationId: getDetails
       description: Retrieves the details of a semantic asset.
       parameters:
@@ -363,6 +365,9 @@ components:
           description: Unique identifier of the type of issue
         status:
           type: integer
+          format: int32
+          minimum: 100
+          maximum: 599
           description: Same as returned Http Status code
         timestamp:
           type: string
