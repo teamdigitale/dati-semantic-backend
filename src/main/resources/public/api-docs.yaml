@@ -11,6 +11,7 @@ info:
   license:
     name: BSD-3-Clause
     url: https://opensource.org/licenses/BSD-3-Clause
+  x-api-id: 000-000-000
   x-summary: NDC Semantic Backend
 tags:
   - name: vocabulary-data-controller
