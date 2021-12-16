@@ -181,7 +181,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SearchResult"
-  /semantic-assets/byIri:
+  /semantic-assets/by-iri:
     get:
       security: []
       tags:

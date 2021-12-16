@@ -44,7 +44,7 @@ public class SemanticAssetsControllerMvcTest {
         dto.setDescription("some-description");
         when(searchService.findByIri("some-iri")).thenReturn(dto);
 
-        mockMvc.perform(get("/semantic-assets/byIri").param("iri", "some-iri"))
+        mockMvc.perform(get("/semantic-assets/by-iri").param("iri", "some-iri"))
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(content().contentType("application/json"))
@@ -58,7 +58,7 @@ public class SemanticAssetsControllerMvcTest {
         when(searchService.findByIri("some-iri")).thenThrow(
             new SemanticAssetNotFoundException("some-iri"));
 
-        mockMvc.perform(get("/semantic-assets/byIri")
+        mockMvc.perform(get("/semantic-assets/by-iri")
                         .param("iri", "some-iri")
                         .accept(MediaType.APPLICATION_JSON))
             .andDo(print())

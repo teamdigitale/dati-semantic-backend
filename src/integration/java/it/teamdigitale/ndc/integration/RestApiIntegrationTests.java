@@ -319,7 +319,7 @@ public class RestApiIntegrationTests extends BaseIntegrationTest {
     }
 
     private Response getSemanticAssetDetails(String iri) {
-        return when().get(format("http://localhost:%d/semantic-assets/byIri?iri=%s", port, iri));
+        return when().get(format("http://localhost:%d/semantic-assets/by-iri?iri=%s", port, iri));
     }
 
     private String getAssetIri(Response searchResponse) {
