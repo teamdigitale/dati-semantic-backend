@@ -77,8 +77,8 @@ public class SemanticAssetsControllerMvcTest {
         when(searchService.search(any(), any(), any(), any())
         ).thenReturn(Builders.searchResult()
             .limit(10)
-            .offset(0L)
-            .totalCount(1L)
+            .offset(0)
+            .totalCount(1)
             .data(List.of(dto))
             .build());
 
@@ -114,8 +114,8 @@ public class SemanticAssetsControllerMvcTest {
         when(searchService.search(any(), any(), any(), any())
         ).thenReturn(Builders.searchResult()
             .limit(20)
-            .offset(100L)
-            .totalCount(101L)
+            .offset(100)
+            .totalCount(101)
             .data(List.of(dto))
             .build());
 

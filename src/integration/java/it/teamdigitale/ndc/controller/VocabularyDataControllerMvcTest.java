@@ -38,9 +38,9 @@ public class VocabularyDataControllerMvcTest {
     public void shouldReturnVocabularyDataUsingDefaultPagination() throws Exception {
         when(vocabularyDataService.getData(any(), any()))
             .thenReturn(Builders.vocabularyData()
-                .offset(1L)
+                .offset(1)
                 .limit(10)
-                .totalResults(5L)
+                .totalResults(5)
                 .data(List.of(Map.of("key", "val")))
                 .build());
 

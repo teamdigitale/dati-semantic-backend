@@ -223,13 +223,13 @@ components:
       properties:
         totalResults:
           type: integer
-          format: int64
+          format: int32
         limit:
           type: integer
           format: int32
         offset:
           type: integer
-          format: int64
+          format: int32
         data:
           type: array
           items:
@@ -248,13 +248,13 @@ components:
       properties:
         totalCount:
           type: integer
-          format: int64
+          format: int32
         limit:
           type: integer
           format: int32
         offset:
           type: integer
-          format: int64
+          format: int32
         data:
           type: array
           items:
