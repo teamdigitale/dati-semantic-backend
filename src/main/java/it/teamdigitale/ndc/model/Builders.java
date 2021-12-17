@@ -18,7 +18,7 @@ public class Builders {
     }
 
     @Builder(builderMethodName = "searchResult")
-    public static SearchResult newSearchResult(Long totalCount, Integer limit, Long offset, List<SearchResultItem> data) {
+    public static SearchResult newSearchResult(Integer totalCount, Integer limit, Integer offset, List<SearchResultItem> data) {
         SearchResult result = new SearchResult();
 
         result.setTotalCount(totalCount);
@@ -30,7 +30,7 @@ public class Builders {
     }
     
     @Builder(builderMethodName = "vocabularyData")
-    public static VocabularyData newVocabularyDataDto(Long totalResults, Integer limit, Long offset, List<Map<String, String>> data) {
+    public static VocabularyData newVocabularyDataDto(Integer totalResults, Integer limit, Integer offset, List<Map<String, String>> data) {
         VocabularyData dto = new VocabularyData();
 
         dto.setTotalResults(totalResults);

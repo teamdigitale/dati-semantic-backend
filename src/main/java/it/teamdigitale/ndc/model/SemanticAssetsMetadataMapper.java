@@ -22,9 +22,9 @@ public interface SemanticAssetsMetadataMapper {
     default SearchResult searchResultToDto(SearchPage<SemanticAssetMetadata> source) {
         Pageable resultPage = source.getPageable();
         return Builders.searchResult()
-                .totalCount(source.getTotalElements())
+                .totalCount((int) source.getTotalElements())
                 .limit(resultPage.getPageSize())
-                .offset(resultPage.getOffset())
+                .offset((int) resultPage.getOffset())
                 .data(source.getContent()
                         .stream()
                         .map(s -> resultItemToDto(s.getContent()))

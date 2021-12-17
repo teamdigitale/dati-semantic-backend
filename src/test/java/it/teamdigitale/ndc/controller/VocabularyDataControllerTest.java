@@ -41,8 +41,8 @@ public class VocabularyDataControllerTest {
         Pageable pageable = OffsetBasedPageRequest.of(offset, limit);
         VocabularyData expectedVocabularyData = Builders.vocabularyData()
                 .limit(limit)
-                .offset((long) offset)
-                .totalResults(10L)
+                .offset(offset)
+                .totalResults(10)
                 .data(List.of(Map.of("title", "Mr"), Map.of("title", "Mrs")))
                 .build();
         when(vocabularyDataService.getData(vocabId, pageable)).thenReturn(expectedVocabularyData);

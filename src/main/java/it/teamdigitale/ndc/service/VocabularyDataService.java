@@ -48,8 +48,8 @@ public class VocabularyDataService {
                 .collect(Collectors.toList());
 
         return Builders.vocabularyData()
-                .totalResults(results.getTotalHits())
-                .offset(pageable.getOffset())
+                .totalResults((int) results.getTotalHits())
+                .offset((int) pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .data(data)
                 .build();
