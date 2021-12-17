@@ -19,8 +19,11 @@ tags:
   - name: application-status
   - name: semantic-assets
 servers:
+  - url: /
+    description: Development URL
+    x-sandbox: true
   - url: https://schema.gov.it
-    description: Public server
+    description: Public URL
 paths:
   "/vocabularies/{agency_id}/{key_concept}":
     get:
