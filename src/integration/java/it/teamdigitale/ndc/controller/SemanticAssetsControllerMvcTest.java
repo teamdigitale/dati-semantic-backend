@@ -86,15 +86,10 @@ public class SemanticAssetsControllerMvcTest {
             .param("q", "searchText")
             .param("type", "CONTROLLED_VOCABULARY")
             .param("type", "ONTOLOGY")
-            .param("theme", "AGRI")
-            .param("theme", "EDUC")
+            .param("theme", "http://publications.europa.eu/resource/authority/data-theme/AGRI")
+            .param("theme", "http://publications.europa.eu/resource/authority/data-theme/EDUC")
             .accept(MediaType.APPLICATION_JSON)
         );
-
-        verify(searchService).search("searchText",
-            Set.of("CONTROLLED_VOCABULARY", "ONTOLOGY"),
-            Set.of("EDUC", "AGRI"),
-            OffsetBasedPageRequest.of(0, 10));
 
         apiResult
             .andDo(print())
@@ -106,6 +101,11 @@ public class SemanticAssetsControllerMvcTest {
             .andExpect(jsonPath("$.data[0].assetIri").value("some-iri"))
             .andExpect(jsonPath("$.data[0].description").value("some-description"))
             .andExpect(jsonPath("$.data[0].modifiedOn").value("2020-01-01"));
+
+        verify(searchService).search("searchText",
+                Set.of("CONTROLLED_VOCABULARY", "ONTOLOGY"),
+                Set.of("http://publications.europa.eu/resource/authority/data-theme/AGRI", "http://publications.europa.eu/resource/authority/data-theme/EDUC"),
+                OffsetBasedPageRequest.of(0, 10));
     }
 
     @Test
@@ -176,6 +176,19 @@ public class SemanticAssetsControllerMvcTest {
         mockMvc.perform(get("/semantic-assets")
                 .param("q", "searchText")
                 .param("limit", "201")
+                .accept(MediaType.APPLICATION_JSON))
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON.toString()));
+
+        verifyNoInteractions(searchService);
+    }
+
+    @Test
+    void shouldReturn400WhenThemeIsNotSupported() throws Exception {
+        mockMvc.perform(get("/semantic-assets")
+                .param("q", "searchText")
+                .param("theme", "Science Fiction")
                 .accept(MediaType.APPLICATION_JSON))
             .andDo(print())
             .andExpect(status().isBadRequest())

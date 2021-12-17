@@ -7,6 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import javax.validation.ConstraintViolationException;
@@ -21,11 +22,11 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return buildResponseEntityForAppProblem(status, report);
     }
 
-    @ExceptionHandler(value = {ConstraintViolationException.class})
-    public ResponseEntity<Object> handleValidationFailures(ConstraintViolationException ex) {
+    @ExceptionHandler(value = {ConstraintViolationException.class, MethodArgumentTypeMismatchException.class })
+    public ResponseEntity<Object> handleValidationFailures(RuntimeException ex) {
         String errorMessage = "Validation for parameter failed " + ex.getMessage();
         Problem report = Builders.problem()
-                .errorClass(ConstraintViolationException.class.getSimpleName())
+                .errorClass(ex.getClass().getSimpleName())
                 .status(HttpStatus.BAD_REQUEST)
                 .title(errorMessage)
                 .build();

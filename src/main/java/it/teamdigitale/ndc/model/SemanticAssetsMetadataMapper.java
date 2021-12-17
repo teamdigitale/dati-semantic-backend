@@ -3,6 +3,7 @@ package it.teamdigitale.ndc.model;
 import it.teamdigitale.ndc.gen.dto.SearchResult;
 import it.teamdigitale.ndc.gen.dto.SearchResultItem;
 import it.teamdigitale.ndc.gen.dto.SemanticAssetDetailsDto;
+import it.teamdigitale.ndc.gen.dto.Theme;
 import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -30,5 +31,9 @@ public interface SemanticAssetsMetadataMapper {
                         .map(s -> resultItemToDto(s.getContent()))
                         .collect(Collectors.toList()))
                 .build();
+    }
+
+    default Theme stringToTheme(String themeString) {
+        return Theme.fromValue(themeString);
     }
 }

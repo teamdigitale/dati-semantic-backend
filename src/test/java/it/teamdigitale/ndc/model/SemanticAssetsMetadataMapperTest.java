@@ -3,6 +3,7 @@ package it.teamdigitale.ndc.model;
 import it.teamdigitale.ndc.gen.dto.AssetType;
 import it.teamdigitale.ndc.gen.dto.SearchResultItem;
 import it.teamdigitale.ndc.gen.dto.SemanticAssetDetailsDto;
+import it.teamdigitale.ndc.gen.dto.Theme;
 import it.teamdigitale.ndc.harvester.SemanticAssetType;
 import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
 import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
@@ -24,7 +25,8 @@ class SemanticAssetsMetadataMapperTest {
                 .description("Asset description")
                 .type(SemanticAssetType.CONTROLLED_VOCABULARY)
                 .modifiedOn(LocalDate.parse("2020-01-01"))
-                .themes(List.of("study", "science"))
+                .themes(List.of("http://publications.europa.eu/resource/authority/data-theme/ECON",
+                        "http://publications.europa.eu/resource/authority/data-theme/ENVI"))
                 .rightsHolder(
                         buildNodeSummary("https://example.com/rightsHolder", "example rights holder"))
                 .accrualPeriodicity("yearly")
@@ -58,7 +60,7 @@ class SemanticAssetsMetadataMapperTest {
         assertThat(dto.getDescription()).isEqualTo("Asset description");
         assertThat(dto.getType()).isEqualTo(AssetType.CONTROLLED_VOCABULARY);
         assertThat(dto.getModifiedOn()).isEqualTo("2020-01-01");
-        assertThat(dto.getThemes()).containsExactlyInAnyOrder("study", "science");
+        assertThat(dto.getThemes()).containsExactlyInAnyOrder(Theme.ECON, Theme.ENVI);
         assertThat(dto.getRightsHolder().getIri()).isEqualTo("https://example.com/rightsHolder");
         assertThat(dto.getRightsHolder().getSummary()).isEqualTo("example rights holder");
         assertThat(dto.getAccrualPeriodicity()).isEqualTo("yearly");
@@ -128,7 +130,8 @@ class SemanticAssetsMetadataMapperTest {
                         .summary("rights holder name")
                         .build())
                 .modifiedOn(LocalDate.parse("2020-01-01"))
-                .themes(List.of("education", "health"))
+                .themes(List.of("http://publications.europa.eu/resource/authority/data-theme/EDUC",
+                        "http://publications.europa.eu/resource/authority/data-theme/HEAL"))
                 .versionInfo("versionInfo")
                 .build();
 
@@ -139,7 +142,7 @@ class SemanticAssetsMetadataMapperTest {
         assertThat(dto.getRightsHolder().getIri()).isEqualTo("http://rightsHolder");
         assertThat(dto.getRightsHolder().getSummary()).isEqualTo("rights holder name");
         assertThat(dto.getModifiedOn()).isEqualTo(LocalDate.parse("2020-01-01"));
-        assertThat(dto.getThemes()).isEqualTo(List.of("education", "health"));
+        assertThat(dto.getThemes()).containsAll(List.of(Theme.EDUC, Theme.HEAL));
         assertThat(dto.getTitle()).isEqualTo("title");
         assertThat(dto.getDescription()).isEqualTo("description");
         assertThat(dto.getVersionInfo()).isEqualTo("versionInfo");

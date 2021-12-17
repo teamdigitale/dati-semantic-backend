@@ -2,6 +2,7 @@ package it.teamdigitale.ndc.controller;
 
 import it.teamdigitale.ndc.gen.dto.SearchResult;
 import it.teamdigitale.ndc.gen.dto.SemanticAssetDetailsDto;
+import it.teamdigitale.ndc.gen.dto.Theme;
 import it.teamdigitale.ndc.model.Builders;
 import it.teamdigitale.ndc.service.SemanticAssetSearchService;
 import org.junit.jupiter.api.Test;
@@ -33,11 +34,11 @@ public class SemanticAssetsControllerTest {
         SearchResult actualResult =
             controller.search("searchTerm", 0, 10,
                 Set.of("CONTROLLED_VOCABULARY"),
-                Set.of("EDUC")).getBody();
+                Set.of(Theme.EDUC)).getBody();
 
         verify(service).search("searchTerm",
             Set.of("CONTROLLED_VOCABULARY"),
-            Set.of("EDUC"),
+            Set.of("http://publications.europa.eu/resource/authority/data-theme/EDUC"),
             OffsetBasedPageRequest.of(0, 10));
         assertThat(actualResult).isEqualTo(expectedResult);
     }

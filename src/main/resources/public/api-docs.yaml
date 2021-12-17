@@ -183,7 +183,7 @@ paths:
             uniqueItems: true
             type: array
             items:
-              type: string
+              $ref: "#/components/schemas/Theme"
             default: [ ]
       responses:
         '200':
@@ -277,8 +277,9 @@ components:
           type: string
         themes:
           type: array
+          uniqueItems: true
           items:
-            type: string
+            $ref: "#/components/schemas/Theme"
         rightsHolder:
           $ref: "#/components/schemas/NodeSummary"
     SemanticAssetDetailsDto:
@@ -297,8 +298,9 @@ components:
           format: date
         themes:
           type: array
+          uniqueItems: true
           items:
-            type: string
+            $ref: "#/components/schemas/Theme"
         rightsHolder:
           $ref: "#/components/schemas/NodeSummary"
         accrualPeriodicity:
@@ -356,6 +358,23 @@ components:
         - ONTOLOGY
         - CONTROLLED_VOCABULARY
         - SCHEMA
+    Theme:
+      type: string
+      enum:
+        - "http://publications.europa.eu/resource/authority/data-theme/AGRI"
+        - "http://publications.europa.eu/resource/authority/data-theme/ECON"
+        - "http://publications.europa.eu/resource/authority/data-theme/EDUC"
+        - "http://publications.europa.eu/resource/authority/data-theme/ENER"
+        - "http://publications.europa.eu/resource/authority/data-theme/ENVI"
+        - "http://publications.europa.eu/resource/authority/data-theme/GOVE"
+        - "http://publications.europa.eu/resource/authority/data-theme/HEAL"
+        - "http://publications.europa.eu/resource/authority/data-theme/INTR"
+        - "http://publications.europa.eu/resource/authority/data-theme/JUST"
+        - "http://publications.europa.eu/resource/authority/data-theme/REGI"
+        - "http://publications.europa.eu/resource/authority/data-theme/SOCI"
+        - "http://publications.europa.eu/resource/authority/data-theme/TECH"
+        - "http://publications.europa.eu/resource/authority/data-theme/TRAN"
+
     UrlToken:
       type: string
       pattern: ^\w[^\s]{0,64}$
