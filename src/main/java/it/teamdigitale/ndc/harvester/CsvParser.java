@@ -13,6 +13,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -38,11 +39,8 @@ public class CsvParser {
     }
 
     private CsvData tryParseCsv(FileReader csvReader, String csvFile) throws IOException {
-        CSVParser parser = parseReader(csvReader);
-        try {
+        try (CSVParser parser = parseReader(csvReader)) {
             return buildCsvDataFromParser(parser, csvFile);
-        } finally {
-            parser.close();
         }
     }
 
@@ -54,11 +52,11 @@ public class CsvParser {
     }
 
     private CSVParser parseReader(FileReader csvReader) throws IOException {
-        return CSVFormat.DEFAULT.builder()
+        return Objects.requireNonNull(CSVFormat.DEFAULT.builder()
                 .setHeader()
                 .setSkipHeaderRecord(true)
                 .build()
-                .parse(csvReader);
+                .parse(csvReader));
     }
 
     private List<Map<String, String>> readRecords(CSVParser parser) {
