@@ -3,7 +3,7 @@ package it.teamdigitale.ndc.controller;
 import it.teamdigitale.ndc.gen.api.SemanticAssetsApi;
 import it.teamdigitale.ndc.gen.dto.AssetType;
 import it.teamdigitale.ndc.gen.dto.SearchResult;
-import it.teamdigitale.ndc.gen.dto.SemanticAssetDetailsDto;
+import it.teamdigitale.ndc.gen.dto.SemanticAssetDetails;
 import it.teamdigitale.ndc.gen.dto.Theme;
 import it.teamdigitale.ndc.service.SemanticAssetSearchService;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
 import java.util.Collections;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -47,11 +46,8 @@ public class SemanticAssetsController implements SemanticAssetsApi {
     }
 
     @Override
-    public ResponseEntity<SemanticAssetDetailsDto> getDetails(URI iri) {
+    public ResponseEntity<SemanticAssetDetails> getDetails(URI iri) {
         return ResponseEntity.ok(searchService.findByIri(iri.toString()));
     }
 
-    private Set<String> nullToEmpty(Set<String> s) {
-        return Objects.requireNonNullElseGet(s, Set::of);
-    }
 }

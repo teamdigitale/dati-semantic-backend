@@ -2,7 +2,7 @@ package it.teamdigitale.ndc.service;
 
 import it.teamdigitale.ndc.controller.exception.SemanticAssetNotFoundException;
 import it.teamdigitale.ndc.gen.dto.SearchResult;
-import it.teamdigitale.ndc.gen.dto.SemanticAssetDetailsDto;
+import it.teamdigitale.ndc.gen.dto.SemanticAssetDetails;
 import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.teamdigitale.ndc.model.SemanticAssetsMetadataMapperImpl;
 import it.teamdigitale.ndc.repository.SemanticAssetMetadataRepository;
@@ -79,7 +79,7 @@ class SemanticAssetSearchServiceTest {
         when(metadataRepository.findByIri("iri"))
             .thenReturn(Optional.of(SemanticAssetMetadata.builder().iri("iri").build()));
 
-        SemanticAssetDetailsDto actual = searchService.findByIri("iri");
+        SemanticAssetDetails actual = searchService.findByIri("iri");
 
         verify(metadataRepository).findByIri("iri");
         assertThat(actual.getAssetIri()).isEqualTo("iri");

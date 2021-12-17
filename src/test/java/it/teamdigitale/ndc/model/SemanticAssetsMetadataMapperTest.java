@@ -2,7 +2,7 @@ package it.teamdigitale.ndc.model;
 
 import it.teamdigitale.ndc.gen.dto.AssetType;
 import it.teamdigitale.ndc.gen.dto.SearchResultItem;
-import it.teamdigitale.ndc.gen.dto.SemanticAssetDetailsDto;
+import it.teamdigitale.ndc.gen.dto.SemanticAssetDetails;
 import it.teamdigitale.ndc.gen.dto.Theme;
 import it.teamdigitale.ndc.harvester.SemanticAssetType;
 import it.teamdigitale.ndc.harvester.model.index.NodeSummary;
@@ -53,7 +53,7 @@ class SemanticAssetsMetadataMapperTest {
                         buildNodeSummary("http://project2", "project2")))
                 .build();
 
-        SemanticAssetDetailsDto dto = mapper.detailsToDto(metadata);
+        SemanticAssetDetails dto = mapper.detailsToDto(metadata);
 
         assertThat(dto.getAssetIri()).isEqualTo("https://example.com/asset");
         assertThat(dto.getTitle()).isEqualTo("Asset");

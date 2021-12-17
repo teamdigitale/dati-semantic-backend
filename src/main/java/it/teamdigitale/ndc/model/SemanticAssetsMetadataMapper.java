@@ -2,7 +2,7 @@ package it.teamdigitale.ndc.model;
 
 import it.teamdigitale.ndc.gen.dto.SearchResult;
 import it.teamdigitale.ndc.gen.dto.SearchResultItem;
-import it.teamdigitale.ndc.gen.dto.SemanticAssetDetailsDto;
+import it.teamdigitale.ndc.gen.dto.SemanticAssetDetails;
 import it.teamdigitale.ndc.gen.dto.Theme;
 import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
 import org.mapstruct.Mapper;
@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 @Mapper
 public interface SemanticAssetsMetadataMapper {
     @Mapping(source = "iri", target = "assetIri")
-    SemanticAssetDetailsDto detailsToDto(SemanticAssetMetadata source);
+    SemanticAssetDetails detailsToDto(SemanticAssetMetadata source);
 
     @Mapping(source = "iri", target = "assetIri")
     SearchResultItem resultItemToDto(SemanticAssetMetadata source);

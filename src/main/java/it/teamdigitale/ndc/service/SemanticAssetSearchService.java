@@ -2,8 +2,7 @@ package it.teamdigitale.ndc.service;
 
 import it.teamdigitale.ndc.controller.exception.SemanticAssetNotFoundException;
 import it.teamdigitale.ndc.gen.dto.SearchResult;
-import it.teamdigitale.ndc.gen.dto.SearchResultItem;
-import it.teamdigitale.ndc.gen.dto.SemanticAssetDetailsDto;
+import it.teamdigitale.ndc.gen.dto.SemanticAssetDetails;
 import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.teamdigitale.ndc.model.SemanticAssetsMetadataMapper;
 import it.teamdigitale.ndc.repository.SemanticAssetMetadataRepository;
@@ -29,7 +28,7 @@ public class SemanticAssetSearchService {
         return mapper.searchResultToDto(searchResults);
     }
 
-    public SemanticAssetDetailsDto findByIri(String iri) {
+    public SemanticAssetDetails findByIri(String iri) {
         return metadataRepository.findByIri(iri)
                 .map(mapper::detailsToDto)
                 .orElseThrow(() -> new SemanticAssetNotFoundException(iri));

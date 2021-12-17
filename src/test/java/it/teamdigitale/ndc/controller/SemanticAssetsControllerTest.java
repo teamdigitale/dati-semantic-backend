@@ -1,7 +1,7 @@
 package it.teamdigitale.ndc.controller;
 
 import it.teamdigitale.ndc.gen.dto.SearchResult;
-import it.teamdigitale.ndc.gen.dto.SemanticAssetDetailsDto;
+import it.teamdigitale.ndc.gen.dto.SemanticAssetDetails;
 import it.teamdigitale.ndc.gen.dto.Theme;
 import it.teamdigitale.ndc.model.Builders;
 import it.teamdigitale.ndc.service.SemanticAssetSearchService;
@@ -47,10 +47,10 @@ public class SemanticAssetsControllerTest {
     @Test
     void shouldGetDetailsOfTheAssetByIri() throws URISyntaxException {
         SemanticAssetsController controller = new SemanticAssetsController(service);
-        SemanticAssetDetailsDto expected = new SemanticAssetDetailsDto();
+        SemanticAssetDetails expected = new SemanticAssetDetails();
         when(service.findByIri(any())).thenReturn(expected);
 
-        SemanticAssetDetailsDto actualResult = controller.getDetails(new URI("iri")).getBody();
+        SemanticAssetDetails actualResult = controller.getDetails(new URI("iri")).getBody();
 
         verify(service).findByIri("iri");
         assertThat(actualResult).isEqualTo(expected);

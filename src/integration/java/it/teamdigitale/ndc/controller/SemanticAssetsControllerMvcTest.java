@@ -2,7 +2,7 @@ package it.teamdigitale.ndc.controller;
 
 import it.teamdigitale.ndc.controller.exception.SemanticAssetNotFoundException;
 import it.teamdigitale.ndc.gen.dto.SearchResultItem;
-import it.teamdigitale.ndc.gen.dto.SemanticAssetDetailsDto;
+import it.teamdigitale.ndc.gen.dto.SemanticAssetDetails;
 import it.teamdigitale.ndc.model.Builders;
 import it.teamdigitale.ndc.service.SemanticAssetSearchService;
 import org.junit.jupiter.api.Test;
@@ -38,7 +38,7 @@ public class SemanticAssetsControllerMvcTest {
 
     @Test
     void shouldFindByIri() throws Exception {
-        SemanticAssetDetailsDto dto = new SemanticAssetDetailsDto();
+        SemanticAssetDetails dto = new SemanticAssetDetails();
         dto.setAssetIri("some-iri");
         dto.setTitle("some-title");
         dto.setDescription("some-description");

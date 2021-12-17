@@ -215,7 +215,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SemanticAssetDetailsDto"
+                $ref: "#/components/schemas/SemanticAssetDetails"
 components:
   schemas:
     VocabularyData:
@@ -282,7 +282,7 @@ components:
             $ref: "#/components/schemas/Theme"
         rightsHolder:
           $ref: "#/components/schemas/NodeSummary"
-    SemanticAssetDetailsDto:
+    SemanticAssetDetails:
       allOf:
         - $ref: "#/components/schemas/SearchResultItem"
         - type: object
