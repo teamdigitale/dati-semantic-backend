@@ -30,6 +30,4 @@ public class TripleStoreProperties {
 
     private String username;
     private String password;
-
-
 }
