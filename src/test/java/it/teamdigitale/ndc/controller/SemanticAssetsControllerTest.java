@@ -14,6 +14,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Set;
 
+import static it.teamdigitale.ndc.gen.dto.AssetType.CONTROLLED_VOCABULARY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -33,7 +34,7 @@ public class SemanticAssetsControllerTest {
 
         SearchResult actualResult =
             controller.search("searchTerm", 0, 10,
-                Set.of("CONTROLLED_VOCABULARY"),
+                Set.of(CONTROLLED_VOCABULARY),
                 Set.of(Theme.EDUC)).getBody();
 
         verify(service).search("searchTerm",

@@ -196,4 +196,17 @@ public class SemanticAssetsControllerMvcTest {
 
         verifyNoInteractions(searchService);
     }
+
+    @Test
+    void shouldReturn400WhenTypeIsNotSupported() throws Exception {
+        mockMvc.perform(get("/semantic-assets")
+                .param("q", "searchText")
+                .param("type", "PEANUTS")
+                .accept(MediaType.APPLICATION_JSON))
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON.toString()));
+
+        verifyNoInteractions(searchService);
+    }
 }

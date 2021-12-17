@@ -1,6 +1,7 @@
 package it.teamdigitale.ndc.controller;
 
 import it.teamdigitale.ndc.gen.api.SemanticAssetsApi;
+import it.teamdigitale.ndc.gen.dto.AssetType;
 import it.teamdigitale.ndc.gen.dto.SearchResult;
 import it.teamdigitale.ndc.gen.dto.SemanticAssetDetailsDto;
 import it.teamdigitale.ndc.gen.dto.Theme;
@@ -14,6 +15,7 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -22,18 +24,24 @@ public class SemanticAssetsController implements SemanticAssetsApi {
     private final SemanticAssetSearchService searchService;
 
     @Override
-    public ResponseEntity<SearchResult> search(String q, Integer offset, Integer limit, Set<String> type, Set<Theme> theme) {
+    public ResponseEntity<SearchResult> search(String q, Integer offset, Integer limit, Set<AssetType> type, Set<Theme> theme) {
         Pageable pageable = OffsetBasedPageRequest.of(offset, limit);
 
-        return ResponseEntity.ok(searchService.search(q, nullToEmpty(type), toThemeStrings(theme), pageable));
+        return ResponseEntity.ok(
+                searchService.search(q,
+                        toEnumStrings(type, AssetType::getValue),
+                        toEnumStrings(theme, Theme::getValue),
+                        pageable
+                )
+        );
     }
 
-    private Set<String> toThemeStrings(Set<Theme> theme) {
+    private <T> Set<String> toEnumStrings(Set<T> parameter, Function<T, String> valueMapper) {
         Set<String> themeStrings;
-        if (theme == null) {
+        if (parameter == null) {
             themeStrings = Collections.emptySet();
         } else {
-            themeStrings = theme.stream().map(t -> t.getValue()).collect(Collectors.toSet());
+            themeStrings = parameter.stream().map(valueMapper).collect(Collectors.toSet());
         }
         return themeStrings;
     }
