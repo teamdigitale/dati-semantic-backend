@@ -283,75 +283,57 @@ components:
         rightsHolder:
           $ref: "#/components/schemas/NodeSummary"
     SemanticAssetDetailsDto:
-      type: object
-      properties:
-        assetIri:
-          type: string
-        title:
-          type: string
-        description:
-          type: string
-        type:
-          $ref: "#/components/schemas/AssetType"
-        modifiedOn:
-          type: string
-          format: date
-        themes:
-          type: array
-          uniqueItems: true
-          items:
-            $ref: "#/components/schemas/Theme"
-        rightsHolder:
-          $ref: "#/components/schemas/NodeSummary"
-        accrualPeriodicity:
-          type: string
-        distributionUrls:
-          type: array
-          items:
-            type: string
-        subjects:
-          type: array
-          items:
-            type: string
-        contactPoint:
-          $ref: "#/components/schemas/NodeSummary"
-        publishers:
-          type: array
-          items:
-            $ref: "#/components/schemas/NodeSummary"
-        creators:
-          type: array
-          items:
-            $ref: "#/components/schemas/NodeSummary"
-        versionInfo:
-          type: string
-        issuedOn:
-          type: string
-          format: date
-        languages:
-          type: array
-          items:
-            type: string
-        temporal:
-          type: string
-        conformsTo:
-          type: array
-          items:
-            $ref: "#/components/schemas/NodeSummary"
-        keyConcept:
-          type: string
-        endpointUrl:
-          type: string
-        keyClasses:
-          type: array
-          items:
-            $ref: "#/components/schemas/NodeSummary"
-        prefix:
-          type: string
-        projects:
-          type: array
-          items:
-            $ref: "#/components/schemas/NodeSummary"
+      allOf:
+        - $ref: "#/components/schemas/SearchResultItem"
+        - type: object
+          properties:
+            accrualPeriodicity:
+              type: string
+            distributionUrls:
+              type: array
+              items:
+                type: string
+            subjects:
+              type: array
+              items:
+                type: string
+            contactPoint:
+              $ref: "#/components/schemas/NodeSummary"
+            publishers:
+              type: array
+              items:
+                $ref: "#/components/schemas/NodeSummary"
+            creators:
+              type: array
+              items:
+                $ref: "#/components/schemas/NodeSummary"
+            issuedOn:
+              type: string
+              format: date
+            languages:
+              type: array
+              items:
+                type: string
+            temporal:
+              type: string
+            conformsTo:
+              type: array
+              items:
+                $ref: "#/components/schemas/NodeSummary"
+            keyConcept:
+              type: string
+            endpointUrl:
+              type: string
+            keyClasses:
+              type: array
+              items:
+                $ref: "#/components/schemas/NodeSummary"
+            prefix:
+              type: string
+            projects:
+              type: array
+              items:
+                $ref: "#/components/schemas/NodeSummary"
     AssetType:
       type: string
       enum:
