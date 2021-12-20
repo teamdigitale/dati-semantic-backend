@@ -148,4 +148,28 @@ class SemanticAssetsMetadataMapperTest {
         assertThat(dto.getVersionInfo()).isEqualTo("versionInfo");
     }
 
+    @Test
+    void shouldIgnoreUnexpectedThemes() {
+        String nonExistentTheme = "http://publications.europa.eu/resource/authority/data-theme/TRANS";
+        String validTheme = "http://publications.europa.eu/resource/authority/data-theme/EDUC";
+        SemanticAssetMetadata model = SemanticAssetMetadata.builder()
+                .iri("iri")
+                .themes(List.of(validTheme, nonExistentTheme))
+                .build();
+
+        SearchResultItem dto = mapper.resultItemToDto(model);
+        assertThat(dto.getThemes()).hasSize(1);
+        assertThat(dto.getThemes()).contains(Theme.EDUC);
+    }
+
+    @Test
+    void shouldPropagateMissingThemes() {
+        SemanticAssetMetadata model = SemanticAssetMetadata.builder()
+                .iri("iri")
+                .themes(null)
+                .build();
+
+        SearchResultItem dto = mapper.resultItemToDto(model);
+        assertThat(dto.getThemes()).isNull();
+    }
 }
