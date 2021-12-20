@@ -3,7 +3,7 @@ package it.teamdigitale.ndc.service;
 import it.teamdigitale.ndc.controller.exception.VocabularyDataNotFoundException;
 import it.teamdigitale.ndc.controller.exception.VocabularyItemNotFoundException;
 import it.teamdigitale.ndc.gen.dto.VocabularyData;
-import it.teamdigitale.ndc.harvester.CsvParser;
+import it.teamdigitale.ndc.harvester.csv.CsvParser;
 import it.teamdigitale.ndc.model.Builders;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;

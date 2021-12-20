@@ -154,9 +154,6 @@ jacocoTestCoverageVerification {
 
 sourceSets {
     integration {
-        java.srcDir "$projectDir/src/integration/java"
-        resources.srcDir "$projectDir/src/integration/resources"
-
         compileClasspath += main.output + test.output
         runtimeClasspath += main.output + test.output
     }

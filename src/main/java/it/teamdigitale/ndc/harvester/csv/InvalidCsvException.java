@@ -1,4 +1,4 @@
-package it.teamdigitale.ndc.harvester;
+package it.teamdigitale.ndc.harvester.csv;
 
 public class InvalidCsvException extends RuntimeException {
     public InvalidCsvException(String message) {

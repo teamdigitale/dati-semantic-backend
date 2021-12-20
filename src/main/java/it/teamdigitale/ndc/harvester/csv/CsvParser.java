@@ -1,4 +1,4 @@
-package it.teamdigitale.ndc.harvester;
+package it.teamdigitale.ndc.harvester.csv;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -19,7 +19,10 @@ import java.util.stream.Collectors;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Component
+@RequiredArgsConstructor
 public class CsvParser {
+    private final List<HeadersToIdNameExtractor> nameExtractors;
+
     @RequiredArgsConstructor
     @Getter
     @EqualsAndHashCode
@@ -28,6 +31,7 @@ public class CsvParser {
         private final List<Map<String, String>> records;
         private final String idName;
     }
+
 
     public CsvData loadCsvDataFromFile(String csvFile) {
         try (FileReader csvReader = new FileReader(csvFile, UTF_8)) {
@@ -70,6 +74,11 @@ public class CsvParser {
         if (headerNames.isEmpty()) {
             throw new InvalidCsvException(String.format("Cannot find any headers in '%s'", csvFile));
         }
-        return headerNames.get(0);
+
+        return nameExtractors.stream()
+                .map(e -> e.extract(headerNames))
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElseThrow(() -> new InvalidCsvException(String.format("Cannot find id column in '%s'", csvFile)));
     }
 }

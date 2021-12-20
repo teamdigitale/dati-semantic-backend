@@ -14,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ConfigurationProperties("ontology.scanner")
+@ConfigurationProperties("harvester.ontology.scanner")
 public class OntologyFolderScannerProperties {
     private List<String> skipWords;
 

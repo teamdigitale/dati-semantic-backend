@@ -1,7 +1,7 @@
 package it.teamdigitale.ndc.harvester.pathprocessors;
 
-import it.teamdigitale.ndc.harvester.CsvParser;
-import it.teamdigitale.ndc.harvester.CsvParser.CsvData;
+import it.teamdigitale.ndc.harvester.csv.CsvParser;
+import it.teamdigitale.ndc.harvester.csv.CsvParser.CsvData;
 import it.teamdigitale.ndc.harvester.model.ControlledVocabularyModel;
 import it.teamdigitale.ndc.harvester.model.CvPath;
 import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;

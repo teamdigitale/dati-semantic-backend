@@ -4,7 +4,7 @@ import it.teamdigitale.ndc.controller.OffsetBasedPageRequest;
 import it.teamdigitale.ndc.controller.exception.VocabularyDataNotFoundException;
 import it.teamdigitale.ndc.controller.exception.VocabularyItemNotFoundException;
 import it.teamdigitale.ndc.gen.dto.VocabularyData;
-import it.teamdigitale.ndc.harvester.CsvParser;
+import it.teamdigitale.ndc.harvester.csv.CsvParser;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;

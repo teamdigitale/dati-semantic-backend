@@ -1,0 +1,21 @@
+{
+  "groups": [
+    {
+      "name": "harvester",
+      "description": "Parameters to drive the harvesting logic, formats and strategies."
+    }
+  ],
+  "properties": [
+    {
+      "name": "harvester.repositories",
+      "type": "java.lang.Boolean",
+      "sourceType": "it.teamdigitale.ndc.harvester.csv.DeepestLevelExtractor",
+      "description": "Whether the columns should be searched for codice_n_livello columns to find the id."
+    },
+    {
+      "name": "harvester.controlled-vocabulary.csv.id-column-extractors.codice-livello.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether the columns should be searched for codice_n_livello columns to find the id."
+    }
+  ]
+}
