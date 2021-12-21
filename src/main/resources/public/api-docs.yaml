@@ -11,7 +11,7 @@ info:
   license:
     name: BSD-3-Clause
     url: https://opensource.org/licenses/BSD-3-Clause
-  x-api-id: 000-000-000
+  x-api-id: d12425f8-6b82-49b1-9024-15fd2dbcb2d4
   x-summary: NDC Semantic Backend
 tags:
   - name: vocabulary-data
@@ -207,6 +207,8 @@ paths:
           in: query
           required: true
           schema:
+            description: |-
+              An utility schema for URI and URL.
             type: string
             format: uri
       responses:
@@ -387,5 +389,3 @@ components:
         "application/problem+json":
           schema:
             $ref: "#/components/schemas/Problem"
-
-

@@ -56,7 +56,7 @@ public class BaseIntegrationTest {
     }
 
     @BeforeEach
-    public void beforeEach() throws IOException {
+    public synchronized void beforeEach() throws IOException {
         if (!harvested) {
             dataIsHarvested();
             harvested = true;

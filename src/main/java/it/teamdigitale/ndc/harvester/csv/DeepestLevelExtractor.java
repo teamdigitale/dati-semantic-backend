@@ -9,7 +9,10 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 /**
- * Currently supports lexicographical order, so it can only effectively handle up to 9 levels...
+ * Looks for all the columns which represents IDs for different levels, and selects the deepest level as the ID for
+ * the whole CSV file.
+ *
+ * @implNote Currently supports lexicographical order, so it can only effectively handle up to 9 levels...
  */
 @Component
 @ConditionalOnProperty(value = "harvester.controlled-vocabulary.csv.id-column-extractors.codice-livello.enabled", matchIfMissing = true)
