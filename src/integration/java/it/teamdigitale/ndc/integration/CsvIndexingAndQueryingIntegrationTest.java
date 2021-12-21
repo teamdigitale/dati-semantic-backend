@@ -1,6 +1,8 @@
 package it.teamdigitale.ndc.integration;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 
 import static io.restassured.RestAssured.when;
 import static java.lang.String.format;
@@ -10,6 +12,11 @@ public class CsvIndexingAndQueryingIntegrationTest extends BaseIntegrationTest {
 
     public static final String AGENCY_ID = "agid";
     public static final String KEY_CONCEPT = "licences";
+
+    @DynamicPropertySource
+    static void updateDynamicPropertySource(DynamicPropertyRegistry registry) {
+        updateTestcontainersProperties(registry);
+    }
 
     @Test
     void shouldRetrieveSampleLicenses() {

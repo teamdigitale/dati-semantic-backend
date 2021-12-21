@@ -14,6 +14,8 @@ import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.rdfconnection.RDFConnectionFactory;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 
 import java.util.List;
 
@@ -29,6 +31,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class RestApiIntegrationTests extends BaseIntegrationTest {
+    @DynamicPropertySource
+    static void updateDynamicPropertySource(DynamicPropertyRegistry registry) {
+        updateTestcontainersProperties(registry);
+    }
+
 
     @Test
     void shouldBeAbleToHarvestAndSearchControlledVocabularySuccessfully() {

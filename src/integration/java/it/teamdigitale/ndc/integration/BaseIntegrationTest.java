@@ -63,18 +63,17 @@ public class BaseIntegrationTest {
         }
     }
 
-    @AfterAll
     public static void tearDown() {
         virtuoso.stop();
         elasticsearchContainer.stop();
     }
 
-    @DynamicPropertySource
     static void updateTestcontainersProperties(DynamicPropertyRegistry registry) {
         String url = "http://localhost:" + virtuoso.getMappedPort(Containers.VIRTUOSO_PORT);
+        String elasticSearchAddress = elasticsearchContainer.getHttpHostAddress();
         registry.add("virtuoso.sparql", () -> url + "/sparql");
         registry.add("virtuoso.sparql-graph-store", () -> url + "/sparql-graph-crud/");
-        registry.add("spring.elasticsearch.rest.uris", elasticsearchContainer::getHttpHostAddress);
+        registry.add("spring.elasticsearch.rest.uris", () -> elasticSearchAddress);
     }
 
     private void dataIsHarvested() throws IOException {
