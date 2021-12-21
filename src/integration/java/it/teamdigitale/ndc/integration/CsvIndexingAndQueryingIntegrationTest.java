@@ -19,7 +19,8 @@ public class CsvIndexingAndQueryingIntegrationTest extends BaseIntegrationTest {
     }
 
     @Test
-    void shouldRetrieveSampleLicenses() {
+    void shouldRetrieveSampleLicenses() throws InterruptedException {
+        Thread.sleep(2000);
         when().get(format("http://localhost:%d/vocabularies/%s/%s", port, AGENCY_ID, KEY_CONCEPT))
                 .then()
                 .statusCode(200)

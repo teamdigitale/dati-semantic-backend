@@ -1,10 +1,14 @@
 package it.teamdigitale.ndc.integration;
 
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+
 import it.teamdigitale.ndc.harvester.AgencyRepositoryService;
 import it.teamdigitale.ndc.harvester.HarvesterService;
 import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.teamdigitale.ndc.repository.TripleStoreProperties;
-import org.junit.jupiter.api.AfterAll;
+import java.io.IOException;
+import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,23 +17,14 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
-import org.testcontainers.junit.jupiter.Testcontainers;
-
-import java.io.IOException;
-import java.nio.file.Path;
-
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Testcontainers
 public class BaseIntegrationTest {
 
     private static final ElasticsearchContainer elasticsearchContainer =
-            Containers.buildElasticsearchContainer();
+        Containers.buildElasticsearchContainer();
     private static final GenericContainer virtuoso = Containers.buildVirtuosoContainer();
     private boolean harvested = false;
     private String repositoryurl = "http://testRepoURL";
@@ -61,11 +56,6 @@ public class BaseIntegrationTest {
             dataIsHarvested();
             harvested = true;
         }
-    }
-
-    public static void tearDown() {
-        virtuoso.stop();
-        elasticsearchContainer.stop();
     }
 
     static void updateTestcontainersProperties(DynamicPropertyRegistry registry) {

@@ -8,6 +8,7 @@ import it.teamdigitale.ndc.repository.VirtuosoClient;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
@@ -23,9 +24,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
-@Testcontainers
 public class TripleStoreRepositoryTest {
 
     private static String sparqlUrl;
@@ -78,11 +77,13 @@ public class TripleStoreRepositoryTest {
             )
             .from(graphName)
             .build();
-        ResultSet resultSet =
-            QueryExecutionFactory.sparqlService(sparqlUrl, findPeriodicity).execSelect();
+        QueryExecution queryExecution =
+            QueryExecutionFactory.sparqlService(sparqlUrl, findPeriodicity);
+        ResultSet resultSet = queryExecution.execSelect();
 
         assertThat(resultSet.hasNext()).isTrue();
         QuerySolution querySolution = resultSet.next();
+        queryExecution.close();
         assertThat(querySolution).as("Check a valid result row").isNotNull();
         assertThat(querySolution.get("o").toString()).as("Check variable bound value")
             .isEqualTo("http://publications.europa.eu/resource/authority/frequency/IRREG");
@@ -106,8 +107,10 @@ public class TripleStoreRepositoryTest {
             )
             .from(graphName)
             .build();
+        QueryExecution queryExecution =
+            QueryExecutionFactory.sparqlService(sparqlUrl, keywordQuery);
         ResultSet resultSet =
-            QueryExecutionFactory.sparqlService(sparqlUrl, keywordQuery).execSelect();
+            queryExecution.execSelect();
 
         assertThat(resultSet.hasNext()).isTrue();
 
@@ -121,6 +124,7 @@ public class TripleStoreRepositoryTest {
         Literal keyword = (Literal) keywordNode;
         assertThat(keyword.getLanguage()).isEqualTo("it");
         assertThat(keyword.getString()).isEqualTo("Beni culturali");
+        queryExecution.close();
     }
 
     @Test
@@ -141,18 +145,22 @@ public class TripleStoreRepositoryTest {
         UpdateExecutionFactory.createRemote(updateRequest, sparqlUrl).execute();
 
         //when
-        ResultSet resultSet = repository.select(findTitle).execSelect();
+        QueryExecution queryExecution = repository.select(findTitle);
+        ResultSet resultSet = queryExecution.execSelect();
         assertThat(resultSet.hasNext()).isTrue();
         assertThat(resultSet.next().get("b").asResource().getURI()).isEqualTo(
             "http://example/egbook");
         assertThat(resultSet.hasNext()).isFalse();
+        queryExecution.close();
 
         // when
         repository.clearExistingNamedGraph("http://agid");
-        resultSet = repository.select(findTitle).execSelect();
+        QueryExecution queryExecution1 = repository.select(findTitle);
+        resultSet = queryExecution1.execSelect();
 
         // then
         assertThat(resultSet.hasNext()).isFalse();
+        queryExecution1.close();
     }
 
     private void deleteAllTriplesFromGraph(String graphName, String sparqlUrl,
