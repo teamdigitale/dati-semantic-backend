@@ -8,13 +8,13 @@
   "properties": [
     {
       "name": "harvester.repositories",
-      "type": "java.lang.Boolean",
-      "sourceType": "it.teamdigitale.ndc.harvester.csv.DeepestLevelExtractor",
-      "description": "Whether the columns should be searched for codice_n_livello columns to find the id."
+      "type": "java.util.List<java.lang.String>",
+      "description": "List of repo URLs."
     },
     {
       "name": "harvester.controlled-vocabulary.csv.id-column-extractors.codice-livello.enabled",
       "type": "java.lang.Boolean",
+      "sourceType": "it.teamdigitale.ndc.harvester.csv.DeepestLevelExtractor",
       "description": "Whether the columns should be searched for codice_n_livello columns to find the id."
     }
   ]
