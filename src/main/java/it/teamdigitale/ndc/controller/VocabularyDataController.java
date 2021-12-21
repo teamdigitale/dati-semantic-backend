@@ -17,13 +17,14 @@ public class VocabularyDataController implements VocabulariesApi {
     final VocabularyDataService vocabularyDataService;
 
     @Override
-    public ResponseEntity<VocabularyData> fetchVocabularyData(String agencyId, String keyConcept, Integer offset, Integer limit) {
+    public ResponseEntity<VocabularyData> fetchVocabularyData(String agencyId, String keyConcept, Integer limit, Integer offset) {
         Pageable pageable = OffsetBasedPageRequest.of(offset, limit);
-        return ResponseEntity.ok(vocabularyDataService.getData(new VocabularyIdentifier(agencyId, keyConcept), pageable));
+        return AppJsonResponse.ok(vocabularyDataService.getData(new VocabularyIdentifier(agencyId, keyConcept), pageable));
     }
 
     @Override
     public ResponseEntity<Map<String, String>> fetchVocabularyItem(String agencyId, String keyConcept, String id) {
-        return ResponseEntity.ok(vocabularyDataService.getItem(new VocabularyIdentifier(agencyId, keyConcept), id));
+        return AppJsonResponse.ok(vocabularyDataService.getItem(new VocabularyIdentifier(agencyId, keyConcept), id));
     }
+
 }

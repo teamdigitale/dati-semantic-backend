@@ -26,7 +26,7 @@ public class SemanticAssetsController implements SemanticAssetsApi {
     public ResponseEntity<SearchResult> search(String q, Integer offset, Integer limit, Set<AssetType> type, Set<Theme> theme) {
         Pageable pageable = OffsetBasedPageRequest.of(offset, limit);
 
-        return ResponseEntity.ok(
+        return AppJsonResponse.ok(
                 searchService.search(q,
                         toEnumStrings(type, AssetType::getValue),
                         toEnumStrings(theme, Theme::getValue),
@@ -47,7 +47,7 @@ public class SemanticAssetsController implements SemanticAssetsApi {
 
     @Override
     public ResponseEntity<SemanticAssetDetails> getDetails(URI iri) {
-        return ResponseEntity.ok(searchService.findByIri(iri.toString()));
+        return AppJsonResponse.ok(searchService.findByIri(iri.toString()));
     }
 
 }

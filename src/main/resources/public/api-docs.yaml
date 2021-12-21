@@ -24,6 +24,14 @@ servers:
     x-sandbox: true
   - url: https://schema.gov.it
     description: Public URL
+# The following stanza defines reusable components via yaml anchors
+#   to circumvent some json-schema limitations related to `allOf`
+#   and `additionalProperties`. See [additionalProperties security](https://apisecurity.io/encyclopedia/content/oasv3/datavalidation/schema/v3-schema-object-additionalproperties-true.htm)
+x-components:
+  constants:
+    max-url-size: &max-url-size 2000
+    max-vocabulary-size: &max-vocabulary-size 100000  # 100_000
+    max-array-size-default: &max-array-size-default 20
 paths:
   "/vocabularies/{agency_id}/{key_concept}":
     get:
@@ -33,34 +41,10 @@ paths:
       operationId: fetchVocabularyData
       description: Retrieves the (paginated) items of a Controlled Vocabulary.
       parameters:
-        - name: agency_id
-          in: path
-          required: true
-          schema:
-            $ref: "#/components/schemas/UrlToken"
-        - name: key_concept
-          in: path
-          required: true
-          schema:
-            $ref: "#/components/schemas/UrlToken"
-        - name: offset
-          in: query
-          required: false
-          schema:
-            maximum: 30000
-            minimum: 0
-            type: integer
-            format: int32
-            default: 0
-        - name: limit
-          in: query
-          required: false
-          schema:
-            type: integer
-            maximum: 200
-            minimum: 1
-            format: int32
-            default: 10
+        - $ref: "#/components/parameters/agency_id"
+        - $ref: "#/components/parameters/key_concept"
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
       responses:
         '200':
           description: A list of items from the specified vocabulary
@@ -84,16 +68,8 @@ paths:
       operationId: fetchVocabularyItem
       description: Retrieves one item from a Controlled Vocabulary, based on its id.
       parameters:
-        - name: agency_id
-          in: path
-          required: true
-          schema:
-            $ref: "#/components/schemas/UrlToken"
-        - name: key_concept
-          in: path
-          required: true
-          schema:
-            $ref: "#/components/schemas/UrlToken"
+        - $ref: "#/components/parameters/agency_id"
+        - $ref: "#/components/parameters/key_concept"
         - name: id
           in: path
           required: true
@@ -106,6 +82,7 @@ paths:
             application/json:
               schema:
                 type: object
+                maxProperties: *max-array-size-default
                 additionalProperties:
                   type: string
         '404':
@@ -149,30 +126,17 @@ paths:
           schema:
             type: string
             default: ''
-        - name: offset
-          in: query
-          required: false
-          schema:
-            maximum: 30000
-            minimum: 0
-            type: integer
-            format: int32
-            default: 0
-        - name: limit
-          in: query
-          required: false
-          schema:
-            maximum: 200
-            minimum: 1
-            type: integer
-            format: int32
-            default: 10
+            maxLength: 4096
+        - $ref:  "#/components/parameters/offset"
+        - $ref: "#/components/parameters/limit"
         - name: type
           in: query
           required: false
           schema:
             uniqueItems: true
             type: array
+            minItems: 0
+            maxItems: *max-array-size-default
             items:
               $ref: "#/components/schemas/AssetType"
             default: [ ]
@@ -182,6 +146,8 @@ paths:
           schema:
             uniqueItems: true
             type: array
+            minItems: 0
+            maxItems: *max-array-size-default
             items:
               $ref: "#/components/schemas/Theme"
             default: [ ]
@@ -211,6 +177,7 @@ paths:
               An utility schema for URI and URL.
             type: string
             format: uri
+            maxLength: *max-url-size
       responses:
         '200':
           description: OK
@@ -219,69 +186,136 @@ paths:
               schema:
                 $ref: "#/components/schemas/SemanticAssetDetails"
 components:
+  parameters:
+    limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        $ref: "#/components/schemas/Limit"
+    offset:
+      name: offset
+      in: query
+      required: false
+      schema:
+        $ref: "#/components/schemas/Offset"
+    agency_id:
+      name: agency_id
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/UrlToken"
+    key_concept:
+      name: key_concept
+      in: path
+      description: |-
+        This parameter is an unique identifier for a controlled vocabulary.
+      required: true
+      schema:
+        $ref: "#/components/schemas/UrlToken"
+
   schemas:
+    Offset:
+      type: integer
+      format: int32
+      minimum: 0
+      maximum: *max-vocabulary-size
+      default: 0
+    Limit:
+      type: integer
+      format: int32
+      maximum: 200
+      minimum: 1
+      default: 10
     VocabularyData:
       type: object
+      additionalProperties: false
       properties:
         totalResults:
           type: integer
           format: int32
+          minimum: 0
+          maximum: *max-vocabulary-size
         limit:
-          type: integer
-          format: int32
+          $ref:  "#/components/schemas/Limit"
         offset:
-          type: integer
-          format: int32
+          $ref:  "#/components/schemas/Offset"
         data:
           type: array
+          minItems: 0
+          maxItems: 200
           items:
+            description: |-
+              A vocabulary item. Since
             type: object
+            maxProperties: 20
             additionalProperties:
               type: string
+              maxLength: 64
     NodeSummary:
       type: object
+      additionalProperties: false
       properties:
         iri:
+          description: |-
+            An utility schema for URI and URL.
           type: string
+          format: url
+          maxLength: *max-url-size
         summary:
           type: string
+          maxLength: 120
     SearchResult:
       type: object
       properties:
         totalCount:
           type: integer
           format: int32
+          minimum: 0
+          maximum: *max-vocabulary-size
         limit:
-          type: integer
-          format: int32
+          $ref:  "#/components/schemas/Limit"
         offset:
-          type: integer
-          format: int32
+          $ref:  "#/components/schemas/Offset"
         data:
           type: array
+          minItems: 0
+          maxItems: 100
           items:
             $ref: "#/components/schemas/SearchResultItem"
     SearchResultItem:
       type: object
+      additionalProperties: false
       properties:
         assetIri:
+          description: |-
+            An utility schema for URI and URL.
           type: string
+          format: url
+          maxLength: *max-url-size
         title:
           type: string
+          maxLength: 64
         description:
           type: string
+          maxLength: 100000
         type:
           $ref: "#/components/schemas/AssetType"
         modifiedOn:
+          description: |-
+            TODO: identify the actual date format.
           type: string
           format: date
         versionInfo:
           type: string
+          maxLength: 120
         themes:
           type: array
           uniqueItems: true
           items:
             $ref: "#/components/schemas/Theme"
+          minItems: 0
+          maxItems: *max-array-size-default
         rightsHolder:
           $ref: "#/components/schemas/NodeSummary"
     SemanticAssetDetails:
@@ -293,20 +327,30 @@ components:
               type: string
             distributionUrls:
               type: array
+              minItems: 0
+              maxItems: 10
               items:
                 type: string
+                format: url
+                maxLength: 2000
             subjects:
               type: array
+              minItems: 0
+              maxItems: *max-array-size-default
               items:
                 type: string
             contactPoint:
               $ref: "#/components/schemas/NodeSummary"
             publishers:
               type: array
+              minItems: 0
+              maxItems: *max-array-size-default
               items:
                 $ref: "#/components/schemas/NodeSummary"
             creators:
               type: array
+              minItems: 0
+              maxItems: *max-array-size-default
               items:
                 $ref: "#/components/schemas/NodeSummary"
             issuedOn:
@@ -314,26 +358,43 @@ components:
               format: date
             languages:
               type: array
+              minItems: 0
+              maxItems: *max-array-size-default
               items:
                 type: string
+                maxLength: 2
+                description: |-
+                  TODO: ISO alpha-2 language codes?
             temporal:
+              description: |-
+                Which is the format?
               type: string
             conformsTo:
               type: array
+              minItems: 0
+              maxItems: *max-array-size-default
               items:
                 $ref: "#/components/schemas/NodeSummary"
             keyConcept:
-              type: string
+              $ref:  "#/components/schemas/UrlToken"
             endpointUrl:
+              description: |-
+                An utility schema for URI and URL.
               type: string
+              format: url
+              maxLength: *max-url-size
             keyClasses:
               type: array
+              minItems: 0
+              maxItems: *max-array-size-default
               items:
                 $ref: "#/components/schemas/NodeSummary"
             prefix:
-              type: string
+              $ref:  "#/components/schemas/UrlToken"
             projects:
               type: array
+              minItems: 0
+              maxItems: *max-array-size-default
               items:
                 $ref: "#/components/schemas/NodeSummary"
     AssetType:
@@ -360,15 +421,26 @@ components:
         - "http://publications.europa.eu/resource/authority/data-theme/TRAN"
 
     UrlToken:
+      description: |-
+        An url component (eg. the last path segment).
       type: string
       pattern: ^\w[^\s]{0,64}$
+      maxLength: 64
     Problem:
       type: object
-      description: This schema describes RFC7807 Problem Details for HTTP APIs.
+      description: |-
+        This schema extends RFC7807 Problem Details for HTTP APIs
+        with the additional `timestamp` property used for debugging
+        purposes.
+      additionalProperties: false
+      required:
+        - title
+        - status
       properties:
         title:
           type: string
           description: Human readable description of the issue
+          maxLength: 255
         type:
           type: string
           format: uri
@@ -382,6 +454,7 @@ components:
         timestamp:
           type: string
           description: Timestamp for debugging purposes
+          maxLength: 25
   responses:
     BadParameters:
       description: Bad input parameters

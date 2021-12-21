@@ -94,7 +94,6 @@ openApiGenerate {
             performBeanValidation: 'true',
             dateLibrary          : 'java8',
             title                : 'National Data Catalog API',
-            delegatePattern      : 'true',
             interfaceOnly        : 'true'
     ]
 }

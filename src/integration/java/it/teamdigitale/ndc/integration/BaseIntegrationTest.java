@@ -1,24 +1,31 @@
 package it.teamdigitale.ndc.integration;
 
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
-
 import it.teamdigitale.ndc.harvester.AgencyRepositoryService;
 import it.teamdigitale.ndc.harvester.HarvesterService;
 import it.teamdigitale.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.teamdigitale.ndc.repository.TripleStoreProperties;
-import java.io.IOException;
-import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.Set;
+
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class BaseIntegrationTest {
@@ -32,7 +39,7 @@ public class BaseIntegrationTest {
     @LocalServerPort
     int port;
 
-    @Autowired
+    @SpyBean
     ElasticsearchOperations elasticsearchOperations;
 
     @Autowired
@@ -51,7 +58,7 @@ public class BaseIntegrationTest {
     }
 
     @BeforeEach
-    public synchronized void beforeEach() throws IOException {
+    public void beforeEach() throws IOException {
         if (!harvested) {
             dataIsHarvested();
             harvested = true;
@@ -74,6 +81,16 @@ public class BaseIntegrationTest {
 
         harvesterService.harvest(repositoryurl);
 
+        refreshAllIndicesUsedForBulkIndexing();
+
         elasticsearchOperations.indexOps(SemanticAssetMetadata.class).refresh();
+    }
+
+    private void refreshAllIndicesUsedForBulkIndexing() {
+        ArgumentCaptor<IndexCoordinates> indexCaptor = ArgumentCaptor.forClass(IndexCoordinates.class);
+
+        verify(elasticsearchOperations).bulkIndex(anyList(), indexCaptor.capture());
+        Set<IndexCoordinates> referencedIndices = new HashSet<>(indexCaptor.getAllValues());
+        referencedIndices.forEach(ic -> elasticsearchOperations.indexOps(ic).refresh());
     }
 }
