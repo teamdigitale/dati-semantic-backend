@@ -68,7 +68,7 @@ class HarvesterJobTest {
         verify(jobLauncher).run(eq(harvestSemanticAssetsJob), paramCaptor.capture());
 
         JobParameters actualJobParams = paramCaptor.getValue();
-        assertEquals("2021-12-01 12:00", actualJobParams.getString("harvestTime"));
+        assertEquals("2021-12-01 00:00", actualJobParams.getString("harvestTime"));
         assertEquals(repositories, actualJobParams.getString("repositories"));
     }
 
@@ -91,7 +91,7 @@ class HarvesterJobTest {
         verify(jobLauncher).run(eq(harvestSemanticAssetsJob), paramCaptor.capture());
 
         JobParameters actualJobParams = paramCaptor.getValue();
-        assertEquals("2021-12-01 12:00", actualJobParams.getString("harvestTime"));
+        assertEquals("2021-12-01 00:00", actualJobParams.getString("harvestTime"));
         assertEquals(userGivenRepos, actualJobParams.getString("repositories"));
     }
 
