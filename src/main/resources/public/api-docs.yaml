@@ -19,10 +19,10 @@ tags:
   - name: application-status
   - name: semantic-assets
 servers:
-  - url: /
+  - url: /api
     description: Development URL
     x-sandbox: true
-  - url: https://schema.gov.it
+  - url: https://schema.gov.it/api
     description: Public URL
 # The following stanza defines reusable components via yaml anchors
 #   to circumvent some json-schema limitations related to `allOf`
