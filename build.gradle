@@ -11,7 +11,7 @@ plugins {
     id 'idea'
 }
 
-group = 'it.team-digitale'
+group = 'it.gov.innovazione'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
 
@@ -87,9 +87,9 @@ openApiGenerate {
     generatorName = 'spring'
     inputSpec = "$rootDir/src/main/resources/public/api-docs.yaml".toString()
     outputDir = "$buildDir/generated".toString()
-    apiPackage = 'it.teamdigitale.ndc.gen.api'
-    invokerPackage = 'it.teamdigitale.ndc.gen.invoker'
-    modelPackage = 'it.teamdigitale.ndc.gen.dto'
+    apiPackage = 'it.gov.innovazione.ndc.gen.api'
+    invokerPackage = 'it.gov.innovazione.ndc.gen.invoker'
+    modelPackage = 'it.gov.innovazione.ndc.gen.dto'
     configOptions = [
             library              : 'spring-boot',
             performBeanValidation: 'true',
@@ -142,11 +142,11 @@ jacocoTestCoverageVerification {
                 minimum = 0.9
             }
             excludes = [
-                    'it.teamdigitale.ndc.config.*',
-                    'it.teamdigitale.ndc.Application',
-                    'it.teamdigitale.ndc.harvester.util.*',
-                    'it.teamdigitale.ndc.model.profiles.*',
-                    'it.teamdigitale.ndc.gen.*',
+                    'it.gov.innovazione.ndc.config.*',
+                    'it.gov.innovazione.ndc.Application',
+                    'it.gov.innovazione.ndc.harvester.util.*',
+                    'it.gov.innovazione.ndc.model.profiles.*',
+                    'it.gov.innovazione.ndc.gen.*',
             ]
         }
     }

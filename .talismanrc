@@ -9,11 +9,11 @@ fileignoreconfig:
   checksum: 3bda2b0e3e1648fa58d60495ff1a38e268b75342bbdb30bcd5374b4abeb1edae
 - filename: src/test/resources/testdata/cv.ttl
   checksum: dd30c21d66ac6d166bc585f0f5c5ca067d06ed7b4a81a9f86c9af235d5eda22f
-- filename: src/main/java/it/teamdigitale/ndc/harvester/model/ControlledVocabularyModel.java
+- filename: src/main/java/it/gov/innovazione/ndc/harvester/model/ControlledVocabularyModel.java
   checksum: be6ce41271d41d5bd98ca5ae8b35ab09a0701d25e02fc92abe348674b62c7614
-- filename: src/main/java/it/teamdigitale/ndc/harvester/model/ControlledVocabularyModel.java
+- filename: src/main/java/it/gov/innovazione/ndc/harvester/model/ControlledVocabularyModel.java
   checksum: 2415833c3e97e20aeb25cd4b07f1ebb5d46550d04ee28f068f6a49ca655c3bbc
-- filename: src/main/java/it/teamdigitale/ndc/harvester/model/SemanticAssetMetadata.java
+- filename: src/main/java/it/gov/innovazione/ndc/harvester/model/SemanticAssetMetadata.java
   checksum: a55ea1884845d520c72d97775fc8ec88d4a586700ff2d38efd0adcb9ac46db1e
 - filename: src/main/resources/elasticsearch-settings.json
   checksum: 28664f692ef237326fb88c7106b59e3cbb1e636f4c1ebae4377a021ec4bb910e

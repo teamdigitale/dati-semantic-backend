@@ -1,0 +1,54 @@
+package it.gov.innovazione.ndc.model;
+
+import it.gov.innovazione.ndc.gen.dto.Problem;
+import it.gov.innovazione.ndc.gen.dto.SearchResult;
+import it.gov.innovazione.ndc.gen.dto.SearchResultItem;
+import it.gov.innovazione.ndc.gen.dto.VocabularyData;
+import lombok.Builder;
+import lombok.SneakyThrows;
+import org.springframework.http.HttpStatus;
+
+import java.net.URI;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+
+public class Builders {
+    private Builders() {
+    }
+
+    @Builder(builderMethodName = "searchResult")
+    public static SearchResult newSearchResult(Integer totalCount, Integer limit, Integer offset, List<SearchResultItem> data) {
+        SearchResult result = new SearchResult();
+
+        result.setTotalCount(totalCount);
+        result.setLimit(limit);
+        result.setOffset(offset);
+        result.setData(data);
+
+        return result;
+    }
+    
+    @Builder(builderMethodName = "vocabularyData")
+    public static VocabularyData newVocabularyDataDto(Integer totalResults, Integer limit, Integer offset, List<Map<String, String>> data) {
+        VocabularyData dto = new VocabularyData();
+
+        dto.setTotalResults(totalResults);
+        dto.setLimit(limit);
+        dto.setOffset(offset);
+        dto.setData(data);
+
+        return dto;
+    }
+
+    @Builder(builderMethodName = "problem")
+    @SneakyThrows
+    public static Problem build(String errorClass, String title, HttpStatus status) {
+        Problem problem = new Problem();
+        problem.setStatus(status.value());
+        problem.setType(new URI("https://schema.gov.it/tech/errors/" + errorClass));
+        problem.setTitle(title);
+        problem.setTimestamp(LocalDateTime.now().toString());
+        return problem;
+    }
+}
