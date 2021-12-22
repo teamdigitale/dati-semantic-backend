@@ -1,5 +1,5 @@
-[![License](https://img.shields.io/github/license/italia/bootstrap-italia.svg)](https://github.com/italia/bootstrap-italia/blob/master/LICENSE)
-[![GitHub issues](https://img.shields.io/github/issues/italia/bootstrap-italia.svg)](https://github.com/italia/bootstrap-italia/issues)
+[![License](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://github.com/teamdigitale/dati-semantic-backend/blob/main/LICENSE)
+[![GitHub issues](https://img.shields.io/github/issues/teamdigitale/dati-semantic-backend.svg)](https://github.com/teamdigitale/dati-semantic-backend/issues)
 [![Join the #design channel](https://img.shields.io/badge/Slack%20channel-%23design-blue.svg)](https://developersitalia.slack.com/messages/C7VPAUVB3/)
 [![Get invited](https://slack.developers.italia.it/badge.svg)](https://slack.developers.italia.it/)
 [![18app on forum.italia.it](https://img.shields.io/badge/Forum-18app-blue.svg)](https://forum.italia.it/c/18app-carta-docente)
@@ -31,19 +31,25 @@ The backend is composed:
 
 ## Installing
 
+#### Without docker
 - Install JDK 11 in your machine
 - Run  `mkdir .git/hooks`
 - Build service using `./gradlew clean build`
-OR Run tests locally using `docker-compose -f docker-compose-test.yaml up`   
 - Start service using `./gradlew clean bootRun`
+- Run tests using `./gradlew clean test`
+
+#### With Docker
+- Run service using `docker-compose up` - this starts the service and its dependencies
 
 ## Documentation
+[Wiki](https://github.com/teamdigitale/dati-semantic-backend/wiki)
 
 # How to contribute
 
 ## Community
 
 ### Code of conduct
+Please review our [Code of Conduct](CODE_OF_CONDUCT.md) to ensure a great collaboration with the rest of the community.
 
 ### Responsible Disclosure
 
@@ -53,4 +59,5 @@ OR Run tests locally using `docker-compose -f docker-compose-test.yaml up`
 
 # License
 
-This work is licensed under the GNU Affero General Public License (AGPL), version 3 or later. You can find a copy of the license in the `LICENSE` file
+This work is licensed under the GNU Affero General Public License (AGPL), version 3 or later. You can find a copy of 
+the license in the [LICENSE](https://github.com/teamdigitale/dati-semantic-backend/blob/main/LICENSE) file
