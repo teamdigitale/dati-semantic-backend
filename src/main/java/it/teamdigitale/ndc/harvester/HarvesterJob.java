@@ -55,7 +55,7 @@ public class HarvesterJob {
     public void harvest(String repositories) {
         try {
             LocalDateTime now = LocalDateTime.now(clock);
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:00");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:00");
             String currentDateTime = now.format(formatter);
 
             JobParameters jobParameters = new JobParametersBuilder()
