@@ -45,6 +45,7 @@ class SemanticAssetsMetadataMapperTest {
                 .temporal("monthly")
                 .conformsTo(List.of(buildNodeSummary("http://skos1", "skos1 name"),
                         buildNodeSummary("http://skos2", "skos2 name")))
+                .agencyId("agid")
                 .keyConcept("keyConcept")
                 .endpointUrl("https://example.com/endpoint")
                 .keyClasses(List.of(buildNodeSummary("http://Class1", "Class1"),
@@ -94,6 +95,7 @@ class SemanticAssetsMetadataMapperTest {
         assertThat(dto.getConformsTo().get(1).getIri()).isEqualTo("http://skos2");
         assertThat(dto.getConformsTo().get(1).getSummary()).isEqualTo("skos2 name");
 
+        assertThat(dto.getAgencyId()).isEqualTo("agid");
         assertThat(dto.getKeyConcept()).isEqualTo("keyConcept");
         assertThat(dto.getEndpointUrl()).isEqualTo("https://example.com/endpoint");
 

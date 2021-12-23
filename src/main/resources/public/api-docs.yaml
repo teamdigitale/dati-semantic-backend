@@ -375,6 +375,9 @@ components:
               maxItems: *max-array-size-default
               items:
                 $ref: "#/components/schemas/NodeSummary"
+            agencyId:
+              type: string
+              maxLength: 64
             keyConcept:
               $ref:  "#/components/schemas/UrlToken"
             endpointUrl:
