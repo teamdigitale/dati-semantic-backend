@@ -1,6 +1,7 @@
 package it.gov.innovazione.ndc.controller;
 
 import it.gov.innovazione.ndc.harvester.HarvesterJob;
+import it.gov.innovazione.ndc.harvester.HarvesterService;
 import it.gov.innovazione.ndc.harvester.JobExecutionStatusDto;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +23,8 @@ class HarvestJobControllerTest {
 
     @Mock
     HarvesterJob harvesterJob;
+    @Mock
+    HarvesterService harvesterService;
     @InjectMocks
     HarvestJobController harvestJobController;
 
@@ -54,5 +57,12 @@ class HarvestJobControllerTest {
         String repoUrls = "http://github.com/repo,http://github.com/repo2";
         harvestJobController.harvestRepositories(repoUrls);
         verify(harvesterJob).harvest(repoUrls);
+    }
+
+    @Test
+    void shouldSynchronouslyClearRepo() {
+        String repoUrl = "http://github.com/repo.git";
+        harvestJobController.clearRepo(repoUrl);
+        verify(harvesterService).clear(repoUrl);
     }
 }

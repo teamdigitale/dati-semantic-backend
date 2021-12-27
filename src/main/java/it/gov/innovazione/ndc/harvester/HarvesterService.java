@@ -31,8 +31,22 @@ public class HarvesterService {
             } finally {
                 agencyRepositoryService.removeClonedRepo(path);
             }
+            log.info("Repo {} processed correctly", repoUrl);
         } catch (IOException e) {
             log.error("Exception while processing {}", repoUrl, e);
+            throw e;
+        }
+    }
+
+    public void clear(String repoUrl) {
+        log.info("Clearing repo {}", repoUrl);
+        repoUrl = normaliseRepoUrl(repoUrl);
+        log.debug("Normalised repo url {}", repoUrl);
+        try {
+            clearRepo(repoUrl);
+            log.info("Repo {} cleared", repoUrl);
+        } catch (Exception e) {
+            log.error("Error while clearing {}", repoUrl, e);
             throw e;
         }
     }
@@ -42,13 +56,17 @@ public class HarvesterService {
     }
 
     private void harvestClonedRepo(String repoUrl, Path path) {
-        cleanUpWithHarvesters(repoUrl);
-        cleanUpTripleStore(repoUrl);
-        cleanUpIndexedMetadata(repoUrl);
+        clearRepo(repoUrl);
 
         harvestSemanticAssets(repoUrl, path);
 
         log.info("Repo {} processed", repoUrl);
+    }
+
+    private void clearRepo(String repoUrl) {
+        cleanUpWithHarvesters(repoUrl);
+        cleanUpTripleStore(repoUrl);
+        cleanUpIndexedMetadata(repoUrl);
     }
 
     private void cleanUpWithHarvesters(String repoUrl) {

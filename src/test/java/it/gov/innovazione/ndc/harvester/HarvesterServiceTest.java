@@ -105,4 +105,17 @@ public class HarvesterServiceTest {
 
         verify(agencyRepoService).removeClonedRepo(clonedRepoPath);
     }
+
+    @Test
+    void shouldClearRepoData() {
+        String repoUrl = "someRepoUri.git";
+        String sanitizedRepoUrl = repoUrl.replace(".git", "");
+
+        harvesterService.clear(repoUrl);
+
+        InOrder order = inOrder(harvester, tripleStoreRepository, metadataRepository, harvester);
+        order.verify(harvester).cleanUpBeforeHarvesting(sanitizedRepoUrl);
+        order.verify(tripleStoreRepository).clearExistingNamedGraph(sanitizedRepoUrl);
+        order.verify(metadataRepository).deleteByRepoUrl(sanitizedRepoUrl);
+    }
 }

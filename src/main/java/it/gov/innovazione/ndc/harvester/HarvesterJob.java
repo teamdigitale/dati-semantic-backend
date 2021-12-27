@@ -28,10 +28,10 @@ import static java.util.stream.Collectors.toList;
 @Slf4j
 public class HarvesterJob {
     private final JobLauncher jobLauncher;
-    private JobExplorer jobExplorer;
+    private final JobExplorer jobExplorer;
     private final Job harvestSemanticAssetsJob;
     private final Clock clock;
-    private String repositories;
+    private final String repositories;
 
     @Autowired
     public HarvesterJob(JobLauncher jobLauncher,
