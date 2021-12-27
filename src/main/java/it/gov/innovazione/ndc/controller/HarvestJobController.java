@@ -16,7 +16,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@ConditionalOnProperty(name = "harvestJob.endpoint.enabled", havingValue = "true")
+@ConditionalOnProperty(name = "harvester.endpoint.enabled", havingValue = "true")
 @RequestMapping
 public class HarvestJobController {
     private final HarvesterJob harvesterJob;

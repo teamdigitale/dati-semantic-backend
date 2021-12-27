@@ -16,6 +16,11 @@
       "type": "java.lang.Boolean",
       "sourceType": "it.gov.innovazione.ndc.harvester.csv.DeepestLevelExtractor",
       "description": "Whether the columns should be searched for codice_n_livello columns to find the id."
+    },
+    {
+      "name": "harvester.endpoint.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether the Rest endoints for starting and monitoring harvest jobs should be available."
     }
   ]
 }
