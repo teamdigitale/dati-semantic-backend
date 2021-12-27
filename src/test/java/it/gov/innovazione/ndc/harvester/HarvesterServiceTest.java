@@ -118,4 +118,18 @@ public class HarvesterServiceTest {
         order.verify(tripleStoreRepository).clearExistingNamedGraph(sanitizedRepoUrl);
         order.verify(metadataRepository).deleteByRepoUrl(sanitizedRepoUrl);
     }
+
+    @Test
+    void shouldPropagateExceptionWhileClearingRepo() {
+        String repoUrl = "someRepoUri.git";
+        String sanitizedRepoUrl = "someRepoUri";
+
+
+        RuntimeException exception = new RuntimeException("Something bad happened!");
+        doThrow(exception).when(harvester).cleanUpBeforeHarvesting(sanitizedRepoUrl);
+
+        assertThatThrownBy(() -> harvesterService.clear(repoUrl))
+                .isSameAs(exception);
+
+    }
 }
