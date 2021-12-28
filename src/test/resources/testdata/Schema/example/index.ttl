@@ -25,6 +25,7 @@ and other interfaces.""" ;
     dct:format <http://publications.europa.eu/resource/authority/file-type/JSON> ;
     dct:license licences:A21_CCBY40 ;
     dcat:accessURL <https://github.com/ioggstream/json-semantic-playground/tree/master/assets/schemas/person/v202108.01> ;
+    dcat:downloadURL <https://github.com/ioggstream/json-semantic-playground/raw/master/assets/schemas/person/v202108.01/person.oas3.yaml>;
     dcat:mediaType "application/json" .
 
 <http://spcdata.digitpa.gov.it/browse/page/Amministrazione/agid>

@@ -137,8 +137,10 @@ public class RestApiIntegrationTests extends BaseIntegrationTest {
                 .body("assetIri", equalTo(assetIri))
                 .body("type", equalTo(SCHEMA.name()))
                 .body("modifiedOn", equalTo("2021-12-06"))
-                .body("distributionUrls[0]",
-                        equalTo("https://github.com/ioggstream/json-semantic-playground/tree/master/assets/schemas/person/v202108.01"));
+                .body("distributions[0].accessUrl",
+                        equalTo("https://github.com/ioggstream/json-semantic-playground/tree/master/assets/schemas/person/v202108.01"))
+                .body("distributions[0].downloadUrl",
+                        equalTo("https://github.com/ioggstream/json-semantic-playground/raw/master/assets/schemas/person/v202108.01/person.oas3.yaml"));
 
         try (RDFConnection connection = getVirtuosoConnection()) {
             String query = format("SELECT ?o WHERE { <%s> <%s> ?o }", assetIri, title);
