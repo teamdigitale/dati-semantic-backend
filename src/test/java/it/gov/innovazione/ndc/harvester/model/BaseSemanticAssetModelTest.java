@@ -1,29 +1,40 @@
 package it.gov.innovazione.ndc.harvester.model;
 
+import it.gov.innovazione.ndc.harvester.model.index.Distribution;
 import it.gov.innovazione.ndc.harvester.model.index.NodeSummary;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.gov.innovazione.ndc.harvester.model.exception.InvalidModelException;
+import it.gov.innovazione.ndc.model.profiles.EuropePublicationVocabulary;
 import it.gov.innovazione.ndc.model.profiles.NDC;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.sparql.vocabulary.FOAF;
+import org.apache.jena.vocabulary.DCAT;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.VCARD4;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static it.gov.innovazione.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.apache.jena.rdf.model.ResourceFactory.createLangLiteral;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
+import static org.apache.jena.vocabulary.DCAT.accessURL;
 import static org.apache.jena.vocabulary.DCAT.contactPoint;
+import static org.apache.jena.vocabulary.DCAT.distribution;
+import static org.apache.jena.vocabulary.DCAT.downloadURL;
 import static org.apache.jena.vocabulary.DCAT.keyword;
 import static org.apache.jena.vocabulary.DCAT.theme;
 import static org.apache.jena.vocabulary.DCTerms.accrualPeriodicity;
 import static org.apache.jena.vocabulary.DCTerms.conformsTo;
 import static org.apache.jena.vocabulary.DCTerms.creator;
 import static org.apache.jena.vocabulary.DCTerms.description;
+import static org.apache.jena.vocabulary.DCTerms.format;
 import static org.apache.jena.vocabulary.DCTerms.identifier;
 import static org.apache.jena.vocabulary.DCTerms.issued;
 import static org.apache.jena.vocabulary.DCTerms.language;
@@ -42,7 +53,7 @@ class BaseSemanticAssetModelTest {
     private static final String TTL_FILE = "some-file";
     public static final String CV_IRI = "https://w3id.org/italia/controlled-vocabulary/test";
     public static final String RIGHTS_HOLDER_IRI =
-        "http://spcdata.digitpa.gov.it/browse/page/Amministrazione/agid";
+            "http://spcdata.digitpa.gov.it/browse/page/Amministrazione/agid";
     private Model jenaModel;
     private BaseSemanticAssetModel semanticAssetModel;
 
@@ -82,7 +93,17 @@ class BaseSemanticAssetModelTest {
             .addProperty(conformsTo, jenaModel.createResource("http://conformsTo")
                 .addProperty(FOAF.name, "conformsTo"))
             .addProperty(conformsTo, jenaModel.createResource("http://conformsTo2")
-                .addProperty(FOAF.name, "conformsTo2"));
+                .addProperty(FOAF.name, "conformsTo2"))
+            .addProperty(distribution, jenaModel.createResource(CV_IRI + "-ttl")
+                .addProperty(format, EuropePublicationVocabulary.FILE_TYPE_RDF_TURTLE)
+                .addProperty(accessURL, jenaModel.createResource(CV_IRI + "/dist/ttl"))
+                .addProperty(downloadURL, jenaModel.createResource(CV_IRI + "/dist/ttl/test.ttl"))
+            )
+            .addProperty(distribution, jenaModel.createResource(CV_IRI + "-json")
+                .addProperty(format, EuropePublicationVocabulary.FILE_TYPE_JSON)
+                .addProperty(accessURL, jenaModel.createResource(CV_IRI + "/dist/json"))
+                .addProperty(downloadURL, jenaModel.createResource(CV_IRI + "/dist/json/test.json"))
+            );
         semanticAssetModel = new TestBaseSemanticAssetModel(jenaModel, TTL_FILE, "some-repo");
     }
 
@@ -112,7 +133,7 @@ class BaseSemanticAssetModelTest {
         jenaModel.getResource(CV_IRI).removeAll(title);
 
         assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(
-            InvalidModelException.class);
+                InvalidModelException.class);
     }
 
     @Test
@@ -127,7 +148,7 @@ class BaseSemanticAssetModelTest {
         jenaModel.getResource(CV_IRI).removeAll(description);
 
         assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(
-            InvalidModelException.class);
+                InvalidModelException.class);
     }
 
     @Test
@@ -142,7 +163,7 @@ class BaseSemanticAssetModelTest {
         jenaModel.getResource(CV_IRI).removeAll(modified);
 
         assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(
-            InvalidModelException.class);
+                InvalidModelException.class);
     }
 
     @Test
@@ -157,7 +178,7 @@ class BaseSemanticAssetModelTest {
         jenaModel.getResource(CV_IRI).removeAll(theme);
 
         assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(
-            InvalidModelException.class);
+                InvalidModelException.class);
     }
 
     @Test
@@ -173,7 +194,7 @@ class BaseSemanticAssetModelTest {
         jenaModel.getResource(CV_IRI).removeAll(rightsHolder);
 
         assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(
-            InvalidModelException.class);
+                InvalidModelException.class);
     }
 
     @Test
@@ -188,7 +209,7 @@ class BaseSemanticAssetModelTest {
         jenaModel.getResource(CV_IRI).removeAll(accrualPeriodicity);
 
         assertThatThrownBy(() -> semanticAssetModel.extractMetadata()).isInstanceOf(
-            InvalidModelException.class);
+                InvalidModelException.class);
     }
 
     @Test
@@ -229,8 +250,8 @@ class BaseSemanticAssetModelTest {
 
         assertThat(metadata.getPublishers()).hasSize(2);
         assertThat(metadata.getPublishers()).containsExactlyInAnyOrder(
-            NodeSummary.builder().iri("http://publisher").summary("publisher").build(),
-            NodeSummary.builder().iri("http://publisher2").summary("publisher2").build()
+                NodeSummary.builder().iri("http://publisher").summary("publisher").build(),
+                NodeSummary.builder().iri("http://publisher2").summary("publisher2").build()
         );
     }
 
@@ -249,8 +270,8 @@ class BaseSemanticAssetModelTest {
 
         assertThat(metadata.getCreators()).hasSize(2);
         assertThat(metadata.getCreators()).containsExactlyInAnyOrder(
-            NodeSummary.builder().iri("http://creator").summary("creator").build(),
-            NodeSummary.builder().iri("http://creator2").summary("creator2").build()
+                NodeSummary.builder().iri("http://creator").summary("creator").build(),
+                NodeSummary.builder().iri("http://creator2").summary("creator2").build()
         );
     }
 
@@ -333,8 +354,8 @@ class BaseSemanticAssetModelTest {
 
         assertThat(metadata.getConformsTo()).hasSize(2);
         assertThat(metadata.getConformsTo()).containsExactlyInAnyOrder(
-            NodeSummary.builder().iri("http://conformsTo").summary("conformsTo").build(),
-            NodeSummary.builder().iri("http://conformsTo2").summary("conformsTo2").build()
+                NodeSummary.builder().iri("http://conformsTo").summary("conformsTo").build(),
+                NodeSummary.builder().iri("http://conformsTo2").summary("conformsTo2").build()
         );
     }
 
@@ -345,6 +366,49 @@ class BaseSemanticAssetModelTest {
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
         assertThat(metadata.getConformsTo()).isEmpty();
+    }
+
+    @Test
+    void shouldExtractDistribution() {
+        SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
+
+        List<Distribution> distributions = metadata.getDistributions();
+        assertThat(distributions).hasSize(1);
+        assertThat(distributions.get(0).getAccessUrl()).isEqualTo(CV_IRI + "/dist/json");
+        assertThat(distributions.get(0).getDownloadUrl()).isEqualTo(CV_IRI + "/dist/json/test.json");
+    }
+
+    @Test
+    void shouldExtractDistributionWithJustAccessUrl() {
+        removeAllPropertyStatements(downloadURL);
+
+        SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
+
+        List<Distribution> distributions = metadata.getDistributions();
+        assertThat(distributions).hasSize(1);
+        assertThat(distributions.get(0).getAccessUrl()).isEqualTo(CV_IRI + "/dist/json");
+        assertThat(distributions.get(0).getDownloadUrl()).isNull();
+    }
+
+    @Test
+    void shouldExtractDistributionWithJustDownloadUrl() {
+        removeAllPropertyStatements(accessURL);
+
+        SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
+
+        List<Distribution> distributions = metadata.getDistributions();
+        assertThat(distributions).hasSize(1);
+        assertThat(distributions.get(0).getAccessUrl()).isNull();
+        assertThat(distributions.get(0).getDownloadUrl()).isEqualTo(CV_IRI + "/dist/json/test.json");
+    }
+
+    @Test
+    void shouldComplainForDistributionWithNoUrls() {
+        removeAllPropertyStatements(accessURL);
+        removeAllPropertyStatements(downloadURL);
+
+        assertThatThrownBy(() -> semanticAssetModel.extractMetadata())
+                .isInstanceOf(InvalidModelException.class);
     }
 
     @Test
@@ -363,7 +427,15 @@ class BaseSemanticAssetModelTest {
         assertThat(metadata.getTemporal()).isNull();
     }
 
+    private void removeAllPropertyStatements(Property property) {
+        List<Statement> downloadStatements = jenaModel
+                .listStatements(null, property, (RDFNode) null)
+                .toList();
+        downloadStatements.forEach(s -> jenaModel.remove(s));
+    }
+
     private static class TestBaseSemanticAssetModel extends BaseSemanticAssetModel {
+
 
         public TestBaseSemanticAssetModel(Model coreModel, String source, String repoUrl) {
             super(coreModel, source, repoUrl);
@@ -372,6 +444,11 @@ class BaseSemanticAssetModelTest {
         @Override
         protected String getMainResourceTypeIri() {
             return CONTROLLED_VOCABULARY.getTypeIri();
+        }
+
+        @Override
+        protected List<Distribution> getDistributions() {
+            return extractDistributionsFilteredByFormat(distribution, EuropePublicationVocabulary.FILE_TYPE_JSON);
         }
     }
 }

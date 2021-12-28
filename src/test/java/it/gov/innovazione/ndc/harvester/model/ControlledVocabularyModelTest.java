@@ -1,10 +1,11 @@
 package it.gov.innovazione.ndc.harvester.model;
 
+import it.gov.innovazione.ndc.harvester.model.exception.InvalidModelException;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.gov.innovazione.ndc.model.profiles.EuropePublicationVocabulary;
-import it.gov.innovazione.ndc.harvester.model.exception.InvalidModelException;
 import it.gov.innovazione.ndc.model.profiles.NDC;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
@@ -20,10 +21,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 
 import static it.gov.innovazione.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
+import static java.util.Objects.nonNull;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.apache.jena.vocabulary.DCAT.accessURL;
 import static org.apache.jena.vocabulary.DCAT.distribution;
+import static org.apache.jena.vocabulary.DCAT.downloadURL;
 import static org.apache.jena.vocabulary.DCAT.theme;
 import static org.apache.jena.vocabulary.DCTerms.accrualPeriodicity;
 import static org.apache.jena.vocabulary.DCTerms.description;
@@ -65,11 +68,13 @@ class ControlledVocabularyModelTest {
             .addProperty(theme, createResource("theme"))
             .addProperty(accrualPeriodicity, createResource("IRREG"))
             .addProperty(distribution, jenaModel.createResource(TURTLE_DISTRIBUTION_IRI)
-                .addProperty(accessURL, createResource("http://repo/file.rdf"))
+                .addProperty(accessURL, createResource("http://repo/cv/dist/ttl"))
+                .addProperty(downloadURL, createResource("http://repo/cv/dist/ttl/file.ttl"))
                 .addProperty(format, EuropePublicationVocabulary.FILE_TYPE_RDF_TURTLE)
             )
             .addProperty(distribution, jenaModel.createResource(JSON_DISTRIBUTION_IRI)
-                .addProperty(accessURL, createResource("http://repo/file.json"))
+                .addProperty(accessURL, createResource("http://repo/cv/dist/json"))
+                .addProperty(downloadURL, createResource("http://repo/cv/dist/json/file.json"))
                 .addProperty(format, EuropePublicationVocabulary.FILE_TYPE_JSON)
             );
     }
@@ -135,13 +140,17 @@ class ControlledVocabularyModelTest {
 
         SemanticAssetMetadata metadata = model.extractMetadata();
 
-        assertThat(metadata.getDistributionUrls()).containsExactlyInAnyOrder(
-                "http://repo/file.rdf");
+        assertThat(metadata.getDistributions()).hasSize(1);
+        assertThat(metadata.getDistributions().get(0).getDownloadUrl()).isEqualTo("http://repo/cv/dist/ttl/file.ttl");
     }
 
     @Test
     void shouldComplainForTurtleDistributionWithoutUrl() {
-        jenaModel.getResource(CV_IRI).listProperties(distribution).forEach(d -> d.getProperty(accessURL).remove());
+        jenaModel.getResource(CV_IRI).listProperties(distribution)
+            .forEach(d -> List.of(accessURL, downloadURL)
+                .forEach(p -> removePropertyIfExists(d, p)
+            )
+        );
 
         ControlledVocabularyModel model =
                 new ControlledVocabularyModel(jenaModel, TTL_FILE, REPO_URL);
@@ -150,6 +159,13 @@ class ControlledVocabularyModelTest {
                 .isInstanceOf(InvalidModelException.class)
                 .hasMessageContaining(TURTLE_DISTRIBUTION_IRI)
                 .hasMessageContaining(accessURL.getURI());
+    }
+
+    private void removePropertyIfExists(Statement d, Property p) {
+        Statement property = d.getProperty(p);
+        if (nonNull(property)) {
+            property.remove();
+        }
     }
 
     @Test

@@ -1,12 +1,13 @@
 package it.gov.innovazione.ndc.model;
 
-import it.gov.innovazione.ndc.gen.dto.SemanticAssetDetails;
-import it.gov.innovazione.ndc.harvester.model.index.NodeSummary;
-import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.gov.innovazione.ndc.gen.dto.AssetType;
+import it.gov.innovazione.ndc.gen.dto.Distribution;
 import it.gov.innovazione.ndc.gen.dto.SearchResultItem;
+import it.gov.innovazione.ndc.gen.dto.SemanticAssetDetails;
 import it.gov.innovazione.ndc.gen.dto.Theme;
 import it.gov.innovazione.ndc.harvester.SemanticAssetType;
+import it.gov.innovazione.ndc.harvester.model.index.NodeSummary;
+import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -31,8 +32,15 @@ class SemanticAssetsMetadataMapperTest {
                 .rightsHolder(
                         buildNodeSummary("https://example.com/rightsHolder", "example rights holder"))
                 .accrualPeriodicity("yearly")
-                .distributionUrls(
-                        List.of("https://example.com/distribution", "https://example.com/distribution2"))
+                .distributions(List.of(
+                        it.gov.innovazione.ndc.harvester.model.index.Distribution.builder()
+                                .accessUrl("https://example.com/schemas/myschema")
+                                .downloadUrl("https://example.com/schemas/myschema.csv")
+                                .build(),
+                        it.gov.innovazione.ndc.harvester.model.index.Distribution.builder()
+                                .accessUrl(null)
+                                .downloadUrl("https://example.com/schemas/myschema2.csv").build()
+                        ))
                 .subjects(List.of("subject1", "subject2"))
                 .contactPoint(buildNodeSummary("https://example.com/contact", "mailto:test@test.com"))
                 .publishers(List.of(buildNodeSummary("http://publisher1", "publisher 1 name"),
@@ -66,8 +74,12 @@ class SemanticAssetsMetadataMapperTest {
         assertThat(dto.getRightsHolder().getIri()).isEqualTo("https://example.com/rightsHolder");
         assertThat(dto.getRightsHolder().getSummary()).isEqualTo("example rights holder");
         assertThat(dto.getAccrualPeriodicity()).isEqualTo("yearly");
-        assertThat(dto.getDistributionUrls()).containsExactlyInAnyOrder(
-                "https://example.com/distribution", "https://example.com/distribution2");
+        List<Distribution> distributions = dto.getDistributions();
+        assertThat(distributions).hasSize(2);
+        assertThat(distributions.get(0).getAccessUrl().toString()).isEqualTo("https://example.com/schemas/myschema");
+        assertThat(distributions.get(0).getDownloadUrl().toString()).isEqualTo("https://example.com/schemas/myschema.csv");
+        assertThat(distributions.get(1).getAccessUrl()).isNull();
+        assertThat(distributions.get(1).getDownloadUrl().toString()).isEqualTo("https://example.com/schemas/myschema2.csv");
         assertThat(dto.getSubjects()).containsExactlyInAnyOrder("subject1", "subject2");
         assertThat(dto.getContactPoint().getIri()).isEqualTo("https://example.com/contact");
         assertThat(dto.getContactPoint().getSummary()).isEqualTo("mailto:test@test.com");

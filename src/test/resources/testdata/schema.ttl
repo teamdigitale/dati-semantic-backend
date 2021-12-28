@@ -7,7 +7,7 @@
 @prefix licences: <https://w3id.org/italia/controlled-vocabulary/licences/> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 
-<https://w3id.org/italia/schema/person/v202108.01/person.oas3.yaml> a dcatapit:Dataset ;
+<https://w3id.org/italia/schema/person/v202108.01/person.oas3> a dcatapit:Dataset ;
     dct:accrualPeriodicity <http://publications.europa.eu/resource/authority/frequency/IRREG> ;
     dct:conformsTo <https://w3id.org/italia/onto/CPV> ;
     dct:description """This Person schema is derived from the [CPV/Person](https://w3id.org/italia/onto/CPV/Person) ontology.
@@ -18,7 +18,7 @@ and other interfaces.""" ;
     dct:rightsHolder <http://spcdata.digitpa.gov.it/Amministrazione/agid> ;
     dct:title "The Person schema" ;
     owl:versionInfo "202108.01.00" ;
-    dcat:distribution <https://raw.githubusercontent.com/ioggstream/json-semantic-playground/master/assets/schemas/person/v202108.01/person.oas3.yaml> ;
+    dcat:distribution <https://w3id.org/italia/schema/person/v202108.01/person.oas3.yaml> ;
     admsapt:hasKeyClass cpv:Person ;
     admsapt:hasKeyClass cpv:Age ;
     dcat:theme <http://publications.europa.eu/resource/authority/data-theme/EDUC> .
@@ -29,10 +29,11 @@ cpv:Person a owl:Ontology ;
 cpv:Age a owl:Ontology ;
     <http://www.w3.org/2000/01/rdf-schema#label> "Age" .
 
-<https://raw.githubusercontent.com/ioggstream/json-semantic-playground/master/assets/schemas/person/v202108.01/person.oas3.yaml> a dcatapit:Distribution ;
+<https://w3id.org/italia/schema/person/v202108.01/person.oas3.yaml> a dcatapit:Distribution ;
     dct:format <http://publications.europa.eu/resource/authority/file-type/JSON> ;
     dct:license licences:A21_CCBY40 ;
     dcat:accessURL <https://github.com/ioggstream/json-semantic-playground/tree/master/assets/schemas/person/v202108.01> ;
+    dcat:downloadURL <https://github.com/ioggstream/json-semantic-playground/raw/master/assets/schemas/person/v202108.01/person.oas3.yaml>;
     dcat:mediaType "application/json" .
 
 <http://spcdata.digitpa.gov.it/Amministrazione/agid> a dcatapit:Agent,

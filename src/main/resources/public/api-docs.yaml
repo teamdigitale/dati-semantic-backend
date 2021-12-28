@@ -325,14 +325,12 @@ components:
           properties:
             accrualPeriodicity:
               type: string
-            distributionUrls:
+            distributions:
               type: array
               minItems: 0
               maxItems: 10
               items:
-                type: string
-                format: url
-                maxLength: 2000
+                $ref: "#/components/schemas/Distribution"
             subjects:
               type: array
               minItems: 0
@@ -422,6 +420,20 @@ components:
         - "http://publications.europa.eu/resource/authority/data-theme/SOCI"
         - "http://publications.europa.eu/resource/authority/data-theme/TECH"
         - "http://publications.europa.eu/resource/authority/data-theme/TRAN"
+    Distribution:
+      type: object
+      additionalProperties: false
+      properties:
+        accessUrl:
+          type: string
+          format: uri
+          maxLength: 2000
+          description: URL of a service or location that can provide access to this distribution.
+        downloadUrl:
+          type: string
+          format: uri
+          maxLength: 2000
+          description: URL of the downloadable file in a given format.
 
     UrlToken:
       description: |-
@@ -447,6 +459,7 @@ components:
         type:
           type: string
           format: uri
+          maxLength: 2000
           description: Unique identifier of the type of issue
         status:
           type: integer

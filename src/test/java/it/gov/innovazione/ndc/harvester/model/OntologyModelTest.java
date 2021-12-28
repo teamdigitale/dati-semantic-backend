@@ -1,21 +1,25 @@
 package it.gov.innovazione.ndc.harvester.model;
 
+import it.gov.innovazione.ndc.harvester.model.exception.InvalidModelException;
+import it.gov.innovazione.ndc.harvester.model.index.Distribution;
 import it.gov.innovazione.ndc.harvester.model.index.NodeSummary;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.gov.innovazione.ndc.model.profiles.Admsapit;
 import it.gov.innovazione.ndc.model.profiles.EuropePublicationVocabulary;
-import it.gov.innovazione.ndc.harvester.model.exception.InvalidModelException;
 import it.gov.innovazione.ndc.model.profiles.NDC;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static it.gov.innovazione.ndc.harvester.SemanticAssetType.ONTOLOGY;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.apache.jena.vocabulary.DCAT.accessURL;
+import static org.apache.jena.vocabulary.DCAT.downloadURL;
 import static org.apache.jena.vocabulary.DCAT.theme;
 import static org.apache.jena.vocabulary.DCTerms.accrualPeriodicity;
 import static org.apache.jena.vocabulary.DCTerms.description;
@@ -55,18 +59,20 @@ class OntologyModelTest {
             .addProperty(theme, createResource("theme"))
             .addProperty(accrualPeriodicity, createResource("IRREG"))
             .addProperty(Admsapit.hasSemanticAssetDistribution,
-                jenaModel.createResource("http://rdf_distribution")
+                jenaModel.createResource("http://repo/test/dist/turtle")
                     .addProperty(format, EuropePublicationVocabulary.FILE_TYPE_RDF_TURTLE)
-                    .addProperty(accessURL, createResource("http://repo/test.ttl"))
+                    .addProperty(accessURL, createResource("http://repo/test/dist/turtle"))
+                    .addProperty(downloadURL, createResource("http://repo/test/dist/turtle/test.ttl"))
             )
             .addProperty(Admsapit.hasSemanticAssetDistribution,
-                jenaModel.createResource("json file path")
+                jenaModel.createResource("http://repo/test/dist/json")
                     .addProperty(format, EuropePublicationVocabulary.FILE_TYPE_JSON)
-                    .addProperty(accessURL, createResource("http://repo/test.json"))
+                        .addProperty(accessURL, createResource("http://repo/test/dist/json"))
+                        .addProperty(downloadURL, createResource("http://repo/test/dist/json/test.json"))
             )
             .addProperty(Admsapit.hasSemanticAssetDistribution,
-                jenaModel.createResource("ttl file path 2")
-                    .addProperty(accessURL, createResource("http://repo/test2.ttl"))
+                jenaModel.createResource("http://repo/test/dist/other")
+                    .addProperty(accessURL, createResource("http://repo/test/dist/other"))
             )
             .addProperty(Admsapit.hasKeyClass,
                 jenaModel.createResource("http://Class1").addProperty(label, "Class1"))
@@ -96,8 +102,10 @@ class OntologyModelTest {
 
         SemanticAssetMetadata metadata = ontologyModel.extractMetadata();
 
-        assertThat(metadata.getDistributionUrls()).containsExactlyInAnyOrder(
-            "http://repo/test.ttl");
+        List<Distribution> distributions = metadata.getDistributions();
+        assertThat(distributions).hasSize(1);
+        assertThat(distributions.get(0).getAccessUrl()).isEqualTo("http://repo/test/dist/turtle");
+        assertThat(distributions.get(0).getDownloadUrl()).isEqualTo("http://repo/test/dist/turtle/test.ttl");
     }
 
     @Test

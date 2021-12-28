@@ -4,6 +4,7 @@ import static java.lang.String.format;
 
 import it.gov.innovazione.ndc.harvester.model.exception.InvalidModelException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
@@ -13,21 +14,16 @@ import org.apache.jena.shared.PropertyNotFoundException;
 
 public class NodeExtractor {
 
-    public static Resource extractNode(Resource resource, Property property) {
-        return extractNodes(resource, property)
-            .stream().findFirst()
+    public static Resource requireNode(Resource resource, Property property) {
+        return extractMaybeNode(resource, property)
             .orElseThrow(() -> invalidModelException(resource, property));
     }
 
-    public static Resource extractMaybeNode(Resource resource, Property property) {
-        try {
-            return extractNode(resource, property);
-        } catch (InvalidModelException e) {
-            return null;
-        }
+    public static Resource extractNode(Resource resource, Property property) {
+        return extractMaybeNode(resource, property).orElse(null);
     }
 
-    public static List<Resource> extractNodes(Resource resource, Property property) {
+    public static List<Resource> requireNodes(Resource resource, Property property) {
         try {
             List<Resource> resources = resource.listProperties(property).toList().stream()
                 .map(Statement::getResource)
@@ -43,10 +39,15 @@ public class NodeExtractor {
 
     public static List<Resource> extractMaybeNodes(Resource resource, Property property) {
         try {
-            return extractNodes(resource, property);
+            return requireNodes(resource, property);
         } catch (InvalidModelException e) {
             return List.of();
         }
+    }
+
+    private static Optional<Resource> extractMaybeNode(Resource resource, Property property) {
+        return extractMaybeNodes(resource, property)
+                .stream().findFirst();
     }
 
     public static InvalidModelException invalidModelException(Resource resource,

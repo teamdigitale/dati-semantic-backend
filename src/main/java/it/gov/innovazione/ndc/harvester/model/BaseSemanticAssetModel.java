@@ -1,14 +1,18 @@
 package it.gov.innovazione.ndc.harvester.model;
 
+import it.gov.innovazione.ndc.harvester.model.exception.InvalidModelException;
 import it.gov.innovazione.ndc.harvester.model.extractors.LiteralExtractor;
 import it.gov.innovazione.ndc.harvester.model.extractors.NodeExtractor;
 import it.gov.innovazione.ndc.harvester.model.extractors.NodeSummaryExtractor;
+import it.gov.innovazione.ndc.harvester.model.index.Distribution;
 import it.gov.innovazione.ndc.harvester.model.index.NodeSummary;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
-import it.gov.innovazione.ndc.harvester.model.exception.InvalidModelException;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.sparql.vocabulary.FOAF;
+import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.VCARD4;
 
@@ -20,8 +24,11 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
+import static java.util.Collections.emptyList;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
+import static org.apache.jena.vocabulary.DCAT.accessURL;
 import static org.apache.jena.vocabulary.DCAT.contactPoint;
+import static org.apache.jena.vocabulary.DCAT.downloadURL;
 import static org.apache.jena.vocabulary.DCAT.keyword;
 import static org.apache.jena.vocabulary.DCAT.theme;
 import static org.apache.jena.vocabulary.DCTerms.accrualPeriodicity;
@@ -99,8 +106,8 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
             .title(LiteralExtractor.extract(mainResource, title))
             .description(LiteralExtractor.extract(mainResource, description))
             .modifiedOn(parseDate(LiteralExtractor.extract(mainResource, modified)))
-            .themes(asIriList(NodeExtractor.extractNodes(mainResource, theme)))
-            .accrualPeriodicity(NodeExtractor.extractNode(mainResource, accrualPeriodicity).getURI())
+            .themes(asIriList(NodeExtractor.requireNodes(mainResource, theme)))
+            .accrualPeriodicity(NodeExtractor.requireNode(mainResource, accrualPeriodicity).getURI())
             .subjects(asIriList(NodeExtractor.extractMaybeNodes(mainResource, subject)))
             .contactPoint(getContactPoint(mainResource))
             .publishers(NodeSummaryExtractor.maybeNodeSummaries(mainResource, publisher, FOAF.name))
@@ -111,13 +118,18 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
             .keywords(LiteralExtractor.extractAll(mainResource, keyword))
             .temporal(LiteralExtractor.extractOptional(mainResource, temporal))
             .conformsTo(NodeSummaryExtractor.maybeNodeSummaries(mainResource, conformsTo, FOAF.name))
+            .distributions(getDistributions())
             .build();
     }
 
+    protected List<Distribution> getDistributions() {
+        return emptyList();
+    }
+
     public NodeSummary getContactPoint(Resource mainResource) {
-        Resource contactPointNode = NodeExtractor.extractMaybeNode(mainResource, contactPoint);
+        Resource contactPointNode = NodeExtractor.extractNode(mainResource, contactPoint);
         if (Objects.nonNull(contactPointNode)) {
-            Resource email = NodeExtractor.extractMaybeNode(contactPointNode, VCARD4.hasEmail);
+            Resource email = NodeExtractor.extractNode(contactPointNode, VCARD4.hasEmail);
             if (Objects.nonNull(email)) {
                 return NodeSummary.builder()
                     .iri(contactPointNode.getURI())
@@ -141,4 +153,30 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
             .toLocalDate();
     }
 
+    protected Distribution buildDistribution(Resource distNode) {
+        String accessUrl = extractMaybePropertyValue(distNode, accessURL);
+        String downloadUrl = extractMaybePropertyValue(distNode, downloadURL);
+        if (Objects.isNull(accessUrl) && Objects.isNull(downloadUrl)) {
+            throw new InvalidModelException(String.format("Invalid distribution '%s': missing both %s and %s properties",
+                    distNode.getURI(), accessURL, downloadURL));
+        }
+        return Distribution.builder().accessUrl(accessUrl).downloadUrl(downloadUrl).build();
+    }
+
+    private String extractMaybePropertyValue(Resource distNode, Property property) {
+        Statement statement = distNode.getProperty(property);
+        return Objects.nonNull(statement) ? statement.getResource().getURI() : null;
+    }
+
+    protected boolean distributionHasFormat(Resource dist, Property expectedFormatProperty) {
+        Statement format = dist.getProperty(DCTerms.format);
+        return Objects.nonNull(format) && format.getResource().getURI().equals(expectedFormatProperty.getURI());
+    }
+
+    protected List<Distribution> extractDistributionsFilteredByFormat(Property distributionProperty, Property formatPropertyValue) {
+        return NodeExtractor.requireNodes(getMainResource(), distributionProperty).stream()
+            .filter(dist -> distributionHasFormat(dist, formatPropertyValue))
+            .map(this::buildDistribution)
+            .collect(Collectors.toList());
+    }
 }

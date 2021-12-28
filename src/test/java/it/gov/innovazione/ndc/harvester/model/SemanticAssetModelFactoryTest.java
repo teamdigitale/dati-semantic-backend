@@ -1,13 +1,13 @@
 package it.gov.innovazione.ndc.harvester.model;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import it.gov.innovazione.ndc.harvester.model.exception.InvalidModelException;
 import org.apache.jena.rdf.model.Resource;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @ExtendWith(MockitoExtension.class)
 class SemanticAssetModelFactoryTest {
@@ -47,7 +47,7 @@ class SemanticAssetModelFactoryTest {
 
         Resource resource = model.getMainResource();
 
-        assertThat(resource.toString()).isEqualTo("https://w3id.org/italia/schema/person/v202108.01/person.oas3.yaml");
+        assertThat(resource.toString()).isEqualTo("https://w3id.org/italia/schema/person/v202108.01/person.oas3");
     }
 
     @Test

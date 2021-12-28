@@ -1,13 +1,7 @@
 package it.gov.innovazione.ndc.harvester.model.index;
 
-import static org.springframework.data.elasticsearch.annotations.FieldType.Date;
-import static org.springframework.data.elasticsearch.annotations.FieldType.Keyword;
-import static org.springframework.data.elasticsearch.annotations.FieldType.Text;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.gov.innovazione.ndc.harvester.SemanticAssetType;
-import java.time.LocalDate;
-import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
@@ -15,6 +9,13 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 import org.springframework.data.elasticsearch.annotations.Setting;
+
+import java.time.LocalDate;
+import java.util.List;
+
+import static org.springframework.data.elasticsearch.annotations.FieldType.Date;
+import static org.springframework.data.elasticsearch.annotations.FieldType.Keyword;
+import static org.springframework.data.elasticsearch.annotations.FieldType.Text;
 
 @Document(indexName = "semantic-asset-metadata")
 @Setting(settingPath = "elasticsearch-settings.json")
@@ -44,8 +45,8 @@ public class SemanticAssetMetadata {
     private NodeSummary rightsHolder;
     @Field(index = false, type = Keyword)
     private String accrualPeriodicity;
-    @Field(index = false, type = Keyword)
-    private List<String> distributionUrls;
+    @Field(index = false, type = FieldType.Object)
+    private List<Distribution> distributions;
     @Field(index = false, type = Keyword)
     private List<String> subjects;
     @Field(index = false, type = FieldType.Object)

@@ -27,7 +27,7 @@ class NodeExtractorTest {
             .addProperty(rightsHolder, defaultModel.createResource("http://rightsHolderUri")
                 .addProperty(FOAF.name, "rightsHolderName"));
 
-        Resource extractNode = NodeExtractor.extractNode(resource, rightsHolder);
+        Resource extractNode = NodeExtractor.requireNode(resource, rightsHolder);
 
         assertThat(extractNode.getURI()).isEqualTo("http://rightsHolderUri");
         assertThat(extractNode.getProperty(FOAF.name).getString()).isEqualTo("rightsHolderName");
@@ -39,7 +39,7 @@ class NodeExtractorTest {
         Resource resource = defaultModel.createResource("resourceUri")
             .addProperty(title, createLangLiteral("title", "en"));
 
-        assertThatThrownBy(() -> NodeExtractor.extractNode(resource, rightsHolder))
+        assertThatThrownBy(() -> NodeExtractor.requireNode(resource, rightsHolder))
             .isInstanceOf(InvalidModelException.class)
             .hasMessage(
                 String.format("Cannot find node '%s' for resource '%s'", rightsHolder,
@@ -52,7 +52,7 @@ class NodeExtractorTest {
         Resource resource = defaultModel.createResource("resourceUri")
             .addProperty(title, createLangLiteral("title", "en"));
 
-        assertThatThrownBy(() -> NodeExtractor.extractNode(resource, title))
+        assertThatThrownBy(() -> NodeExtractor.requireNode(resource, title))
             .isInstanceOf(InvalidModelException.class)
             .hasMessage(
                 String.format("Cannot find node '%s' for resource '%s'", title, resource));
@@ -64,7 +64,7 @@ class NodeExtractorTest {
         Resource resource = defaultModel.createResource("resourceUri")
             .addProperty(title, createLangLiteral("title", "en"));
 
-        Resource node = NodeExtractor.extractMaybeNode(resource, title);
+        Resource node = NodeExtractor.extractNode(resource, title);
 
         assertThat(node).isNull();
     }
@@ -75,7 +75,7 @@ class NodeExtractorTest {
         Resource resource = defaultModel.createResource("resourceUri")
             .addProperty(title, createLangLiteral("title", "en"));
 
-        Resource node = NodeExtractor.extractMaybeNode(resource, rightsHolder);
+        Resource node = NodeExtractor.extractNode(resource, rightsHolder);
 
         assertThat(node).isNull();
     }

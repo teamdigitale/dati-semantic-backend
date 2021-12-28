@@ -5,11 +5,13 @@ import it.gov.innovazione.ndc.gen.dto.SearchResultItem;
 import it.gov.innovazione.ndc.gen.dto.SemanticAssetDetails;
 import it.gov.innovazione.ndc.gen.dto.Theme;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
+import lombok.SneakyThrows;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.SearchPage;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -43,6 +45,11 @@ public interface SemanticAssetsMetadataMapper {
         return themeString.stream().map(this::maybeTheme)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
+    }
+
+    @SneakyThrows
+    default URI stringToURI(String s) {
+        return Objects.isNull(s) ? null : new URI(s);
     }
 
     private Theme maybeTheme(String str) {

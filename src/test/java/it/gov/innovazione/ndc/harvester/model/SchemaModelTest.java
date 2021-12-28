@@ -1,5 +1,22 @@
 package it.gov.innovazione.ndc.harvester.model;
 
+import it.gov.innovazione.ndc.harvester.model.exception.InvalidModelException;
+import it.gov.innovazione.ndc.harvester.model.index.Distribution;
+import it.gov.innovazione.ndc.harvester.model.index.NodeSummary;
+import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
+import it.gov.innovazione.ndc.model.profiles.Admsapit;
+import it.gov.innovazione.ndc.model.profiles.EuropePublicationVocabulary;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.sparql.vocabulary.FOAF;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.VCARD4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.time.LocalDate;
+import java.util.List;
+
 import static it.gov.innovazione.ndc.harvester.SemanticAssetType.SCHEMA;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.apache.jena.rdf.model.ResourceFactory.createLangLiteral;
@@ -23,21 +40,6 @@ import static org.apache.jena.vocabulary.OWL.versionInfo;
 import static org.apache.jena.vocabulary.RDFS.label;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import it.gov.innovazione.ndc.harvester.model.index.NodeSummary;
-import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
-import it.gov.innovazione.ndc.model.profiles.Admsapit;
-import it.gov.innovazione.ndc.model.profiles.EuropePublicationVocabulary;
-import it.gov.innovazione.ndc.harvester.model.exception.InvalidModelException;
-
-import java.time.LocalDate;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.sparql.vocabulary.FOAF;
-import org.apache.jena.vocabulary.RDF;
-import org.apache.jena.vocabulary.VCARD4;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 public class SchemaModelTest {
 
@@ -218,7 +220,9 @@ public class SchemaModelTest {
 
         SemanticAssetMetadata metadata = model.extractMetadata();
 
-        assertThat(metadata.getDistributionUrls()).containsExactlyInAnyOrder("accessURL1");
+        List<Distribution> distributions = metadata.getDistributions();
+        assertThat(distributions).hasSize(1);
+        assertThat(distributions.get(0).getAccessUrl()).isEqualTo("accessURL1");
     }
 
     @Test

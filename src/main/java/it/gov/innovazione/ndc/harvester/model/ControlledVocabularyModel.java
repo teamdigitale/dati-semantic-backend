@@ -1,9 +1,10 @@
 package it.gov.innovazione.ndc.harvester.model;
 
+import it.gov.innovazione.ndc.harvester.model.exception.InvalidModelException;
 import it.gov.innovazione.ndc.harvester.model.extractors.NodeExtractor;
+import it.gov.innovazione.ndc.harvester.model.index.Distribution;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.gov.innovazione.ndc.model.profiles.EuropePublicationVocabulary;
-import it.gov.innovazione.ndc.harvester.model.exception.InvalidModelException;
 import it.gov.innovazione.ndc.model.profiles.NDC;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.jena.rdf.model.Model;
@@ -14,14 +15,12 @@ import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static it.gov.innovazione.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
+import static it.gov.innovazione.ndc.model.profiles.EuropePublicationVocabulary.FILE_TYPE_RDF_TURTLE;
 import static java.lang.String.format;
-import static org.apache.jena.vocabulary.DCAT.accessURL;
 import static org.apache.jena.vocabulary.DCAT.distribution;
-import static org.apache.jena.vocabulary.DCTerms.format;
 
 @Slf4j
 public class ControlledVocabularyModel extends BaseSemanticAssetModel {
@@ -118,34 +117,14 @@ public class ControlledVocabularyModel extends BaseSemanticAssetModel {
     public SemanticAssetMetadata extractMetadata() {
         return super.extractMetadata().toBuilder()
                 .type(CONTROLLED_VOCABULARY)
-                .distributionUrls(getDistributionUrls())
+                .distributions(getDistributions())
                 .keyConcept(getKeyConcept())
                 .agencyId(getAgencyId())
                 .endpointUrl(getEndpointUrl())
                 .build();
     }
 
-    private List<String> getDistributionUrls() {
-        return NodeExtractor.extractNodes(getMainResource(), distribution).stream()
-                .filter(this::isTurtleDistribution)
-                .map(node -> requireAccessUrl(node))
-                .collect(Collectors.toList());
+    protected List<Distribution> getDistributions() {
+        return extractDistributionsFilteredByFormat(distribution, FILE_TYPE_RDF_TURTLE);
     }
-
-    private String requireAccessUrl(Resource node) {
-        Statement accessUrlProperty = node.getProperty(accessURL);
-        if (accessUrlProperty == null) {
-            throw new InvalidModelException(String.format("Invalid turtle distribution '%s': missing %s", node.getURI(), accessURL));
-        }
-        return accessUrlProperty.getResource().getURI();
-    }
-
-    private boolean isTurtleDistribution(Resource node) {
-        Statement formatProperty = node.getProperty(format);
-        if (Objects.isNull(formatProperty)) {
-            return false;
-        }
-        return formatProperty.getResource().getURI().equals(EuropePublicationVocabulary.FILE_TYPE_RDF_TURTLE.getURI());
-    }
-
 }

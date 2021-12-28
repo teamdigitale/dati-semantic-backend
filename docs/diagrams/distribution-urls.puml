@@ -1,0 +1,18 @@
+@startuml
+'https://plantuml.com/state-diagram
+
+hide empty description
+
+state "http://myrepo.org/schemas/example" as ds
+state "http://myrepo.org/schemas/example-yaml" as dist
+state "http://myrepo.org/schemas/example/yaml" as acc
+state "http://myrepo.org/schemas/example/yaml/schema.yaml" as dwnld
+
+ds --> dcat:Dataset: rdf:type
+ds --> dist: dcat:distribution
+
+dist --> acc: dcat:accessURL
+dist --> dwnld: dcat:downloadURL
+
+}
+@enduml
