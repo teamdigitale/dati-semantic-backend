@@ -56,14 +56,14 @@ public class SchemaModelTest {
         Resource agid = jenaModel
             .createResource(RIGHTS_HOLDER_IRI)
             .addProperty(FOAF.name, "agid");
-        Resource distribution1 = jenaModel
-            .createResource("distribution1")
-            .addProperty(format, EuropePublicationVocabulary.FILE_TYPE_JSON)
-            .addProperty(accessURL, jenaModel.createResource("accessURL1"));
-        Resource distribution2 = jenaModel
-            .createResource("distribution2")
-            .addProperty(format, EuropePublicationVocabulary.FILE_TYPE_RDF_TURTLE)
-            .addProperty(accessURL, jenaModel.createResource("accessURL2"));
+        Resource jsonDistribution = jenaModel.createResource(SCHEMA_IRI + "/dist/json")
+                .addProperty(format, EuropePublicationVocabulary.FILE_TYPE_JSON)
+                .addProperty(accessURL, jenaModel.createResource(SCHEMA_IRI + "/dist/json/index.html"))
+                .addProperty(downloadURL, jenaModel.createResource(SCHEMA_IRI + "/dist/json/test.json"));
+        Resource turtleDistribution = jenaModel.createResource(SCHEMA_IRI + "/dist/rdf")
+                .addProperty(format, EuropePublicationVocabulary.FILE_TYPE_RDF_TURTLE)
+                .addProperty(accessURL, jenaModel.createResource(SCHEMA_IRI + "/dist/rdf/index.html"))
+                .addProperty(downloadURL, jenaModel.createResource(SCHEMA_IRI + "/dist/rdf/test.ttl"));
         jenaModel
             .createResource(SCHEMA_IRI)
             .addProperty(title, createLangLiteral("title", "en"))
@@ -71,8 +71,6 @@ public class SchemaModelTest {
             .addProperty(modified, "2021-03-02")
             .addProperty(theme, createResource("theme"))
             .addProperty(rightsHolder, agid)
-            .addProperty(distribution, distribution1)
-            .addProperty(distribution, distribution2)
             .addProperty(RDF.type, createResource(SCHEMA.getTypeIri()))
             .addProperty(subject, createResource("subTheme1"))
             .addProperty(subject, createResource("subTheme2"))
@@ -89,14 +87,8 @@ public class SchemaModelTest {
                 .addProperty(FOAF.name, "conformsTo"))
             .addProperty(conformsTo, jenaModel.createResource("http://conformsTo2")
                 .addProperty(FOAF.name, "conformsTo2"))
-            .addProperty(accessURL, jenaModel
-                .createResource("accessURL1"))
-            .addProperty(accessURL, jenaModel
-                .createResource("accessURL2"))
-            .addProperty(downloadURL, jenaModel
-                .createResource("downloadURL1"))
-            .addProperty(downloadURL, jenaModel
-                .createResource("downloadURL2"))
+            .addProperty(distribution, jsonDistribution)
+            .addProperty(distribution, turtleDistribution)
             .addProperty(Admsapit.hasKeyClass,
                 jenaModel.createResource("http://keyClasses1").addProperty(label, "keyClasses1"))
             .addProperty(Admsapit.hasKeyClass,
@@ -222,7 +214,7 @@ public class SchemaModelTest {
 
         List<Distribution> distributions = metadata.getDistributions();
         assertThat(distributions).hasSize(1);
-        assertThat(distributions.get(0).getAccessUrl()).isEqualTo("accessURL1");
+        assertThat(distributions.get(0).getAccessUrl()).isEqualTo("https://w3id.org/italia/schema/test/dist/json/index.html");
     }
 
     @Test

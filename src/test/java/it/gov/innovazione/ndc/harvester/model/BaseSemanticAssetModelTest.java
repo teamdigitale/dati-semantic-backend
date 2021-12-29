@@ -379,18 +379,6 @@ class BaseSemanticAssetModelTest {
     }
 
     @Test
-    void shouldExtractDistributionWithJustAccessUrl() {
-        removeAllPropertyStatements(downloadURL);
-
-        SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
-
-        List<Distribution> distributions = metadata.getDistributions();
-        assertThat(distributions).hasSize(1);
-        assertThat(distributions.get(0).getAccessUrl()).isEqualTo(CV_IRI + "/dist/json");
-        assertThat(distributions.get(0).getDownloadUrl()).isNull();
-    }
-
-    @Test
     void shouldExtractDistributionWithJustDownloadUrl() {
         removeAllPropertyStatements(accessURL);
 
@@ -403,8 +391,7 @@ class BaseSemanticAssetModelTest {
     }
 
     @Test
-    void shouldComplainForDistributionWithNoUrls() {
-        removeAllPropertyStatements(accessURL);
+    void shouldExtractDistributionWithJustAccessUrl() {
         removeAllPropertyStatements(downloadURL);
 
         assertThatThrownBy(() -> semanticAssetModel.extractMetadata())

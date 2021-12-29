@@ -158,7 +158,7 @@ class ControlledVocabularyModelTest {
         assertThatThrownBy(() -> model.extractMetadata())
                 .isInstanceOf(InvalidModelException.class)
                 .hasMessageContaining(TURTLE_DISTRIBUTION_IRI)
-                .hasMessageContaining(accessURL.getURI());
+                .hasMessageContaining(downloadURL.getURI());
     }
 
     private void removePropertyIfExists(Statement d, Property p) {

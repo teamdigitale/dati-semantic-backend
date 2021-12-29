@@ -154,12 +154,12 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
     }
 
     protected Distribution buildDistribution(Resource distNode) {
-        String accessUrl = extractMaybePropertyValue(distNode, accessURL);
         String downloadUrl = extractMaybePropertyValue(distNode, downloadURL);
-        if (Objects.isNull(accessUrl) && Objects.isNull(downloadUrl)) {
-            throw new InvalidModelException(String.format("Invalid distribution '%s': missing both %s and %s properties",
-                    distNode.getURI(), accessURL, downloadURL));
+        if (Objects.isNull(downloadUrl)) {
+            throw new InvalidModelException(String.format("Invalid distribution '%s': missing %s property",
+                    distNode.getURI(), downloadURL));
         }
+        String accessUrl = extractMaybePropertyValue(distNode, accessURL);
         return Distribution.builder().accessUrl(accessUrl).downloadUrl(downloadUrl).build();
     }
 
