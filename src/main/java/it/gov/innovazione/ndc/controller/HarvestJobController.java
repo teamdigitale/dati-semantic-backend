@@ -46,7 +46,7 @@ public class HarvestJobController {
         harvesterJob.harvest(repoUrl);
     }
 
-    @PostMapping("jobs/clear/")
+    @PostMapping("jobs/clear")
     public void clearRepo(@RequestParam("repo_url") String repoUrl) {
         harvesterService.clear(repoUrl);
     }

@@ -48,5 +48,6 @@ services:
       - ELASTICSEARCH_PORT=9200
       - VIRTUOSO_SPARQL_URL=http://virtuoso:8890/sparql
       - VIRTUOSO_SPARQL_GRAPH_STORE_URL=http://virtuoso:8890/sparql-graph-crud
-      - HARVESTER_REPOSITORIES=https://github.com/ash1425/sample-ontology-repo
+      - HARVESTER_REPOSITORIES=https://github.com/ronytw/sample-ontology-repo
+      - HARVESTER_ENDPOINT_ENABLED=true
 
