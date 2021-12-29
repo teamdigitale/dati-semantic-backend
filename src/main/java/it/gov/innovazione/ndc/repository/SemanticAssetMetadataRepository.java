@@ -1,7 +1,11 @@
 package it.gov.innovazione.ndc.repository;
 
+import static it.gov.innovazione.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
+import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
+import static org.elasticsearch.index.query.QueryBuilders.termQuery;
 import static org.springframework.data.elasticsearch.core.SearchHitSupport.searchPageFor;
 
+import it.gov.innovazione.ndc.harvester.SemanticAssetType;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 
 import java.util.List;
@@ -16,6 +20,7 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MatchAllQueryBuilder;
 import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.TermsQueryBuilder;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
@@ -81,7 +86,10 @@ public class SemanticAssetMetadataRepository {
     }
 
     public List<SemanticAssetMetadata> findVocabulariesForRepoUrl(String repoUrl) {
-        NativeSearchQuery query = new NativeSearchQuery(matchQuery("repoUrl", repoUrl));
+        QueryBuilder queryBuilder = boolQuery()
+                .must(termQuery("repoUrl", repoUrl))
+                .must(termQuery("type", CONTROLLED_VOCABULARY.name()));
+        NativeSearchQuery query = new NativeSearchQueryBuilder().withQuery(queryBuilder).build();
         SearchHits<SemanticAssetMetadata> hits = esOps.search(query, SemanticAssetMetadata.class);
         return hits.get().map(SearchHit::getContent).collect(Collectors.toList());
     }
