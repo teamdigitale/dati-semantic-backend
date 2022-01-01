@@ -123,6 +123,8 @@ public class VocabularyDataControllerMvcTest {
                 .andExpect(jsonPath("$.offset").value(offset))
                 .andExpect(jsonPath("$.totalCount").value(10))
                 .andExpect(jsonPath("$.data[0].title").value("Some vocab"))
+                .andExpect(jsonPath("$.data[0].links[0].rel").value("items"))
+                .andExpect(jsonPath("$.data[0].links[0].href").value("http://schema.gov.it/vocabs/agid/interesting-stuff"))
                 .andExpect(jsonPath("$.data[1].title").value("Some other vocab"));
     }
 

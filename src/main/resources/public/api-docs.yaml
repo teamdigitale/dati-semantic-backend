@@ -303,12 +303,26 @@ components:
           maxLength: 64
         keyConcept:
           $ref:  "#/components/schemas/UrlToken"
-        endpointUrl:
-          description: |-
-            An utility schema for URI and URL.
-          type: string
-          format: url
-          maxLength: *max-url-size
+        links:
+          type: array
+          minItems: 0
+          maxItems: 2
+          items:
+            type: object
+            properties:
+              href:
+                description: URL.
+                type: string
+                maxLength: 255
+              rel:
+                description: Type of relationship.
+                type: string
+                maxLength: 255
+              type:
+                description: Method
+                type: string
+                maxLength: 16
+            additionalProperties: false
       additionalProperties: false
     NodeSummary:
       type: object

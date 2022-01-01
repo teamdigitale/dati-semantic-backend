@@ -6,6 +6,7 @@ import it.gov.innovazione.ndc.gen.dto.SearchResultItem;
 import it.gov.innovazione.ndc.gen.dto.VocabulariesResult;
 import it.gov.innovazione.ndc.gen.dto.VocabularyData;
 import it.gov.innovazione.ndc.gen.dto.VocabularySummary;
+import it.gov.innovazione.ndc.gen.dto.VocabularySummaryLinks;
 import lombok.Builder;
 import lombok.SneakyThrows;
 import org.springframework.http.HttpStatus;
@@ -63,7 +64,11 @@ public class Builders {
         dto.setDescription(description);
         dto.setAgencyId(agencyId);
         dto.setKeyConcept(keyConcept);
-        dto.setEndpointUrl(endpointUrl);
+        VocabularySummaryLinks link = new VocabularySummaryLinks();
+        link.setType("GET");
+        link.setHref(endpointUrl);
+        link.setRel("items");
+        dto.addLinksItem(link);
 
         return dto;
     }
