@@ -33,6 +33,25 @@ x-components:
     max-vocabulary-size: &max-vocabulary-size 100000  # 100_000
     max-array-size-default: &max-array-size-default 20
 paths:
+  "/vocabularies":
+    get:
+      security: []
+      tags:
+        - vocabulary-data
+      operationId: fetchVocabularies
+      description: Retrieves the (paginated) Controlled Vocabularies.
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+      responses:
+        '200':
+          description: A list of vocabularies
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VocabulariesResult"
+        '400':
+          $ref: "#/components/responses/BadParameters"
   "/vocabularies/{agency_id}/{key_concept}":
     get:
       security: []
@@ -252,6 +271,45 @@ components:
             additionalProperties:
               type: string
               maxLength: 64
+    VocabulariesResult:
+      type: object
+      properties:
+        totalCount:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: *max-vocabulary-size
+        limit:
+          $ref:  "#/components/schemas/Limit"
+        offset:
+          $ref:  "#/components/schemas/Offset"
+        data:
+          type: array
+          minItems: 0
+          maxItems: 100
+          items:
+            $ref: "#/components/schemas/VocabularySummary"
+    VocabularySummary:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 64
+        description:
+          type: string
+          maxLength: 100000
+        agencyId:
+          type: string
+          maxLength: 64
+        keyConcept:
+          $ref:  "#/components/schemas/UrlToken"
+        endpointUrl:
+          description: |-
+            An utility schema for URI and URL.
+          type: string
+          format: url
+          maxLength: *max-url-size
+      additionalProperties: false
     NodeSummary:
       type: object
       additionalProperties: false

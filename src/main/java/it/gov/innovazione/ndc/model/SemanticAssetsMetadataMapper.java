@@ -4,6 +4,8 @@ import it.gov.innovazione.ndc.gen.dto.SearchResult;
 import it.gov.innovazione.ndc.gen.dto.SearchResultItem;
 import it.gov.innovazione.ndc.gen.dto.SemanticAssetDetails;
 import it.gov.innovazione.ndc.gen.dto.Theme;
+import it.gov.innovazione.ndc.gen.dto.VocabulariesResult;
+import it.gov.innovazione.ndc.gen.dto.VocabularySummary;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import lombok.SneakyThrows;
 import org.mapstruct.Mapper;
@@ -24,6 +26,21 @@ public interface SemanticAssetsMetadataMapper {
 
     @Mapping(source = "iri", target = "assetIri")
     SearchResultItem resultItemToDto(SemanticAssetMetadata source);
+
+    VocabularySummary vocabularySummaryToDto(SemanticAssetMetadata source);
+
+    default VocabulariesResult vocabResultToDto(SearchPage<SemanticAssetMetadata> source) {
+        Pageable resultPage = source.getPageable();
+        return Builders.vocabulariesResult()
+                .totalCount((int) source.getTotalElements())
+                .limit(resultPage.getPageSize())
+                .offset((int) resultPage.getOffset())
+                .data(source.getContent()
+                        .stream()
+                        .map(s -> vocabularySummaryToDto(s.getContent()))
+                        .collect(Collectors.toList()))
+                .build();
+    }
 
     default SearchResult searchResultToDto(SearchPage<SemanticAssetMetadata> source) {
         Pageable resultPage = source.getPageable();

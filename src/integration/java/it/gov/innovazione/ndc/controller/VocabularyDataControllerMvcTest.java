@@ -14,7 +14,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import it.gov.innovazione.ndc.controller.exception.VocabularyDataNotFoundException;
 import it.gov.innovazione.ndc.controller.exception.VocabularyItemNotFoundException;
+import it.gov.innovazione.ndc.gen.dto.VocabulariesResult;
+import it.gov.innovazione.ndc.gen.dto.VocabularySummary;
 import it.gov.innovazione.ndc.model.Builders;
+import it.gov.innovazione.ndc.service.SemanticAssetSearchService;
 import it.gov.innovazione.ndc.service.VocabularyDataService;
 import it.gov.innovazione.ndc.service.VocabularyIdentifier;
 import it.gov.innovazione.ndc.gen.dto.VocabularyData;
@@ -23,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -33,6 +38,8 @@ import org.springframework.test.web.servlet.MockMvc;
 public class VocabularyDataControllerMvcTest {
     @MockBean
     private VocabularyDataService vocabularyDataService;
+    @MockBean
+    private SemanticAssetSearchService assetSearchService;
     @Autowired
     private MockMvc mockMvc;
 
@@ -77,6 +84,46 @@ public class VocabularyDataControllerMvcTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.title").value("Mr"));
+    }
+
+    @Test
+    void shouldReturnControlledVocabularies() throws Exception {
+        final int offset = 1;
+        final int limit = 2;
+        VocabularySummary summary1 = Builders.vocabularySummary()
+                .title("Some vocab")
+                .description("Its description")
+                .agencyId("agid")
+                .keyConcept("interesting-stuff")
+                .endpointUrl("http://schema.gov.it/vocabs/agid/interesting-stuff")
+                .build();
+        VocabularySummary summary2 = Builders.vocabularySummary()
+                .title("Some other vocab")
+                .description("Its description")
+                .agencyId("istat")
+                .keyConcept("stimulating-stuff")
+                .endpointUrl("http://schema.gov.it/vocabs/istat/stimulating-stuff")
+                .build();
+        VocabulariesResult expectedResult = Builders.vocabulariesResult()
+                .limit(limit)
+                .offset(offset)
+                .totalCount(10)
+                .data(List.of(summary1, summary2))
+                .build();
+        when(assetSearchService.getVocabularies(any(OffsetBasedPageRequest.class))).thenReturn(expectedResult);
+
+        mockMvc.perform(get("/vocabularies")
+                        .param("offset", Integer.toString(offset))
+                        .param("limit", Integer.toString(limit))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$.limit").value(limit))
+                .andExpect(jsonPath("$.offset").value(offset))
+                .andExpect(jsonPath("$.totalCount").value(10))
+                .andExpect(jsonPath("$.data[0].title").value("Some vocab"))
+                .andExpect(jsonPath("$.data[1].title").value("Some other vocab"));
     }
 
     @Test
@@ -126,7 +173,7 @@ public class VocabularyDataControllerMvcTest {
     }
 
     @Test
-    public void shouldReturnVocabularyDataUsingDefaultPagination() throws Exception {
+    void shouldReturnVocabularyDataUsingDefaultPagination() throws Exception {
         when(vocabularyDataService.getData(any(), any()))
                 .thenReturn(Builders.vocabularyData()
                         .offset(1)
@@ -148,7 +195,7 @@ public class VocabularyDataControllerMvcTest {
     }
 
     @Test
-    public void shouldReturnNotFoundForWholeVocabulary() throws Exception {
+    void shouldReturnNotFoundForWholeVocabulary() throws Exception {
         when(vocabularyDataService.getData(any(), any()))
                 .thenThrow(new VocabularyDataNotFoundException("agid.testkeyconcept"));
 
@@ -163,20 +210,20 @@ public class VocabularyDataControllerMvcTest {
                 new VocabularyIdentifier("agid", "testKeyConcept"), OffsetBasedPageRequest.of(0, 10));
     }
 
-    @Test
-    void shouldFailWhenOffsetIsLessThan0() throws Exception {
-        mockMvc.perform(get("/vocabularies/agid/testKeyConcept")
-                        .param("offset", "-1"))
+    @ParameterizedTest
+    @ValueSource(strings = {"/vocabularies/agid/testKeyConcept", "/vocabularies"})
+    void shouldFailWhenOffsetIsLessThan0(String url) throws Exception {
+        mockMvc.perform(get(url).param("offset", "-1"))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
 
         verifyNoInteractions(vocabularyDataService);
     }
 
-    @Test
-    void shouldFailWhenLimitIsLessThan1() throws Exception {
-        mockMvc.perform(get("/vocabularies/agid/testKeyConcept")
-                        .param("limit", "0"))
+    @ParameterizedTest
+    @ValueSource(strings = {"/vocabularies/agid/testKeyConcept", "/vocabularies"})
+    void shouldFailWhenLimitIsLessThan1(String url) throws Exception {
+        mockMvc.perform(get(url).param("limit", "0"))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON.toString()))
@@ -185,10 +232,10 @@ public class VocabularyDataControllerMvcTest {
         verifyNoInteractions(vocabularyDataService);
     }
 
-    @Test
-    void shouldFailWhenPageSizeIsMoreThan200() throws Exception {
-        mockMvc.perform(get("/vocabularies/agid/testKeyConcept")
-                        .param("limit", "201"))
+    @ParameterizedTest
+    @ValueSource(strings = {"/vocabularies/agid/testKeyConcept", "/vocabularies"})
+    void shouldFailWhenPageSizeIsMoreThan200(String url) throws Exception {
+        mockMvc.perform(get(url).param("limit", "201"))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON.toString()))

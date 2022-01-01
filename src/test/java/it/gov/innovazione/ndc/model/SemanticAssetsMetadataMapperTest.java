@@ -5,6 +5,8 @@ import it.gov.innovazione.ndc.gen.dto.Distribution;
 import it.gov.innovazione.ndc.gen.dto.SearchResultItem;
 import it.gov.innovazione.ndc.gen.dto.SemanticAssetDetails;
 import it.gov.innovazione.ndc.gen.dto.Theme;
+import it.gov.innovazione.ndc.gen.dto.VocabulariesResult;
+import it.gov.innovazione.ndc.gen.dto.VocabularySummary;
 import it.gov.innovazione.ndc.harvester.SemanticAssetType;
 import it.gov.innovazione.ndc.harvester.model.index.NodeSummary;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
@@ -161,6 +163,33 @@ class SemanticAssetsMetadataMapperTest {
         assertThat(dto.getTitle()).isEqualTo("title");
         assertThat(dto.getDescription()).isEqualTo("description");
         assertThat(dto.getVersionInfo()).isEqualTo("versionInfo");
+    }
+
+    @Test
+    void shouldBuildVocabulariesResultFromSemanticAssetMetadata() {
+        SemanticAssetMetadata model = SemanticAssetMetadata.builder()
+                .iri("iri")
+                .title("title")
+                .description("description")
+                .type(SemanticAssetType.CONTROLLED_VOCABULARY)
+                .rightsHolder(NodeSummary.builder()
+                        .iri("http://rightsHolder")
+                        .summary("rights holder name")
+                        .build())
+                .modifiedOn(LocalDate.parse("2020-01-01"))
+                .themes(List.of("http://publications.europa.eu/resource/authority/data-theme/EDUC",
+                        "http://publications.europa.eu/resource/authority/data-theme/HEAL"))
+                .versionInfo("versionInfo")
+                .agencyId("agid")
+                .keyConcept("interesting-stuff")
+                .build();
+
+        VocabularySummary dto = mapper.vocabularySummaryToDto(model);
+
+        assertThat(dto.getTitle()).isEqualTo("title");
+        assertThat(dto.getDescription()).isEqualTo("description");
+        assertThat(dto.getAgencyId()).isEqualTo("agid");
+        assertThat(dto.getKeyConcept()).isEqualTo("interesting-stuff");
     }
 
     @Test

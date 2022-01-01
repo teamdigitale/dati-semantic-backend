@@ -3,7 +3,9 @@ package it.gov.innovazione.ndc.model;
 import it.gov.innovazione.ndc.gen.dto.Problem;
 import it.gov.innovazione.ndc.gen.dto.SearchResult;
 import it.gov.innovazione.ndc.gen.dto.SearchResultItem;
+import it.gov.innovazione.ndc.gen.dto.VocabulariesResult;
 import it.gov.innovazione.ndc.gen.dto.VocabularyData;
+import it.gov.innovazione.ndc.gen.dto.VocabularySummary;
 import lombok.Builder;
 import lombok.SneakyThrows;
 import org.springframework.http.HttpStatus;
@@ -28,15 +30,40 @@ public class Builders {
 
         return result;
     }
-    
+
     @Builder(builderMethodName = "vocabularyData")
-    public static VocabularyData newVocabularyDataDto(Integer totalResults, Integer limit, Integer offset, List<Map<String, String>> data) {
+    public static VocabularyData newVocabularyData(Integer totalResults, Integer limit, Integer offset, List<Map<String, String>> data) {
         VocabularyData dto = new VocabularyData();
 
         dto.setTotalResults(totalResults);
         dto.setLimit(limit);
         dto.setOffset(offset);
         dto.setData(data);
+
+        return dto;
+    }
+
+    @Builder(builderMethodName = "vocabulariesResult")
+    public static VocabulariesResult newVocabulariesResult(Integer totalCount, Integer limit, Integer offset, List<VocabularySummary> data) {
+        VocabulariesResult result = new VocabulariesResult();
+
+        result.setTotalCount(totalCount);
+        result.setLimit(limit);
+        result.setOffset(offset);
+        result.setData(data);
+
+        return result;
+    }
+
+    @Builder(builderMethodName = "vocabularySummary")
+    public static VocabularySummary newVocabularySummary(String title, String description, String agencyId, String keyConcept, String endpointUrl) {
+        VocabularySummary dto = new VocabularySummary();
+
+        dto.setTitle(title);
+        dto.setDescription(description);
+        dto.setAgencyId(agencyId);
+        dto.setKeyConcept(keyConcept);
+        dto.setEndpointUrl(endpointUrl);
 
         return dto;
     }

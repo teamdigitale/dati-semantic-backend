@@ -1,5 +1,8 @@
 package it.gov.innovazione.ndc.service;
 
+import it.gov.innovazione.ndc.controller.OffsetBasedPageRequest;
+import it.gov.innovazione.ndc.gen.dto.AssetType;
+import it.gov.innovazione.ndc.gen.dto.VocabulariesResult;
 import it.gov.innovazione.ndc.model.SemanticAssetsMetadataMapper;
 import it.gov.innovazione.ndc.controller.exception.SemanticAssetNotFoundException;
 import it.gov.innovazione.ndc.gen.dto.SearchResult;
@@ -11,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.SearchPage;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.Set;
 
 @Service
@@ -32,5 +36,12 @@ public class SemanticAssetSearchService {
         return metadataRepository.findByIri(iri)
                 .map(mapper::detailsToDto)
                 .orElseThrow(() -> new SemanticAssetNotFoundException(iri));
+    }
+
+    public VocabulariesResult getVocabularies(Pageable pageable) {
+        SearchPage<SemanticAssetMetadata> results = metadataRepository.search("",
+                Set.of(AssetType.CONTROLLED_VOCABULARY.getValue()),
+                Collections.emptySet(), pageable);
+        return mapper.vocabResultToDto(results);
     }
 }
