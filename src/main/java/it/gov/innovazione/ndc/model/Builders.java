@@ -64,13 +64,18 @@ public class Builders {
         dto.setDescription(description);
         dto.setAgencyId(agencyId);
         dto.setKeyConcept(keyConcept);
+        dto.setLinks(getVocabularySummaryLinks(endpointUrl));
+
+        return dto;
+    }
+
+    public static List<VocabularySummaryLinks> getVocabularySummaryLinks(String endpointUrl) {
         VocabularySummaryLinks link = new VocabularySummaryLinks();
         link.setType("GET");
         link.setHref(endpointUrl);
         link.setRel("items");
-        dto.addLinksItem(link);
-
-        return dto;
+        List<VocabularySummaryLinks> links = List.of(link);
+        return links;
     }
 
     @Builder(builderMethodName = "problem")

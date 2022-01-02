@@ -6,6 +6,7 @@ import it.gov.innovazione.ndc.gen.dto.SemanticAssetDetails;
 import it.gov.innovazione.ndc.gen.dto.Theme;
 import it.gov.innovazione.ndc.gen.dto.VocabulariesResult;
 import it.gov.innovazione.ndc.gen.dto.VocabularySummary;
+import it.gov.innovazione.ndc.gen.dto.VocabularySummaryLinks;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import lombok.SneakyThrows;
 import org.mapstruct.Mapper;
@@ -27,6 +28,7 @@ public interface SemanticAssetsMetadataMapper {
     @Mapping(source = "iri", target = "assetIri")
     SearchResultItem resultItemToDto(SemanticAssetMetadata source);
 
+    @Mapping(source = "endpointUrl", target = "links")
     VocabularySummary vocabularySummaryToDto(SemanticAssetMetadata source);
 
     default VocabulariesResult vocabResultToDto(SearchPage<SemanticAssetMetadata> source) {
@@ -40,6 +42,10 @@ public interface SemanticAssetsMetadataMapper {
                         .map(s -> vocabularySummaryToDto(s.getContent()))
                         .collect(Collectors.toList()))
                 .build();
+    }
+
+    default List<VocabularySummaryLinks> linksForEndpointUrl(String endpointUrl) {
+        return Builders.getVocabularySummaryLinks(endpointUrl);
     }
 
     default SearchResult searchResultToDto(SearchPage<SemanticAssetMetadata> source) {
