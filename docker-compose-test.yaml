@@ -5,12 +5,14 @@ version: "3.8"
 services:
   dev:
     image: gcr.io/distroless/java:11-debug-nonroot
+    user: 1000:1000
     volumes:
       - .:/code
     entrypoint: [ "tail", "-f", "/etc/hosts" ]
 
   test:
     image: gcr.io/distroless/java:11-debug-nonroot
+    user: 1000:1000
     volumes:
     - .:/code
     working_dir: /code
