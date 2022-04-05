@@ -46,7 +46,7 @@ dependencies {
     implementation 'io.swagger:swagger-annotations:1.5.20'
     implementation 'org.mapstruct:mapstruct:1.4.2.Final'
 
-    runtimeOnly 'mysql:mysql-connector-java:8.0.26'
+    runtimeOnly 'mysql:mysql-connector-java:8.0.28'
 
     compileOnly 'org.projectlombok:lombok'
     testCompileOnly 'org.projectlombok:lombok'
