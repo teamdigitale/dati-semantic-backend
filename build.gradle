@@ -1,11 +1,11 @@
 plugins {
-    id 'org.springframework.boot' version '2.5.5'
+    id 'org.springframework.boot' version '2.6.6'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
     id 'java'
     id 'com.google.cloud.tools.jib' version '3.1.4'
     id 'checkstyle'
     id 'jacoco'
-    id 'org.owasp.dependencycheck' version '6.1.6'
+    id 'org.owasp.dependencycheck' version '7.0.4.1'
     id 'com.github.spotbugs' version '4.5.1'
     id 'org.openapi.generator' version '5.3.0'
     id 'idea'
@@ -33,7 +33,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-batch'
 
-    implementation 'org.springframework.data:spring-data-elasticsearch:4.2.6'
+    implementation 'org.springframework.data:spring-data-elasticsearch'
     implementation 'org.apache.jena:apache-jena-libs:4.2.0'
     implementation 'org.apache.jena:jena-querybuilder:4.2.0'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -46,7 +46,7 @@ dependencies {
     implementation 'io.swagger:swagger-annotations:1.5.20'
     implementation 'org.mapstruct:mapstruct:1.4.2.Final'
 
-    runtimeOnly 'mysql:mysql-connector-java:8.0.26'
+    runtimeOnly 'mysql:mysql-connector-java:8.0.28'
 
     compileOnly 'org.projectlombok:lombok'
     testCompileOnly 'org.projectlombok:lombok'
@@ -58,7 +58,6 @@ dependencies {
     }
     testImplementation 'io.rest-assured:rest-assured:4.0.0'
     testImplementation 'io.rest-assured:json-path:4.0.0'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
     testImplementation 'org.mockito:mockito-inline:3.9.0'
 
     integrationImplementation "org.testcontainers:elasticsearch:1.16.2"
