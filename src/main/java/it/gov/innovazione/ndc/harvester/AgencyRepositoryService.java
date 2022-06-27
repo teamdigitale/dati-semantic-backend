@@ -10,6 +10,7 @@ import it.gov.innovazione.ndc.harvester.scanners.OntologyFolderScanner;
 import it.gov.innovazione.ndc.harvester.scanners.SchemaFolderScanner;
 import it.gov.innovazione.ndc.harvester.util.FileUtils;
 import it.gov.innovazione.ndc.harvester.util.GitUtils;
+import it.gov.innovazione.ndc.harvester.util.PropertiesUtils;
 import it.gov.innovazione.ndc.harvester.util.Version;
 import it.gov.innovazione.ndc.harvester.exception.InvalidAssetFolderException;
 
@@ -28,14 +29,29 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
-@RequiredArgsConstructor
 public class AgencyRepositoryService {
     public static final String TEMP_DIR_PREFIX = "ndc-";
+    public static final int MIN_SKIP_WORD_LENGTH = 3;
     private final FileUtils fileUtils;
     private final GitUtils gitUtils;
     private final OntologyFolderScanner ontologyFolderScanner;
     private final ControlledVocabularyFolderScanner controlledVocabularyFolderScanner;
     private final SchemaFolderScanner schemaFolderScanner;
+    private final List<String> lowerSkipWords;
+
+    public AgencyRepositoryService(FileUtils fileUtils,
+                                   GitUtils gitUtils,
+                                   OntologyFolderScanner ontologyFolderScanner,
+                                   ControlledVocabularyFolderScanner controlledVocabularyFolderScanner,
+                                   SchemaFolderScanner schemaFolderScanner,
+                                   AgencyRepositoryServiceProperties agencyRepositoryServiceProperties) {
+        this.fileUtils = fileUtils;
+        this.gitUtils = gitUtils;
+        this.ontologyFolderScanner = ontologyFolderScanner;
+        this.controlledVocabularyFolderScanner = controlledVocabularyFolderScanner;
+        this.schemaFolderScanner = schemaFolderScanner;
+        this.lowerSkipWords = PropertiesUtils.lowerSkipWords(agencyRepositoryServiceProperties.getSkipWords(), MIN_SKIP_WORD_LENGTH);
+    }
 
     public Path cloneRepo(String repoUrl) throws IOException {
         Path cloneDir = fileUtils.createTempDirectory(TEMP_DIR_PREFIX);
@@ -70,9 +86,16 @@ public class AgencyRepositoryService {
         return createSemanticAssetPaths(assetRootPath, scanner, type.isIgnoringObsoleteVersions());
     }
 
+    private boolean isDirectoryToBeSkipped(Path path) {
+        String directoryName = fileUtils.getLowerCaseFileName(path);
+        return fileUtils.isDirectory(path) && this.lowerSkipWords.stream().anyMatch(directoryName::contains);
+    }
+
     @SneakyThrows
     private <P extends SemanticAssetPath> List<P> createSemanticAssetPaths(Path path, FolderScanner<P> scanner, boolean ignoreObsoleteVersions) {
-        List<Path> dirContents = fileUtils.listContents(path);
+        List<Path> dirContents = fileUtils.listContents(path).stream()
+                .filter(c -> !isDirectoryToBeSkipped(c))
+                .collect(Collectors.toList());
         boolean hasSubDir = dirContents.stream().anyMatch(fileUtils::isDirectory);
         if (!hasSubDir) {
             return tryScanDir(path, scanner);

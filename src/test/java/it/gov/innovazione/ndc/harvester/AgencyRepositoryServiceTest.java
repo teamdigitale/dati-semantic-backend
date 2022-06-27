@@ -21,6 +21,7 @@ import static it.gov.innovazione.ndc.harvester.SemanticAssetType.CONTROLLED_VOCA
 import static it.gov.innovazione.ndc.harvester.SemanticAssetType.ONTOLOGY;
 import static it.gov.innovazione.ndc.harvester.SemanticAssetType.SCHEMA;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -33,12 +34,13 @@ public class AgencyRepositoryServiceTest {
     @BeforeEach
     public void setup() {
         fileUtils = mock(FileUtils.class);
+        when(fileUtils.getLowerCaseFileName(any())).thenCallRealMethod();
         gitUtils = mock(GitUtils.class);
         OntologyFolderScanner ontologyScanner = new OntologyFolderScanner(fileUtils, OntologyFolderScannerProperties.forWords("aligns"));
         ControlledVocabularyFolderScanner cvScanner = new ControlledVocabularyFolderScanner(fileUtils);
         SchemaFolderScanner schemaScanner = new SchemaFolderScanner(fileUtils);
         agencyRepoService = new AgencyRepositoryService(fileUtils, gitUtils, ontologyScanner,
-                cvScanner, schemaScanner);
+                cvScanner, schemaScanner, AgencyRepositoryServiceProperties.forWords("scriptR2RML"));
     }
 
     @Test
@@ -218,6 +220,31 @@ public class AgencyRepositoryServiceTest {
 
         assertThat(ontologyPaths).hasSize(2);
         assertThat(ontologyPaths).containsAll(List.of(SemanticAssetPath.of(ontology1), SemanticAssetPath.of(ontology2)));
+    }
+
+    @Test
+    void shouldIgnoreLeafFolderInSkipList() throws IOException {
+        String root = "/temp/ndc-1";
+        Path ontoFolder = Path.of(root, ONTOLOGY.getFolderName());
+        String ontology1 = "ont1/test1.ttl";
+
+        Path ont1 =
+                dir("ont1",
+                        file(ontology1),
+                        dir("scriptR2RML",
+                                file("test1_a.rml.ttl"),
+                                file("test1_b.rml.ttl")
+                        )
+                );
+
+        when(fileUtils.isDirectory(ontoFolder)).thenReturn(true);
+        when(fileUtils.folderExists(ontoFolder)).thenReturn(true);
+        when(fileUtils.listContents(ontoFolder)).thenReturn(List.of(ont1));
+
+        List<SemanticAssetPath> ontologyPaths =
+                agencyRepoService.getOntologyPaths(Path.of(root));
+
+        assertThat(ontologyPaths).containsExactly(SemanticAssetPath.of(ontology1));
     }
 
     @Test

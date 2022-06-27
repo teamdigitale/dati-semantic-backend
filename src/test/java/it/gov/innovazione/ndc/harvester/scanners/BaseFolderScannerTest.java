@@ -8,6 +8,8 @@ import java.nio.file.Path;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.stream;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 public class BaseFolderScannerTest {
@@ -23,5 +25,6 @@ public class BaseFolderScannerTest {
                         .collect(Collectors.toList()
                         )
         );
+        lenient().when(fileUtils.getLowerCaseFileName(any())).thenCallRealMethod();
     }
 }

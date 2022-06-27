@@ -1,8 +1,8 @@
 package it.gov.innovazione.ndc.harvester.scanners;
 
-import it.gov.innovazione.ndc.harvester.exception.InvalidAssetFolderException;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
 import it.gov.innovazione.ndc.harvester.util.FileUtils;
+import it.gov.innovazione.ndc.harvester.util.PropertiesUtils;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -23,25 +23,8 @@ public class OntologyFolderScanner implements FolderScanner<SemanticAssetPath> {
             throw new IllegalArgumentException("Please provide valid properties");
         }
         this.fileUtils = fileUtils;
-        lowerSkipWords = extractLowerSkipWords(properties);
+        lowerSkipWords = PropertiesUtils.lowerSkipWords(properties.getSkipWords(), MIN_SKIP_WORD_LENGTH);
 
-    }
-
-    private List<String> extractLowerSkipWords(OntologyFolderScannerProperties properties) {
-        List<String> skipWords = properties.getSkipWords();
-        if (skipWords == null) {
-            return Collections.emptyList();
-        }
-        return skipWords.stream()
-                .peek(OntologyFolderScanner::checkMinSkipWordLength)
-                .map(sw -> sw.toLowerCase(Locale.ROOT))
-                .collect(Collectors.toList());
-    }
-
-    private static void checkMinSkipWordLength(String sw) {
-        if (sw.length() < MIN_SKIP_WORD_LENGTH) {
-            throw new IllegalArgumentException(String.format("skip words must be at least %d characters long", MIN_SKIP_WORD_LENGTH));
-        }
     }
 
     @Override
@@ -58,24 +41,11 @@ public class OntologyFolderScanner implements FolderScanner<SemanticAssetPath> {
                 .collect(Collectors.toList());
     }
 
-    private String getLowerCaseFileName(Path path) {
-        return nonNullOrInvalidFolder(path.getFileName(), "FileName for " + path)
-                .toString()
-                .toLowerCase(Locale.ROOT);
-    }
-
     private boolean isTurtleFilePath(Path path) {
-        return getLowerCaseFileName(path).endsWith(TURTLE_FILE_EXTENSION);
+        return fileUtils.getLowerCaseFileName(path).endsWith(TURTLE_FILE_EXTENSION);
     }
 
     private boolean fileNameDoesNotContainSkipWords(Path path) {
-        return lowerSkipWords.stream().noneMatch(getLowerCaseFileName(path)::contains);
-    }
-
-    private <T> T nonNullOrInvalidFolder(T value, String what) {
-        if (value == null) {
-            throw new InvalidAssetFolderException("Found unexpected null value for " + what);
-        }
-        return value;
+        return lowerSkipWords.stream().noneMatch(fileUtils.getLowerCaseFileName(path)::contains);
     }
 }

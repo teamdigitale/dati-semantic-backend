@@ -56,6 +56,7 @@ services:
       - VIRTUOSO_USERNAME=dba
       - VIRTUOSO_PASSWORD=dba
       # Configuration.
+      - HARVESTER_FOLDER_SKIP-WORDS=scriptR2RML,sparql,deprecated
       - HARVESTER_ONTOLOGY_SCANNER_SKIP-WORDS=example,aligns,DBGT,r2rml
       # Repositories.
       - HARVESTER_REPOSITORIES=https://github.com/ronytw/sample-ontology-repo
