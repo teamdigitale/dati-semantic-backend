@@ -27,4 +27,7 @@
    ]]></notes>
         <cve>CVE-2021-2471</cve>
     </suppress>
+    <suppress>
+        <cve>CVE-2016-1000027</cve>
+    </suppress>
 </suppressions>
