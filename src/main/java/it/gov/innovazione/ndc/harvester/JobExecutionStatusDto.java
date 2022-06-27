@@ -11,9 +11,9 @@ import org.springframework.batch.core.JobParameters;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
-import static java.util.Objects.isNull;
 
 @Data
 @JsonInclude(NON_NULL)
@@ -28,8 +28,8 @@ public class JobExecutionStatusDto {
     public JobExecutionStatusDto(JobExecution jobExecution) {
         jobInstance = jobExecution.getJobInstance();
         jobParameters = jobExecution.getJobParameters();
-        startTime = isNull(jobExecution.getStartTime()) ? "" : jobExecution.getStartTime().toString();
-        endTime = isNull(jobExecution.getEndTime()) ? "" : jobExecution.getEndTime().toString();
+        startTime = Optional.ofNullable(jobExecution.getStartTime()).map(Object::toString).orElse("");
+        endTime = Optional.ofNullable(jobExecution.getEndTime()).map(Object::toString).orElse("");
         status = jobExecution.getStatus();
         exitStatus = jobExecution.getExitStatus();
     }
