@@ -5,6 +5,7 @@ import it.gov.innovazione.ndc.harvester.scanners.OntologyFolderScanner;
 import it.gov.innovazione.ndc.harvester.scanners.SchemaFolderScanner;
 import it.gov.innovazione.ndc.harvester.model.CvPath;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
+import it.gov.innovazione.ndc.harvester.scanners.ControlledVocabularyFolderScannerProperties;
 import it.gov.innovazione.ndc.harvester.scanners.OntologyFolderScannerProperties;
 import it.gov.innovazione.ndc.harvester.util.FileUtils;
 import it.gov.innovazione.ndc.harvester.util.GitUtils;
@@ -37,7 +38,7 @@ public class AgencyRepositoryServiceTest {
         when(fileUtils.getLowerCaseFileName(any())).thenCallRealMethod();
         gitUtils = mock(GitUtils.class);
         OntologyFolderScanner ontologyScanner = new OntologyFolderScanner(fileUtils, OntologyFolderScannerProperties.forWords("aligns"));
-        ControlledVocabularyFolderScanner cvScanner = new ControlledVocabularyFolderScanner(fileUtils);
+        ControlledVocabularyFolderScanner cvScanner = new ControlledVocabularyFolderScanner(fileUtils, ControlledVocabularyFolderScannerProperties.forWords());
         SchemaFolderScanner schemaScanner = new SchemaFolderScanner(fileUtils);
         agencyRepoService = new AgencyRepositoryService(fileUtils, gitUtils, ontologyScanner,
                 cvScanner, schemaScanner, AgencyRepositoryServiceProperties.forWords("scriptR2RML"));

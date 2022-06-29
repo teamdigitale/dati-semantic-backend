@@ -2,11 +2,11 @@ package it.gov.innovazione.ndc.harvester.scanners;
 
 import it.gov.innovazione.ndc.harvester.model.CvPath;
 import it.gov.innovazione.ndc.harvester.exception.InvalidAssetFolderException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
@@ -17,9 +17,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @ExtendWith(MockitoExtension.class)
 class ControlledVocabularyFolderScannerTest extends BaseFolderScannerTest {
+    private ControlledVocabularyFolderScanner scanner;
 
-    @InjectMocks
-    ControlledVocabularyFolderScanner scanner;
+    @BeforeEach
+    void setupScanner() {
+        scanner = new ControlledVocabularyFolderScanner(fileUtils, ControlledVocabularyFolderScannerProperties.forWords());
+    }
 
     @Test
     void shouldFindTtlAndCsv() throws IOException {
