@@ -95,14 +95,14 @@ public class VocabularyDataControllerMvcTest {
                 .description("Its description")
                 .agencyId("agid")
                 .keyConcept("interesting-stuff")
-                .endpointUrl("http://schema.gov.it/vocabs/agid/interesting-stuff")
+                .endpointUrl("http://www.schema.gov.it/vocabs/agid/interesting-stuff")
                 .build();
         VocabularySummary summary2 = Builders.vocabularySummary()
                 .title("Some other vocab")
                 .description("Its description")
                 .agencyId("istat")
                 .keyConcept("stimulating-stuff")
-                .endpointUrl("http://schema.gov.it/vocabs/istat/stimulating-stuff")
+                .endpointUrl("http://www.schema.gov.it/vocabs/istat/stimulating-stuff")
                 .build();
         VocabulariesResult expectedResult = Builders.vocabulariesResult()
                 .limit(limit)
@@ -124,7 +124,7 @@ public class VocabularyDataControllerMvcTest {
                 .andExpect(jsonPath("$.totalCount").value(10))
                 .andExpect(jsonPath("$.data[0].title").value("Some vocab"))
                 .andExpect(jsonPath("$.data[0].links[0].rel").value("items"))
-                .andExpect(jsonPath("$.data[0].links[0].href").value("http://schema.gov.it/vocabs/agid/interesting-stuff"))
+                .andExpect(jsonPath("$.data[0].links[0].href").value("http://www.schema.gov.it/vocabs/agid/interesting-stuff"))
                 .andExpect(jsonPath("$.data[1].title").value("Some other vocab"));
     }
 

@@ -22,7 +22,7 @@ servers:
   - url: /api
     description: Development URL
     x-sandbox: true
-  - url: https://schema.gov.it/api
+  - url: https://www.schema.gov.it/api
     description: Public URL
 # The following stanza defines reusable components via yaml anchors
 #   to circumvent some json-schema limitations related to `allOf`

@@ -83,7 +83,7 @@ public class Builders {
     public static Problem build(String errorClass, String title, HttpStatus status) {
         Problem problem = new Problem();
         problem.setStatus(status.value());
-        problem.setType(new URI("https://schema.gov.it/tech/errors/" + errorClass));
+        problem.setType(new URI("https://www.schema.gov.it/tech/errors/" + errorClass));
         problem.setTitle(title);
         problem.setTimestamp(LocalDateTime.now().toString());
         return problem;
