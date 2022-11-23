@@ -9,7 +9,7 @@
     {
       "name": "harvester.repositories",
       "type": "java.util.List<java.lang.String>",
-      "description": "List of repo URLs."
+      "description": "Comma separarated list of repo URLs."
     },
     {
       "name": "harvester.controlled-vocabulary.csv.id-column-extractors.codice-livello.enabled",
