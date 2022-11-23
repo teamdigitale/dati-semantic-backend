@@ -1,18 +1,29 @@
 openapi: 3.0.1
 info:
-  title: NDC Semantic Backend
+  title: Schema - Semantic Backend
   version: 0.0.1
   description: |-
-    NDC Semantic Backend
+    This API exposes information from Schema, the National Data Catalog for Semantic Interoperability
+    including the REST API for accessing controlled vocabularies.
+    
+    It is used as a backend service for the [schema.gov.it](https://schema.gov.it) website
+    and to expose functionalities in an interoperable way.
+    
+    Provided information can be used to discover ontologies, controlled vocabularies and schemas
+    indexed by Schema, and to ease the creation of semantically interoperable digital services
+    such as web forms and APIs.
+    
+    **This API is a beta release, and it can change in the future during the consolidation phase
+    of Schema.**
   termsOfService: /tos
   contact:
-    name: NDC Semantic Backend
+    name: Dipartimento per la Trasformazione Digitale
     email: info@teamdigitale.governo.it
   license:
     name: BSD-3-Clause
     url: https://opensource.org/licenses/BSD-3-Clause
   x-api-id: d12425f8-6b82-49b1-9024-15fd2dbcb2d4
-  x-summary: NDC Semantic Backend
+  x-summary: Expose ontology, controlled vocabularies and schemas information from Schema.
 tags:
   - name: vocabulary-data
     description: Entry point for Vocabulary related data
