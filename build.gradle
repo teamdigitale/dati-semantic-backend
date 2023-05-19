@@ -167,6 +167,8 @@ jacocoTestCoverageVerification {
                     'it.gov.innovazione.ndc.harvester.util.*',
                     'it.gov.innovazione.ndc.model.profiles.*',
                     'it.gov.innovazione.ndc.gen.*',
+                    'it.gov.innovazione.ndc.validator.BaseSemanticAssetValidator',
+                    'it.gov.innovazione.ndc.controller.exception.*'
             ]
         }
     }
