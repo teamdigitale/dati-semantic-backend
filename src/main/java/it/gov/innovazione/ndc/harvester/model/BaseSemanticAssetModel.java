@@ -7,6 +7,7 @@ import it.gov.innovazione.ndc.harvester.model.extractors.NodeSummaryExtractor;
 import it.gov.innovazione.ndc.harvester.model.index.Distribution;
 import it.gov.innovazione.ndc.harvester.model.index.NodeSummary;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
+import it.gov.innovazione.ndc.model.profiles.Admsapit;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
@@ -119,6 +120,7 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
             .temporal(LiteralExtractor.extractOptional(mainResource, temporal))
             .conformsTo(NodeSummaryExtractor.maybeNodeSummaries(mainResource, conformsTo, FOAF.name))
             .distributions(getDistributions())
+            .status(LiteralExtractor.extractAll(mainResource, Admsapit.status))
             .build();
     }
 

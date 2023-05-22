@@ -59,6 +59,7 @@ public class SchemaModel extends BaseSemanticAssetModel {
             .keywords(LiteralExtractor.extractAll(mainResource, keyword))
             .conformsTo(NodeSummaryExtractor.maybeNodeSummaries(mainResource, conformsTo, FOAF.name))
             .keyClasses(getKeyClasses())
+            .status(LiteralExtractor.extractAll(mainResource, Admsapit.status))
             .build();
     }
 

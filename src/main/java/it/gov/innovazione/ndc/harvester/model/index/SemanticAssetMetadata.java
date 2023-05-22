@@ -37,6 +37,9 @@ public class SemanticAssetMetadata {
     @Field(type = Keyword, copyTo = "searchableText")
     private List<String> keywords;
 
+    @Field(type = Keyword)
+    private List<String> status;
+
     @Field(type = Date)
     private LocalDate modifiedOn;
     @Field(type = Keyword)
