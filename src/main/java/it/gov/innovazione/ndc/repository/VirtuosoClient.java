@@ -1,15 +1,13 @@
 package it.gov.innovazione.ndc.repository;
 
-import java.util.Objects;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.Credentials;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.jena.http.auth.AuthEnv;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.rdfconnection.RDFConnectionRemote;
 import org.springframework.stereotype.Component;
+
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.util.Objects;
 
 @Component
 public class VirtuosoClient {
@@ -18,11 +16,7 @@ public class VirtuosoClient {
 
     public VirtuosoClient(TripleStoreProperties properties) {
         this.properties = properties;
-        this.httpClient = createHttpClient(properties.getUsername(), properties.getPassword());
-    }
-
-    public HttpClient getHttpClient() {
-        return httpClient;
+        this.httpClient = createHttpClient();
     }
 
     public RDFConnection getConnection() {
@@ -39,10 +33,9 @@ public class VirtuosoClient {
         return properties.getSparql();
     }
 
-    private HttpClient createHttpClient(String username, String password) {
-        BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
-        Credentials credentials = new UsernamePasswordCredentials(username, password);
-        credsProvider.setCredentials(AuthScope.ANY, credentials);
-        return HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
+    private HttpClient createHttpClient() {
+        AuthEnv.get().registerUsernamePassword(URI.create(properties.getSparql()), properties.getUsername(), properties.getPassword());
+        AuthEnv.get().registerUsernamePassword(URI.create(properties.getSparqlGraphStore()), properties.getUsername(), properties.getPassword());
+        return HttpClient.newBuilder().build();
     }
 }

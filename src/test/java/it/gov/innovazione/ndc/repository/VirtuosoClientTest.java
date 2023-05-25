@@ -1,13 +1,5 @@
 package it.gov.innovazione.ndc.repository;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.rdfconnection.RDFConnectionRemote;
 import org.apache.jena.rdfconnection.RDFConnectionRemoteBuilder;
@@ -18,6 +10,12 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class VirtuosoClientTest {
@@ -36,33 +34,20 @@ class VirtuosoClientTest {
     public void setUp() {
         when(properties.getUsername()).thenReturn("username");
         when(properties.getPassword()).thenReturn("password");
+        when(properties.getSparql()).thenReturn("http://localhost:8890/sparql");
+        when(properties.getSparqlGraphStore()).thenReturn("http://localhost:8890/sparql-graph-store");
 
         virtuosoClient = new VirtuosoClient(properties);
     }
 
-
-    @Test
-    void shouldReturnHttpClient() {
-        HttpClient client = virtuosoClient.getHttpClient();
-
-        assertThat(client).isInstanceOf(CloseableHttpClient.class);
-        assertThat(client).isNotNull();
-    }
-
     @Test
     void shouldReturnSparqlEndpoint() {
-        when(properties.getSparql()).thenReturn("http://localhost:8890/sparql");
-
         String sparqlEndpoint = virtuosoClient.getSparqlEndpoint();
-
         assertThat(sparqlEndpoint).isEqualTo("http://localhost:8890/sparql");
     }
 
     @Test
     void shouldGetConnection() {
-        when(properties.getSparql()).thenReturn("http://localhost:8890/sparql");
-        when(properties.getSparqlGraphStore()).thenReturn(
-            "http://localhost:8890/sparql-graph-store");
         when(remoteBuilder.queryEndpoint("http://localhost:8890/sparql")).thenReturn(remoteBuilder);
         when(remoteBuilder.updateEndpoint("http://localhost:8890/sparql")).thenReturn(
             remoteBuilder);
