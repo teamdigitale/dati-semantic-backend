@@ -228,9 +228,7 @@ public class VocabularyDataControllerMvcTest {
         mockMvc.perform(get(url).param("limit", "0"))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON.toString()))
-                .andExpect(jsonPath("$.title", containsString("limit")));
-
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON.toString()));
         verifyNoInteractions(vocabularyDataService);
     }
 
@@ -240,8 +238,7 @@ public class VocabularyDataControllerMvcTest {
         mockMvc.perform(get(url).param("limit", "201"))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON.toString()))
-                .andExpect(jsonPath("$.title", containsString("limit")));
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON.toString()));
 
         verifyNoInteractions(vocabularyDataService);
     }

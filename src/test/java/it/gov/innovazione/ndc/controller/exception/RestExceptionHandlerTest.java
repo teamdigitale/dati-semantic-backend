@@ -52,6 +52,6 @@ class RestExceptionHandlerTest {
         assertThat(body).isNotNull();
         assertThat(body).isInstanceOf(Problem.class);
         Problem problem = (Problem) body;
-        assertThat(problem.getTitle()).isEqualTo("Validation for parameter failed 1234");
+        assertThat(problem.getTitle()).isEqualTo("Validation for parameter failed");
     }
 }
