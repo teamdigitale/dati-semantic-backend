@@ -92,7 +92,9 @@ public class SchemaModelTest {
             .addProperty(Admsapit.hasKeyClass,
                 jenaModel.createResource("http://keyClasses1").addProperty(label, "keyClasses1"))
             .addProperty(Admsapit.hasKeyClass,
-                jenaModel.createResource("http://keyClasses2").addProperty(label, "keyClasses2"));
+                jenaModel.createResource("http://keyClasses2").addProperty(label, "keyClasses2"))
+            .addProperty(Admsapit.status, "catalogued")
+            .addProperty(Admsapit.status, "published");;
     }
 
     @Test
@@ -321,5 +323,22 @@ public class SchemaModelTest {
         SemanticAssetMetadata metadata = model.extractMetadata();
 
         assertThat(metadata.getKeyClasses()).isEmpty();
+    }
+
+    @Test
+    void shouldExtractMetadataWithStatus() {
+        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
+        SemanticAssetMetadata metadata = model.extractMetadata();
+
+        assertThat(metadata.getStatus()).containsExactlyInAnyOrder("catalogued", "published");
+    }
+
+    @Test
+    void shouldExtractMetadataWithOutStatus() {
+        jenaModel.getResource(SCHEMA_IRI).removeAll(Admsapit.status);
+        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
+        SemanticAssetMetadata metadata = model.extractMetadata();
+
+        assertThat(metadata.getStatus()).isEmpty();
     }
 }

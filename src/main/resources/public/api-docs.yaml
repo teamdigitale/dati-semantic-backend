@@ -401,6 +401,11 @@ components:
           maxItems: *max-array-size-default
         rightsHolder:
           $ref: "#/components/schemas/NodeSummary"
+        status:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
     SemanticAssetDetails:
       allOf:
         - $ref: "#/components/schemas/SearchResultItem"

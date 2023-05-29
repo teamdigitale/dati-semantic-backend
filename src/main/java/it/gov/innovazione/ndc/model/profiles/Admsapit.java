@@ -10,4 +10,5 @@ public class Admsapit {
     public static final Property semanticAssetInUse = createProperty(NS + "semanticAssetInUse");
     public static final Property prefix = createProperty(NS + "prefix");
     public static final Property project = createProperty(NS + "Project");
+    public static final Property status = createProperty(NS + "status");
 }

@@ -1,7 +1,8 @@
 package it.gov.innovazione.ndc.controller.exception;
 
-import it.gov.innovazione.ndc.model.Builders;
 import it.gov.innovazione.ndc.gen.dto.Problem;
+import it.gov.innovazione.ndc.model.Builders;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -12,11 +13,13 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import javax.validation.ConstraintViolationException;
 
+@Slf4j
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = {ProblemBuildingException.class})
     public ResponseEntity<Object> handleExceptionWithAppProblem(ProblemBuildingException exception) {
+        log.error("ProblemBuildingException: ", exception);
         HttpStatus status = exception.getStatus();
         Problem report = exception.buildReport();
         return buildResponseEntityForAppProblem(status, report);
@@ -24,7 +27,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = {ConstraintViolationException.class, MethodArgumentTypeMismatchException.class })
     public ResponseEntity<Object> handleValidationFailures(RuntimeException ex) {
-        String errorMessage = "Validation for parameter failed " + ex.getMessage();
+        log.error("ValidationFailure: ", ex);
+        String errorMessage = "Validation for parameter failed";
         Problem report = Builders.problem()
                 .errorClass(ex.getClass().getSimpleName())
                 .status(HttpStatus.BAD_REQUEST)

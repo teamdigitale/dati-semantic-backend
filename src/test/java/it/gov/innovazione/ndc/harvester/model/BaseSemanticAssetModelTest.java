@@ -1,25 +1,5 @@
 package it.gov.innovazione.ndc.harvester.model;
 
-import it.gov.innovazione.ndc.harvester.model.index.Distribution;
-import it.gov.innovazione.ndc.harvester.model.index.NodeSummary;
-import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
-import it.gov.innovazione.ndc.harvester.model.exception.InvalidModelException;
-import it.gov.innovazione.ndc.model.profiles.EuropePublicationVocabulary;
-import it.gov.innovazione.ndc.model.profiles.NDC;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.RDFNode;
-import org.apache.jena.rdf.model.Statement;
-import org.apache.jena.sparql.vocabulary.FOAF;
-import org.apache.jena.vocabulary.DCAT;
-import org.apache.jena.vocabulary.RDF;
-import org.apache.jena.vocabulary.VCARD4;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.time.LocalDate;
-import java.util.List;
-
 import static it.gov.innovazione.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.apache.jena.rdf.model.ResourceFactory.createLangLiteral;
@@ -47,6 +27,27 @@ import static org.apache.jena.vocabulary.DCTerms.title;
 import static org.apache.jena.vocabulary.OWL.versionInfo;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.time.LocalDate;
+import java.util.List;
+
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.sparql.vocabulary.FOAF;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.VCARD4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import it.gov.innovazione.ndc.harvester.model.exception.InvalidModelException;
+import it.gov.innovazione.ndc.harvester.model.index.Distribution;
+import it.gov.innovazione.ndc.harvester.model.index.NodeSummary;
+import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
+import it.gov.innovazione.ndc.model.profiles.Admsapit;
+import it.gov.innovazione.ndc.model.profiles.EuropePublicationVocabulary;
+import it.gov.innovazione.ndc.model.profiles.NDC;
 
 class BaseSemanticAssetModelTest {
 
@@ -103,7 +104,9 @@ class BaseSemanticAssetModelTest {
                 .addProperty(format, EuropePublicationVocabulary.FILE_TYPE_JSON)
                 .addProperty(accessURL, jenaModel.createResource(CV_IRI + "/dist/json"))
                 .addProperty(downloadURL, jenaModel.createResource(CV_IRI + "/dist/json/test.json"))
-            );
+            ) 
+            .addProperty(Admsapit.status, "catalogued")
+            .addProperty(Admsapit.status, "published");
         semanticAssetModel = new TestBaseSemanticAssetModel(jenaModel, TTL_FILE, "some-repo");
     }
 
@@ -412,6 +415,21 @@ class BaseSemanticAssetModelTest {
         SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
 
         assertThat(metadata.getTemporal()).isNull();
+    }
+    
+    @Test
+    void shouldExtractMetadataWithStatus() {
+        SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
+
+        assertThat(metadata.getStatus()).containsExactlyInAnyOrder("catalogued", "published");
+    }
+
+    @Test
+    void shouldExtractMetadataWithOutStatus() {
+        jenaModel.getResource(CV_IRI).removeAll(Admsapit.status);
+        SemanticAssetMetadata metadata = semanticAssetModel.extractMetadata();
+
+        assertThat(metadata.getStatus()).isEmpty();
     }
 
     private void removeAllPropertyStatements(Property property) {
