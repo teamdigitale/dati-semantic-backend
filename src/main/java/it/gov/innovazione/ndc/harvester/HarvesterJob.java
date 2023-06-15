@@ -1,5 +1,6 @@
 package it.gov.innovazione.ndc.harvester;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobInstance;
@@ -7,11 +8,8 @@ import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.launch.JobLauncher;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -23,30 +21,18 @@ import static java.util.Collections.emptyList;
 import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toList;
 
-@Configuration
-@EnableScheduling
 @Slf4j
+@Configuration
+@RequiredArgsConstructor
 public class HarvesterJob {
+
     private final JobLauncher jobLauncher;
     private final JobExplorer jobExplorer;
     private final Job harvestSemanticAssetsJob;
     private final Clock clock;
+    @Value("#{'${harvester.repositories}'}")
     private final String repositories;
 
-    @Autowired
-    public HarvesterJob(JobLauncher jobLauncher,
-                        JobExplorer jobExplorer,
-                        Job harvestSemanticAssetsJob,
-                        Clock clock,
-                        @Value("#{'${harvester.repositories}'}") String repositories) {
-        this.jobLauncher = jobLauncher;
-        this.jobExplorer = jobExplorer;
-        this.harvestSemanticAssetsJob = harvestSemanticAssetsJob;
-        this.clock = clock;
-        this.repositories = repositories;
-    }
-
-    @Scheduled(cron = "0 0 22 ? * *")
     public void harvest() {
         harvest(repositories);
     }
