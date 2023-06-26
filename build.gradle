@@ -51,8 +51,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-batch'
 
     implementation 'org.springframework.data:spring-data-elasticsearch'
-    implementation 'org.apache.jena:apache-jena-libs:4.2.0'
-    implementation 'org.apache.jena:jena-querybuilder:4.2.0'
+    implementation 'org.apache.jena:apache-jena-libs:4.8.0'
+    implementation 'org.apache.jena:jena-querybuilder:4.8.0'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.eclipse.jgit:org.eclipse.jgit:5.13.0.202109080827-r'
     implementation 'javax.xml.bind:jaxb-api:2.3.1'

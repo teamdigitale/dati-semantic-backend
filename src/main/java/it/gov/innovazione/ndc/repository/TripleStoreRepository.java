@@ -42,9 +42,7 @@ public class TripleStoreRepository {
     public void clearExistingNamedGraph(String repoUrl) {
         try {
             String sparqlEndpoint = virtuosoClient.getSparqlEndpoint();
-            HttpClient httpClient = virtuosoClient.getHttpClient();
-            UpdateExecutionFactory.createRemote(new UpdateDrop(repoUrl, true), sparqlEndpoint,
-                    httpClient)
+            UpdateExecutionFactory.createRemote(new UpdateDrop(repoUrl, true), sparqlEndpoint)
                 .execute();
         } catch (Exception e) {
             log.error(String.format("Could not clear existing named graph! - %s", repoUrl), e);
