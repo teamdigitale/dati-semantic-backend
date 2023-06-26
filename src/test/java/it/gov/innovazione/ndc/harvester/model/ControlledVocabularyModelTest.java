@@ -100,6 +100,16 @@ class ControlledVocabularyModelTest {
     }
 
     @Test
+    void shouldValidateMetadataWithSemanticAssetType() {
+        ControlledVocabularyModel model =
+                new ControlledVocabularyModel(jenaModel, TTL_FILE, REPO_URL);
+
+        SemanticAssetModelValidationContext semanticAssetModelValidationContext = model.validateMetadata();
+
+        assertThat(semanticAssetModelValidationContext.getErrors().size()).isEqualTo(0);
+    }
+
+    @Test
     void shouldFailWhenModelDoesNotContainControlledVocabulary() {
         List<Statement> conceptStatements = jenaModel
                 .listStatements(null, RDF.type, (RDFNode) null)

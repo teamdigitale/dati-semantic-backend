@@ -97,6 +97,15 @@ class OntologyModelTest {
     }
 
     @Test
+    void shouldValidateMetadataWithSemanticAssetType() {
+        OntologyModel model = new OntologyModel(jenaModel, TTL_FILE, REPO_URL);
+
+        SemanticAssetModelValidationContext semanticAssetModelValidationContext = model.validateMetadata();
+
+        assertThat(semanticAssetModelValidationContext.getErrors().size()).isEqualTo(0);
+    }
+
+    @Test
     void shouldExtractHasSemanticAssetDistributionProperty() {
         OntologyModel ontologyModel = new OntologyModel(jenaModel, TTL_FILE, REPO_URL);
 

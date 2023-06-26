@@ -1,5 +1,25 @@
 package it.gov.innovazione.ndc.harvester.model;
 
+import it.gov.innovazione.ndc.harvester.model.exception.InvalidModelException;
+import it.gov.innovazione.ndc.harvester.model.index.Distribution;
+import it.gov.innovazione.ndc.harvester.model.index.NodeSummary;
+import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
+import it.gov.innovazione.ndc.model.profiles.Admsapit;
+import it.gov.innovazione.ndc.model.profiles.EuropePublicationVocabulary;
+import it.gov.innovazione.ndc.model.profiles.NDC;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.sparql.vocabulary.FOAF;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.VCARD4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.time.LocalDate;
+import java.util.List;
+
 import static it.gov.innovazione.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.apache.jena.rdf.model.ResourceFactory.createLangLiteral;
@@ -27,27 +47,6 @@ import static org.apache.jena.vocabulary.DCTerms.title;
 import static org.apache.jena.vocabulary.OWL.versionInfo;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import java.time.LocalDate;
-import java.util.List;
-
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.RDFNode;
-import org.apache.jena.rdf.model.Statement;
-import org.apache.jena.sparql.vocabulary.FOAF;
-import org.apache.jena.vocabulary.RDF;
-import org.apache.jena.vocabulary.VCARD4;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import it.gov.innovazione.ndc.harvester.model.exception.InvalidModelException;
-import it.gov.innovazione.ndc.harvester.model.index.Distribution;
-import it.gov.innovazione.ndc.harvester.model.index.NodeSummary;
-import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
-import it.gov.innovazione.ndc.model.profiles.Admsapit;
-import it.gov.innovazione.ndc.model.profiles.EuropePublicationVocabulary;
-import it.gov.innovazione.ndc.model.profiles.NDC;
 
 class BaseSemanticAssetModelTest {
 
@@ -452,8 +451,8 @@ class BaseSemanticAssetModelTest {
         }
 
         @Override
-        protected List<Distribution> getDistributions() {
-            return extractDistributionsFilteredByFormat(distribution, EuropePublicationVocabulary.FILE_TYPE_JSON);
+        protected List<Distribution> getDistributions(SemanticAssetModelValidationContext context) {
+            return extractDistributionsFilteredByFormat(getMainResource(), distribution, EuropePublicationVocabulary.FILE_TYPE_JSON, context);
         }
     }
 }

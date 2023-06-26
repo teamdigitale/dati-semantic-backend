@@ -157,6 +157,15 @@ public class SchemaModelTest {
     }
 
     @Test
+    void shouldValidateMetadataWithSemanticAssetType() {
+        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
+
+        SemanticAssetModelValidationContext semanticAssetModelValidationContext = model.validateMetadata();
+
+        assertThat(semanticAssetModelValidationContext.getErrors().size()).isEqualTo(0);
+    }
+    
+    @Test
     void shouldExtractMetadataWithRightsHolder() {
         SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
         SemanticAssetMetadata metadata = model.extractMetadata();
@@ -341,4 +350,5 @@ public class SchemaModelTest {
 
         assertThat(metadata.getStatus()).isEmpty();
     }
+
 }
