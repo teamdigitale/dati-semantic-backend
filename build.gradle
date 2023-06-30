@@ -26,7 +26,7 @@ configurations {
     all {
         resolutionStrategy.eachDependency { details ->
             if (details.requested.group == 'com.google.guava' && details.requested.name=='guava') {
-                details.useVersion "31.1-jre"
+                details.useVersion "32.0.1-jre"
             }
             if (details.requested.group == 'org.apache.bcel' && details.requested.name=='bcel') {
                 details.useVersion "6.6.1"
@@ -81,9 +81,9 @@ dependencies {
     testImplementation 'io.rest-assured:json-path:4.0.0'
     testImplementation 'org.mockito:mockito-inline:3.9.0'
 
-    integrationImplementation "org.testcontainers:elasticsearch:1.16.2"
-    integrationImplementation "org.testcontainers:testcontainers:1.16.2"
-    integrationImplementation "org.testcontainers:junit-jupiter:1.16.2"
+    integrationImplementation "org.testcontainers:elasticsearch:1.18.3"
+    integrationImplementation "org.testcontainers:testcontainers:1.18.3"
+    integrationImplementation "org.testcontainers:junit-jupiter:1.18.3"
     integrationImplementation "com.h2database:h2:2.0.202"
 
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
