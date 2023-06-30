@@ -75,7 +75,7 @@ This repository adopts a simplified branch management system as follows:
 
 ### Releases
 
-TBA
+TBA :)
 
 ## Community
 
