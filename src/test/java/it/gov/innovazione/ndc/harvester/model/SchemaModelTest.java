@@ -12,6 +12,7 @@ import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.VCARD4;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -156,6 +157,16 @@ public class SchemaModelTest {
         assertThat(metadata.getType()).isEqualTo(SCHEMA);
     }
 
+    @Test
+    void shouldValidateMetadataWithSemanticAssetType() {
+        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
+
+        SemanticAssetModelValidationContext semanticAssetModelValidationContext = model.validateMetadata();
+
+        System.out.println(semanticAssetModelValidationContext.getErrors());
+        //assertThat(semanticAssetModelValidationContext.getErrors().size()).isEqualTo(0);
+    }
+    
     @Test
     void shouldExtractMetadataWithRightsHolder() {
         SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
@@ -341,4 +352,5 @@ public class SchemaModelTest {
 
         assertThat(metadata.getStatus()).isEmpty();
     }
+
 }

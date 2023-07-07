@@ -11,7 +11,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import org.apache.http.client.HttpClient;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.atlas.web.HttpException;
 import org.apache.jena.query.Query;
@@ -19,8 +18,8 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.update.Update;
+import org.apache.jena.update.UpdateExecution;
 import org.apache.jena.update.UpdateExecutionFactory;
-import org.apache.jena.update.UpdateProcessor;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,9 +36,7 @@ class TripleStoreRepositoryTest {
     @Mock
     RDFConnection connection;
     @Mock
-    UpdateProcessor updateProcessor;
-    @Mock
-    HttpClient httpClient;
+    UpdateExecution updateExecution;
     @Mock
     VirtuosoClient virtuosoClient;
 
@@ -74,13 +71,11 @@ class TripleStoreRepositoryTest {
     @Test
     void shouldDeleteGraphSilently() {
         when(virtuosoClient.getSparqlEndpoint()).thenReturn("http://www.sparql.org");
-        when(virtuosoClient.getHttpClient()).thenReturn(httpClient);
 
         try (MockedStatic<UpdateExecutionFactory> mock = mockUpdateFactory()) {
             tripleStoreRepository.clearExistingNamedGraph(REPO_URL);
             mock.verify(() -> UpdateExecutionFactory.createRemote(any(Update.class),
-                eq("http://www.sparql.org"),
-                eq(httpClient)));
+                eq("http://www.sparql.org")));
         }
 
         verify(virtuosoClient, times(0)).getConnection();
@@ -90,18 +85,16 @@ class TripleStoreRepositoryTest {
     @Test
     void shouldThrowWhenDeletionFails() {
         when(virtuosoClient.getSparqlEndpoint()).thenReturn("http://www.sparql.org");
-        when(virtuosoClient.getHttpClient()).thenReturn(httpClient);
 
         try (MockedStatic<UpdateExecutionFactory> mock = mockUpdateFactory()) {
-            mock.when(() -> UpdateExecutionFactory.createRemote(any(Update.class), anyString(),
-                any(HttpClient.class))).thenThrow(new HttpException("Something bad happened"));
+            mock.when(() -> UpdateExecutionFactory.createRemote(any(Update.class), anyString()))
+                    .thenThrow(new HttpException("Something bad happened"));
 
             assertThatThrownBy(() -> tripleStoreRepository.clearExistingNamedGraph(REPO_URL))
                 .isInstanceOf(TripleStoreRepositoryException.class);
 
             mock.verify(() -> UpdateExecutionFactory.createRemote(any(Update.class),
-                eq("http://www.sparql.org"),
-                eq(httpClient)));
+                eq("http://www.sparql.org")));
         }
 
         verify(virtuosoClient, times(0)).getConnection();
@@ -136,9 +129,8 @@ class TripleStoreRepositoryTest {
         MockedStatic<UpdateExecutionFactory> mockedStatic =
             Mockito.mockStatic(UpdateExecutionFactory.class);
         mockedStatic.when(
-                () -> UpdateExecutionFactory.createRemote(any(Update.class), anyString(),
-                    any(HttpClient.class)))
-            .thenReturn(updateProcessor);
+                () -> UpdateExecutionFactory.createRemote(any(Update.class), anyString()))
+            .thenReturn(updateExecution);
         return mockedStatic;
     }
 

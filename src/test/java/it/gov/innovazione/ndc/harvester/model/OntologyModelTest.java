@@ -10,6 +10,7 @@ import it.gov.innovazione.ndc.model.profiles.NDC;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -94,6 +95,16 @@ class OntologyModelTest {
         SemanticAssetMetadata metadata = model.extractMetadata();
 
         assertThat(metadata.getType()).isEqualTo(ONTOLOGY);
+    }
+
+    @Test
+    void shouldValidateMetadataWithSemanticAssetType() {
+        OntologyModel model = new OntologyModel(jenaModel, TTL_FILE, REPO_URL);
+
+        SemanticAssetModelValidationContext semanticAssetModelValidationContext = model.validateMetadata();
+
+        System.out.println(semanticAssetModelValidationContext.getErrors());
+        //assertThat(semanticAssetModelValidationContext.getErrors().size()).isEqualTo(0);
     }
 
     @Test

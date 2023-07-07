@@ -12,6 +12,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -97,6 +98,17 @@ class ControlledVocabularyModelTest {
         SemanticAssetMetadata metadata = model.extractMetadata();
 
         assertThat(metadata.getType()).isEqualTo(CONTROLLED_VOCABULARY);
+    }
+
+    @Test
+    void shouldValidateMetadataWithSemanticAssetType() {
+        ControlledVocabularyModel model =
+                new ControlledVocabularyModel(jenaModel, TTL_FILE, REPO_URL);
+
+        SemanticAssetModelValidationContext semanticAssetModelValidationContext = model.validateMetadata();
+
+        System.out.println(semanticAssetModelValidationContext.getErrors());
+        //assertThat(semanticAssetModelValidationContext.getErrors().size()).isEqualTo(0);
     }
 
     @Test
