@@ -11,11 +11,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import it.gov.innovazione.ndc.repository.HarvestJobException;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -70,11 +70,12 @@ class HarvesterJobTest {
     }
 
     @Test
-    void shouldFailGracefullyWhenJobThrowsException() throws JobInstanceAlreadyCompleteException, JobExecutionAlreadyRunningException, JobParametersInvalidException, JobRestartException {
+    void shouldntFailGracefullyWhenJobThrowsException()
+        throws JobInstanceAlreadyCompleteException, JobExecutionAlreadyRunningException, JobParametersInvalidException, JobRestartException {
         setupClock();
 
         doThrow(new RuntimeException()).when(jobLauncher).run(any(), any());
-        harvesterJob.harvest();
+        assertThrows(HarvestJobException.class, () -> harvesterJob.harvest());
     }
 
     @Test
