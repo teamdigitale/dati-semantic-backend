@@ -1,6 +1,7 @@
 package it.gov.innovazione.ndc.harvester;
 
 import it.gov.innovazione.ndc.repository.HarvestJobException;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
@@ -51,7 +52,9 @@ public class HarvesterJob {
                     .toJobParameters();
             JobExecution run = jobLauncher.run(harvestSemanticAssetsJob, jobParameters);
             log.info("Harvest job started at " + currentDateTime);
-            log.info("Harvester job instance:" + run.getJobInstance());
+            Optional.ofNullable(run)
+                    .map(JobExecution::getJobInstance)
+                    .ifPresent(jobInstance -> log.info("Harvester job instance:" + jobInstance));
         } catch (Exception e) {
             log.error("Error in harvest job ", e);
             throw new HarvestJobException(e);

@@ -23,13 +23,4 @@ public class Application {
         return Clock.systemDefaultZone();
     }
 
-    @Bean
-    @Primary
-    public JobLauncher simpleJobLauncher(JobRepository jobRepository) throws Exception {
-        SimpleJobLauncher jobLauncher = new SimpleJobLauncher();
-        jobLauncher.setJobRepository(jobRepository);
-        jobLauncher.setTaskExecutor(new SimpleAsyncTaskExecutor());
-        jobLauncher.afterPropertiesSet();
-        return jobLauncher;
-    }
 }
