@@ -1,11 +1,11 @@
 package it.gov.innovazione.ndc.harvester.model;
 
+import com.github.jsonldjava.shaded.com.google.common.collect.ImmutableList;
 import it.gov.innovazione.ndc.harvester.model.exception.InvalidModelException;
 import it.gov.innovazione.ndc.harvester.model.index.Distribution;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.gov.innovazione.ndc.model.profiles.NDC;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.jena.ext.com.google.common.collect.ImmutableList;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;

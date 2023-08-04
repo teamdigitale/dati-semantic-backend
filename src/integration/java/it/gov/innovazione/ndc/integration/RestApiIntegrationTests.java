@@ -100,7 +100,7 @@ public class RestApiIntegrationTests extends BaseIntegrationTest {
                 .body("type", equalTo(ONTOLOGY.name()))
                 .body("modifiedOn", equalTo("2018-07-31"))
                 .body("keyClasses[0].iri",
-                        equalTo("https://w3id.org/italia/onto/ACCO/AccommodationRoom"));
+                        equalTo("https://w3id.org/italia/onto/ACCO/AccommodationTypology"));
 
         try (RDFConnection connection = getVirtuosoConnection()) {
             String query = format("SELECT ?o WHERE { <%s> <%s> ?o }", assetIri, title);

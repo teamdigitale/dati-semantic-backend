@@ -1,12 +1,12 @@
 package it.gov.innovazione.ndc.harvester.model;
 
+import com.github.jsonldjava.shaded.com.google.common.collect.ImmutableList;
 import it.gov.innovazione.ndc.harvester.SemanticAssetType;
 import it.gov.innovazione.ndc.harvester.model.extractors.NodeSummaryExtractor;
 import it.gov.innovazione.ndc.harvester.model.index.Distribution;
 import it.gov.innovazione.ndc.harvester.model.index.NodeSummary;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.gov.innovazione.ndc.model.profiles.Admsapit;
-import org.apache.jena.ext.com.google.common.collect.ImmutableList;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDFS;
