@@ -1,19 +1,21 @@
 package it.gov.innovazione.ndc.repository;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.client.HttpClient;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.atlas.web.HttpException;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdfconnection.RDFConnection;
-import org.apache.jena.sparql.modify.request.UpdateDrop;
-import org.apache.jena.update.UpdateExecutionFactory;
+import org.apache.jena.update.UpdateExecution;
 import org.springframework.stereotype.Repository;
+
+import static java.lang.String.format;
 
 @Slf4j
 @Repository
 public class TripleStoreRepository {
+    private static final String DROP_SILENT_GRAPH_WITH_LOG_ENABLE_3 = "DEFINE sql:log-enable 3%nDROP SILENT GRAPH <%s>%n";
 
     private final VirtuosoClient virtuosoClient;
 
@@ -34,21 +36,30 @@ public class TripleStoreRepository {
             connection.load(graphName, model);
         } catch (Exception e) {
             log.error("Could not flush!", e);
-            throw new TripleStoreRepositoryException(
-                String.format("Could not save model to '%s'", graphName), e);
+            if (e instanceof HttpException) {
+                HttpException httpException = (HttpException) e;
+                log.error("HttpException: {}", httpException.getResponse());
+            }
+            throw new TripleStoreRepositoryException(format("Could not save model to '%s'", graphName), e);
         }
     }
 
     public void clearExistingNamedGraph(String repoUrl) {
         try {
             String sparqlEndpoint = virtuosoClient.getSparqlEndpoint();
-            UpdateExecutionFactory.createRemote(new UpdateDrop(repoUrl, true), sparqlEndpoint)
-                .execute();
+            UpdateExecution.service(sparqlEndpoint).updateString(getUpdateCommand(repoUrl)).execute();
         } catch (Exception e) {
-            log.error(String.format("Could not clear existing named graph! - %s", repoUrl), e);
-            throw new TripleStoreRepositoryException(
-                String.format("Could not delete graph - '%s'", repoUrl), e);
+            log.error(format("Could not clear existing named graph! - %s", repoUrl), e);
+            if (e instanceof HttpException) {
+                HttpException httpException = (HttpException) e;
+                log.error("HttpException: {}", httpException.getResponse());
+            }
+            throw new TripleStoreRepositoryException(format("Could not delete graph - '%s'", repoUrl), e);
         }
+    }
+
+    private static String getUpdateCommand(String repoUrl) {
+        return format(DROP_SILENT_GRAPH_WITH_LOG_ENABLE_3, repoUrl);
     }
 
     public QueryExecution select(SelectBuilder selectBuilder) {
@@ -56,9 +67,12 @@ public class TripleStoreRepository {
             Query query = selectBuilder.build();
             return connection.query(query);
         } catch (Exception e) {
-            log.error(String.format("Could not execute select! - %s", selectBuilder), e);
-            throw new TripleStoreRepositoryException(
-                String.format("Could not execute select - '%s'", selectBuilder), e);
+            log.error(format("Could not execute select! - %s", selectBuilder), e);
+            if (e instanceof HttpException) {
+                HttpException httpException = (HttpException) e;
+                log.error("HttpException: {}", httpException.getResponse());
+            }
+            throw new TripleStoreRepositoryException(format("Could not execute select - '%s'", selectBuilder), e);
         }
     }
 }

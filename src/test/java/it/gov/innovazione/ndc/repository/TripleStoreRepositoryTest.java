@@ -1,25 +1,13 @@
 package it.gov.innovazione.ndc.repository;
 
-import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
-
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.atlas.web.HttpException;
 import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdfconnection.RDFConnection;
-import org.apache.jena.update.Update;
+import org.apache.jena.sparql.exec.http.UpdateExecutionHTTPBuilder;
 import org.apache.jena.update.UpdateExecution;
-import org.apache.jena.update.UpdateExecutionFactory;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,6 +17,16 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
 @ExtendWith(MockitoExtension.class)
 class TripleStoreRepositoryTest {
     private static final String REPO_URL = "http://www.repos.org/reponame";
@@ -36,7 +34,7 @@ class TripleStoreRepositoryTest {
     @Mock
     RDFConnection connection;
     @Mock
-    UpdateExecution updateExecution;
+    UpdateExecutionHTTPBuilder updateExecutionHttpBuilder;
     @Mock
     VirtuosoClient virtuosoClient;
 
@@ -72,10 +70,9 @@ class TripleStoreRepositoryTest {
     void shouldDeleteGraphSilently() {
         when(virtuosoClient.getSparqlEndpoint()).thenReturn("http://www.sparql.org");
 
-        try (MockedStatic<UpdateExecutionFactory> mock = mockUpdateFactory()) {
+        try (MockedStatic<UpdateExecution> mock = mockUpdateExecutionFull()) {
             tripleStoreRepository.clearExistingNamedGraph(REPO_URL);
-            mock.verify(() -> UpdateExecutionFactory.createRemote(any(Update.class),
-                eq("http://www.sparql.org")));
+            mock.verify(() -> UpdateExecution.service(eq("http://www.sparql.org")));
         }
 
         verify(virtuosoClient, times(0)).getConnection();
@@ -86,15 +83,14 @@ class TripleStoreRepositoryTest {
     void shouldThrowWhenDeletionFails() {
         when(virtuosoClient.getSparqlEndpoint()).thenReturn("http://www.sparql.org");
 
-        try (MockedStatic<UpdateExecutionFactory> mock = mockUpdateFactory()) {
-            mock.when(() -> UpdateExecutionFactory.createRemote(any(Update.class), anyString()))
+        try (MockedStatic<UpdateExecution> mock = mockUpdateExecution()) {
+            mock.when(() -> UpdateExecution.service(any(String.class)))
                     .thenThrow(new HttpException("Something bad happened"));
 
             assertThatThrownBy(() -> tripleStoreRepository.clearExistingNamedGraph(REPO_URL))
                 .isInstanceOf(TripleStoreRepositoryException.class);
 
-            mock.verify(() -> UpdateExecutionFactory.createRemote(any(Update.class),
-                eq("http://www.sparql.org")));
+            mock.verify(() -> UpdateExecution.service(any(String.class)));
         }
 
         verify(virtuosoClient, times(0)).getConnection();
@@ -125,12 +121,21 @@ class TripleStoreRepositoryTest {
         verify(connection).query(selectBuilder.build());
     }
 
-    private MockedStatic<UpdateExecutionFactory> mockUpdateFactory() {
-        MockedStatic<UpdateExecutionFactory> mockedStatic =
-            Mockito.mockStatic(UpdateExecutionFactory.class);
-        mockedStatic.when(
-                () -> UpdateExecutionFactory.createRemote(any(Update.class), anyString()))
-            .thenReturn(updateExecution);
+    private MockedStatic<UpdateExecution> mockUpdateExecutionFull() {
+        MockedStatic<UpdateExecution> mockedStatic =
+                Mockito.mockStatic(UpdateExecution.class);
+        mockedStatic.when(() -> UpdateExecution.service(any(String.class)))
+            .thenReturn(updateExecutionHttpBuilder);
+        when(updateExecutionHttpBuilder.updateString(any(String.class)))
+            .thenReturn(updateExecutionHttpBuilder);
+        return mockedStatic;
+    }
+
+    private MockedStatic<UpdateExecution> mockUpdateExecution() {
+        MockedStatic<UpdateExecution> mockedStatic =
+                Mockito.mockStatic(UpdateExecution.class);
+        mockedStatic.when(() -> UpdateExecution.service(any(String.class)))
+                .thenReturn(updateExecutionHttpBuilder);
         return mockedStatic;
     }
 
