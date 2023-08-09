@@ -36,6 +36,10 @@ public class TripleStoreRepository {
             connection.load(graphName, model);
         } catch (Exception e) {
             log.error("Could not flush!", e);
+            if (e instanceof HttpException) {
+                HttpException httpException = (HttpException) e;
+                log.error("HttpException: {}", httpException.getResponse());
+            }
             throw new TripleStoreRepositoryException(format("Could not save model to '%s'", graphName), e);
         }
     }
@@ -64,6 +68,10 @@ public class TripleStoreRepository {
             return connection.query(query);
         } catch (Exception e) {
             log.error(format("Could not execute select! - %s", selectBuilder), e);
+            if (e instanceof HttpException) {
+                HttpException httpException = (HttpException) e;
+                log.error("HttpException: {}", httpException.getResponse());
+            }
             throw new TripleStoreRepositoryException(format("Could not execute select - '%s'", selectBuilder), e);
         }
     }
