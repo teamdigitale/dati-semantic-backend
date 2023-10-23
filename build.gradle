@@ -60,7 +60,6 @@ dependencies {
 
     implementation 'org.apache.commons:commons-compress:1.24.0'
 
-
     implementation 'org.springdoc:springdoc-openapi-ui:1.6.1'
     implementation 'org.openapitools:jackson-databind-nullable:0.2.1'
     implementation 'io.swagger:swagger-annotations:1.5.20'
