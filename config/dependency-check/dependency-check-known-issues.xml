@@ -11,6 +11,6 @@
         <cve>CVE-2016-1000027</cve>
     </suppress>
     <suppress>
-        <cve>CVE-2023-35116</cve>
+        <cve>CVE-2023-4759</cve>
     </suppress>
 </suppressions>
