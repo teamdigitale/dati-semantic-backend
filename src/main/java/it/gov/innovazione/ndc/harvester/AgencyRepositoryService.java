@@ -80,7 +80,11 @@ public class AgencyRepositoryService {
         Path assetRootPath = Path.of(clonedRepo.toString(), type.getFolderName());
         if (!fileUtils.folderExists(assetRootPath)) {
             log.warn("No {} folder found in {}", type.getDescription(), clonedRepo);
-            return List.of();
+
+            assetRootPath = Path.of(clonedRepo.toString(), type.getLegacyFolderName()); 
+            if (!fileUtils.folderExists(assetRootPath)) {
+                return List.of();
+            }
         }
 
         return createSemanticAssetPaths(assetRootPath, scanner, type.isIgnoringObsoleteVersions());
