@@ -10,7 +10,7 @@ public enum SemanticAssetType {
             "http://www.w3.org/2002/07/owl#Ontology",
             true),
     CONTROLLED_VOCABULARY("controlled vocabulary",
-            "assets/vocabularies",
+            "assets/controlled-vocabularies",
             "VocabolariControllati",
             "http://dati.gov.it/onto/dcatapit#Dataset",
             false),
