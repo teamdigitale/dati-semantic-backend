@@ -14,5 +14,4 @@ ds --> dist: dcat:distribution
 dist --> acc: dcat:accessURL
 dist --> dwnld: dcat:downloadURL
 
-}
 @enduml

@@ -13,12 +13,12 @@ public enum SemanticAssetType {
             "assets/controlled-vocabularies",
             "VocabolariControllati",
             "http://dati.gov.it/onto/dcatapit#Dataset",
-            false),
+            true),
     SCHEMA("schema",
             "assets/schemas",
             "Schema",
             "http://dati.gov.it/onto/dcatapit#Dataset",
-            false);
+            true);
 
     private final String description;
     private final String folderName;
