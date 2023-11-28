@@ -1,22 +1,9 @@
 package it.gov.innovazione.ndc.harvester;
 
-import static org.codehaus.groovy.runtime.InvokerHelper.asList;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import it.gov.innovazione.ndc.repository.HarvestJobException;
-import java.time.Clock;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.List;
-import org.junit.jupiter.api.BeforeEach;
+import it.gov.innovazione.ndc.harvester.service.RepositoryService;
+import it.gov.innovazione.ndc.harvester.util.GitUtils;
+import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
+import it.gov.innovazione.ndc.model.harvester.Repository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -33,7 +20,20 @@ import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
 import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
 import org.springframework.batch.core.repository.JobRestartException;
-import org.springframework.test.util.ReflectionTestUtils;
+
+import java.util.List;
+
+import static it.gov.innovazione.ndc.harvester.service.RepositoryUtils.asRepos;
+import static it.gov.innovazione.ndc.model.harvester.HarvesterRun.Status.FAILED;
+import static it.gov.innovazione.ndc.model.harvester.HarvesterRun.Status.UNCHANGED;
+import static org.codehaus.groovy.runtime.InvokerHelper.asList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class HarvesterJobTest {
@@ -44,20 +44,20 @@ class HarvesterJobTest {
     @Mock
     Job harvestSemanticAssetsJob;
     @Mock
-    Clock clock;
+    RepositoryService repositoryService;
+    @Mock
+    GitUtils gitUtils;
 
     @InjectMocks
     HarvesterJob harvesterJob;
-    String repositories = "repo1,repo2";
-
-    @BeforeEach
-    void setup() {
-        ReflectionTestUtils.setField(harvesterJob, "repositories", repositories);
-    }
+    String repositories = "repo1";
 
     @Test
     void shouldLaunchHarvestJobWithTodaysDate() throws JobInstanceAlreadyCompleteException, JobExecutionAlreadyRunningException, JobParametersInvalidException, JobRestartException {
-        setupClock();
+
+        List<Repository> repos = asRepos(repositories);
+        when(repositoryService.getAllRepos()).thenReturn(repos);
+        when(jobLauncher.run(any(), any())).thenReturn(mock(JobExecution.class));
 
         harvesterJob.harvest();
 
@@ -65,32 +65,33 @@ class HarvesterJobTest {
         verify(jobLauncher).run(eq(harvestSemanticAssetsJob), paramCaptor.capture());
 
         JobParameters actualJobParams = paramCaptor.getValue();
-        assertEquals("2021-12-01 00:00", actualJobParams.getString("harvestTime"));
-        assertEquals(repositories, actualJobParams.getString("repositories"));
+        assertEquals(repos.get(0).getId(), actualJobParams.getString("repository"));
     }
 
     @Test
-    void shouldntFailGracefullyWhenJobThrowsException()
-        throws JobInstanceAlreadyCompleteException, JobExecutionAlreadyRunningException, JobParametersInvalidException, JobRestartException {
-        setupClock();
+    void shouldSaveHarvesterRunWhenJobThrowsGenericException()
+            throws JobInstanceAlreadyCompleteException, JobExecutionAlreadyRunningException, JobParametersInvalidException, JobRestartException {
+
+        when(repositoryService.getAllRepos()).thenReturn(asRepos(repositories));
 
         doThrow(new RuntimeException()).when(jobLauncher).run(any(), any());
-        assertThrows(HarvestJobException.class, () -> harvesterJob.harvest());
+        harvesterJob.harvest();
+        ArgumentCaptor<HarvesterRun> harvesterRunCaptor = ArgumentCaptor.forClass(HarvesterRun.class);
+        verify(repositoryService).saveHarvesterRun(harvesterRunCaptor.capture());
+        assertEquals(FAILED, harvesterRunCaptor.getValue().getStatus());
     }
 
     @Test
-    void shouldLaunchHarvestJobWithSpecifiedRepositories() throws JobInstanceAlreadyCompleteException, JobExecutionAlreadyRunningException, JobParametersInvalidException, JobRestartException {
-        setupClock();
+    void shouldSaveUnchangedHarvesterRunWhenJobThrowsJobInstanceAlreadyCompleteException()
+            throws JobInstanceAlreadyCompleteException, JobExecutionAlreadyRunningException, JobParametersInvalidException, JobRestartException {
 
-        String userGivenRepos = "repo3,repo4";
-        harvesterJob.harvest(userGivenRepos);
+        when(repositoryService.getAllRepos()).thenReturn(asRepos(repositories));
 
-        ArgumentCaptor<JobParameters> paramCaptor = ArgumentCaptor.forClass(JobParameters.class);
-        verify(jobLauncher).run(eq(harvestSemanticAssetsJob), paramCaptor.capture());
-
-        JobParameters actualJobParams = paramCaptor.getValue();
-        assertEquals("2021-12-01 00:00", actualJobParams.getString("harvestTime"));
-        assertEquals(userGivenRepos, actualJobParams.getString("repositories"));
+        doThrow(mock(JobInstanceAlreadyCompleteException.class)).when(jobLauncher).run(any(), any());
+        harvesterJob.harvest();
+        ArgumentCaptor<HarvesterRun> harvesterRunCaptor = ArgumentCaptor.forClass(HarvesterRun.class);
+        verify(repositoryService).saveHarvesterRun(harvesterRunCaptor.capture());
+        assertEquals(UNCHANGED, harvesterRunCaptor.getValue().getStatus());
     }
 
     @Test
@@ -115,9 +116,4 @@ class HarvesterJobTest {
         assertEquals(statuses.size(), 1);
     }
 
-    private void setupClock() {
-        Clock fixedClock = Clock.fixed(LocalDate.of(2021, 12, 1).atStartOfDay(ZoneId.systemDefault()).toInstant(), ZoneId.systemDefault());
-        doReturn(fixedClock.instant()).when(clock).instant();
-        doReturn(fixedClock.getZone()).when(clock).getZone();
-    }
 }

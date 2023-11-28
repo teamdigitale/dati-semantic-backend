@@ -3,6 +3,7 @@ package it.gov.innovazione.ndc.controller;
 import it.gov.innovazione.ndc.harvester.HarvesterJob;
 import it.gov.innovazione.ndc.harvester.HarvesterService;
 import it.gov.innovazione.ndc.harvester.JobExecutionStatusDto;
+import it.gov.innovazione.ndc.harvester.service.RepositoryUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -25,9 +26,9 @@ public class HarvestJobController {
     private final HarvesterService harvesterService;
 
     @PostMapping("jobs/harvest")
-    public void startHarvestJob() {
+    public void startHarvestJob(@RequestParam(required = false, defaultValue = "false") Boolean force) {
         log.info("Starting Harvest job at " + LocalDateTime.now());
-        harvesterJob.harvest();
+        harvesterJob.harvest(force);
     }
 
     @GetMapping("jobs/harvest/latest")
@@ -42,11 +43,13 @@ public class HarvestJobController {
 
     @PostMapping("jobs/harvest/repositories")
     public void harvestRepositories(@RequestParam("repo_urls") String repoUrl) {
-        harvesterJob.harvest(repoUrl);
+        harvesterJob.harvest(RepositoryUtils.asRepos(repoUrl));
     }
+
 
     @PostMapping("jobs/clear")
     public void clearRepo(@RequestParam("repo_url") String repoUrl) {
         harvesterService.clear(repoUrl);
     }
+
 }

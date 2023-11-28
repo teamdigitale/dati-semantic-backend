@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 
+import static it.gov.innovazione.ndc.harvester.service.RepositoryUtils.asRepo;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -34,7 +35,7 @@ public class BaseIntegrationTest {
         Containers.buildElasticsearchContainer();
     private static final GenericContainer virtuoso = Containers.buildVirtuosoContainer();
     private boolean harvested = false;
-    private String repositoryurl = "http://testRepoURL";
+    private static final String REPO_URL = "http://testRepoURL";
 
     @LocalServerPort
     int port;
@@ -76,10 +77,10 @@ public class BaseIntegrationTest {
     private void dataIsHarvested() throws IOException {
         String dir = "src/test/resources/testdata";
         Path cloneDir = Path.of(dir);
-        doReturn(cloneDir).when(agencyRepositoryService).cloneRepo(repositoryurl);
+        doReturn(cloneDir).when(agencyRepositoryService).cloneRepo(REPO_URL, null);
         doNothing().when(agencyRepositoryService).removeClonedRepo(cloneDir);
 
-        harvesterService.harvest(repositoryurl);
+        harvesterService.harvest(asRepo(REPO_URL));
 
         refreshAllIndicesUsedForBulkIndexing();
 

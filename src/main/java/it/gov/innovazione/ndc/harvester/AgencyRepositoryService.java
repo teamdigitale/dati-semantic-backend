@@ -1,7 +1,6 @@
 package it.gov.innovazione.ndc.harvester;
 
-import static java.util.function.Predicate.not;
-
+import it.gov.innovazione.ndc.harvester.exception.InvalidAssetFolderException;
 import it.gov.innovazione.ndc.harvester.model.CvPath;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
 import it.gov.innovazione.ndc.harvester.scanners.ControlledVocabularyFolderScanner;
@@ -12,7 +11,9 @@ import it.gov.innovazione.ndc.harvester.util.FileUtils;
 import it.gov.innovazione.ndc.harvester.util.GitUtils;
 import it.gov.innovazione.ndc.harvester.util.PropertiesUtils;
 import it.gov.innovazione.ndc.harvester.util.Version;
-import it.gov.innovazione.ndc.harvester.exception.InvalidAssetFolderException;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -22,10 +23,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
+
+import static java.util.function.Predicate.not;
 
 @Component
 @Slf4j
@@ -54,9 +53,13 @@ public class AgencyRepositoryService {
     }
 
     public Path cloneRepo(String repoUrl) throws IOException {
+        return cloneRepo(repoUrl, null);
+    }
+
+    public Path cloneRepo(String repoUrl, String revision) throws IOException {
         Path cloneDir = fileUtils.createTempDirectory(TEMP_DIR_PREFIX);
-        log.info("Cloning repo {}, at {}", repoUrl, cloneDir);
-        gitUtils.cloneRepo(repoUrl, cloneDir.toFile());
+        log.info("Cloning repo {} @ revision {}, at location {}", repoUrl, revision, cloneDir);
+        gitUtils.cloneRepoAndGetRevision(repoUrl, cloneDir.toFile(), revision);
         return cloneDir;
     }
 

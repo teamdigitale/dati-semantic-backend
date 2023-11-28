@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:DBNAME;MODE=MySQL
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  flyway:
+    locations: classpath:db/h2-migration
+    url: "jdbc:h2:mem:DBNAME;MODE=MySQL;INIT=RUNSCRIPT FROM 'classpath:flyway_init.sql'"
+    user: sa
+    password:
+    baseline-on-migrate: true

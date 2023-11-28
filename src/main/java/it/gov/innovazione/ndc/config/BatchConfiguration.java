@@ -1,6 +1,8 @@
 package it.gov.innovazione.ndc.config;
 
+import it.gov.innovazione.ndc.eventhandler.HarvesterEventPublisher;
 import it.gov.innovazione.ndc.harvester.HarvesterService;
+import it.gov.innovazione.ndc.harvester.service.RepositoryService;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
@@ -13,7 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Configuration
 @EnableBatchProcessing
@@ -25,6 +28,10 @@ public class BatchConfiguration {
     public StepBuilderFactory stepBuilderFactory;
     @Autowired
     private HarvesterService harvesterService;
+    @Autowired
+    private RepositoryService repositoryService;
+    @Autowired
+    private HarvesterEventPublisher harvesterEventPublisher;
 
     @Bean
     public Job harvestSemanticAssetsJob() {
@@ -43,7 +50,7 @@ public class BatchConfiguration {
 
     @Bean
     public HarvestRepositoryProcessor harvestRepositoryProcessor() {
-        return new HarvestRepositoryProcessor(harvesterService);
+        return new HarvestRepositoryProcessor(harvesterService, repositoryService, harvesterEventPublisher);
     }
 
     @Bean
@@ -51,8 +58,17 @@ public class BatchConfiguration {
     public JobLauncher simpleJobLauncher(JobRepository jobRepository) throws Exception {
         SimpleJobLauncher jobLauncher = new SimpleJobLauncher();
         jobLauncher.setJobRepository(jobRepository);
-        jobLauncher.setTaskExecutor(new SimpleAsyncTaskExecutor());
+        jobLauncher.setTaskExecutor(taskExecutor());
         jobLauncher.afterPropertiesSet();
         return jobLauncher;
+    }
+
+    @Bean
+    public TaskExecutor taskExecutor() {
+        ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
+        taskExecutor.setCorePoolSize(10);
+        taskExecutor.setMaxPoolSize(10);
+        taskExecutor.setQueueCapacity(10);
+        return taskExecutor;
     }
 }

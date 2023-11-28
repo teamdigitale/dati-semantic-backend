@@ -1,7 +1,9 @@
 package it.gov.innovazione.ndc.harvester;
 
-import it.gov.innovazione.ndc.repository.TripleStoreRepository;
+import it.gov.innovazione.ndc.harvester.service.RepositoryService;
+import it.gov.innovazione.ndc.model.harvester.Repository;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
+import it.gov.innovazione.ndc.repository.TripleStoreRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -18,13 +20,18 @@ public class HarvesterService {
     private final List<SemanticAssetHarvester> semanticAssetHarvesters;
     private final TripleStoreRepository tripleStoreRepository;
     private final SemanticAssetMetadataRepository semanticAssetMetadataRepository;
+    private final RepositoryService repositoryService;
 
-    public void harvest(String repoUrl) throws IOException {
-        log.info("Processing repo {}", repoUrl);
-        repoUrl = normaliseRepoUrl(repoUrl);
+    public void harvest(Repository repository) throws IOException {
+        harvest(repository, null);
+    }
+
+    public void harvest(Repository repository, String revision) throws IOException {
+        log.info("Processing repo {}", repository.getUrl());
+        String repoUrl = normaliseRepoUrl(repository.getUrl());
         log.debug("Normalised repo url {}", repoUrl);
         try {
-            Path path = cloneRepoToTempPath(repoUrl);
+            Path path = cloneRepoToTempPath(repoUrl, revision);
 
             try {
                 harvestClonedRepo(repoUrl, path);
@@ -87,8 +94,8 @@ public class HarvesterService {
         });
     }
 
-    private Path cloneRepoToTempPath(String repoUrl) throws IOException {
-        Path path = agencyRepositoryService.cloneRepo(repoUrl);
+    private Path cloneRepoToTempPath(String repoUrl, String revision) throws IOException {
+        Path path = agencyRepositoryService.cloneRepo(repoUrl, revision);
         log.debug("Repo {} cloned to temp folder {}", repoUrl, path);
         return path;
     }

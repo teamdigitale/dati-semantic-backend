@@ -9,9 +9,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.io.IOException;
 import java.util.List;
 
+import static it.gov.innovazione.ndc.harvester.service.RepositoryUtils.asRepos;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -27,12 +27,6 @@ class HarvestJobControllerTest {
     HarvesterService harvesterService;
     @InjectMocks
     HarvestJobController harvestJobController;
-
-    @Test
-    void shouldStartHarvestJobForAllRepositories() {
-        harvestJobController.startHarvestJob();
-        verify(harvesterJob).harvest();
-    }
 
     @Test
     void shouldGetStatusForLatestHarvestedJob() {
@@ -53,10 +47,10 @@ class HarvestJobControllerTest {
     }
 
     @Test
-    void shouldStartHarvestForSpecifiedRepositories() throws IOException {
+    void shouldStartHarvestForSpecifiedRepositories() {
         String repoUrls = "http://github.com/repo,http://github.com/repo2";
         harvestJobController.harvestRepositories(repoUrls);
-        verify(harvesterJob).harvest(repoUrls);
+        verify(harvesterJob).harvest(asRepos(repoUrls));
     }
 
     @Test
