@@ -9,12 +9,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class AllEventLoggingHandler implements NdcEventHandler {
     @Override
-    public boolean canHandle(NdcEventWrapper<? extends NdcEventWrapper.NdcEvent> event) {
+    public boolean canHandle(NdcEventWrapper<?> event) {
         return true;
     }
 
     @Override
-    public void handle(NdcEventWrapper<? extends NdcEventWrapper.NdcEvent> event) {
+    public void handle(NdcEventWrapper<?> event) {
         log.info("Received event: {}", event);
     }
 }

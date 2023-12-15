@@ -38,27 +38,36 @@ public class HarvesterJob {
     private final RepositoryService repositoryService;
     private final GitUtils gitUtils;
 
-    public void harvest(Boolean force) {
+    public List<JobExecutionResponse> harvest(Boolean force) {
         List<Repository> allRepos = repositoryService.getAllRepos();
-        harvest(allRepos, force);
+        return harvest(allRepos, force);
     }
 
-    public void harvest(List<Repository> repositories, Boolean force) {
+    public List<JobExecutionResponse> harvest(List<Repository> repositories, Boolean force) {
         String correlationId = UUID.randomUUID().toString();
+        List<JobExecutionResponse> responses = new ArrayList<>();
         for (Repository repository : repositories) {
-            harvest(repository, correlationId, force);
+            responses.add(harvest(repository, correlationId, force));
         }
+        return responses;
     }
 
-    public void harvest(List<Repository> repos) {
-        harvest(repos, false);
+    public List<JobExecutionResponse> harvest(List<Repository> repos) {
+        return harvest(repos, false);
     }
 
-    public void harvest() {
-        harvest(false);
+    public List<JobExecutionResponse> harvest() {
+        return harvest(false);
     }
 
-    private void harvest(Repository repository, String correlationId, boolean force) {
+    private JobExecutionResponse harvest(Repository repository, String correlationId, boolean force) {
+        JobExecutionResponse.JobExecutionResponseBuilder responseBuilder = JobExecutionResponse.builder()
+                .correlationId(correlationId)
+                .repositoryId(repository.getId())
+                .repositoryUrl(repository.getUrl())
+                .startedAt(Instant.now().toString())
+                .status(JobExecutionResponse.ExecutionStatus.STARTED)
+                .forced(force);
         try {
             String revision = gitUtils.getCurrentRemoteRevision(repository.getUrl());
 
@@ -72,10 +81,19 @@ public class HarvesterJob {
                     .toJobParameters();
 
             JobExecution run = jobLauncher.run(harvestSemanticAssetsJob, jobParameters);
+
+            JobExecutionResponse response = responseBuilder
+                    .jobId(String.valueOf(run.getJobId()))
+                    .jobInstanceId(String.valueOf(run.getJobInstance().getId()))
+                    .jobParameters(run.getJobParameters().getParameters())
+                    .build();
+
             log.info("Harvest job started at " + LocalDateTime.now());
             Optional.of(run)
                     .map(JobExecution::getJobInstance)
                     .ifPresent(jobInstance -> log.info("Harvester job instance:" + jobInstance));
+
+            return response;
         } catch (JobInstanceAlreadyCompleteException e) {
             repositoryService.saveHarvesterRun(
                     HarvesterRun.builder()
@@ -89,6 +107,10 @@ public class HarvesterJob {
                             .revision(gitUtils.getCurrentRemoteRevision(repository.getUrl()))
                             .status(HarvesterRun.Status.UNCHANGED)
                             .build());
+
+            responseBuilder = responseBuilder
+                    .status(JobExecutionResponse.ExecutionStatus.UNCHANGED);
+
         } catch (Exception e) {
             repositoryService.saveHarvesterRun(
                     HarvesterRun.builder()
@@ -100,10 +122,13 @@ public class HarvesterJob {
                             .startedBy("harvester")
                             .endedAt(Instant.now())
                             .revision(gitUtils.getCurrentRemoteRevision(repository.getUrl()))
-                            .status(HarvesterRun.Status.FAILED)
+                            .status(HarvesterRun.Status.FAILURE)
                             .reason(e.getMessage())
                             .build());
+
+            responseBuilder = responseBuilder.status(JobExecutionResponse.ExecutionStatus.FAILURE);
         }
+        return responseBuilder.build();
     }
 
     public List<JobExecutionStatusDto> getStatusOfLatestHarvestingJob() {

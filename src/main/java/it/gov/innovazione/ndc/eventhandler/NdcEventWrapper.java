@@ -7,13 +7,10 @@ import java.time.Instant;
 
 @Data
 @Builder(toBuilder = true)
-public class NdcEventWrapper<T extends NdcEventWrapper.NdcEvent> {
+public class NdcEventWrapper<T> {
     private final String source;
     private final String type;
     private final String correlationId;
     private final Instant timestamp;
     private final T payload;
-
-    public interface NdcEvent {
-    }
 }

@@ -2,6 +2,7 @@ package it.gov.innovazione.ndc.controller;
 
 import it.gov.innovazione.ndc.harvester.HarvesterJob;
 import it.gov.innovazione.ndc.harvester.HarvesterService;
+import it.gov.innovazione.ndc.harvester.JobExecutionResponse;
 import it.gov.innovazione.ndc.harvester.JobExecutionStatusDto;
 import it.gov.innovazione.ndc.harvester.service.RepositoryUtils;
 import lombok.RequiredArgsConstructor;
@@ -25,10 +26,32 @@ public class HarvestJobController {
     private final HarvesterJob harvesterJob;
     private final HarvesterService harvesterService;
 
+    /*
+     * POST config/repository/
+     * <p>
+     * {
+     * "url": "",
+     * "name": "",
+     * "description": ""
+     * }
+     * <p>
+     * return 201 CREATED config/repository/{id}
+     * <p>
+     * DELETE config/repository/{id}
+     * return 204 NO CONTENT
+     * <p>
+     * PATCH config/repository/{id}
+     * {
+     * "url": "",
+     * "name": "",
+     * "description": ""
+     * }
+     */
+
     @PostMapping("jobs/harvest")
-    public void startHarvestJob(@RequestParam(required = false, defaultValue = "false") Boolean force) {
+    public List<JobExecutionResponse> startHarvestJob(@RequestParam(required = false, defaultValue = "false") Boolean force) {
         log.info("Starting Harvest job at " + LocalDateTime.now());
-        harvesterJob.harvest(force);
+        return harvesterJob.harvest(force);
     }
 
     @GetMapping("jobs/harvest/latest")
@@ -45,7 +68,6 @@ public class HarvestJobController {
     public void harvestRepositories(@RequestParam("repo_urls") String repoUrl) {
         harvesterJob.harvest(RepositoryUtils.asRepos(repoUrl));
     }
-
 
     @PostMapping("jobs/clear")
     public void clearRepo(@RequestParam("repo_url") String repoUrl) {

@@ -14,10 +14,18 @@ public class NdcEventListener {
     private final Collection<NdcEventHandler> handlers;
 
     @EventListener(NdcEventWrapper.class)
-    public void handleNdcEvent(NdcEventWrapper<? extends NdcEventWrapper.NdcEvent> event) {
+    public void handleNdcEvent(NdcEventWrapper<?> event) {
         log.info("Received event: {}", event);
         handlers.stream()
                 .filter(handler -> handler.canHandle(event))
-                .forEach(handler -> handler.handle(event));
+                .forEach(handler -> handleSafely(() -> handler.handle(event)));
+    }
+
+    private void handleSafely(Runnable handlerExecution) {
+        try {
+            handlerExecution.run();
+        } catch (Exception e) {
+            log.error("Error handling event", e);
+        }
     }
 }

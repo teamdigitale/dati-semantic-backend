@@ -1,8 +1,11 @@
 package it.gov.innovazione.ndc.config;
 
 import it.gov.innovazione.ndc.eventhandler.HarvesterEventPublisher;
+import it.gov.innovazione.ndc.eventhandler.HarvesterFinishedEvent;
 import it.gov.innovazione.ndc.harvester.HarvesterService;
+import it.gov.innovazione.ndc.harvester.HarvesterStartedEvent;
 import it.gov.innovazione.ndc.harvester.service.RepositoryService;
+import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import it.gov.innovazione.ndc.model.harvester.Repository;
 import it.gov.innovazione.ndc.repository.HarvestJobException;
 import lombok.RequiredArgsConstructor;
@@ -64,17 +67,17 @@ public class HarvestRepositoryProcessor implements Tasklet, StepExecutionListene
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
         String runId = UUID.randomUUID().toString();
         try {
-            harvesterEventPublisher.publishHarvesterStartedEvent(repository, correlationId, revision, runId);
+            publishHarvesterStartedEvent(repository, correlationId, revision, runId);
             verifyHarvestingIsNotInProgress(repository, runId);
 
             harvesterService.harvest(repository, revision);
 
-            harvesterEventPublisher.publishHarvesterSuccessfulEvent(repository, correlationId, revision, runId);
+            publishHarvesterSuccessfulEvent(repository, correlationId, revision, runId);
 
             exitStatus = ExitStatus.COMPLETED;
         } catch (Exception e) {
 
-            harvesterEventPublisher.publishHarvesterFailedEvent(repository, correlationId, revision, runId, e);
+            publishHarvesterFailedEvent(repository, correlationId, revision, runId, e);
 
             log.error("Unable to process {}", repository.getUrl(), e);
             exitStatus = ExitStatus.FAILED;
@@ -90,7 +93,7 @@ public class HarvestRepositoryProcessor implements Tasklet, StepExecutionListene
         if (repositoryService.isHarvestingInProgress(repository)) {
             HarvestJobException harvestJobException =
                     new HarvestJobException(String.format("Harvesting for repo '%s' is already in progress", repository.getUrl()));
-            harvesterEventPublisher.publishHarvesterFailedEvent(
+            publishHarvesterFailedEvent(
                     repository, correlationId, revision, runId, harvestJobException);
             throw harvestJobException;
         }
@@ -100,5 +103,44 @@ public class HarvestRepositoryProcessor implements Tasklet, StepExecutionListene
     public ExitStatus afterStep(StepExecution stepExecution) {
         currentThread().setName("harvester");
         return exitStatus;
+    }
+
+    public void publishHarvesterStartedEvent(Repository repository, String correlationId, String revision, String runId) {
+        harvesterEventPublisher.publishEvent(
+                "harvester",
+                "harvester.started",
+                correlationId,
+                HarvesterStartedEvent.builder()
+                        .runId(runId)
+                        .repository(repository)
+                        .revision(revision)
+                        .build());
+    }
+
+    public void publishHarvesterSuccessfulEvent(Repository repository, String correlationId, String revision, String runId) {
+        harvesterEventPublisher.publishEvent(
+                "harvester",
+                "harvester.finished.success",
+                correlationId,
+                HarvesterFinishedEvent.builder()
+                        .runId(runId)
+                        .repository(repository)
+                        .revision(revision)
+                        .status(HarvesterRun.Status.SUCCESS)
+                        .build());
+    }
+
+    public void publishHarvesterFailedEvent(Repository repository, String correlationId, String revision, String runId, Exception e) {
+        harvesterEventPublisher.publishEvent(
+                "harvester",
+                "harvester.finished.failure",
+                correlationId,
+                HarvesterFinishedEvent.builder()
+                        .runId(runId)
+                        .repository(repository)
+                        .revision(revision)
+                        .status(HarvesterRun.Status.FAILURE)
+                        .exception(e)
+                        .build());
     }
 }

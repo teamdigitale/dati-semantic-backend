@@ -22,19 +22,18 @@ public class HarvesterRunUpdatingHandler implements NdcEventHandler {
 
     private final RepositoryService repositoryService;
 
-    private final Collection<Class> supportedEvents = Arrays.asList(
+    private static final Collection<Class<?>> SUPPORTED_EVENTS = Arrays.asList(
             HarvesterStartedEvent.class,
-            HarvesterFinishedEvent.class
-    );
+            HarvesterFinishedEvent.class);
 
     @Override
-    public boolean canHandle(NdcEventWrapper<? extends NdcEventWrapper.NdcEvent> event) {
-        return supportedEvents.contains(event.getPayload().getClass());
+    public boolean canHandle(NdcEventWrapper<?> event) {
+        return SUPPORTED_EVENTS.contains(event.getPayload().getClass());
     }
 
     @Override
     @Transactional(propagation = REQUIRES_NEW)
-    public void handle(NdcEventWrapper<? extends NdcEventWrapper.NdcEvent> event) {
+    public void handle(NdcEventWrapper<?> event) {
         if (event.getPayload() instanceof HarvesterStartedEvent) {
             NdcEventWrapper<HarvesterStartedEvent> harvesterStartedEvent = (NdcEventWrapper<HarvesterStartedEvent>) event;
             handleHarvesterStartedEvent(harvesterStartedEvent);
@@ -48,9 +47,7 @@ public class HarvesterRunUpdatingHandler implements NdcEventHandler {
         HarvesterRun harvesterRun = HarvesterRun.builder()
                 .id(event.getPayload().getRunId())
                 .endedAt(event.getTimestamp())
-                .status(event.getPayload().getStatus().equals(HarvesterFinishedEvent.Status.SUCCESS)
-                        ? HarvesterRun.Status.SUCCESS :
-                        HarvesterRun.Status.FAILED)
+                .status(event.getPayload().getStatus())
                 .reason(Optional.of(event)
                         .map(NdcEventWrapper::getPayload)
                         .map(HarvesterFinishedEvent::getException)

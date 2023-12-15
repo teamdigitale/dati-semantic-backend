@@ -62,7 +62,9 @@ public class RepositoryService {
 
         if (!allRepos.isEmpty()) {
             allRepos.forEach(repo -> log.info("Repository: " + repo.toString()));
-            return allRepos;
+            return allRepos.stream()
+                    .filter(Repository::getActive)
+                    .collect(Collectors.toList());
         }
 
         log.info("No repositories found in the database. Using the default repositories from configuration");

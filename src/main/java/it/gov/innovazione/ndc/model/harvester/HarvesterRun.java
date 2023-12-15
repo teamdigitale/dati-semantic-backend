@@ -24,7 +24,8 @@ public class HarvesterRun {
     public enum Status {
         SUCCESS,
         UNCHANGED,
-        RUNNING, FAILED
+        RUNNING,
+        FAILURE
     }
 
 }

@@ -21,10 +21,11 @@ import org.springframework.batch.core.repository.JobExecutionAlreadyRunningExcep
 import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
 import org.springframework.batch.core.repository.JobRestartException;
 
+import java.util.Collections;
 import java.util.List;
 
 import static it.gov.innovazione.ndc.harvester.service.RepositoryUtils.asRepos;
-import static it.gov.innovazione.ndc.model.harvester.HarvesterRun.Status.FAILED;
+import static it.gov.innovazione.ndc.model.harvester.HarvesterRun.Status.FAILURE;
 import static it.gov.innovazione.ndc.model.harvester.HarvesterRun.Status.UNCHANGED;
 import static org.codehaus.groovy.runtime.InvokerHelper.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -55,9 +56,19 @@ class HarvesterJobTest {
     @Test
     void shouldLaunchHarvestJobWithTodaysDate() throws JobInstanceAlreadyCompleteException, JobExecutionAlreadyRunningException, JobParametersInvalidException, JobRestartException {
 
+        JobExecution jobExecution = mock(JobExecution.class);
+        JobInstance jobInstance = mock(JobInstance.class);
+        JobParameters jobParameters = mock(JobParameters.class);
+
+        when(jobParameters.getParameters()).thenReturn(Collections.emptyMap());
+        when(jobExecution.getJobParameters()).thenReturn(jobParameters);
+        when(jobExecution.getJobId()).thenReturn(0L);
+        when(jobExecution.getJobInstance()).thenReturn(jobInstance);
+        when(jobInstance.getId()).thenReturn(0L);
+
         List<Repository> repos = asRepos(repositories);
         when(repositoryService.getAllRepos()).thenReturn(repos);
-        when(jobLauncher.run(any(), any())).thenReturn(mock(JobExecution.class));
+        when(jobLauncher.run(any(), any())).thenReturn(jobExecution);
 
         harvesterJob.harvest();
 
@@ -78,7 +89,7 @@ class HarvesterJobTest {
         harvesterJob.harvest();
         ArgumentCaptor<HarvesterRun> harvesterRunCaptor = ArgumentCaptor.forClass(HarvesterRun.class);
         verify(repositoryService).saveHarvesterRun(harvesterRunCaptor.capture());
-        assertEquals(FAILED, harvesterRunCaptor.getValue().getStatus());
+        assertEquals(FAILURE, harvesterRunCaptor.getValue().getStatus());
     }
 
     @Test
