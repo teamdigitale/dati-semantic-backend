@@ -179,6 +179,7 @@ jacocoTestCoverageVerification {
                     'it.gov.innovazione.ndc.controller.*',
                     'it.gov.innovazione.ndc.eventhandler.*',
                     'it.gov.innovazione.ndc.harvester.service.RepositoryService',
+                    'it.gov.innovazione.ndc.harvester.service.HarvesterRunService',
                     'it.gov.innovazione.ndc.*Exception'
             ]
         }
