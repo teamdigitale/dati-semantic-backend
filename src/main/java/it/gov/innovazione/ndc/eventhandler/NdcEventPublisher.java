@@ -11,7 +11,7 @@ import java.time.Instant;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class HarvesterEventPublisher {
+public class NdcEventPublisher {
 
     private final ApplicationEventPublisher applicationEventPublisher;
 

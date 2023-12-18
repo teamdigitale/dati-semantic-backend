@@ -1,16 +1,15 @@
 package it.gov.innovazione.ndc.harvester.service;
 
-import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
+import it.gov.innovazione.ndc.controller.RepositoryController;
 import it.gov.innovazione.ndc.model.harvester.Repository;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.binary.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import java.sql.ResultSet;
+import java.security.Principal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -57,7 +56,6 @@ public class RepositoryService {
                                 .createdBy(rs.getString("CREATED_BY"))
                                 .updatedAt(rs.getTimestamp("UPDATED").toInstant())
                                 .updatedBy(rs.getString("UPDATED_BY"))
-                                .source(Repository.Source.DATABASE)
                                 .build());
 
         if (!allRepos.isEmpty()) {
@@ -114,63 +112,77 @@ public class RepositoryService {
     public Optional<Repository> findRepoById(String id) {
         return getAllRepos().stream()
                 .filter(repo -> repo.getId().equals(id))
+                .filter(Repository::getActive)
                 .findFirst();
     }
 
     @SneakyThrows
-    private HarvesterRun buildHarvesterRun(ResultSet rs) {
-        return HarvesterRun.builder()
-                .id(rs.getString("ID"))
-                .correlationId(rs.getString("CORRELATION_ID"))
-                .repositoryId(rs.getString("REPOSITORY_ID"))
-                .repositoryUrl(rs.getString("REPOSITORY_URL"))
-                .revision(rs.getString("REVISION"))
-                .startedAt(rs.getTimestamp("STARTED").toInstant())
-                .endedAt(rs.getTimestamp("FINISHED").toInstant())
-                .status(HarvesterRun.Status.valueOf(rs.getString("STATUS")))
-                .build();
-    }
+    public void createRepo(String url, String name, String description, Principal principal) {
+        boolean isDuplicate = getAllRepos().stream()
+                .anyMatch(repo -> repo.getUrl().startsWith(url) || url.startsWith(repo.getUrl()));
 
-    public void saveHarvesterRun(HarvesterRun harvesterRun) {
-        String query = "INSERT INTO HARVESTER_RUN ("
+        if (isDuplicate) {
+            throw new IllegalArgumentException("Duplicate repository " + url);
+        }
+
+        String query = "INSERT INTO REPOSITORY ("
                        + "ID, "
-                       + "CORRELATION_ID, "
-                       + "REPOSITORY_ID, "
-                       + "REPOSITORY_URL, "
-                       + "REVISION, "
-                       + "STARTED, "
-                       + "FINISHED, "
-                       + "STATUS, "
-                       + "REASON) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                       + "URL, "
+                       + "NAME, "
+                       + "DESCRIPTION, "
+                       + "OWNER, "
+                       + "ACTIVE, "
+                       + "CREATED, "
+                       + "CREATED_BY, "
+                       + "UPDATED, "
+                       + "UPDATED_BY) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(query,
-                harvesterRun.getId(),
-                harvesterRun.getCorrelationId(),
-                harvesterRun.getRepositoryId(),
-                harvesterRun.getRepositoryUrl(),
-                harvesterRun.getRevision(),
-                harvesterRun.getStartedAt(),
-                harvesterRun.getEndedAt(),
-                harvesterRun.getStatus().toString(),
-                harvesterRun.getReason());
+                RepositoryUtils.generateId(),
+                url,
+                name,
+                description,
+                principal.getName(),
+                true,
+                java.sql.Timestamp.from(java.time.Instant.now()),
+                principal.getName(),
+                java.sql.Timestamp.from(java.time.Instant.now()),
+                principal.getName());
     }
 
-    public boolean isHarvestingInProgress(Repository repository) {
-        return Thread.getAllStackTraces().keySet().stream()
-                       .map(Thread::getName)
-                       .filter(name -> StringUtils.equals(name, "harvester-" + repository.getId()))
-                       .count() > 1;
+    public Optional<Repository> getRepoById(String id) {
+        return getAllRepos().stream()
+                .filter(repo -> repo.getId().equals(id))
+                .findFirst();
     }
 
-    public void updateHarvesterRun(HarvesterRun harvesterRun) {
-        String query = "UPDATE HARVESTER_RUN SET "
-                       + "FINISHED = ?, "
-                       + "STATUS = ?, "
-                       + "REASON = ? "
+    public int updateRepo(String id, RepositoryController.CreateRepository loadedRepo, Principal principal) {
+        String query = "UPDATE REPOSITORY SET "
+                       + "URL = ?, "
+                       + "NAME = ?, "
+                       + "DESCRIPTION = ?, "
+                       + "UPDATED = ?, "
+                       + "UPDATED_BY = ? "
                        + "WHERE ID = ?";
-        jdbcTemplate.update(query,
-                harvesterRun.getEndedAt(),
-                harvesterRun.getStatus().toString(),
-                harvesterRun.getReason(),
-                harvesterRun.getId());
+        return jdbcTemplate.update(query,
+                loadedRepo.getUrl(),
+                loadedRepo.getName(),
+                loadedRepo.getDescription(),
+                java.sql.Timestamp.from(java.time.Instant.now()),
+                principal.getName(),
+                id);
     }
+
+    public int delete(String id, Principal principal) {
+        String query = "UPDATE REPOSITORY SET "
+                       + "ACTIVE = ?, "
+                       + "UPDATED = ?, "
+                       + "UPDATED_BY = ? "
+                       + "WHERE ID = ?";
+        return jdbcTemplate.update(query,
+                false,
+                java.sql.Timestamp.from(java.time.Instant.now()),
+                principal.getName(),
+                id);
+    }
+
 }

@@ -1,5 +1,7 @@
 package it.gov.innovazione.ndc.harvester;
 
+import it.gov.innovazione.ndc.eventhandler.NdcEventPublisher;
+import it.gov.innovazione.ndc.harvester.service.HarvesterRunService;
 import it.gov.innovazione.ndc.harvester.service.RepositoryService;
 import it.gov.innovazione.ndc.harvester.util.GitUtils;
 import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
@@ -36,6 +38,8 @@ public class HarvesterJob {
     private final JobExplorer jobExplorer;
     private final Job harvestSemanticAssetsJob;
     private final RepositoryService repositoryService;
+    private final HarvesterRunService harvesterRunService;
+    private final NdcEventPublisher ndcEventPublisher;
     private final GitUtils gitUtils;
 
     public List<JobExecutionResponse> harvest(Boolean force) {
@@ -95,7 +99,7 @@ public class HarvesterJob {
 
             return response;
         } catch (JobInstanceAlreadyCompleteException e) {
-            repositoryService.saveHarvesterRun(
+            harvesterRunService.saveHarvesterRun(
                     HarvesterRun.builder()
                             .id(UUID.randomUUID().toString())
                             .correlationId(correlationId)
@@ -112,7 +116,7 @@ public class HarvesterJob {
                     .status(JobExecutionResponse.ExecutionStatus.UNCHANGED);
 
         } catch (Exception e) {
-            repositoryService.saveHarvesterRun(
+            harvesterRunService.saveHarvesterRun(
                     HarvesterRun.builder()
                             .id(UUID.randomUUID().toString())
                             .correlationId(correlationId)

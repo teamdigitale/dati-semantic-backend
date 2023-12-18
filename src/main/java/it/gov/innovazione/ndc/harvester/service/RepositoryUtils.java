@@ -30,7 +30,6 @@ public class RepositoryUtils {
                 .createdAt(Instant.now())
                 .updatedAt(Instant.now())
                 .description("Repository from configuration")
-                .source(Repository.Source.CONFIG)
                 .build();
     }
 
@@ -38,5 +37,9 @@ public class RepositoryUtils {
         return isNull(repoUrls) ? new ArrayList<>() : Arrays.stream(repoUrls.split(","))
                 .map(RepositoryUtils::asRepo)
                 .collect(Collectors.toList());
+    }
+
+    public static String generateId() {
+        return UUID.randomUUID().toString();
     }
 }

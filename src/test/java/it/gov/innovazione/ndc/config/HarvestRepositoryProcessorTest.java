@@ -1,7 +1,8 @@
 package it.gov.innovazione.ndc.config;
 
-import it.gov.innovazione.ndc.eventhandler.HarvesterEventPublisher;
+import it.gov.innovazione.ndc.eventhandler.NdcEventPublisher;
 import it.gov.innovazione.ndc.harvester.HarvesterService;
+import it.gov.innovazione.ndc.harvester.service.HarvesterRunService;
 import it.gov.innovazione.ndc.harvester.service.RepositoryService;
 import org.junit.jupiter.api.Test;
 import org.springframework.batch.core.StepContribution;
@@ -21,16 +22,19 @@ class HarvestRepositoryProcessorTest {
     @Test
     void shouldHarvestAllRepos() throws Exception {
         RepositoryService repositoryService = mock(RepositoryService.class);
-        when(repositoryService.isHarvestingInProgress(any())).thenReturn(false);
+        HarvesterRunService harvesterRunService = mock(HarvesterRunService.class);
+
+        when(harvesterRunService.isHarvestingInProgress(any())).thenReturn(false);
 
         HarvesterService harvesterService = mock(HarvesterService.class);
-        HarvesterEventPublisher harvesterEventPublisher = mock(HarvesterEventPublisher.class);
+        NdcEventPublisher ndcEventPublisher = mock(NdcEventPublisher.class);
         List<String> reposToHarvest = List.of("repo1");
         HarvestRepositoryProcessor harvesterJob = new HarvestRepositoryProcessor(
                 harvesterService,
-                harvesterEventPublisher,
+                ndcEventPublisher,
                 reposToHarvest,
-                repositoryService);
+                repositoryService,
+                harvesterRunService);
 
         harvesterJob.execute(mock(StepContribution.class), mock(ChunkContext.class));
 

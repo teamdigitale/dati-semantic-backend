@@ -1,5 +1,6 @@
 package it.gov.innovazione.ndc.harvester;
 
+import it.gov.innovazione.ndc.harvester.service.HarvesterRunService;
 import it.gov.innovazione.ndc.harvester.service.RepositoryService;
 import it.gov.innovazione.ndc.harvester.util.GitUtils;
 import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
@@ -47,6 +48,8 @@ class HarvesterJobTest {
     @Mock
     RepositoryService repositoryService;
     @Mock
+    HarvesterRunService harvesterRunService;
+    @Mock
     GitUtils gitUtils;
 
     @InjectMocks
@@ -88,7 +91,7 @@ class HarvesterJobTest {
         doThrow(new RuntimeException()).when(jobLauncher).run(any(), any());
         harvesterJob.harvest();
         ArgumentCaptor<HarvesterRun> harvesterRunCaptor = ArgumentCaptor.forClass(HarvesterRun.class);
-        verify(repositoryService).saveHarvesterRun(harvesterRunCaptor.capture());
+        verify(harvesterRunService).saveHarvesterRun(harvesterRunCaptor.capture());
         assertEquals(FAILURE, harvesterRunCaptor.getValue().getStatus());
     }
 
@@ -101,7 +104,7 @@ class HarvesterJobTest {
         doThrow(mock(JobInstanceAlreadyCompleteException.class)).when(jobLauncher).run(any(), any());
         harvesterJob.harvest();
         ArgumentCaptor<HarvesterRun> harvesterRunCaptor = ArgumentCaptor.forClass(HarvesterRun.class);
-        verify(repositoryService).saveHarvesterRun(harvesterRunCaptor.capture());
+        verify(harvesterRunService).saveHarvesterRun(harvesterRunCaptor.capture());
         assertEquals(UNCHANGED, harvesterRunCaptor.getValue().getStatus());
     }
 

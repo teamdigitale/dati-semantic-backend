@@ -1,9 +1,10 @@
 package it.gov.innovazione.ndc.config;
 
-import it.gov.innovazione.ndc.eventhandler.HarvesterEventPublisher;
-import it.gov.innovazione.ndc.eventhandler.HarvesterFinishedEvent;
+import it.gov.innovazione.ndc.eventhandler.NdcEventPublisher;
+import it.gov.innovazione.ndc.eventhandler.event.HarvesterFinishedEvent;
+import it.gov.innovazione.ndc.eventhandler.event.HarvesterStartedEvent;
 import it.gov.innovazione.ndc.harvester.HarvesterService;
-import it.gov.innovazione.ndc.harvester.HarvesterStartedEvent;
+import it.gov.innovazione.ndc.harvester.service.HarvesterRunService;
 import it.gov.innovazione.ndc.harvester.service.RepositoryService;
 import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import it.gov.innovazione.ndc.model.harvester.Repository;
@@ -30,7 +31,8 @@ import static java.lang.Thread.currentThread;
 public class HarvestRepositoryProcessor implements Tasklet, StepExecutionListener {
     private final HarvesterService harvesterService;
     private final RepositoryService repositoryService;
-    private final HarvesterEventPublisher harvesterEventPublisher;
+    private final HarvesterRunService harvesterRunService;
+    private final NdcEventPublisher ndcEventPublisher;
 
     private Repository repository;
     private String correlationId;
@@ -40,14 +42,16 @@ public class HarvestRepositoryProcessor implements Tasklet, StepExecutionListene
     // Used for Testing
     public HarvestRepositoryProcessor(
             HarvesterService harvesterService,
-            HarvesterEventPublisher harvesterEventPublisher,
+            NdcEventPublisher ndcEventPublisher,
             List<String> repository,
-            RepositoryService repositoryService) {
+            RepositoryService repositoryService,
+            HarvesterRunService harvesterRunService) {
         this.harvesterService = harvesterService;
-        this.harvesterEventPublisher = harvesterEventPublisher;
+        this.ndcEventPublisher = ndcEventPublisher;
         this.repository = asRepo(repository.get(0));
         this.exitStatus = ExitStatus.NOOP;
         this.repositoryService = repositoryService;
+        this.harvesterRunService = harvesterRunService;
     }
 
     @Override
@@ -68,7 +72,7 @@ public class HarvestRepositoryProcessor implements Tasklet, StepExecutionListene
         String runId = UUID.randomUUID().toString();
         try {
             publishHarvesterStartedEvent(repository, correlationId, revision, runId);
-            verifyHarvestingIsNotInProgress(repository, runId);
+            verifyHarvestingIsNotInProgress(repository);
 
             harvesterService.harvest(repository, revision);
 
@@ -89,13 +93,9 @@ public class HarvestRepositoryProcessor implements Tasklet, StepExecutionListene
         return RepeatStatus.FINISHED;
     }
 
-    private synchronized void verifyHarvestingIsNotInProgress(Repository repository, String runId) {
-        if (repositoryService.isHarvestingInProgress(repository)) {
-            HarvestJobException harvestJobException =
-                    new HarvestJobException(String.format("Harvesting for repo '%s' is already in progress", repository.getUrl()));
-            publishHarvesterFailedEvent(
-                    repository, correlationId, revision, runId, harvestJobException);
-            throw harvestJobException;
+    private synchronized void verifyHarvestingIsNotInProgress(Repository repository) {
+        if (harvesterRunService.isHarvestingInProgress(repository)) {
+            throw new HarvestJobException(String.format("Harvesting for repo '%s' is already in progress", repository.getUrl()));
         }
     }
 
@@ -106,7 +106,7 @@ public class HarvestRepositoryProcessor implements Tasklet, StepExecutionListene
     }
 
     public void publishHarvesterStartedEvent(Repository repository, String correlationId, String revision, String runId) {
-        harvesterEventPublisher.publishEvent(
+        ndcEventPublisher.publishEvent(
                 "harvester",
                 "harvester.started",
                 correlationId,
@@ -118,7 +118,7 @@ public class HarvestRepositoryProcessor implements Tasklet, StepExecutionListene
     }
 
     public void publishHarvesterSuccessfulEvent(Repository repository, String correlationId, String revision, String runId) {
-        harvesterEventPublisher.publishEvent(
+        ndcEventPublisher.publishEvent(
                 "harvester",
                 "harvester.finished.success",
                 correlationId,
@@ -131,7 +131,7 @@ public class HarvestRepositoryProcessor implements Tasklet, StepExecutionListene
     }
 
     public void publishHarvesterFailedEvent(Repository repository, String correlationId, String revision, String runId, Exception e) {
-        harvesterEventPublisher.publishEvent(
+        ndcEventPublisher.publishEvent(
                 "harvester",
                 "harvester.finished.failure",
                 correlationId,

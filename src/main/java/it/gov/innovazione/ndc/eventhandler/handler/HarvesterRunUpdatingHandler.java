@@ -1,9 +1,10 @@
 package it.gov.innovazione.ndc.eventhandler.handler;
 
-import it.gov.innovazione.ndc.eventhandler.HarvesterFinishedEvent;
 import it.gov.innovazione.ndc.eventhandler.NdcEventHandler;
 import it.gov.innovazione.ndc.eventhandler.NdcEventWrapper;
-import it.gov.innovazione.ndc.harvester.HarvesterStartedEvent;
+import it.gov.innovazione.ndc.eventhandler.event.HarvesterFinishedEvent;
+import it.gov.innovazione.ndc.eventhandler.event.HarvesterStartedEvent;
+import it.gov.innovazione.ndc.harvester.service.HarvesterRunService;
 import it.gov.innovazione.ndc.harvester.service.RepositoryService;
 import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import static org.springframework.transaction.annotation.Propagation.REQUIRES_NE
 public class HarvesterRunUpdatingHandler implements NdcEventHandler {
 
     private final RepositoryService repositoryService;
+    private final HarvesterRunService harvesterRunService;
 
     private static final Collection<Class<?>> SUPPORTED_EVENTS = Arrays.asList(
             HarvesterStartedEvent.class,
@@ -55,7 +57,7 @@ public class HarvesterRunUpdatingHandler implements NdcEventHandler {
                         .orElse(""))
                 .build();
 
-        repositoryService.updateHarvesterRun(harvesterRun);
+        harvesterRunService.updateHarvesterRun(harvesterRun);
     }
 
     private void handleHarvesterStartedEvent(NdcEventWrapper<HarvesterStartedEvent> event) {
@@ -69,6 +71,6 @@ public class HarvesterRunUpdatingHandler implements NdcEventHandler {
                 .revision(event.getPayload().getRevision())
                 .status(HarvesterRun.Status.RUNNING)
                 .build();
-        repositoryService.saveHarvesterRun(harvesterRun);
+        harvesterRunService.saveHarvesterRun(harvesterRun);
     }
 }

@@ -4,7 +4,9 @@ import it.gov.innovazione.ndc.harvester.HarvesterJob;
 import it.gov.innovazione.ndc.harvester.HarvesterService;
 import it.gov.innovazione.ndc.harvester.JobExecutionResponse;
 import it.gov.innovazione.ndc.harvester.JobExecutionStatusDto;
+import it.gov.innovazione.ndc.harvester.service.HarvesterRunService;
 import it.gov.innovazione.ndc.harvester.service.RepositoryUtils;
+import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -25,28 +27,7 @@ import java.util.List;
 public class HarvestJobController {
     private final HarvesterJob harvesterJob;
     private final HarvesterService harvesterService;
-
-    /*
-     * POST config/repository/
-     * <p>
-     * {
-     * "url": "",
-     * "name": "",
-     * "description": ""
-     * }
-     * <p>
-     * return 201 CREATED config/repository/{id}
-     * <p>
-     * DELETE config/repository/{id}
-     * return 204 NO CONTENT
-     * <p>
-     * PATCH config/repository/{id}
-     * {
-     * "url": "",
-     * "name": "",
-     * "description": ""
-     * }
-     */
+    private final HarvesterRunService harvesterRunService;
 
     @PostMapping("jobs/harvest")
     public List<JobExecutionResponse> startHarvestJob(@RequestParam(required = false, defaultValue = "false") Boolean force) {
@@ -57,6 +38,11 @@ public class HarvestJobController {
     @GetMapping("jobs/harvest/latest")
     public List<JobExecutionStatusDto> getStatusOfLatestHarvestingJob() {
         return harvesterJob.getStatusOfLatestHarvestingJob();
+    }
+
+    @GetMapping("jobs/harvest/run")
+    public List<HarvesterRun> getAllRuns() {
+        return harvesterRunService.getAllRuns();
     }
 
     @GetMapping("jobs/harvest")

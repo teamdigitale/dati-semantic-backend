@@ -1,7 +1,8 @@
 package it.gov.innovazione.ndc.config;
 
-import it.gov.innovazione.ndc.eventhandler.HarvesterEventPublisher;
+import it.gov.innovazione.ndc.eventhandler.NdcEventPublisher;
 import it.gov.innovazione.ndc.harvester.HarvesterService;
+import it.gov.innovazione.ndc.harvester.service.HarvesterRunService;
 import it.gov.innovazione.ndc.harvester.service.RepositoryService;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -31,7 +32,9 @@ public class BatchConfiguration {
     @Autowired
     private RepositoryService repositoryService;
     @Autowired
-    private HarvesterEventPublisher harvesterEventPublisher;
+    private HarvesterRunService harvesterRunService;
+    @Autowired
+    private NdcEventPublisher ndcEventPublisher;
 
     @Bean
     public Job harvestSemanticAssetsJob() {
@@ -50,7 +53,11 @@ public class BatchConfiguration {
 
     @Bean
     public HarvestRepositoryProcessor harvestRepositoryProcessor() {
-        return new HarvestRepositoryProcessor(harvesterService, repositoryService, harvesterEventPublisher);
+        return new HarvestRepositoryProcessor(
+                harvesterService,
+                repositoryService,
+                harvesterRunService,
+                ndcEventPublisher);
     }
 
     @Bean
