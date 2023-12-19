@@ -25,9 +25,10 @@ public class HarvesterRunService {
                        + "REPOSITORY_URL, "
                        + "REVISION, "
                        + "STARTED, "
+                       + "STARTED_BY, "
                        + "FINISHED, "
                        + "STATUS, "
-                       + "REASON) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                       + "REASON) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(query,
                 harvesterRun.getId(),
                 harvesterRun.getCorrelationId(),
@@ -35,6 +36,7 @@ public class HarvesterRunService {
                 harvesterRun.getRepositoryUrl(),
                 harvesterRun.getRevision(),
                 harvesterRun.getStartedAt(),
+                harvesterRun.getStartedBy(),
                 harvesterRun.getEndedAt(),
                 harvesterRun.getStatus().toString(),
                 harvesterRun.getReason());
@@ -69,6 +71,7 @@ public class HarvesterRunService {
                           + "REPOSITORY_URL, "
                           + "REVISION, "
                           + "STARTED, "
+                          + "STARTED_BY, "
                           + "FINISHED, "
                           + "STATUS, "
                           + "REASON "
@@ -82,6 +85,7 @@ public class HarvesterRunService {
                         .repositoryUrl(rs.getString("REPOSITORY_URL"))
                         .revision(rs.getString("REVISION"))
                         .startedAt(rs.getTimestamp("STARTED").toInstant())
+                        .startedBy(rs.getString("STARTED_BY"))
                         .endedAt(rs.getTimestamp("FINISHED").toInstant())
                         .status(HarvesterRun.Status.valueOf(rs.getString("STATUS")))
                         .reason(rs.getString("REASON"))

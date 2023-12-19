@@ -6,8 +6,10 @@ import it.gov.innovazione.ndc.harvester.service.RepositoryService;
 import it.gov.innovazione.ndc.harvester.util.GitUtils;
 import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import it.gov.innovazione.ndc.model.harvester.Repository;
+import it.gov.innovazione.ndc.repository.HarvestJobException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobInstance;
@@ -65,6 +67,18 @@ public class HarvesterJob {
     }
 
     private JobExecutionResponse harvest(Repository repository, String correlationId, boolean force) {
+        return harvest(repository, correlationId, null, force);
+    }
+
+    public JobExecutionResponse harvest(String repositoryId, String revision, Boolean force) {
+        Repository repository = repositoryService.findRepoById(repositoryId)
+                .orElseThrow(() -> new HarvestJobException(String.format("Repository %s not found", repositoryId)));
+        String correlationId = UUID.randomUUID().toString();
+        return harvest(repository, correlationId, revision, force);
+    }
+
+
+    private JobExecutionResponse harvest(Repository repository, String correlationId, String revision, boolean force) {
         JobExecutionResponse.JobExecutionResponseBuilder responseBuilder = JobExecutionResponse.builder()
                 .correlationId(correlationId)
                 .repositoryId(repository.getId())
@@ -73,7 +87,9 @@ public class HarvesterJob {
                 .status(JobExecutionResponse.ExecutionStatus.STARTED)
                 .forced(force);
         try {
-            String revision = gitUtils.getCurrentRemoteRevision(repository.getUrl());
+            revision = Optional.ofNullable(revision)
+                    .filter(StringUtils::isNotBlank)
+                    .orElseGet(() -> gitUtils.getCurrentRemoteRevision(repository.getUrl()));
 
             String uniquifier = force ? UUID.randomUUID().toString() : "";
 
@@ -82,6 +98,7 @@ public class HarvesterJob {
                     .addString("revision", revision)
                     .addString("repository", repository.getId())
                     .addString("correlationId", correlationId, false)
+                    .addString("principal", SecurityUtils.getCurrentUserLogin(), false)
                     .toJobParameters();
 
             JobExecution run = jobLauncher.run(harvestSemanticAssetsJob, jobParameters);
@@ -106,7 +123,7 @@ public class HarvesterJob {
                             .repositoryId(repository.getId())
                             .repositoryUrl(repository.getUrl())
                             .startedAt(Instant.now())
-                            .startedBy("harvester")
+                            .startedBy(SecurityUtils.getCurrentUserLogin())
                             .endedAt(Instant.now())
                             .revision(gitUtils.getCurrentRemoteRevision(repository.getUrl()))
                             .status(HarvesterRun.Status.UNCHANGED)
@@ -123,7 +140,7 @@ public class HarvesterJob {
                             .repositoryId(repository.getId())
                             .repositoryUrl(repository.getUrl())
                             .startedAt(Instant.now())
-                            .startedBy("harvester")
+                            .startedBy(SecurityUtils.getCurrentUserLogin())
                             .endedAt(Instant.now())
                             .revision(gitUtils.getCurrentRemoteRevision(repository.getUrl()))
                             .status(HarvesterRun.Status.FAILURE)
@@ -156,5 +173,4 @@ public class HarvesterJob {
         }
         return statuses;
     }
-
 }

@@ -67,7 +67,7 @@ public class HarvesterRunUpdatingHandler implements NdcEventHandler {
                 .repositoryId(event.getPayload().getRepository().getId())
                 .repositoryUrl(event.getPayload().getRepository().getUrl())
                 .startedAt(event.getTimestamp())
-                .startedBy(event.getSource())
+                .startedBy(event.getUser())
                 .revision(event.getPayload().getRevision())
                 .status(HarvesterRun.Status.RUNNING)
                 .build();

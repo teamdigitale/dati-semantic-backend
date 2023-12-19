@@ -11,7 +11,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
-import static it.gov.innovazione.ndc.harvester.service.RepositoryUtils.asRepos;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -49,8 +48,8 @@ class HarvestJobControllerTest {
     @Test
     void shouldStartHarvestForSpecifiedRepositories() {
         String repoUrls = "http://github.com/repo,http://github.com/repo2";
-        harvestJobController.harvestRepositories(repoUrls);
-        verify(harvesterJob).harvest(asRepos(repoUrls));
+        harvestJobController.harvestRepositories(repoUrls, null, false);
+        verify(harvesterJob).harvest(repoUrls, null, false);
     }
 
     @Test

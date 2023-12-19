@@ -5,7 +5,6 @@ import it.gov.innovazione.ndc.harvester.HarvesterService;
 import it.gov.innovazione.ndc.harvester.JobExecutionResponse;
 import it.gov.innovazione.ndc.harvester.JobExecutionStatusDto;
 import it.gov.innovazione.ndc.harvester.service.HarvesterRunService;
-import it.gov.innovazione.ndc.harvester.service.RepositoryUtils;
 import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,9 +49,13 @@ public class HarvestJobController {
         return harvesterJob.getStatusOfHarvestingJobs();
     }
 
-    @PostMapping("jobs/harvest/repositories")
-    public void harvestRepositories(@RequestParam("repo_urls") String repoUrl) {
-        harvesterJob.harvest(RepositoryUtils.asRepos(repoUrl));
+    @PostMapping(value = "jobs/harvest", params = "repositoryId")
+    public JobExecutionResponse harvestRepositories(
+            @RequestParam("repositoryId") String repositoryId,
+            @RequestParam(required = false) String revision,
+            @RequestParam(required = false, defaultValue = "false") Boolean force) {
+        log.info("Starting Harvest job at " + LocalDateTime.now() + "for repository " + repositoryId);
+        return harvesterJob.harvest(repositoryId, revision, force);
     }
 
     @PostMapping("jobs/clear")

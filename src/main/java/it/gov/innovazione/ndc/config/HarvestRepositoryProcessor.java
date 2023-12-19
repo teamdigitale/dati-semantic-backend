@@ -37,6 +37,7 @@ public class HarvestRepositoryProcessor implements Tasklet, StepExecutionListene
     private Repository repository;
     private String correlationId;
     private String revision;
+    private String principal;
     private ExitStatus exitStatus;
 
     // Used for Testing
@@ -60,6 +61,7 @@ public class HarvestRepositoryProcessor implements Tasklet, StepExecutionListene
         String repoId = parameters.getString("repository");
         correlationId = parameters.getString("correlationId");
         revision = parameters.getString("revision");
+        principal = parameters.getString("principal");
         repository = repositoryService.findRepoById(repoId)
                 .orElseThrow(() -> new HarvestJobException(String.format("Repository %s not found", repoId)));
         exitStatus = ExitStatus.NOOP;
@@ -110,6 +112,7 @@ public class HarvestRepositoryProcessor implements Tasklet, StepExecutionListene
                 "harvester",
                 "harvester.started",
                 correlationId,
+                principal,
                 HarvesterStartedEvent.builder()
                         .runId(runId)
                         .repository(repository)
@@ -122,6 +125,7 @@ public class HarvestRepositoryProcessor implements Tasklet, StepExecutionListene
                 "harvester",
                 "harvester.finished.success",
                 correlationId,
+                principal,
                 HarvesterFinishedEvent.builder()
                         .runId(runId)
                         .repository(repository)
@@ -135,6 +139,7 @@ public class HarvestRepositoryProcessor implements Tasklet, StepExecutionListene
                 "harvester",
                 "harvester.finished.failure",
                 correlationId,
+                principal,
                 HarvesterFinishedEvent.builder()
                         .runId(runId)
                         .repository(repository)

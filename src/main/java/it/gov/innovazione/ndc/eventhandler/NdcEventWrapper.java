@@ -12,5 +12,6 @@ public class NdcEventWrapper<T> {
     private final String type;
     private final String correlationId;
     private final Instant timestamp;
+    private final String user;
     private final T payload;
 }

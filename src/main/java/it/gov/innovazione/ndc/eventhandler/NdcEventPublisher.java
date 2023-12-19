@@ -20,6 +20,7 @@ public class NdcEventPublisher {
             String source,
             String type,
             String correlationId,
+            String user,
             T event) {
         try {
             applicationEventPublisher.publishEvent(
@@ -28,6 +29,7 @@ public class NdcEventPublisher {
                             .type(type)
                             .correlationId(correlationId)
                             .timestamp(Instant.now())
+                            .user(user)
                             .payload(event)
                             .build());
         } catch (Exception e) {
