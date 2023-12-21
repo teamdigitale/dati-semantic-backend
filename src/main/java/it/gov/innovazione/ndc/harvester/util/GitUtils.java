@@ -1,6 +1,5 @@
 package it.gov.innovazione.ndc.harvester.util;
 
-import it.gov.innovazione.ndc.eventhandler.NdcEventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jgit.api.Git;
@@ -15,9 +14,7 @@ import java.io.File;
 @RequiredArgsConstructor
 public class GitUtils {
 
-    private final NdcEventPublisher ndcEventPublisher;
-
-    public void cloneRepoAndGetRevision(String repoUrl, File destination, String revision) {
+    public void cloneRepo(String repoUrl, File destination, String revision) {
         try {
             Git call = Git.cloneRepository()
                     .setURI(repoUrl)

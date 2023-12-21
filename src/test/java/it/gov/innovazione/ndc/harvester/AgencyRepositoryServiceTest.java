@@ -52,7 +52,7 @@ public class AgencyRepositoryServiceTest {
 
         assertThat(clonedTempDir).isEqualTo(Path.of("temp"));
         verify(fileUtils).createTempDirectory(TEMP_DIR_PREFIX);
-        verify(gitUtils).cloneRepoAndGetRevision("someURI", new File("temp"), null);
+        verify(gitUtils).cloneRepo("someURI", new File("temp"), null);
     }
 
     /**
