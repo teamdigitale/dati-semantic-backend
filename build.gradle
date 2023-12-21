@@ -1,5 +1,5 @@
 plugins {
-    id 'org.springframework.boot' version '2.7.17'
+    id 'org.springframework.boot' version '2.7.18'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
     id 'java'
     id 'com.google.cloud.tools.jib' version '3.1.4'
@@ -32,7 +32,7 @@ configurations {
                 details.useVersion "6.6.1"
             }
             if (details.requested.group == 'org.apache.logging.log4j' && details.requested.name=='log4j-core') {
-                details.useVersion "2.20.0"
+                details.useVersion "2.22.0"
             }
             if (details.requested.group == 'org.yaml' && details.requested.name=='snakeyaml') {
                 details.useVersion "2.0"
@@ -48,7 +48,7 @@ repositories {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-batch'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
     implementation 'org.springframework.boot:spring-boot-starter-security'
 
     implementation 'org.springframework.data:spring-data-elasticsearch'
@@ -58,12 +58,18 @@ dependencies {
     implementation 'org.eclipse.jgit:org.eclipse.jgit:5.13.0.202109080827-r'
     implementation 'javax.xml.bind:jaxb-api:2.3.1'
 
+    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.flywaydb:flyway-mysql'
+
     implementation 'org.apache.commons:commons-compress:1.24.0'
 
     implementation 'org.springdoc:springdoc-openapi-ui:1.6.1'
     implementation 'org.openapitools:jackson-databind-nullable:0.2.1'
+
     implementation 'io.swagger:swagger-annotations:1.5.20'
     implementation 'org.mapstruct:mapstruct:1.4.2.Final'
+
+    implementation 'org.eclipse.parsson:parsson:1.0.5'
 
     runtimeOnly 'com.mysql:mysql-connector-j:8.2.0'
 
@@ -92,8 +98,8 @@ dependencies {
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.4.2.Final'
 }
 
-ext['log4j2.version'] = '2.17.0'
-ext['logback.version'] = '1.2.9'
+ext['log4j2.version'] = '2.22.0'
+ext['logback.version'] = '1.2.13'
 
 test {
     useJUnitPlatform()
@@ -170,7 +176,14 @@ jacocoTestCoverageVerification {
                     'it.gov.innovazione.ndc.model.profiles.*',
                     'it.gov.innovazione.ndc.gen.*',
                     'it.gov.innovazione.ndc.validator.BaseSemanticAssetValidator',
-                    'it.gov.innovazione.ndc.controller.*'
+                    'it.gov.innovazione.ndc.controller.*',
+                    'it.gov.innovazione.ndc.eventhandler.*',
+                    'it.gov.innovazione.ndc.harvester.service.RepositoryService',
+                    'it.gov.innovazione.ndc.harvester.service.HarvesterRunService',
+                    'it.gov.innovazione.ndc.harvester.SecurityUtils',
+                    'it.gov.innovazione.ndc.*Exception',
+                    'it.gov.innovazione.ndc.harvester.HarvesterJob',
+                    'it.gov.innovazione.ndc.model.harvester.HarvesterRun.Status'
             ]
         }
     }

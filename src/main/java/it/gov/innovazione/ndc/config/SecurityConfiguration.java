@@ -24,8 +24,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/jobs/**")
-                .authenticated()
+                .antMatchers("/jobs/**").hasRole("HARVESTER")
+                .antMatchers("/config/**").hasRole("HARVESTER")
                 .anyRequest().permitAll()
                 .and()
                 .httpBasic();
@@ -37,6 +37,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         auth.inMemoryAuthentication()
                 .withUser(user)
                 .password("{noop}" + password)
-                .roles("USER");
+                .roles("HARVESTER");
     }
 }

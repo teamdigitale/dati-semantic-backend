@@ -1,12 +1,12 @@
 package it.gov.innovazione.ndc.harvester;
 
-import it.gov.innovazione.ndc.harvester.scanners.ControlledVocabularyFolderScanner;
-import it.gov.innovazione.ndc.harvester.scanners.OntologyFolderScanner;
-import it.gov.innovazione.ndc.harvester.scanners.SchemaFolderScanner;
 import it.gov.innovazione.ndc.harvester.model.CvPath;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
+import it.gov.innovazione.ndc.harvester.scanners.ControlledVocabularyFolderScanner;
 import it.gov.innovazione.ndc.harvester.scanners.ControlledVocabularyFolderScannerProperties;
+import it.gov.innovazione.ndc.harvester.scanners.OntologyFolderScanner;
 import it.gov.innovazione.ndc.harvester.scanners.OntologyFolderScannerProperties;
+import it.gov.innovazione.ndc.harvester.scanners.SchemaFolderScanner;
 import it.gov.innovazione.ndc.harvester.util.FileUtils;
 import it.gov.innovazione.ndc.harvester.util.GitUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,7 +52,7 @@ public class AgencyRepositoryServiceTest {
 
         assertThat(clonedTempDir).isEqualTo(Path.of("temp"));
         verify(fileUtils).createTempDirectory(TEMP_DIR_PREFIX);
-        verify(gitUtils).cloneRepo("someURI", new File("temp"));
+        verify(gitUtils).cloneRepoAndGetRevision("someURI", new File("temp"), null);
     }
 
     /**

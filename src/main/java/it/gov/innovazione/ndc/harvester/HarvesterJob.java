@@ -1,85 +1,87 @@
 package it.gov.innovazione.ndc.harvester;
 
+import it.gov.innovazione.ndc.config.SimpleHarvestRepositoryProcessor;
+import it.gov.innovazione.ndc.harvester.service.RepositoryService;
+import it.gov.innovazione.ndc.harvester.util.GitUtils;
+import it.gov.innovazione.ndc.model.harvester.Repository;
 import it.gov.innovazione.ndc.repository.HarvestJobException;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.JobInstance;
-import org.springframework.batch.core.JobParameters;
-import org.springframework.batch.core.JobParametersBuilder;
-import org.springframework.batch.core.explore.JobExplorer;
-import org.springframework.batch.core.launch.JobLauncher;
-import org.springframework.beans.factory.annotation.Value;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Configuration;
 
-import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-
-import static java.util.Collections.emptyList;
-import static java.util.Objects.isNull;
-import static java.util.stream.Collectors.toList;
+import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
 public class HarvesterJob {
 
-    private final JobLauncher jobLauncher;
-    private final JobExplorer jobExplorer;
-    private final Job harvestSemanticAssetsJob;
-    private final Clock clock;
-    @Value("#{'${harvester.repositories}'}")
-    private final String repositories;
+    private final RepositoryService repositoryService;
+    private final SimpleHarvestRepositoryProcessor simpleHarvestRepositoryProcessor;
+    private final GitUtils gitUtils;
 
-    public void harvest() {
-        harvest(repositories);
+    public List<JobExecutionResponse> harvest(Boolean force) {
+        List<Repository> allRepos = repositoryService.getAllRepos();
+        return harvest(allRepos, force);
     }
 
-    public void harvest(String repositories) {
-        try {
-            LocalDateTime now = LocalDateTime.now(clock);
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-            String currentDateTime = now.format(formatter);
-
-            JobParameters jobParameters = new JobParametersBuilder()
-                    .addString("harvestTime", currentDateTime)
-                    .addString("repositories", repositories)
-                    .toJobParameters();
-            JobExecution run = jobLauncher.run(harvestSemanticAssetsJob, jobParameters);
-            log.info("Harvest job started at " + currentDateTime);
-            Optional.ofNullable(run)
-                    .map(JobExecution::getJobInstance)
-                    .ifPresent(jobInstance -> log.info("Harvester job instance:" + jobInstance));
-        } catch (Exception e) {
-            log.error("Error in harvest job ", e);
-            throw new HarvestJobException(e);
+    public List<JobExecutionResponse> harvest(List<Repository> repositories, Boolean force) {
+        String correlationId = UUID.randomUUID().toString();
+        List<JobExecutionResponse> responses = new ArrayList<>();
+        for (Repository repository : repositories) {
+            responses.add(harvest(repository, correlationId, force));
         }
+        return responses;
     }
 
-    public List<JobExecutionStatusDto> getStatusOfLatestHarvestingJob() {
-        JobInstance latestJobInstance = jobExplorer.getLastJobInstance("harvestSemanticAssetsJob");
-        if (isNull(latestJobInstance)) {
-            return emptyList();
-        }
-
-        return jobExplorer.getJobExecutions(latestJobInstance).stream().map(JobExecutionStatusDto::new).collect(toList());
+    public List<JobExecutionResponse> harvest(List<Repository> repos) {
+        return harvest(repos, false);
     }
 
-    public List<JobExecutionStatusDto> getStatusOfHarvestingJobs() {
-        List<JobInstance> jobInstances = jobExplorer.getJobInstances("harvestSemanticAssetsJob", 0, 30);
-        if (jobInstances.isEmpty()) {
-            return emptyList();
-        }
-
-        List<JobExecutionStatusDto> statuses = new ArrayList<>();
-        for (JobInstance jobInstance : jobInstances) {
-            statuses.addAll(jobExplorer.getJobExecutions(jobInstance).stream().map(JobExecutionStatusDto::new).collect(toList()));
-        }
-        return statuses;
+    public List<JobExecutionResponse> harvest() {
+        return harvest(false);
     }
+
+    private JobExecutionResponse harvest(Repository repository, String correlationId, boolean force) {
+        return harvest(repository, correlationId, null, force);
+    }
+
+    public JobExecutionResponse harvest(String repositoryId, String revision, Boolean force) {
+        Repository repository = repositoryService.findRepoById(repositoryId)
+                .orElseThrow(() -> new HarvestJobException(String.format("Repository %s not found", repositoryId)));
+        String correlationId = UUID.randomUUID().toString();
+        return harvest(repository, correlationId, revision, force);
+    }
+
+
+    private JobExecutionResponse harvest(Repository repository, String correlationId, String revision, boolean force) {
+
+        String runId = UUID.randomUUID().toString();
+
+        JobExecutionResponse.JobExecutionResponseBuilder responseBuilder = JobExecutionResponse.builder()
+                .runId(runId)
+                .correlationId(correlationId)
+                .repositoryId(repository.getId())
+                .repositoryUrl(repository.getUrl())
+                .startedAt(Instant.now().toString())
+                .forced(force);
+
+        revision = Optional.ofNullable(revision)
+                .filter(StringUtils::isNotBlank)
+                .orElseGet(() -> gitUtils.getHeadRemoteRevision(repository.getUrl()));
+
+        simpleHarvestRepositoryProcessor.execute(runId, repository, correlationId, revision, force, SecurityUtils.getCurrentUserLogin());
+
+        log.info("Harvest job started at " + LocalDateTime.now());
+
+        return responseBuilder.build();
+
+    }
+
 }
