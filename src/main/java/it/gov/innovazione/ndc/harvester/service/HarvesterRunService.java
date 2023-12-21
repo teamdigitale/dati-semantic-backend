@@ -81,7 +81,7 @@ public class HarvesterRunService {
                 .filter(harvesterRun -> harvesterRun.getRepositoryId().equals(repositoryId))
                 .filter(harvesterRun -> harvesterRun.getStatus() == HarvesterRun.Status.SUCCESS)
                 .max(Comparator.comparing(HarvesterRun::getStartedAt))
-                .map(harvesterRun -> equalsIgnoreCase(harvesterRun.getRevision(), revision))
+                .filter(harvesterRun -> equalsIgnoreCase(harvesterRun.getRevision(), revision))
                 .isPresent();
     }
 

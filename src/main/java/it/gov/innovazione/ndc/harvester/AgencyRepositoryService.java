@@ -59,7 +59,7 @@ public class AgencyRepositoryService {
     public Path cloneRepo(String repoUrl, String revision) throws IOException {
         Path cloneDir = fileUtils.createTempDirectory(TEMP_DIR_PREFIX);
         log.info("Cloning repo {} @ revision {}, at location {}", repoUrl, revision, cloneDir);
-        gitUtils.cloneRepoAndGetRevision(repoUrl, cloneDir.toFile(), revision);
+        gitUtils.cloneRepo(repoUrl, cloneDir.toFile(), revision);
         return cloneDir;
     }
 
