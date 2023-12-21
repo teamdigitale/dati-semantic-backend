@@ -8,17 +8,16 @@ import it.gov.innovazione.ndc.harvester.service.HarvesterRunService;
 import it.gov.innovazione.ndc.harvester.service.RepositoryService;
 import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
 
-import static org.springframework.transaction.annotation.Propagation.REQUIRES_NEW;
-
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class HarvesterRunUpdatingHandler implements NdcEventHandler {
 
     private final RepositoryService repositoryService;
@@ -34,7 +33,6 @@ public class HarvesterRunUpdatingHandler implements NdcEventHandler {
     }
 
     @Override
-    @Transactional(propagation = REQUIRES_NEW)
     public void handle(NdcEventWrapper<?> event) {
         if (event.getPayload() instanceof HarvesterStartedEvent) {
             NdcEventWrapper<HarvesterStartedEvent> harvesterStartedEvent = (NdcEventWrapper<HarvesterStartedEvent>) event;
@@ -57,7 +55,10 @@ public class HarvesterRunUpdatingHandler implements NdcEventHandler {
                         .orElse(""))
                 .build();
 
-        harvesterRunService.updateHarvesterRun(harvesterRun);
+        int saved = harvesterRunService.updateHarvesterRun(harvesterRun);
+        if (saved != 1) {
+            log.error("*** HarvesterRun not updated: {}", harvesterRun);
+        }
     }
 
     private void handleHarvesterStartedEvent(NdcEventWrapper<HarvesterStartedEvent> event) {
@@ -71,6 +72,9 @@ public class HarvesterRunUpdatingHandler implements NdcEventHandler {
                 .revision(event.getPayload().getRevision())
                 .status(HarvesterRun.Status.RUNNING)
                 .build();
-        harvesterRunService.saveHarvesterRun(harvesterRun);
+        int saved = harvesterRunService.saveHarvesterRun(harvesterRun);
+        if (saved != 1) {
+            log.error("*** HarvesterRun not saved: {}", harvesterRun);
+        }
     }
 }

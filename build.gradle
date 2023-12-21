@@ -48,7 +48,7 @@ repositories {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-batch'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
     implementation 'org.springframework.boot:spring-boot-starter-security'
 
     implementation 'org.springframework.data:spring-data-elasticsearch'
@@ -181,7 +181,9 @@ jacocoTestCoverageVerification {
                     'it.gov.innovazione.ndc.harvester.service.RepositoryService',
                     'it.gov.innovazione.ndc.harvester.service.HarvesterRunService',
                     'it.gov.innovazione.ndc.harvester.SecurityUtils',
-                    'it.gov.innovazione.ndc.*Exception'
+                    'it.gov.innovazione.ndc.*Exception',
+                    'it.gov.innovazione.ndc.harvester.HarvesterJob',
+                    'it.gov.innovazione.ndc.model.harvester.HarvesterRun.Status'
             ]
         }
     }

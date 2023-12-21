@@ -17,10 +17,6 @@ public class GitUtils {
 
     private final NdcEventPublisher ndcEventPublisher;
 
-    public void cloneRepoAndGetRevision(String repoUrl, File destination) {
-        cloneRepoAndGetRevision(repoUrl, destination, null);
-    }
-
     public void cloneRepoAndGetRevision(String repoUrl, File destination, String revision) {
         try {
             Git call = Git.cloneRepository()
@@ -40,7 +36,7 @@ public class GitUtils {
         return StringUtils.endsWith(ref.getName(), "HEAD");
     }
 
-    public String getCurrentRemoteRevision(String url) {
+    public String getHeadRemoteRevision(String url) {
         try {
             return Git.lsRemoteRepository()
                     .setRemote(url)

@@ -4,11 +4,19 @@ import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import it.gov.innovazione.ndc.model.harvester.Repository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.binary.StringUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.sql.ResultSet;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
+
+import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
+import static org.apache.commons.lang3.StringUtils.startsWithIgnoreCase;
 
 @Service
 @Slf4j
@@ -16,8 +24,9 @@ import java.util.List;
 public class HarvesterRunService {
 
     private final JdbcTemplate jdbcTemplate;
+    private static final Long HARVESTING_RECENT_DAYS = 30L;
 
-    public void saveHarvesterRun(HarvesterRun harvesterRun) {
+    public int saveHarvesterRun(HarvesterRun harvesterRun) {
         String query = "INSERT INTO HARVESTER_RUN ("
                        + "ID, "
                        + "CORRELATION_ID, "
@@ -29,7 +38,7 @@ public class HarvesterRunService {
                        + "FINISHED, "
                        + "STATUS, "
                        + "REASON) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        jdbcTemplate.update(query,
+        return jdbcTemplate.update(query,
                 harvesterRun.getId(),
                 harvesterRun.getCorrelationId(),
                 harvesterRun.getRepositoryId(),
@@ -42,26 +51,57 @@ public class HarvesterRunService {
                 harvesterRun.getReason());
     }
 
-    public boolean isHarvestingInProgress(Repository repository) {
-        return Thread.getAllStackTraces().keySet().stream()
-                       .map(Thread::getName)
-                       .filter(name -> StringUtils.equals(name, "harvester-" + repository.getId()))
-                       .count() > 1;
+    public boolean isHarvestingInProgress(String runId, Repository repository) {
+        return getRecentRuns(HARVESTING_RECENT_DAYS)
+                .filter(harvesterRun -> !equalsIgnoreCase(harvesterRun.getId(), runId))
+                .anyMatch(harvesterRun -> isAlreadyRunning(harvesterRun, repository));
     }
 
-    public void updateHarvesterRun(HarvesterRun harvesterRun) {
+    private boolean isMoreRecentThan(HarvesterRun harvesterRun, Long days) {
+        return Optional.of(harvesterRun)
+                .map(HarvesterRun::getStartedAt)
+                .filter(startedAt -> startedAt.isAfter(Instant.now().minus(days, ChronoUnit.DAYS)))
+                .isPresent();
+    }
+
+    private boolean isAlreadyRunning(HarvesterRun harvesterRun, Repository repository) {
+        return (
+                       harvesterRun.getRepositoryId().equals(repository.getId())
+                       || startsWithIgnoreCase(
+                               harvesterRun.getRepositoryUrl(),
+                               repository.getUrl())
+                       || startsWithIgnoreCase(
+                               repository.getUrl(),
+                               harvesterRun.getRepositoryUrl()))
+               && harvesterRun.getStatus() == HarvesterRun.Status.RUNNING;
+    }
+
+    public boolean isHarvestingAlreadyExecuted(String repositoryId, String revision) {
+        return getRecentRuns(HARVESTING_RECENT_DAYS)
+                .filter(harvesterRun -> harvesterRun.getRepositoryId().equals(repositoryId))
+                .filter(harvesterRun -> harvesterRun.getStatus() == HarvesterRun.Status.SUCCESS)
+                .max(Comparator.comparing(HarvesterRun::getStartedAt))
+                .map(harvesterRun -> equalsIgnoreCase(harvesterRun.getRevision(), revision))
+                .isPresent();
+    }
+
+    public int updateHarvesterRun(HarvesterRun harvesterRun) {
         String query = "UPDATE HARVESTER_RUN SET "
                        + "FINISHED = ?, "
                        + "STATUS = ?, "
                        + "REASON = ? "
                        + "WHERE ID = ?";
-        jdbcTemplate.update(query,
+        return jdbcTemplate.update(query,
                 harvesterRun.getEndedAt(),
                 harvesterRun.getStatus().toString(),
                 harvesterRun.getReason(),
                 harvesterRun.getId());
     }
 
+    public Stream<HarvesterRun> getRecentRuns(Long days) {
+        return getAllRuns().stream()
+                .filter(harvesterRun -> isMoreRecentThan(harvesterRun, days));
+    }
 
     public List<HarvesterRun> getAllRuns() {
         String sqlQuery = "SELECT "
@@ -84,12 +124,28 @@ public class HarvesterRunService {
                         .repositoryId(rs.getString("REPOSITORY_ID"))
                         .repositoryUrl(rs.getString("REPOSITORY_URL"))
                         .revision(rs.getString("REVISION"))
-                        .startedAt(rs.getTimestamp("STARTED").toInstant())
+                        .startedAt(getInstant(rs, "STARTED"))
                         .startedBy(rs.getString("STARTED_BY"))
-                        .endedAt(rs.getTimestamp("FINISHED").toInstant())
-                        .status(HarvesterRun.Status.valueOf(rs.getString("STATUS")))
+                        .endedAt(getInstant(rs, "FINISHED"))
+                        .status(getStatusSafely(rs))
                         .reason(rs.getString("REASON"))
                         .build());
+    }
+
+    private HarvesterRun.Status getStatusSafely(ResultSet rs) {
+        try {
+            return HarvesterRun.Status.valueOf(rs.getString("STATUS"));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private Instant getInstant(ResultSet rs, String column) {
+        try {
+            return rs.getTimestamp(column).toInstant();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
 }

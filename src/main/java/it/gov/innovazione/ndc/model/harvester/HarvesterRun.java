@@ -22,7 +22,7 @@ public class HarvesterRun {
     private final String reason;
 
     public enum Status {
-        SUCCESS, UNCHANGED, RUNNING, FAILURE
+        SUCCESS, UNCHANGED, ALREADY_RUNNING, RUNNING, FAILURE
     }
 
 }

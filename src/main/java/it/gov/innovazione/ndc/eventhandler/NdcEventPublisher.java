@@ -3,7 +3,6 @@ package it.gov.innovazione.ndc.eventhandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -15,7 +14,6 @@ public class NdcEventPublisher {
 
     private final ApplicationEventPublisher applicationEventPublisher;
 
-    @Async
     public <T> void publishEvent(
             String source,
             String type,

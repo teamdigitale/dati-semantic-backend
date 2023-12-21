@@ -1,6 +1,5 @@
 package it.gov.innovazione.ndc.harvester;
 
-import it.gov.innovazione.ndc.harvester.service.RepositoryService;
 import it.gov.innovazione.ndc.model.harvester.Repository;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
 import it.gov.innovazione.ndc.repository.TripleStoreRepository;
@@ -20,7 +19,6 @@ public class HarvesterService {
     private final List<SemanticAssetHarvester> semanticAssetHarvesters;
     private final TripleStoreRepository tripleStoreRepository;
     private final SemanticAssetMetadataRepository semanticAssetMetadataRepository;
-    private final RepositoryService repositoryService;
 
     public void harvest(Repository repository) throws IOException {
         harvest(repository, null);

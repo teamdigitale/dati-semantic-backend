@@ -3,7 +3,6 @@ package it.gov.innovazione.ndc.controller;
 import it.gov.innovazione.ndc.harvester.HarvesterJob;
 import it.gov.innovazione.ndc.harvester.HarvesterService;
 import it.gov.innovazione.ndc.harvester.JobExecutionResponse;
-import it.gov.innovazione.ndc.harvester.JobExecutionStatusDto;
 import it.gov.innovazione.ndc.harvester.service.HarvesterRunService;
 import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import lombok.RequiredArgsConstructor;
@@ -34,19 +33,9 @@ public class HarvestJobController {
         return harvesterJob.harvest(force);
     }
 
-    @GetMapping("jobs/harvest/latest")
-    public List<JobExecutionStatusDto> getStatusOfLatestHarvestingJob() {
-        return harvesterJob.getStatusOfLatestHarvestingJob();
-    }
-
     @GetMapping("jobs/harvest/run")
     public List<HarvesterRun> getAllRuns() {
         return harvesterRunService.getAllRuns();
-    }
-
-    @GetMapping("jobs/harvest")
-    public List<JobExecutionStatusDto> getStatusOfHarvestingJobs() {
-        return harvesterJob.getStatusOfHarvestingJobs();
     }
 
     @PostMapping(value = "jobs/harvest", params = "repositoryId")

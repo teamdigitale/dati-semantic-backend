@@ -16,6 +16,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
+import static org.springframework.util.StringUtils.startsWithIgnoreCase;
 
 @Service
 @Slf4j
@@ -65,7 +66,7 @@ public class RepositoryService {
                     .collect(Collectors.toList());
         }
 
-        log.info("No repositories found in the database. Using the default repositories from configuration");
+        log.warn("No repositories found in the database. Using the default repositories from configuration");
 
         List<Repository> defaultRepositories = Optional.ofNullable(repositories)
                 .map(s -> s.split(","))
@@ -119,7 +120,13 @@ public class RepositoryService {
     @SneakyThrows
     public void createRepo(String url, String name, String description, Principal principal) {
         boolean isDuplicate = getAllRepos().stream()
-                .anyMatch(repo -> repo.getUrl().startsWith(url) || url.startsWith(repo.getUrl()));
+                .anyMatch(repo ->
+                        startsWithIgnoreCase(
+                                repo.getUrl(),
+                                url)
+                        || startsWithIgnoreCase(
+                                url,
+                                repo.getUrl()));
 
         if (isDuplicate) {
             throw new IllegalArgumentException("Duplicate repository " + url);
@@ -147,12 +154,6 @@ public class RepositoryService {
                 principal.getName(),
                 java.sql.Timestamp.from(java.time.Instant.now()),
                 principal.getName());
-    }
-
-    public Optional<Repository> getRepoById(String id) {
-        return getAllRepos().stream()
-                .filter(repo -> repo.getId().equals(id))
-                .findFirst();
     }
 
     public int updateRepo(String id, RepositoryController.CreateRepository loadedRepo, Principal principal) {
