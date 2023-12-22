@@ -33,11 +33,9 @@ public class SimpleHarvestRepositoryProcessor {
     private final NdcEventPublisher ndcEventPublisher;
     private final List<String> locks = new ArrayList<>();
 
-    private void setThreadName(String repoId, String revision, String status) {
-        Thread.currentThread().setName(THREAD_PREFIX + repoId + "-" + revision + "-" + status);
-    }
+    private boolean harvestingInProgress = false;
 
-    public List<String> getAllRunningHarvests() {
+    public static List<String> getAllRunningHarvestThreadNames() {
         return ThreadUtils.getAllThreads().stream()
                 .map(Thread::getName)
                 .filter(name -> startsWith(name, THREAD_PREFIX))
@@ -45,10 +43,19 @@ public class SimpleHarvestRepositoryProcessor {
                 .collect(Collectors.toList());
     }
 
+    public boolean isHarvestingInProgress() {
+        return harvestingInProgress;
+    }
+
+    private void setThreadName(String runId, String repoId, String revision, String status) {
+        Thread.currentThread().setName(THREAD_PREFIX + "|" + runId + "|" + repoId + "|" + revision + "|" + status);
+    }
+
     @Async
     public void execute(String runId, Repository repository, String correlationId, String revision, boolean force, String currentUserLogin) {
+        this.harvestingInProgress = true;
         try {
-            setThreadName(repository.getId(), revision, "RUNNING");
+            setThreadName(runId, repository.getId(), revision, "RUNNING");
             publishHarvesterStartedEvent(repository, correlationId, revision, runId, currentUserLogin);
 
             synchronized (locks) {
@@ -64,7 +71,7 @@ public class SimpleHarvestRepositoryProcessor {
                                     String.format("Harvesting for repo %s is already running",
                                             repository.getUrl())),
                             currentUserLogin);
-                    setThreadName(repository.getId(), revision, "IDLE");
+                    setThreadName(runId, repository.getId(), revision, "IDLE");
                     return;
                 }
                 locks.add(repository.getId() + revision);
@@ -79,7 +86,7 @@ public class SimpleHarvestRepositoryProcessor {
             harvesterService.harvest(repository, revision);
 
             publishHarvesterSuccessfulEvent(repository, correlationId, revision, runId, currentUserLogin);
-            setThreadName(repository.getId(), revision, "IDLE");
+            setThreadName(runId, repository.getId(), revision, "IDLE");
         } catch (HarvesterAlreadyExecuted e) {
             publishHarvesterFailedEvent(repository, correlationId, revision, runId, HarvesterRun.Status.UNCHANGED, e, currentUserLogin);
         } catch (HarvesterAlreadyInProgress e) {
@@ -89,7 +96,8 @@ public class SimpleHarvestRepositoryProcessor {
             log.error("Unable to process {}", repository.getUrl(), e);
         }
         removeLock(repository, revision);
-        setThreadName(repository.getId(), revision, "IDLE");
+        setThreadName(runId, repository.getId(), revision, "IDLE");
+        this.harvestingInProgress = false;
     }
 
     private void removeLock(Repository repository, String revision) {

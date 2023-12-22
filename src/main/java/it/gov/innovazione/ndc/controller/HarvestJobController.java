@@ -8,6 +8,7 @@ import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,6 +37,16 @@ public class HarvestJobController {
     @GetMapping("jobs/harvest/run")
     public List<HarvesterRun> getAllRuns() {
         return harvesterRunService.getAllRuns();
+    }
+
+    @GetMapping("jobs/harvest/running")
+    public List<RunningInstance> getAllRunningInstance() {
+        return harvesterRunService.getAllRunningInstances();
+    }
+
+    @DeleteMapping("jobs/harvest/run")
+    public void deletePendingRuns() {
+        harvesterRunService.deletePendingRuns();
     }
 
     @PostMapping(value = "jobs/harvest", params = "repositoryId")
