@@ -1,5 +1,6 @@
 package it.gov.innovazione.ndc.harvester.service;
 
+import it.gov.innovazione.ndc.controller.RunningInstance;
 import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import it.gov.innovazione.ndc.model.harvester.Repository;
 import lombok.RequiredArgsConstructor;
@@ -12,9 +13,14 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static it.gov.innovazione.ndc.config.SimpleHarvestRepositoryProcessor.getAllRunningHarvestThreadNames;
+import static org.apache.commons.lang3.StringUtils.contains;
+import static org.apache.commons.lang3.StringUtils.endsWithIgnoreCase;
 import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
 import static org.apache.commons.lang3.StringUtils.startsWithIgnoreCase;
 
@@ -24,6 +30,7 @@ import static org.apache.commons.lang3.StringUtils.startsWithIgnoreCase;
 public class HarvesterRunService {
 
     private final JdbcTemplate jdbcTemplate;
+
     private static final Long HARVESTING_RECENT_DAYS = 30L;
 
     public int saveHarvesterRun(HarvesterRun harvesterRun) {
@@ -148,4 +155,63 @@ public class HarvesterRunService {
         }
     }
 
+    public void deletePendingRuns() {
+        getAllRuns()
+                .stream()
+                .filter(harvesterRun -> harvesterRun.getStatus() == HarvesterRun.Status.RUNNING)
+                .forEach(this::deleteIfNecessary);
+    }
+
+    private void deleteIfNecessary(HarvesterRun harvesterRun) {
+        if (getAllRunningHarvestThreadNames()
+                .stream()
+                .noneMatch(threadName -> matchRunning(harvesterRun, threadName))) {
+            delete(harvesterRun);
+        }
+    }
+
+    private boolean matchRunning(HarvesterRun harvesterRun, String threadName) {
+        return contains(threadName, harvesterRun.getRepositoryId())
+               && contains(threadName, harvesterRun.getRevision())
+               && contains(threadName, harvesterRun.getId())
+               && endsWithIgnoreCase(threadName, "RUNNING");
+    }
+
+    private void delete(HarvesterRun harvesterRun) {
+        String query = "DELETE FROM HARVESTER_RUN WHERE ID = ?";
+        jdbcTemplate.update(query, harvesterRun.getId());
+    }
+
+    public List<RunningInstance> getAllRunningInstances() {
+        List<HarvesterRun> allRuns = getAllRuns();
+        return getAllRunningHarvestThreadNames()
+                .stream()
+                .map(threadName -> asRunningInstance(allRuns, threadName))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    private RunningInstance asRunningInstance(List<HarvesterRun> allRuns, String threadName) {
+        HarvesterRun harvesterRun = findHarvesterRun(allRuns, threadName);
+        if (harvesterRun != null) {
+            return RunningInstance.builder()
+                    .threadName(threadName)
+                    .harvesterRun(findHarvesterRun(allRuns, threadName))
+                    .build();
+        }
+        return null;
+    }
+
+    private HarvesterRun findHarvesterRun(List<HarvesterRun> allRuns, String threadName) {
+        try {
+            String[] split = threadName.split("\\|");
+            String runId = split[1];
+            return allRuns.stream()
+                    .filter(harvesterRun -> harvesterRun.getId().equals(runId))
+                    .findFirst()
+                    .orElse(null);
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }
