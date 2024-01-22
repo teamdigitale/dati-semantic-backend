@@ -113,7 +113,7 @@ jib {
 
 openApiGenerate {
     generatorName = 'spring'
-    inputSpec = "$rootDir/src/main/resources/public/api-docs.yaml".toString()
+    inputSpec = "$rootDir/src/main/resources/public/openapi.yaml".toString()
     outputDir = "$buildDir/generated".toString()
     apiPackage = 'it.gov.innovazione.ndc.gen.api'
     invokerPackage = 'it.gov.innovazione.ndc.gen.invoker'
