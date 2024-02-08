@@ -58,6 +58,7 @@ public class RepositoryController {
                 repository.getUrl(),
                 repository.getName(),
                 repository.getDescription(),
+                repository.getMaxFileSizeBytes(),
                 principal);
     }
 
@@ -104,5 +105,6 @@ public class RepositoryController {
         private String url;
         private String name;
         private String description;
+        private Long maxFileSizeBytes;
     }
 }

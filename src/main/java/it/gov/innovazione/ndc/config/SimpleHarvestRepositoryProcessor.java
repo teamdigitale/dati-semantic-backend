@@ -83,6 +83,15 @@ public class SimpleHarvestRepositoryProcessor {
                 verifySameRunWasNotExecuted(repository, revision);
             }
 
+            HarvestExecutionContextUtils.setContext(
+                    HarvestExecutionContext.builder()
+                            .repository(repository)
+                            .revision(revision)
+                            .correlationId(correlationId)
+                            .runId(runId)
+                            .currentUserId(currentUserLogin)
+                            .build());
+
             harvesterService.harvest(repository, revision);
 
             publishHarvesterSuccessfulEvent(repository, correlationId, revision, runId, currentUserLogin);

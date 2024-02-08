@@ -1,10 +1,12 @@
 package it.gov.innovazione.ndc.harvester;
 
+import it.gov.innovazione.ndc.model.harvester.Repository;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
 import it.gov.innovazione.ndc.repository.TripleStoreRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -15,6 +17,8 @@ import java.util.List;
 
 import static it.gov.innovazione.ndc.harvester.service.RepositoryUtils.asRepo;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
@@ -53,27 +57,32 @@ class HarvesterServiceTest {
         harvesterService.harvest(asRepo(repoUrl));
 
         verify(agencyRepoService).cloneRepo("someRepoUri", null);
-        verify(harvester).harvest(sanitizedRepoUrl, clonedRepoPath);
+
+        ArgumentCaptor<Repository> repoCaptor = ArgumentCaptor.forClass(Repository.class);
+        verify(harvester).harvest(repoCaptor.capture(), any());
+        assertEquals(sanitizedRepoUrl, repoCaptor.getValue().getUrl());
     }
 
     @Test
     void shouldGiveUpOnRepoWhenGenericExceptionIsThrown() throws IOException {
         String repoUrl = "someRepoUri";
+        Repository repo = asRepo(repoUrl);
 
         when(agencyRepoService.cloneRepo(repoUrl, null)).thenReturn(clonedRepoPath);
         doThrow(new RuntimeException("Something else went wrong")).when(
-                harvester).harvest(repoUrl, clonedRepoPath);
+                harvester).harvest(repo, clonedRepoPath);
 
         assertThatThrownBy(() -> harvesterService.harvest(asRepo(repoUrl)))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage("Something else went wrong");
 
-        verify(harvester).harvest(repoUrl, clonedRepoPath);
+        verify(harvester).harvest(repo, clonedRepoPath);
     }
 
     @Test
     void shouldClearNamedGraphAndMetadataBeforeProcessingData() throws IOException {
         String repoUrl = "someRepoUri";
+        Repository repo = asRepo(repoUrl);
 
         when(agencyRepoService.cloneRepo(repoUrl, null)).thenReturn(clonedRepoPath);
 
@@ -83,7 +92,7 @@ class HarvesterServiceTest {
         order.verify(harvester).cleanUpBeforeHarvesting(repoUrl);
         order.verify(tripleStoreRepository).clearExistingNamedGraph(repoUrl);
         order.verify(metadataRepository).deleteByRepoUrl(repoUrl);
-        order.verify(harvester).harvest(repoUrl, clonedRepoPath);
+        order.verify(harvester).harvest(repo, clonedRepoPath);
     }
 
     @Test
@@ -100,10 +109,11 @@ class HarvesterServiceTest {
     @Test
     void shouldCleanUpTemporaryFolderWithRepoAfterFailure() throws IOException {
         String repoUrl = "someRepoUri";
+        Repository repo = asRepo(repoUrl);
 
         when(agencyRepoService.cloneRepo(repoUrl, null)).thenReturn(clonedRepoPath);
         doThrow(new RuntimeException("network disaster")).when(harvester)
-                .harvest(repoUrl, clonedRepoPath);
+                .harvest(repo, clonedRepoPath);
 
         assertThatThrownBy(() -> harvesterService.harvest(asRepo(repoUrl)))
                 .hasMessage("network disaster");
