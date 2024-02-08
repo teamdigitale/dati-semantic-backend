@@ -26,4 +26,4 @@ jobs:
 
       - uses: stoplightio/spectral-action@v0.8.8
         with:
-          file_glob: 'src/main/resources/public/api-docs.yaml'
+          file_glob: 'src/main/resources/public/openapi.yaml'
