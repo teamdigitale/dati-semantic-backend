@@ -34,7 +34,8 @@ public class RepositoryService {
             + "CREATED, "
             + "CREATED_BY, "
             + "UPDATED, "
-            + "UPDATED_BY "
+            + "UPDATED_BY, "
+            + "MAX_FILE_SIZE_BYTES "
             + "FROM REPOSITORY";
 
     private final JdbcTemplate jdbcTemplate;
@@ -57,6 +58,7 @@ public class RepositoryService {
                                 .createdBy(rs.getString("CREATED_BY"))
                                 .updatedAt(rs.getTimestamp("UPDATED").toInstant())
                                 .updatedBy(rs.getString("UPDATED_BY"))
+                                .maxFileSizeBytes(rs.getLong("MAX_FILE_SIZE_BYTES"))
                                 .build());
 
         if (!allRepos.isEmpty()) {
@@ -96,7 +98,8 @@ public class RepositoryService {
                        + "CREATED, "
                        + "CREATED_BY, "
                        + "UPDATED, "
-                       + "UPDATED_BY) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                       + "UPDATED_BY, "
+                       + "MAX_FILE_SIZE_BYTES) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(query,
                 repo.getId(),
                 repo.getUrl(),
@@ -107,7 +110,8 @@ public class RepositoryService {
                 repo.getCreatedAt(),
                 repo.getCreatedBy(),
                 repo.getUpdatedAt(),
-                repo.getUpdatedBy());
+                repo.getUpdatedBy(),
+                repo.getMaxFileSizeBytes());
     }
 
     public Optional<Repository> findRepoById(String id) {
@@ -118,7 +122,7 @@ public class RepositoryService {
     }
 
     @SneakyThrows
-    public void createRepo(String url, String name, String description, Principal principal) {
+    public void createRepo(String url, String name, String description, Long maxFileSizeBytes, Principal principal) {
         boolean isDuplicate = getAllRepos().stream()
                 .anyMatch(repo ->
                         startsWithIgnoreCase(
@@ -142,7 +146,9 @@ public class RepositoryService {
                        + "CREATED, "
                        + "CREATED_BY, "
                        + "UPDATED, "
-                       + "UPDATED_BY) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                       + "UPDATED_BY,"
+                       + "MAX_FILE_SIZE_BYTES) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
         jdbcTemplate.update(query,
                 RepositoryUtils.generateId(),
                 url,
@@ -153,7 +159,8 @@ public class RepositoryService {
                 java.sql.Timestamp.from(java.time.Instant.now()),
                 principal.getName(),
                 java.sql.Timestamp.from(java.time.Instant.now()),
-                principal.getName());
+                principal.getName(),
+                maxFileSizeBytes);
     }
 
     public int updateRepo(String id, RepositoryController.CreateRepository loadedRepo, Principal principal) {
@@ -162,7 +169,8 @@ public class RepositoryService {
                        + "NAME = ?, "
                        + "DESCRIPTION = ?, "
                        + "UPDATED = ?, "
-                       + "UPDATED_BY = ? "
+                       + "UPDATED_BY = ?, "
+                       + "MAX_FILE_SIZE_BYTES = ? "
                        + "WHERE ID = ?";
         return jdbcTemplate.update(query,
                 loadedRepo.getUrl(),
@@ -170,6 +178,7 @@ public class RepositoryService {
                 loadedRepo.getDescription(),
                 java.sql.Timestamp.from(java.time.Instant.now()),
                 principal.getName(),
+                loadedRepo.getMaxFileSizeBytes(),
                 id);
     }
 
@@ -185,5 +194,4 @@ public class RepositoryService {
                 principal.getName(),
                 id);
     }
-
 }

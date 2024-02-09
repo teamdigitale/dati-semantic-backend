@@ -1,5 +1,7 @@
 package it.gov.innovazione.ndc.harvester;
 
+import it.gov.innovazione.ndc.config.HarvestExecutionContext;
+import it.gov.innovazione.ndc.config.HarvestExecutionContextUtils;
 import it.gov.innovazione.ndc.model.harvester.Repository;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
 import it.gov.innovazione.ndc.repository.TripleStoreRepository;
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Component
@@ -26,13 +29,15 @@ public class HarvesterService {
 
     public void harvest(Repository repository, String revision) throws IOException {
         log.info("Processing repo {}", repository.getUrl());
-        String repoUrl = normaliseRepoUrl(repository.getUrl());
+        Repository normalisedRepo = repository.withUrl(normaliseRepoUrl(repository.getUrl()));
+        String repoUrl = normalisedRepo.getUrl();
         log.debug("Normalised repo url {}", repoUrl);
         try {
             Path path = cloneRepoToTempPath(repoUrl, revision);
 
             try {
-                harvestClonedRepo(repoUrl, path);
+                updateContextWithRootPath(path);
+                harvestClonedRepo(normalisedRepo, path);
             } finally {
                 agencyRepositoryService.removeClonedRepo(path);
             }
@@ -40,6 +45,13 @@ public class HarvesterService {
         } catch (IOException e) {
             log.error("Exception while processing {}", repoUrl, e);
             throw e;
+        }
+    }
+
+    private static void updateContextWithRootPath(Path path) {
+        HarvestExecutionContext context = HarvestExecutionContextUtils.getContext();
+        if (Objects.nonNull(context)) {
+            HarvestExecutionContextUtils.setContext(context.withRootPath(path.toString()));
         }
     }
 
@@ -60,12 +72,12 @@ public class HarvesterService {
         return repoUrl.replace(".git", "");
     }
 
-    private void harvestClonedRepo(String repoUrl, Path path) {
-        clearRepo(repoUrl);
+    private void harvestClonedRepo(Repository repository, Path path) {
+        clearRepo(repository.getUrl());
 
-        harvestSemanticAssets(repoUrl, path);
+        harvestSemanticAssets(repository, path);
 
-        log.info("Repo {} processed", repoUrl);
+        log.info("Repo {} processed", repository);
     }
 
     private void clearRepo(String repoUrl) {
@@ -83,10 +95,10 @@ public class HarvesterService {
         });
     }
 
-    private void harvestSemanticAssets(String repoUrl, Path path) {
+    private void harvestSemanticAssets(Repository repository, Path path) {
         semanticAssetHarvesters.forEach(h -> {
             log.debug("Harvesting {} for {} assets", path, h.getType());
-            h.harvest(repoUrl, path);
+            h.harvest(repository, path);
 
             log.debug("Harvested {} for {} assets", path, h.getType());
         });

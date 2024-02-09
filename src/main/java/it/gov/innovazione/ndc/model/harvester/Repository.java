@@ -3,6 +3,7 @@ package it.gov.innovazione.ndc.model.harvester;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.With;
 
 import java.time.Instant;
 
@@ -11,6 +12,7 @@ import java.time.Instant;
 @EqualsAndHashCode(exclude = {"id", "createdAt", "updatedAt"})
 public class Repository {
     private String id;
+    @With
     private String url;
     private String name;
     private String description;
@@ -20,5 +22,5 @@ public class Repository {
     private String createdBy;
     private Instant updatedAt;
     private String updatedBy;
-    private Long maxSizeBytes;
+    private Long maxFileSizeBytes;
 }

@@ -2,6 +2,9 @@ package it.gov.innovazione.ndc.harvester.model;
 
 import lombok.EqualsAndHashCode;
 
+import java.io.File;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @EqualsAndHashCode
@@ -19,6 +22,15 @@ public class CvPath extends SemanticAssetPath {
 
     public static CvPath of(String ttlPath, String csvPath) {
         return new CvPath(ttlPath, csvPath);
+    }
+
+    @Override
+    public List<File> getAllFiles() {
+        if (Objects.nonNull(csvPath)) {
+            return List.of(
+                    new File(getTtlPath()), new File(getCsvPath().get()));
+        }
+        return super.getAllFiles();
     }
 
     @Override

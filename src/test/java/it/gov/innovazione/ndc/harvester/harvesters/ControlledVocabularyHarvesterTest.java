@@ -9,9 +9,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 
+import static it.gov.innovazione.ndc.harvester.service.RepositoryUtils.asRepo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -32,7 +35,7 @@ class ControlledVocabularyHarvesterTest {
         final CvPath path2 = CvPath.of("onto2.ttl", "onto2.csv");
         when(agencyRepositoryService.getControlledVocabularyPaths(cvBasePath)).thenReturn(List.of(path1, path2));
 
-        harvester.harvest(repoUrl, cvBasePath);
+        harvester.harvest(asRepo(repoUrl), cvBasePath);
 
         verify(agencyRepositoryService).getControlledVocabularyPaths(cvBasePath);
         verify(pathProcessor).process(repoUrl, path1);
@@ -46,5 +49,23 @@ class ControlledVocabularyHarvesterTest {
         harvester.cleanUpBeforeHarvesting(repoUrl);
 
         verify(pathProcessor).dropCsvIndicesForRepo(repoUrl);
+    }
+
+    @Test
+    void shouldReturnAllFiles() {
+        final CvPath path = CvPath.of("onto1.ttl", "onto1.csv");
+        List<File> allFiles = path.getAllFiles();
+
+        assertEquals("onto1.ttl", allFiles.get(0).getName());
+        assertEquals("onto1.csv", allFiles.get(1).getName());
+    }
+
+    @Test
+    void shouldReturnTTLOnly() {
+        final CvPath path = CvPath.of("onto1.ttl", null);
+        List<File> allFiles = path.getAllFiles();
+
+        assertEquals("onto1.ttl", allFiles.get(0).getName());
+        assertEquals(1, allFiles.size());
     }
 }

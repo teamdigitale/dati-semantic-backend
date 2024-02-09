@@ -5,7 +5,6 @@ import it.gov.innovazione.ndc.eventhandler.NdcEventWrapper;
 import it.gov.innovazione.ndc.eventhandler.event.HarvesterFinishedEvent;
 import it.gov.innovazione.ndc.eventhandler.event.HarvesterStartedEvent;
 import it.gov.innovazione.ndc.harvester.service.HarvesterRunService;
-import it.gov.innovazione.ndc.harvester.service.RepositoryService;
 import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +19,6 @@ import java.util.Optional;
 @Slf4j
 public class HarvesterRunUpdatingHandler implements NdcEventHandler {
 
-    private final RepositoryService repositoryService;
     private final HarvesterRunService harvesterRunService;
 
     private static final Collection<Class<?>> SUPPORTED_EVENTS = Arrays.asList(

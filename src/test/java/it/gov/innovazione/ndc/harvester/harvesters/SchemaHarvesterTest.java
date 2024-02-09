@@ -1,8 +1,8 @@
 package it.gov.innovazione.ndc.harvester.harvesters;
 
-import it.gov.innovazione.ndc.harvester.pathprocessors.SchemaPathProcessor;
 import it.gov.innovazione.ndc.harvester.AgencyRepositoryService;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
+import it.gov.innovazione.ndc.harvester.pathprocessors.SchemaPathProcessor;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -12,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.nio.file.Path;
 import java.util.List;
 
+import static it.gov.innovazione.ndc.harvester.service.RepositoryUtils.asRepo;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -32,7 +33,7 @@ class SchemaHarvesterTest {
         final SemanticAssetPath path2 = SemanticAssetPath.of("schema2.ttl");
         when(agencyRepositoryService.getSchemaPaths(schemaBasePath)).thenReturn(List.of(path1, path2));
 
-        harvester.harvest(repoUrl, schemaBasePath);
+        harvester.harvest(asRepo(repoUrl), schemaBasePath);
 
         verify(agencyRepositoryService).getSchemaPaths(schemaBasePath);
         verify(pathProcessor).process(repoUrl, path1);
