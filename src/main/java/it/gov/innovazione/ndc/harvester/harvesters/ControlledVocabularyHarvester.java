@@ -5,6 +5,7 @@ import it.gov.innovazione.ndc.harvester.AgencyRepositoryService;
 import it.gov.innovazione.ndc.harvester.SemanticAssetType;
 import it.gov.innovazione.ndc.harvester.model.CvPath;
 import it.gov.innovazione.ndc.harvester.pathprocessors.ControlledVocabularyPathProcessor;
+import it.gov.innovazione.ndc.harvester.service.ConfigService;
 import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
@@ -15,8 +16,8 @@ public class ControlledVocabularyHarvester extends BaseSemanticAssetHarvester<Cv
     private final AgencyRepositoryService agencyRepositoryService;
     private final ControlledVocabularyPathProcessor pathProcessor;
 
-    public ControlledVocabularyHarvester(AgencyRepositoryService agencyRepositoryService, ControlledVocabularyPathProcessor pathProcessor, NdcEventPublisher ndcEventPublisher) {
-        super(SemanticAssetType.CONTROLLED_VOCABULARY, ndcEventPublisher);
+    public ControlledVocabularyHarvester(AgencyRepositoryService agencyRepositoryService, ControlledVocabularyPathProcessor pathProcessor, NdcEventPublisher ndcEventPublisher, ConfigService configService) {
+        super(SemanticAssetType.CONTROLLED_VOCABULARY, ndcEventPublisher, configService);
         this.agencyRepositoryService = agencyRepositoryService;
         this.pathProcessor = pathProcessor;
     }

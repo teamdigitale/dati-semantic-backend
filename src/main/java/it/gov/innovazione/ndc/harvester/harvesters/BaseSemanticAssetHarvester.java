@@ -9,6 +9,7 @@ import it.gov.innovazione.ndc.harvester.SemanticAssetHarvester;
 import it.gov.innovazione.ndc.harvester.SemanticAssetType;
 import it.gov.innovazione.ndc.harvester.exception.SinglePathProcessingException;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
+import it.gov.innovazione.ndc.harvester.service.ConfigService;
 import it.gov.innovazione.ndc.model.harvester.Repository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,11 +18,14 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 
+import static it.gov.innovazione.ndc.harvester.service.ActualConfigService.ConfigKey.MAX_FILE_SIZE_BYTES;
+
 @Slf4j
 @RequiredArgsConstructor
 public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> implements SemanticAssetHarvester {
     private final SemanticAssetType type;
     private final NdcEventPublisher eventPublisher;
+    private final ConfigService configService;
 
     @Override
     public SemanticAssetType getType() {
@@ -53,7 +57,10 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
         HarvestExecutionContext context = HarvestExecutionContextUtils.getContext();
         if (context != null) {
             List<File> files = path.getAllFiles();
-            if (isBiggerThan(context.getRepository().getMaxFileSizeBytes(), files)) {
+            Long maxFileSizeBytes = configService.getParsedOrGetDefault(
+                    MAX_FILE_SIZE_BYTES,
+                    () -> context.getRepository().getMaxFileSizeBytes());
+            if (isBiggerThan(maxFileSizeBytes, files)) {
                 notify(context, path);
             }
         }
