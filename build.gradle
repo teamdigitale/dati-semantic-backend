@@ -183,7 +183,12 @@ jacocoTestCoverageVerification {
                     'it.gov.innovazione.ndc.harvester.SecurityUtils',
                     'it.gov.innovazione.ndc.*Exception',
                     'it.gov.innovazione.ndc.harvester.HarvesterJob',
-                    'it.gov.innovazione.ndc.model.harvester.HarvesterRun.Status'
+                    'it.gov.innovazione.ndc.model.harvester.HarvesterRun.Status',
+                    'it.gov.innovazione.ndc.harvester.service.ActualConfigService',
+                    'it.gov.innovazione.ndc.harvester.service.ActualConfigService.Validator',
+                    'it.gov.innovazione.ndc.harvester.service.CachingConfigService',
+                    'it.gov.innovazione.ndc.harvester.service.ConfigService.NdcConfiguration',
+                    'it.gov.innovazione.ndc.harvester.service.ConfigService'
             ]
         }
     }

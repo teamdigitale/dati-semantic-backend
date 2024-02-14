@@ -6,6 +6,7 @@ import it.gov.innovazione.ndc.eventhandler.NdcEventPublisher;
 import it.gov.innovazione.ndc.harvester.SemanticAssetType;
 import it.gov.innovazione.ndc.harvester.exception.InvalidAssetException;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
+import it.gov.innovazione.ndc.harvester.service.ConfigService;
 import it.gov.innovazione.ndc.model.harvester.Repository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,6 +33,8 @@ import static org.mockito.Mockito.when;
 class BaseSemanticAssetHarvesterTest {
     @Mock
     private NdcEventPublisher eventPublisher;
+    @Mock
+    private ConfigService configService;
 
     @Test
     void shouldMoveOnToNextOntologyIfProcessingOneFails() {
@@ -84,6 +87,9 @@ class BaseSemanticAssetHarvesterTest {
                                     .rootPath("someRootPath")
                                     .build());
 
+            when(configService.getParsedOrGetDefault(any(), any()))
+                    .thenReturn(1L);
+
             TestHarvester harvester = new TestHarvester(List.of(path));
 
             harvester.harvest(repository, basePath);
@@ -101,7 +107,7 @@ class BaseSemanticAssetHarvesterTest {
         private final List<SemanticAssetPath> paths;
 
         public TestHarvester(List<SemanticAssetPath> paths) {
-            super(SemanticAssetType.ONTOLOGY, eventPublisher);
+            super(SemanticAssetType.ONTOLOGY, eventPublisher, configService);
             this.paths = paths;
         }
 

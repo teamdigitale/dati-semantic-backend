@@ -5,6 +5,7 @@ import it.gov.innovazione.ndc.harvester.AgencyRepositoryService;
 import it.gov.innovazione.ndc.harvester.SemanticAssetType;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
 import it.gov.innovazione.ndc.harvester.pathprocessors.SchemaPathProcessor;
+import it.gov.innovazione.ndc.harvester.service.ConfigService;
 import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
@@ -15,8 +16,8 @@ public class SchemaHarvester extends BaseSemanticAssetHarvester<SemanticAssetPat
     private final AgencyRepositoryService agencyRepositoryService;
     private final SchemaPathProcessor pathProcessor;
 
-    public SchemaHarvester(AgencyRepositoryService agencyRepositoryService, SchemaPathProcessor pathProcessor, NdcEventPublisher ndcEventPublisher) {
-        super(SemanticAssetType.SCHEMA, ndcEventPublisher);
+    public SchemaHarvester(AgencyRepositoryService agencyRepositoryService, SchemaPathProcessor pathProcessor, NdcEventPublisher ndcEventPublisher, ConfigService configService) {
+        super(SemanticAssetType.SCHEMA, ndcEventPublisher, configService);
         this.agencyRepositoryService = agencyRepositoryService;
         this.pathProcessor = pathProcessor;
     }
