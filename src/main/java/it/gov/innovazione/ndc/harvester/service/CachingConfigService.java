@@ -23,19 +23,19 @@ public class CachingConfigService implements ConfigService {
     }
 
     @Override
-    public void writeConfigKey(ActualConfigService.ConfigKey key, String writtenBy, Object value) {
+    public synchronized void writeConfigKey(ActualConfigService.ConfigKey key, String writtenBy, Object value) {
         actualConfigService.writeConfigKey(key, writtenBy, value);
         ndcConfiguration = null;
     }
 
     @Override
-    public void setNdConfig(Map<ActualConfigService.ConfigKey, Object> config, String writtenBy) {
+    public synchronized void setNdConfig(Map<ActualConfigService.ConfigKey, Object> config, String writtenBy) {
         actualConfigService.setNdConfig(config, writtenBy);
         ndcConfiguration = null;
     }
 
     @Override
-    public void removeConfigKey(ActualConfigService.ConfigKey configKey, String writtenBy) {
+    public synchronized void removeConfigKey(ActualConfigService.ConfigKey configKey, String writtenBy) {
         actualConfigService.removeConfigKey(configKey, writtenBy);
         ndcConfiguration = null;
     }
