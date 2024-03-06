@@ -1,10 +1,5 @@
 package it.gov.innovazione.ndc.repository;
 
-import static it.gov.innovazione.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
-import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
-import static org.elasticsearch.index.query.QueryBuilders.termQuery;
-import static org.springframework.data.elasticsearch.core.SearchHitSupport.searchPageFor;
-
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
