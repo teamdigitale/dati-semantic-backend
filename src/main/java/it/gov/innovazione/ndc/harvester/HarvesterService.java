@@ -13,9 +13,11 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
@@ -90,7 +92,9 @@ public class HarvesterService {
     }
 
     private void storeRightsHolders(Repository repository) {
-        Map<String, Map<String, String>> rightsHolders = HarvestExecutionContextUtils.getContext().getRightsHolders().stream()
+        Map<String, Map<String, String>> rightsHolders = Optional.ofNullable(HarvestExecutionContextUtils.getContext())
+                .map(HarvestExecutionContext::getRightsHolders)
+                .orElse(Collections.emptyList()).stream()
                 .collect(groupingBy(RightsHolder::getIdentifier, toList()))
                 .entrySet().stream()
                 .collect(toMap(Map.Entry::getKey, e -> e.getValue().get(0).getName()));

@@ -40,7 +40,7 @@ public class SemanticAssetsController implements SemanticAssetsApi {
      * @return OK (status code 200)
      */
     @ApiOperation(value = "", nickname = "getRightsHolders", notes = "Retrieves the rights holders",
-            response = SemanticAssetDetails.class, tags = {"semantic-assets",})
+            response = SemanticAssetDetails.class, tags = {"semantic-assets"})
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = SemanticAssetDetails.class)})
     @RequestMapping(
             method = RequestMethod.GET,

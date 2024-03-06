@@ -40,7 +40,7 @@ public class SemanticAssetsControllerTest {
                     null, null,
                 Set.of(CONTROLLED_VOCABULARY),
                     Set.of(Theme.EDUC),
-                    null).getBody();
+                    Set.of()).getBody();
 
         verify(service).search("searchTerm",
             Set.of("CONTROLLED_VOCABULARY"),

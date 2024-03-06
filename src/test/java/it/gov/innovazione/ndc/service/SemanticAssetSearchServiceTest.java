@@ -56,7 +56,7 @@ class SemanticAssetSearchServiceTest {
         SemanticAssetMetadata expectedData2 = SemanticAssetMetadata.builder().iri("2").build();
 
         Pageable pageable = Pageable.ofSize(10).withPage(0);
-        when(metadataRepository.search(any(), any(), any(), Collections.emptySet(), any())).thenReturn(searchPageMock);
+        when(metadataRepository.search(any(), any(), any(), any(), any())).thenReturn(searchPageMock);
         when(searchPageMock.getPageable()).thenReturn(PageRequest.of(1, 10));
         when(searchPageMock.getTotalElements()).thenReturn(11L);
         when(searchPageMock.getContent()).thenReturn(List.of(searchHitMock, searchHitMock));
@@ -110,7 +110,7 @@ class SemanticAssetSearchServiceTest {
                 .build();
 
         Pageable pageable = Pageable.ofSize(10).withPage(0);
-        when(metadataRepository.search(any(), any(), any(), Collections.emptySet(), any())).thenReturn(searchPageMock);
+        when(metadataRepository.search(any(), any(), any(), any(), any())).thenReturn(searchPageMock);
         when(searchPageMock.getPageable()).thenReturn(PageRequest.of(1, 10));
         when(searchPageMock.getTotalElements()).thenReturn(11L);
         when(searchPageMock.getContent()).thenReturn(List.of(searchHitMock, searchHitMock));

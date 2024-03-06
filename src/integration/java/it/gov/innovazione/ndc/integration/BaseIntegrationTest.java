@@ -3,6 +3,7 @@ package it.gov.innovazione.ndc.integration;
 import it.gov.innovazione.ndc.harvester.AgencyRepositoryService;
 import it.gov.innovazione.ndc.harvester.HarvesterService;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
+import it.gov.innovazione.ndc.harvester.service.RepositoryService;
 import it.gov.innovazione.ndc.repository.TripleStoreProperties;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +24,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static it.gov.innovazione.ndc.harvester.service.RepositoryUtils.asRepo;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -48,6 +50,9 @@ public class BaseIntegrationTest {
 
     @SpyBean
     AgencyRepositoryService agencyRepositoryService;
+
+    @SpyBean
+    RepositoryService repositoryService;
 
     @Autowired
     TripleStoreProperties virtuosoProps;
@@ -79,6 +84,7 @@ public class BaseIntegrationTest {
         Path cloneDir = Path.of(dir);
         doReturn(cloneDir).when(agencyRepositoryService).cloneRepo(REPO_URL, null);
         doNothing().when(agencyRepositoryService).removeClonedRepo(cloneDir);
+        doNothing().when(repositoryService).storeRightsHolders(any(), any());
 
         harvesterService.harvest(asRepo(REPO_URL));
 
