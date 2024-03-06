@@ -2,8 +2,10 @@ package it.gov.innovazione.ndc.controller;
 
 import it.gov.innovazione.ndc.gen.api.SemanticAssetsApi;
 import it.gov.innovazione.ndc.gen.dto.AssetType;
+import it.gov.innovazione.ndc.gen.dto.Direction;
 import it.gov.innovazione.ndc.gen.dto.SearchResult;
 import it.gov.innovazione.ndc.gen.dto.SemanticAssetDetails;
+import it.gov.innovazione.ndc.gen.dto.SortBy;
 import it.gov.innovazione.ndc.gen.dto.Theme;
 import it.gov.innovazione.ndc.service.SemanticAssetSearchService;
 import lombok.RequiredArgsConstructor;
@@ -23,13 +25,23 @@ public class SemanticAssetsController implements SemanticAssetsApi {
     private final SemanticAssetSearchService searchService;
 
     @Override
-    public ResponseEntity<SearchResult> search(String q, Integer offset, Integer limit, Set<AssetType> type, Set<Theme> theme) {
+    public ResponseEntity<SearchResult> search(
+            String q,
+            Integer offset,
+            Integer limit,
+            SortBy sortBy,
+            Direction direction,
+            Set<AssetType> type,
+            Set<Theme> theme,
+            Set<String> rightsHolder) {
+
         Pageable pageable = OffsetBasedPageRequest.of(offset, limit);
 
         return AppJsonResponse.ok(
                 searchService.search(q,
                         toEnumStrings(type, AssetType::getValue),
                         toEnumStrings(theme, Theme::getValue),
+                        rightsHolder,
                         pageable
                 )
         );

@@ -100,7 +100,7 @@ class SemanticAssetMetadataRepositoryTest {
         when(esOps.search(captor.capture(), any(Class.class))).thenReturn(searchHits);
 
         SearchPage<SemanticAssetMetadata> searchResult =
-            repository.search("query", Set.of("TYPE1"), Set.of("THEME1"), PageRequest.of(0, 10));
+            repository.search("query", Set.of("TYPE1"), Set.of("THEME1"), rightsHolder, PageRequest.of(0, 10));
 
         assertThat(searchResult.getSearchHits()).isEqualTo(searchHits);
         BoolQueryBuilder query = (BoolQueryBuilder) captor.getValue().getQuery();
@@ -128,7 +128,7 @@ class SemanticAssetMetadataRepositoryTest {
         when(esOps.search(captor.capture(), any(Class.class))).thenReturn(searchHits);
 
         SearchPage<SemanticAssetMetadata> searchResult =
-            repository.search("", Set.of(), Set.of(), PageRequest.of(0, 10));
+            repository.search("", Set.of(), Set.of(), rightsHolder, PageRequest.of(0, 10));
 
         assertThat(searchResult.getSearchHits()).isEqualTo(searchHits);
         BoolQueryBuilder query = (BoolQueryBuilder) captor.getValue().getQuery();

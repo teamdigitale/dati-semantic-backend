@@ -1,6 +1,5 @@
 package it.gov.innovazione.ndc.service;
 
-import it.gov.innovazione.ndc.controller.OffsetBasedPageRequest;
 import it.gov.innovazione.ndc.gen.dto.AssetType;
 import it.gov.innovazione.ndc.gen.dto.VocabulariesResult;
 import it.gov.innovazione.ndc.model.SemanticAssetsMetadataMapper;
@@ -24,10 +23,10 @@ public class SemanticAssetSearchService {
     private final SemanticAssetsMetadataMapper mapper;
 
     public SearchResult search(String queryPattern, Set<String> types,
-                               Set<String> themes, Pageable pageable) {
+                               Set<String> themes, Set<String> rightsHolder, Pageable pageable) {
 
         SearchPage<SemanticAssetMetadata> searchResults =
-                metadataRepository.search(queryPattern, types, themes, pageable);
+                metadataRepository.search(queryPattern, types, themes, rightsHolder, pageable);
 
         return mapper.searchResultToDto(searchResults);
     }
@@ -41,7 +40,7 @@ public class SemanticAssetSearchService {
     public VocabulariesResult getVocabularies(Pageable pageable) {
         SearchPage<SemanticAssetMetadata> results = metadataRepository.search("",
                 Set.of(AssetType.CONTROLLED_VOCABULARY.getValue()),
-                Collections.emptySet(), pageable);
+                Collections.emptySet(), rightsHolder, pageable);
         return mapper.vocabResultToDto(results);
     }
 }

@@ -157,8 +157,10 @@ paths:
             type: string
             default: ''
             maxLength: 4096
-        - $ref:  "#/components/parameters/offset"
+        - $ref: "#/components/parameters/offset"
         - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/sortBy"
+        - $ref: "#/components/parameters/direction"
         - name: type
           in: query
           required: false
@@ -180,6 +182,17 @@ paths:
             maxItems: *max-array-size-default
             items:
               $ref: "#/components/schemas/Theme"
+            default: [ ]
+        - name: rightsHolder
+          in: query
+          required: false
+          schema:
+            uniqueItems: true
+            type: array
+            minItems: 0
+            maxItems: *max-array-size-default
+            items:
+              type: string
             default: [ ]
       responses:
         '200':
@@ -229,6 +242,18 @@ components:
       required: false
       schema:
         $ref: "#/components/schemas/Offset"
+    sortBy:
+      name: sortBy
+      in: query
+      required: false
+      schema:
+        $ref: "#/components/schemas/SortBy"
+    direction:
+      name: direction
+      in: query
+      required: false
+      schema:
+        $ref: "#/components/schemas/Direction"
     agency_id:
       name: agency_id
       in: path
@@ -257,6 +282,18 @@ components:
       maximum: 200
       minimum: 1
       default: 10
+    SortBy:
+      type: string
+      enum:
+        - TITLE
+        - LAST_MODIFIED
+      default: "TITLE"
+    Direction:
+      type: string
+      enum:
+        - ASC
+        - DESC
+      default: ASC
     VocabularyData:
       type: object
       additionalProperties: false
@@ -360,6 +397,10 @@ components:
           $ref:  "#/components/schemas/Limit"
         offset:
           $ref:  "#/components/schemas/Offset"
+        sortBy:
+          $ref: "#/components/schemas/SortBy"
+        direction:
+          $ref: "#/components/schemas/Direction"
         data:
           type: array
           minItems: 0

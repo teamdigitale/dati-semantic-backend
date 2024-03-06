@@ -34,8 +34,10 @@ public class SemanticAssetsControllerTest {
 
         SearchResult actualResult =
             controller.search("searchTerm", 0, 10,
+                    null, null,
                 Set.of(CONTROLLED_VOCABULARY),
-                Set.of(Theme.EDUC)).getBody();
+                    Set.of(Theme.EDUC),
+                    null).getBody();
 
         verify(service).search("searchTerm",
             Set.of("CONTROLLED_VOCABULARY"),
