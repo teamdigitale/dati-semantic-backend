@@ -2,6 +2,8 @@ package it.gov.innovazione.ndc.harvester;
 
 import it.gov.innovazione.ndc.config.HarvestExecutionContext;
 import it.gov.innovazione.ndc.config.HarvestExecutionContextUtils;
+import it.gov.innovazione.ndc.harvester.model.index.RightsHolder;
+import it.gov.innovazione.ndc.harvester.service.RepositoryService;
 import it.gov.innovazione.ndc.model.harvester.Repository;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
 import it.gov.innovazione.ndc.repository.TripleStoreRepository;
@@ -12,7 +14,12 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 @Slf4j
 @Component
@@ -22,6 +29,7 @@ public class HarvesterService {
     private final List<SemanticAssetHarvester> semanticAssetHarvesters;
     private final TripleStoreRepository tripleStoreRepository;
     private final SemanticAssetMetadataRepository semanticAssetMetadataRepository;
+    private final RepositoryService repositoryService;
 
     public void harvest(Repository repository) throws IOException {
         harvest(repository, null);
@@ -76,8 +84,18 @@ public class HarvesterService {
         clearRepo(repository.getUrl());
 
         harvestSemanticAssets(repository, path);
+        storeRightsHolders(repository);
 
         log.info("Repo {} processed", repository);
+    }
+
+    private void storeRightsHolders(Repository repository) {
+        Map<String, Map<String, String>> rightsHolders = HarvestExecutionContextUtils.getContext().getRightsHolders().stream()
+                .collect(groupingBy(RightsHolder::getIdentifier, toList()))
+                .entrySet().stream()
+                .collect(toMap(Map.Entry::getKey, e -> e.getValue().get(0).getName()));
+
+        repositoryService.storeRightsHolders(repository, rightsHolders);
     }
 
     private void clearRepo(String repoUrl) {

@@ -1,15 +1,6 @@
 package it.gov.innovazione.ndc.repository;
 
-import static java.util.Objects.requireNonNull;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
-
-import java.util.Optional;
-import java.util.Set;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MatchAllQueryBuilder;
 import org.elasticsearch.index.query.MatchQueryBuilder;
@@ -26,6 +17,16 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.SearchPage;
 import org.springframework.data.elasticsearch.core.query.ByQueryResponse;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
+
+import java.util.Collections;
+import java.util.Optional;
+import java.util.Set;
+
+import static java.util.Objects.requireNonNull;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class SemanticAssetMetadataRepositoryTest {
@@ -100,7 +101,7 @@ class SemanticAssetMetadataRepositoryTest {
         when(esOps.search(captor.capture(), any(Class.class))).thenReturn(searchHits);
 
         SearchPage<SemanticAssetMetadata> searchResult =
-            repository.search("query", Set.of("TYPE1"), Set.of("THEME1"), rightsHolder, PageRequest.of(0, 10));
+                repository.search("query", Set.of("TYPE1"), Set.of("THEME1"), Collections.emptySet(), PageRequest.of(0, 10));
 
         assertThat(searchResult.getSearchHits()).isEqualTo(searchHits);
         BoolQueryBuilder query = (BoolQueryBuilder) captor.getValue().getQuery();
@@ -128,7 +129,7 @@ class SemanticAssetMetadataRepositoryTest {
         when(esOps.search(captor.capture(), any(Class.class))).thenReturn(searchHits);
 
         SearchPage<SemanticAssetMetadata> searchResult =
-            repository.search("", Set.of(), Set.of(), rightsHolder, PageRequest.of(0, 10));
+                repository.search("", Set.of(), Set.of(), Collections.emptySet(), PageRequest.of(0, 10));
 
         assertThat(searchResult.getSearchHits()).isEqualTo(searchHits);
         BoolQueryBuilder query = (BoolQueryBuilder) captor.getValue().getQuery();

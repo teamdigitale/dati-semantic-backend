@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.With;
 
 import java.time.Instant;
+import java.util.Map;
 
 @Data
 @Builder(toBuilder = true)
@@ -23,4 +24,5 @@ public class Repository {
     private Instant updatedAt;
     private String updatedBy;
     private Long maxFileSizeBytes;
+    private Map<String, Map<String, String>> rightsHolders;
 }

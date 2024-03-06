@@ -1,17 +1,6 @@
 package it.gov.innovazione.ndc.repository;
 
-import static it.gov.innovazione.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
-import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
-import static org.elasticsearch.index.query.QueryBuilders.termQuery;
-import static org.springframework.data.elasticsearch.core.SearchHitSupport.searchPageFor;
-
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.common.unit.Fuzziness;
@@ -29,6 +18,17 @@ import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.ObjectUtils;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static it.gov.innovazione.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
+import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
+import static org.elasticsearch.index.query.QueryBuilders.termQuery;
+import static org.springframework.data.elasticsearch.core.SearchHitSupport.searchPageFor;
 
 @Repository
 @RequiredArgsConstructor
@@ -71,8 +71,8 @@ public class SemanticAssetMetadataRepository {
         if (!themes.isEmpty()) {
             finalQuery.filter(new TermsQueryBuilder("themes", themes));
         }
-        if (!rightsHolder.isEmpty()) {
-            finalQuery.filter(new TermsQueryBuilder("rightsHolder", rightsHolder));
+        if (Objects.nonNull(rightsHolder) && !rightsHolder.isEmpty()) {
+            finalQuery.filter(new TermsQueryBuilder("agencyId", rightsHolder));
         }
     }
 

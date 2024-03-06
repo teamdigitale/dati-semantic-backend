@@ -1,13 +1,14 @@
 package it.gov.innovazione.ndc.harvester.pathprocessors;
 
-import it.gov.innovazione.ndc.repository.TripleStoreRepository;
 import it.gov.innovazione.ndc.harvester.csv.CsvParser;
 import it.gov.innovazione.ndc.harvester.csv.CsvParser.CsvData;
 import it.gov.innovazione.ndc.harvester.model.ControlledVocabularyModel;
 import it.gov.innovazione.ndc.harvester.model.CvPath;
-import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetModelFactory;
+import it.gov.innovazione.ndc.harvester.model.index.RightsHolder;
+import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
+import it.gov.innovazione.ndc.repository.TripleStoreRepository;
 import it.gov.innovazione.ndc.service.VocabularyDataService;
 import it.gov.innovazione.ndc.service.VocabularyIdentifier;
 import org.apache.jena.rdf.model.Model;
@@ -64,7 +65,7 @@ class ControlledVocabularyPathProcessorTest {
         when(semanticAssetModelFactory.createControlledVocabulary(ttlFile, "some-repo")).thenReturn(cvModel);
         when(cvModel.getRdfModel()).thenReturn(jenaModel);
         when(cvModel.getKeyConcept()).thenReturn("keyConcept");
-        when(cvModel.getAgencyId()).thenReturn("agencyId");
+        when(cvModel.getAgencyId()).thenReturn(RightsHolder.builder().identifier("agencyId").build());
         CsvData csvData = new CsvData(List.of(Map.of("key", "val")), "key");
         when(csvParser.loadCsvDataFromFile(csvFile)).thenReturn(csvData);
         SemanticAssetMetadata metadata = SemanticAssetMetadata.builder().build();

@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchPage;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -26,7 +27,6 @@ import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -56,7 +56,7 @@ class SemanticAssetSearchServiceTest {
         SemanticAssetMetadata expectedData2 = SemanticAssetMetadata.builder().iri("2").build();
 
         Pageable pageable = Pageable.ofSize(10).withPage(0);
-        when(metadataRepository.search(any(), any(), any(), rightsHolder, any())).thenReturn(searchPageMock);
+        when(metadataRepository.search(any(), any(), any(), Collections.emptySet(), any())).thenReturn(searchPageMock);
         when(searchPageMock.getPageable()).thenReturn(PageRequest.of(1, 10));
         when(searchPageMock.getTotalElements()).thenReturn(11L);
         when(searchPageMock.getContent()).thenReturn(List.of(searchHitMock, searchHitMock));
@@ -64,7 +64,7 @@ class SemanticAssetSearchServiceTest {
 
         SearchResult result =
                 searchService.search("term", Set.of("ONTOLOGY", "SCHEMA"),
-                        Set.of("EDUC", "AGRI"), pageable);
+                        Set.of("EDUC", "AGRI"), Set.of(), pageable);
 
         assertThat(result.getTotalCount()).isEqualTo(11L);
         assertThat(result.getLimit()).isEqualTo(10);
@@ -73,7 +73,7 @@ class SemanticAssetSearchServiceTest {
         assertThat(result.getData().stream().filter(e -> e.getAssetIri().equals("1"))).isNotNull();
         assertThat(result.getData().stream().filter(e -> e.getAssetIri().equals("2"))).isNotNull();
         verify(metadataRepository).search("term", Set.of("ONTOLOGY", "SCHEMA"),
-                Set.of("EDUC", "AGRI"), rightsHolder, pageable);
+                Set.of("EDUC", "AGRI"), Collections.emptySet(), pageable);
     }
 
     @Test
@@ -110,7 +110,7 @@ class SemanticAssetSearchServiceTest {
                 .build();
 
         Pageable pageable = Pageable.ofSize(10).withPage(0);
-        when(metadataRepository.search(any(), any(), any(), rightsHolder, any())).thenReturn(searchPageMock);
+        when(metadataRepository.search(any(), any(), any(), Collections.emptySet(), any())).thenReturn(searchPageMock);
         when(searchPageMock.getPageable()).thenReturn(PageRequest.of(1, 10));
         when(searchPageMock.getTotalElements()).thenReturn(11L);
         when(searchPageMock.getContent()).thenReturn(List.of(searchHitMock, searchHitMock));
@@ -124,6 +124,6 @@ class SemanticAssetSearchServiceTest {
         assertThat(result.getData()).hasSize(2);
         assertThat(result.getData().stream().filter(e -> e.getTitle().equals("Some vocab"))).isNotNull();
         assertThat(result.getData().stream().filter(e -> e.getTitle().equals("Some other vocab"))).isNotNull();
-        verify(metadataRepository).search("", Set.of("CONTROLLED_VOCABULARY"), emptySet(), rightsHolder, pageable);
+        verify(metadataRepository).search("", Set.of("CONTROLLED_VOCABULARY"), emptySet(), Collections.emptySet(), pageable);
     }
 }

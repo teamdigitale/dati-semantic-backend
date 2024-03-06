@@ -6,6 +6,7 @@ import it.gov.innovazione.ndc.harvester.model.extractors.LiteralExtractor;
 import it.gov.innovazione.ndc.harvester.model.extractors.NodeExtractor;
 import it.gov.innovazione.ndc.harvester.model.index.Distribution;
 import it.gov.innovazione.ndc.harvester.model.index.NodeSummary;
+import it.gov.innovazione.ndc.harvester.model.index.RightsHolder;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.gov.innovazione.ndc.model.profiles.Admsapit;
 import lombok.Getter;
@@ -36,6 +37,7 @@ import static it.gov.innovazione.ndc.harvester.model.extractors.NodeExtractor.re
 import static it.gov.innovazione.ndc.harvester.model.extractors.NodeExtractor.requireNodes;
 import static it.gov.innovazione.ndc.harvester.model.extractors.NodeSummaryExtractor.extractRequiredNodeSummary;
 import static it.gov.innovazione.ndc.harvester.model.extractors.NodeSummaryExtractor.maybeNodeSummaries;
+import static it.gov.innovazione.ndc.harvester.model.extractors.RightsHolderExtractor.getAgencyId;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
@@ -200,6 +202,7 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
 
     public SemanticAssetMetadata extractMetadata() {
         Resource mainResource = getMainResource();
+        RightsHolder agencyId = getAgencyId(mainResource, validationContext);
         return SemanticAssetMetadata.builder()
                 .iri(mainResource.getURI())
                 .repoUrl(repoUrl)
@@ -221,6 +224,7 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
                 .conformsTo(maybeNodeSummaries(mainResource, conformsTo, FOAF.name))
                 .distributions(getDistributions())
                 .status(LiteralExtractor.extractAll(mainResource, Admsapit.status))
+                .agencyId(agencyId.getIdentifier())
                 .build();
     }
 
@@ -243,6 +247,7 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
                 .add(v -> extractOptional(getMainResource(), temporal, v.withWarningValidationType().withFieldName(SemanticAssetMetadata.Fields.temporal)))
                 .add(v -> maybeNodeSummaries(getMainResource(), conformsTo, FOAF.name, v.withWarningValidationType().withFieldName(SemanticAssetMetadata.Fields.conformsTo)))
                 .add(v -> getDistributions(v.withFieldName(SemanticAssetMetadata.Fields.distributions)))
+                .add(v -> getAgencyId(getMainResource(), v.withFieldName(SemanticAssetMetadata.Fields.agencyId)))
                 .build()
                 .stream()
                 .map(consumer -> returningValidationContext(this.validationContext, consumer))

@@ -1,6 +1,5 @@
 package it.gov.innovazione.ndc.harvester.pathprocessors;
 
-import it.gov.innovazione.ndc.repository.TripleStoreRepository;
 import it.gov.innovazione.ndc.harvester.csv.CsvParser;
 import it.gov.innovazione.ndc.harvester.csv.CsvParser.CsvData;
 import it.gov.innovazione.ndc.harvester.model.ControlledVocabularyModel;
@@ -8,6 +7,7 @@ import it.gov.innovazione.ndc.harvester.model.CvPath;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetModelFactory;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
+import it.gov.innovazione.ndc.repository.TripleStoreRepository;
 import it.gov.innovazione.ndc.service.VocabularyDataService;
 import it.gov.innovazione.ndc.service.VocabularyIdentifier;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +41,7 @@ public class ControlledVocabularyPathProcessor extends BaseSemanticAssetPathProc
 
         path.getCsvPath().ifPresent(p -> {
             String keyConcept = model.getKeyConcept();
-            String agencyId = model.getAgencyId();
+            String agencyId = model.getAgencyId().getIdentifier();
             VocabularyIdentifier vocabularyIdentifier = new VocabularyIdentifier(agencyId, keyConcept);
 
             parseAndIndexCsv(vocabularyIdentifier, p);

@@ -1,6 +1,8 @@
 package it.gov.innovazione.ndc.harvester.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.innovazione.ndc.controller.RepositoryController;
+import it.gov.innovazione.ndc.harvester.model.index.RightsHolder;
 import it.gov.innovazione.ndc.model.harvester.Repository;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -11,11 +13,16 @@ import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.mapping;
+import static java.util.stream.Collectors.toList;
 import static org.springframework.util.StringUtils.startsWithIgnoreCase;
 
 @Service
@@ -35,10 +42,12 @@ public class RepositoryService {
             + "CREATED_BY, "
             + "UPDATED, "
             + "UPDATED_BY, "
-            + "MAX_FILE_SIZE_BYTES "
+            + "MAX_FILE_SIZE_BYTES, "
+            + "RIGHTS_HOLDER "
             + "FROM REPOSITORY";
 
     private final JdbcTemplate jdbcTemplate;
+    private final ObjectMapper objectMapper;
 
     @Value("#{'${harvester.repositories}'}")
     private final String repositories;
@@ -59,13 +68,14 @@ public class RepositoryService {
                                 .updatedAt(rs.getTimestamp("UPDATED").toInstant())
                                 .updatedBy(rs.getString("UPDATED_BY"))
                                 .maxFileSizeBytes(rs.getLong("MAX_FILE_SIZE_BYTES"))
+                                .rightsHolders(readSafely(rs.getString("RIGHTS_HOLDER")))
                                 .build());
 
         if (!allRepos.isEmpty()) {
             allRepos.forEach(repo -> log.info("Repository: " + repo.toString()));
             return allRepos.stream()
                     .filter(Repository::getActive)
-                    .collect(Collectors.toList());
+                    .collect(toList());
         }
 
         log.warn("No repositories found in the database. Using the default repositories from configuration");
@@ -76,11 +86,20 @@ public class RepositoryService {
                 .orElse(emptyList())
                 .stream()
                 .map(RepositoryUtils::asRepo)
-                .collect(Collectors.toList());
+                .collect(toList());
 
         saveDefaultRepositories(defaultRepositories);
 
         return defaultRepositories;
+    }
+
+    private Map<String, Map<String, String>> readSafely(String rightsHolders) {
+        try {
+            return objectMapper.readValue(rightsHolders, Map.class);
+        } catch (Exception e) {
+            log.error("Error reading rights holders", e);
+            return null;
+        }
     }
 
     private void saveDefaultRepositories(List<Repository> defaultRepositories) {
@@ -193,5 +212,34 @@ public class RepositoryService {
                 java.sql.Timestamp.from(java.time.Instant.now()),
                 principal.getName(),
                 id);
+    }
+
+    @SneakyThrows
+    public void storeRightsHolders(Repository repository, Map<String, Map<String, String>> rightsHolders) {
+        log.info("Storing rights holders for repository {}", repository);
+        String query = "UPDATE REPOSITORY SET "
+                       + "RIGHTS_HOLDER = ? "
+                       + "WHERE ID = ?";
+        jdbcTemplate.update(query,
+                objectMapper.writeValueAsString(rightsHolders),
+                repository.getId());
+    }
+
+    public List<RightsHolder> getRightsHolders() {
+        return getAllRepos().stream()
+                .map(Repository::getRightsHolders)
+                .map(Map::entrySet)
+                .flatMap(Collection::stream)
+                .collect(groupingBy(
+                        Map.Entry::getKey,
+                        mapping(
+                                Map.Entry::getValue,
+                                toList())))
+                .entrySet().stream()
+                .map(entry -> RightsHolder.builder()
+                        .identifier(entry.getKey())
+                        .name(entry.getValue().get(0))
+                        .build())
+                .collect(Collectors.toList());
     }
 }

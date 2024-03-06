@@ -74,7 +74,7 @@ public class SemanticAssetMetadata {
     // Controlled Vocabulary Specific
     @Field(index = false, type = Keyword)
     private String keyConcept;
-    @Field(index = false, type = Keyword)
+    @Field(type = Keyword)
     private String agencyId;
     @Field(index = false, type = Keyword)
     private String endpointUrl;

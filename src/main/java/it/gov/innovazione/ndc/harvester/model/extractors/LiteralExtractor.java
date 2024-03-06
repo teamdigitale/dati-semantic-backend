@@ -4,11 +4,13 @@ import it.gov.innovazione.ndc.harvester.model.SemanticAssetModelValidationContex
 import it.gov.innovazione.ndc.harvester.model.exception.InvalidModelException;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -16,6 +18,7 @@ import static it.gov.innovazione.ndc.harvester.model.BaseSemanticAssetModel.mayb
 import static it.gov.innovazione.ndc.harvester.model.SemanticAssetModelValidationContext.NO_VALIDATION;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class LiteralExtractor {
@@ -52,6 +55,13 @@ public class LiteralExtractor {
         maybeThrowInvalidModelException(validationContext, () -> new InvalidModelException(
                 format("Cannot find property '%s' for resource '%s'", property, resource)), false);
         return null;
+    }
+
+    public static Map<String, String> extractAllLanguages(Resource resource, Property property) {
+        return resource.listProperties(property).toList().stream()
+                .filter(s -> s.getObject().isLiteral())
+                .map(s -> Pair.of(s.getLanguage(), s.getString()))
+                .collect(toMap(Pair::getLeft, Pair::getRight));
     }
 
     public static List<String> extractAll(Resource resource, Property property) {

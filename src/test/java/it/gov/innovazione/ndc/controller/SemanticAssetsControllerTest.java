@@ -30,7 +30,7 @@ public class SemanticAssetsControllerTest {
     void shouldFetchResultsFromRepositoryForGivenKeyword() {
         SemanticAssetsController controller = new SemanticAssetsController(service);
         SearchResult expectedResult = Builders.searchResult().build();
-        when(service.search(any(), any(), any(), any())).thenReturn(expectedResult);
+        when(service.search(any(), any(), any(), any(), any())).thenReturn(expectedResult);
 
         SearchResult actualResult =
             controller.search("searchTerm", 0, 10,
@@ -42,6 +42,7 @@ public class SemanticAssetsControllerTest {
         verify(service).search("searchTerm",
             Set.of("CONTROLLED_VOCABULARY"),
             Set.of("http://publications.europa.eu/resource/authority/data-theme/EDUC"),
+                Set.of(),
             OffsetBasedPageRequest.of(0, 10));
         assertThat(actualResult).isEqualTo(expectedResult);
     }

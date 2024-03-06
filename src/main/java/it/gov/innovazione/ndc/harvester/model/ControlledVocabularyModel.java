@@ -2,7 +2,9 @@ package it.gov.innovazione.ndc.harvester.model;
 
 import com.github.jsonldjava.shaded.com.google.common.collect.ImmutableList;
 import it.gov.innovazione.ndc.harvester.model.exception.InvalidModelException;
+import it.gov.innovazione.ndc.harvester.model.extractors.RightsHolderExtractor;
 import it.gov.innovazione.ndc.harvester.model.index.Distribution;
+import it.gov.innovazione.ndc.harvester.model.index.RightsHolder;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.gov.innovazione.ndc.model.profiles.NDC;
 import lombok.extern.slf4j.Slf4j;
@@ -10,7 +12,6 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
-import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 
 import java.util.List;
@@ -90,29 +91,8 @@ public class ControlledVocabularyModel extends BaseSemanticAssetModel {
         }
     }
 
-    public String getAgencyId() {
-        return getAgencyId(getMainResource(), NO_VALIDATION);
-    }
-
-    public static String getAgencyId(Resource mainResource, SemanticAssetModelValidationContext validationContext) {
-        Statement rightsHolder;
-        try {
-            rightsHolder = mainResource.getRequiredProperty(DCTerms.rightsHolder);
-        } catch (Exception e) {
-            InvalidModelException invalidModelException = new InvalidModelException(format("Cannot find required rightsHolder property (%s)", DCTerms.rightsHolder));
-            validationContext.addValidationException(invalidModelException);
-            throw invalidModelException;
-        }
-        Statement idProperty;
-        try {
-            idProperty = rightsHolder.getProperty(DCTerms.identifier);
-        } catch (Exception e) {
-            String rightsHolderIri = rightsHolder.getObject().toString();
-            InvalidModelException invalidModelException = new InvalidModelException(format("Cannot find required id (%s) for rightsHolder '%s'", DCTerms.identifier, rightsHolderIri));
-            validationContext.addValidationException(invalidModelException);
-            throw invalidModelException;
-        }
-        return idProperty.getString();
+    public RightsHolder getAgencyId() {
+        return RightsHolderExtractor.getAgencyId(getMainResource(), NO_VALIDATION);
     }
 
     public void addNdcDataServiceProperties(String baseUrl) {
@@ -125,7 +105,7 @@ public class ControlledVocabularyModel extends BaseSemanticAssetModel {
     }
 
     private String buildDataServiceIndividualUri() {
-        return format("https://w3id.org/italia/data/data-service/%s-%s", getAgencyId(), getKeyConcept());
+        return format("https://w3id.org/italia/data/data-service/%s-%s", getAgencyId().getIdentifier(), getKeyConcept());
     }
 
     public String getEndpointUrl() {
@@ -133,7 +113,7 @@ public class ControlledVocabularyModel extends BaseSemanticAssetModel {
     }
 
     private String buildEndpointUrl(String baseUrl) {
-        return format(NDC_ENDPOINT_URL_TEMPLATE, baseUrl, getAgencyId(), getKeyConcept());
+        return format(NDC_ENDPOINT_URL_TEMPLATE, baseUrl, getAgencyId().getIdentifier(), getKeyConcept());
     }
 
     @Override
@@ -147,7 +127,6 @@ public class ControlledVocabularyModel extends BaseSemanticAssetModel {
                 .type(CONTROLLED_VOCABULARY)
                 .distributions(getDistributions())
                 .keyConcept(getKeyConcept())
-                .agencyId(getAgencyId())
                 .endpointUrl(getEndpointUrl())
                 .build();
     }
@@ -159,7 +138,7 @@ public class ControlledVocabularyModel extends BaseSemanticAssetModel {
         SemanticAssetModelValidationContext context = new ImmutableList.Builder<Consumer<SemanticAssetModelValidationContext>>()
                 .add(v -> getDistributions(v.withFieldName(SemanticAssetMetadata.Fields.distributions)))
                 .add(v -> getKeyConcept(getMainResource(), v.withWarningValidationType().withFieldName(SemanticAssetMetadata.Fields.keyConcept)))
-                .add(v -> getAgencyId(getMainResource(), v.withWarningValidationType().withFieldName(SemanticAssetMetadata.Fields.agencyId)))
+                .add(v -> RightsHolderExtractor.getAgencyId(getMainResource(), v.withWarningValidationType().withFieldName(SemanticAssetMetadata.Fields.agencyId)))
                 .build()
                 .stream()
                 .map(consumer -> returningValidationContext(this.validationContext, consumer))
