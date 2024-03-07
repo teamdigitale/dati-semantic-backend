@@ -4,8 +4,10 @@ import com.github.jsonldjava.shaded.com.google.common.collect.ImmutableList;
 import it.gov.innovazione.ndc.harvester.model.extractors.LiteralExtractor;
 import it.gov.innovazione.ndc.harvester.model.extractors.NodeExtractor;
 import it.gov.innovazione.ndc.harvester.model.extractors.NodeSummaryExtractor;
+import it.gov.innovazione.ndc.harvester.model.extractors.RightsHolderExtractor;
 import it.gov.innovazione.ndc.harvester.model.index.Distribution;
 import it.gov.innovazione.ndc.harvester.model.index.NodeSummary;
+import it.gov.innovazione.ndc.harvester.model.index.RightsHolder;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.gov.innovazione.ndc.model.profiles.Admsapit;
 import org.apache.jena.rdf.model.Model;
@@ -57,6 +59,7 @@ public class SchemaModel extends BaseSemanticAssetModel {
     @Override
     public SemanticAssetMetadata extractMetadata() {
         Resource mainResource = getMainResource();
+        RightsHolder rightsHolderObj = RightsHolderExtractor.getAgencyId(mainResource, validationContext);
         return SemanticAssetMetadata.builder()
                 .iri(mainResource.getURI())
                 .repoUrl(repoUrl)
@@ -73,6 +76,7 @@ public class SchemaModel extends BaseSemanticAssetModel {
                 .conformsTo(NodeSummaryExtractor.maybeNodeSummaries(mainResource, conformsTo, FOAF.name, validationContext))
                 .keyClasses(getKeyClasses())
                 .status(LiteralExtractor.extractAll(mainResource, Admsapit.status))
+                .agencyId(rightsHolderObj.getIdentifier())
                 .build();
     }
 

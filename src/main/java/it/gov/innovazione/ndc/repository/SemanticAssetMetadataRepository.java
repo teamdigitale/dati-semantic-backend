@@ -1,18 +1,6 @@
 package it.gov.innovazione.ndc.repository;
 
-import static it.gov.innovazione.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
-import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
-import static org.elasticsearch.index.query.QueryBuilders.termQuery;
-import static org.springframework.data.elasticsearch.core.SearchHitSupport.searchPageFor;
-
-import it.gov.innovazione.ndc.harvester.SemanticAssetType;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.common.unit.Fuzziness;
@@ -20,7 +8,6 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MatchAllQueryBuilder;
 import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.TermsQueryBuilder;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
@@ -32,6 +19,17 @@ import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilde
 import org.springframework.stereotype.Repository;
 import org.springframework.util.ObjectUtils;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static it.gov.innovazione.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
+import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
+import static org.elasticsearch.index.query.QueryBuilders.termQuery;
+import static org.springframework.data.elasticsearch.core.SearchHitSupport.searchPageFor;
+
 @Repository
 @RequiredArgsConstructor
 @Slf4j
@@ -39,11 +37,12 @@ public class SemanticAssetMetadataRepository {
     private final ElasticsearchOperations esOps;
 
     public SearchPage<SemanticAssetMetadata> search(String queryPattern, Set<String> types,
-                                                    Set<String> themes, Pageable pageable) {
+                                                    Set<String> themes, Set<String> rightsHolder,
+                                                    Pageable pageable) {
         BoolQueryBuilder boolQuery =
                 new BoolQueryBuilder().must(matchQuery("searchableText", queryPattern));
 
-        addFilters(types, themes, boolQuery);
+        addFilters(types, themes, rightsHolder, boolQuery);
 
         NativeSearchQuery query = new NativeSearchQueryBuilder()
                 .withQuery(boolQuery)
@@ -65,12 +64,15 @@ public class SemanticAssetMetadataRepository {
         esOps.save(metadata);
     }
 
-    private void addFilters(Set<String> types, Set<String> themes, BoolQueryBuilder finalQuery) {
+    private void addFilters(Set<String> types, Set<String> themes, Set<String> rightsHolder, BoolQueryBuilder finalQuery) {
         if (!types.isEmpty()) {
             finalQuery.filter(new TermsQueryBuilder("type", types));
         }
         if (!themes.isEmpty()) {
             finalQuery.filter(new TermsQueryBuilder("themes", themes));
+        }
+        if (Objects.nonNull(rightsHolder) && !rightsHolder.isEmpty()) {
+            finalQuery.filter(new TermsQueryBuilder("agencyId", rightsHolder));
         }
     }
 

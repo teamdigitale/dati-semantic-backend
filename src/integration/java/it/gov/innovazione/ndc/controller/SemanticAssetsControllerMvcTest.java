@@ -1,11 +1,13 @@
 package it.gov.innovazione.ndc.controller;
 
 import it.gov.innovazione.ndc.controller.exception.SemanticAssetNotFoundException;
+import it.gov.innovazione.ndc.gen.dto.SearchResultItem;
 import it.gov.innovazione.ndc.gen.dto.SemanticAssetDetails;
+import it.gov.innovazione.ndc.harvester.service.RepositoryService;
 import it.gov.innovazione.ndc.model.Builders;
 import it.gov.innovazione.ndc.service.SemanticAssetSearchService;
-import it.gov.innovazione.ndc.gen.dto.SearchResultItem;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -33,6 +35,8 @@ public class SemanticAssetsControllerMvcTest {
     private MockMvc mockMvc;
     @MockBean
     private SemanticAssetSearchService searchService;
+    @MockBean
+    private RepositoryService repositoryService;
 
     @Test
     void shouldFindByIri() throws Exception {
@@ -72,7 +76,7 @@ public class SemanticAssetsControllerMvcTest {
         dto.setDescription("some-description");
         dto.setModifiedOn(LocalDate.parse("2020-01-01"));
 
-        when(searchService.search(any(), any(), any(), any())
+        when(searchService.search(any(), any(), any(), any(), any())
         ).thenReturn(Builders.searchResult()
                 .limit(10)
                 .offset(0)
@@ -103,13 +107,14 @@ public class SemanticAssetsControllerMvcTest {
         verify(searchService).search("searchText",
                 Set.of("CONTROLLED_VOCABULARY", "ONTOLOGY"),
                 Set.of("http://publications.europa.eu/resource/authority/data-theme/AGRI", "http://publications.europa.eu/resource/authority/data-theme/EDUC"),
+                null,
                 OffsetBasedPageRequest.of(0, 10));
     }
 
     @Test
     void shouldReturnMatchingAssetsUsingProvidedPageParams() throws Exception {
         SearchResultItem dto = new SearchResultItem();
-        when(searchService.search(any(), any(), any(), any())
+        when(searchService.search(any(), any(), any(), any(), any())
         ).thenReturn(Builders.searchResult()
                 .limit(20)
                 .offset(100)
@@ -123,7 +128,7 @@ public class SemanticAssetsControllerMvcTest {
                 .accept(MediaType.APPLICATION_JSON)
         );
 
-        verify(searchService).search("", Set.of(), Set.of(), OffsetBasedPageRequest.of(100, 20));
+        verify(searchService).search("", Set.of(), Set.of(), null, OffsetBasedPageRequest.of(100, 20));
 
         apiResult
                 .andDo(print())
@@ -140,7 +145,7 @@ public class SemanticAssetsControllerMvcTest {
                 .andDo(print())
                 .andExpect(status().isOk());
 
-        verify(searchService).search("", Set.of(), Set.of(), OffsetBasedPageRequest.of(0, 10));
+        verify(searchService).search("", Set.of(), Set.of(), null, OffsetBasedPageRequest.of(0, 10));
     }
 
     @Test

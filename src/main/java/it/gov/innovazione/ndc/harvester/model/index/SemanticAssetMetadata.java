@@ -18,7 +18,7 @@ import static org.springframework.data.elasticsearch.annotations.FieldType.Date;
 import static org.springframework.data.elasticsearch.annotations.FieldType.Keyword;
 import static org.springframework.data.elasticsearch.annotations.FieldType.Text;
 
-@Document(indexName = "semantic-asset-metadata")
+@Document(indexName = "semantic-asset-metadata-2")
 @Setting(settingPath = "elasticsearch-settings.json")
 @Data
 @Builder(toBuilder = true)
@@ -74,7 +74,7 @@ public class SemanticAssetMetadata {
     // Controlled Vocabulary Specific
     @Field(index = false, type = Keyword)
     private String keyConcept;
-    @Field(index = false, type = Keyword)
+    @Field(type = Keyword)
     private String agencyId;
     @Field(index = false, type = Keyword)
     private String endpointUrl;

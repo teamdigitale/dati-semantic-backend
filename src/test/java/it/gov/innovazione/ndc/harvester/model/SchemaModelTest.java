@@ -9,6 +9,7 @@ import it.gov.innovazione.ndc.model.profiles.EuropePublicationVocabulary;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.vocabulary.FOAF;
+import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.VCARD4;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,7 +57,8 @@ public class SchemaModelTest {
         jenaModel = createDefaultModel();
         Resource agid = jenaModel
             .createResource(RIGHTS_HOLDER_IRI)
-            .addProperty(FOAF.name, "agid");
+            .addProperty(FOAF.name, "agid")
+            .addProperty(DCTerms.identifier, "agid");
         Resource jsonDistribution = jenaModel.createResource(SCHEMA_IRI + "/dist/json")
                 .addProperty(format, EuropePublicationVocabulary.FILE_TYPE_JSON)
                 .addProperty(accessURL, jenaModel.createResource(SCHEMA_IRI + "/dist/json/index.html"))

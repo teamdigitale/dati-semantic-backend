@@ -1,14 +1,19 @@
 package it.gov.innovazione.ndc.harvester.pathprocessors;
 
+import it.gov.innovazione.ndc.config.HarvestExecutionContext;
+import it.gov.innovazione.ndc.config.HarvestExecutionContextUtils;
 import it.gov.innovazione.ndc.harvester.exception.SinglePathProcessingException;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetModel;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
+import it.gov.innovazione.ndc.harvester.model.extractors.RightsHolderExtractor;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
 import it.gov.innovazione.ndc.repository.TripleStoreRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.jena.rdf.model.Resource;
+
+import static it.gov.innovazione.ndc.harvester.model.SemanticAssetModelValidationContext.NO_VALIDATION;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -41,6 +46,16 @@ public abstract class BaseSemanticAssetPathProcessor<P extends SemanticAssetPath
         enrichModelBeforePersisting(model, path);
         indexMetadataForSearch(model);
         persistModelToTripleStore(repoUrl, path, model);
+        collectRightsHolderInContext(repoUrl, model);
+    }
+
+    private void collectRightsHolderInContext(String repoUrl, M model) {
+        try {
+            HarvestExecutionContext context = HarvestExecutionContextUtils.getContext();
+            context.addRightsHolder(RightsHolderExtractor.getAgencyId(model.getMainResource(), NO_VALIDATION));
+        } catch (Exception e) {
+            log.error("Error adding rights holder to repo " + repoUrl, e);
+        }
     }
 
     protected void enrichModelBeforePersisting(M model, P path) {

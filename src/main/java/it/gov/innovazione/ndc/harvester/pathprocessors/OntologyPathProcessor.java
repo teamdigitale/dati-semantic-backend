@@ -1,10 +1,10 @@
 package it.gov.innovazione.ndc.harvester.pathprocessors;
 
+import it.gov.innovazione.ndc.harvester.model.OntologyModel;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetModelFactory;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
-import it.gov.innovazione.ndc.repository.TripleStoreRepository;
-import it.gov.innovazione.ndc.harvester.model.OntologyModel;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
+import it.gov.innovazione.ndc.repository.TripleStoreRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 

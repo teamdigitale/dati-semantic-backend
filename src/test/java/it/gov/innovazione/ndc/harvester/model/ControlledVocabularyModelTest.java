@@ -12,7 +12,6 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -230,7 +229,7 @@ class ControlledVocabularyModelTest {
         ControlledVocabularyModel model = new ControlledVocabularyModel(jenaModel, TTL_FILE,
                 REPO_URL);
 
-        assertThat(model.getAgencyId()).isEqualTo("agid");
+        assertThat(model.getAgencyId().getIdentifier()).isEqualTo("agid");
     }
 
     @Test
