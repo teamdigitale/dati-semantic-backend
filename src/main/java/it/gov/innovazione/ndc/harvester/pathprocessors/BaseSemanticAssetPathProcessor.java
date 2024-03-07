@@ -12,8 +12,11 @@ import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
 import it.gov.innovazione.ndc.repository.TripleStoreRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.jena.rdf.model.Resource;
+
+import java.util.Collections;
+import java.util.Objects;
+import java.util.Optional;
 
 import static it.gov.innovazione.ndc.harvester.model.SemanticAssetModelValidationContext.NO_VALIDATION;
 import static java.util.stream.Collectors.toList;
@@ -75,10 +78,14 @@ public abstract class BaseSemanticAssetPathProcessor<P extends SemanticAssetPath
     }
 
     protected void postProcessMetadata(SemanticAssetMetadata metadata) {
-        metadata.setKeyClassesLabels(
-                CollectionUtils.emptyIfNull(metadata.getKeyClasses()).stream()
-                        .map(NodeSummary::getSummary)
-                        .collect(toList()));
+        if (Objects.nonNull(metadata)) {
+            metadata.setKeyClassesLabels(
+                    Optional.ofNullable(metadata)
+                            .map(SemanticAssetMetadata::getKeyClasses)
+                            .orElse(Collections.emptyList()).stream()
+                            .map(NodeSummary::getSummary)
+                            .collect(toList()));
+        }
     }
 
     private void persistModelToTripleStore(String repoUrl, P path, M model) {
