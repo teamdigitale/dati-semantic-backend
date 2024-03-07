@@ -18,7 +18,7 @@ import static org.springframework.data.elasticsearch.annotations.FieldType.Date;
 import static org.springframework.data.elasticsearch.annotations.FieldType.Keyword;
 import static org.springframework.data.elasticsearch.annotations.FieldType.Text;
 
-@Document(indexName = "semantic-asset-metadata")
+@Document(indexName = "semantic-asset-metadata-2")
 @Setting(settingPath = "elasticsearch-settings.json")
 @Data
 @Builder(toBuilder = true)
