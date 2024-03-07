@@ -286,7 +286,7 @@ components:
       type: string
       enum:
         - TITLE
-        - LAST_MODIFIED
+        - MODIFIED_ON
       default: "TITLE"
     Direction:
       type: string

@@ -15,6 +15,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.RDFS;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -77,6 +78,7 @@ public class SchemaModel extends BaseSemanticAssetModel {
                 .keyClasses(getKeyClasses())
                 .status(LiteralExtractor.extractAll(mainResource, Admsapit.status))
                 .agencyId(rightsHolderObj.getIdentifier())
+                .agencyLabel(new ArrayList<>(rightsHolderObj.getName().values()))
                 .build();
     }
 

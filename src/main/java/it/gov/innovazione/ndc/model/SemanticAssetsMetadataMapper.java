@@ -54,6 +54,7 @@ public interface SemanticAssetsMetadataMapper {
                 .totalCount((int) source.getTotalElements())
                 .limit(resultPage.getPageSize())
                 .offset((int) resultPage.getOffset())
+                .pageable(resultPage)
                 .data(source.getContent()
                         .stream()
                         .map(s -> resultItemToDto(s.getContent()))

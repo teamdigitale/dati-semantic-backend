@@ -1,14 +1,18 @@
 package it.gov.innovazione.ndc.model;
 
+import it.gov.innovazione.ndc.gen.dto.Direction;
 import it.gov.innovazione.ndc.gen.dto.Problem;
 import it.gov.innovazione.ndc.gen.dto.SearchResult;
 import it.gov.innovazione.ndc.gen.dto.SearchResultItem;
+import it.gov.innovazione.ndc.gen.dto.SortBy;
 import it.gov.innovazione.ndc.gen.dto.VocabulariesResult;
 import it.gov.innovazione.ndc.gen.dto.VocabularyData;
 import it.gov.innovazione.ndc.gen.dto.VocabularySummary;
 import it.gov.innovazione.ndc.gen.dto.VocabularySummaryLinks;
 import lombok.Builder;
 import lombok.SneakyThrows;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 
 import java.net.URI;
@@ -16,18 +20,35 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
+import static com.github.jsonldjava.shaded.com.google.common.base.CaseFormat.LOWER_CAMEL;
+import static com.github.jsonldjava.shaded.com.google.common.base.CaseFormat.UPPER_UNDERSCORE;
+
 public class Builders {
     private Builders() {
     }
 
     @Builder(builderMethodName = "searchResult")
-    public static SearchResult newSearchResult(Integer totalCount, Integer limit, Integer offset, List<SearchResultItem> data) {
+    public static SearchResult newSearchResult(Integer totalCount, Integer limit, Integer offset, Pageable pageable, List<SearchResultItem> data) {
         SearchResult result = new SearchResult();
+
+        SortBy sortBy = pageable.getSort().stream()
+                .map(Sort.Order::getProperty)
+                .findFirst()
+                .map(property -> LOWER_CAMEL.to(UPPER_UNDERSCORE, property))
+                .map(SortBy::valueOf)
+                .orElse(null);
+
+        Direction direction = pageable.getSort().stream()
+                                      .map(Sort.Order::getDirection)
+                                      .findFirst()
+                                      .orElse(null) == Sort.Direction.ASC ? Direction.ASC : Direction.DESC;
 
         result.setTotalCount(totalCount);
         result.setLimit(limit);
         result.setOffset(offset);
         result.setData(data);
+        result.setSortBy(sortBy);
+        result.setDirection(direction);
 
         return result;
     }

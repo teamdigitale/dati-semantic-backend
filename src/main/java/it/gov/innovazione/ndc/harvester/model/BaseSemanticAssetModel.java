@@ -23,6 +23,7 @@ import org.springframework.util.StringUtils;
 import javax.xml.bind.DatatypeConverter;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -225,6 +226,7 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
                 .distributions(getDistributions())
                 .status(LiteralExtractor.extractAll(mainResource, Admsapit.status))
                 .agencyId(agencyId.getIdentifier())
+                .agencyLabel(new ArrayList<>(agencyId.getName().values()))
                 .build();
     }
 
