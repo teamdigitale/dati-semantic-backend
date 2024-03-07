@@ -7,10 +7,11 @@ import it.gov.innovazione.ndc.harvester.service.RepositoryService;
 import it.gov.innovazione.ndc.model.Builders;
 import it.gov.innovazione.ndc.service.SemanticAssetSearchService;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -76,12 +77,15 @@ public class SemanticAssetsControllerMvcTest {
         dto.setDescription("some-description");
         dto.setModifiedOn(LocalDate.parse("2020-01-01"));
 
+        PageRequest pageable = OffsetBasedPageRequest.of(0, 10, Sort.by(Sort.Order.asc("title")));
+
         when(searchService.search(any(), any(), any(), any(), any())
         ).thenReturn(Builders.searchResult()
                 .limit(10)
                 .offset(0)
                 .totalCount(1)
                 .data(List.of(dto))
+                .pageable(pageable)
                 .build());
 
         ResultActions apiResult = mockMvc.perform(get("/semantic-assets")
@@ -90,6 +94,8 @@ public class SemanticAssetsControllerMvcTest {
                 .param("type", "ONTOLOGY")
                 .param("theme", "http://publications.europa.eu/resource/authority/data-theme/AGRI")
                 .param("theme", "http://publications.europa.eu/resource/authority/data-theme/EDUC")
+                .param("sortBy", "TITLE")
+                .param("direction", "ASC")
                 .accept(MediaType.APPLICATION_JSON)
         );
 
@@ -108,18 +114,20 @@ public class SemanticAssetsControllerMvcTest {
                 Set.of("CONTROLLED_VOCABULARY", "ONTOLOGY"),
                 Set.of("http://publications.europa.eu/resource/authority/data-theme/AGRI", "http://publications.europa.eu/resource/authority/data-theme/EDUC"),
                 null,
-                OffsetBasedPageRequest.of(0, 10));
+                pageable);
     }
 
     @Test
     void shouldReturnMatchingAssetsUsingProvidedPageParams() throws Exception {
         SearchResultItem dto = new SearchResultItem();
+        PageRequest pageable = OffsetBasedPageRequest.of(100, 20, Sort.by(Sort.Order.asc("title")));
         when(searchService.search(any(), any(), any(), any(), any())
         ).thenReturn(Builders.searchResult()
                 .limit(20)
                 .offset(100)
                 .totalCount(101)
                 .data(List.of(dto))
+                .pageable(pageable)
                 .build());
 
         ResultActions apiResult = mockMvc.perform(get("/semantic-assets")
@@ -128,7 +136,7 @@ public class SemanticAssetsControllerMvcTest {
                 .accept(MediaType.APPLICATION_JSON)
         );
 
-        verify(searchService).search("", Set.of(), Set.of(), null, OffsetBasedPageRequest.of(100, 20));
+        verify(searchService).search("", Set.of(), Set.of(), null, pageable);
 
         apiResult
                 .andDo(print())
@@ -145,7 +153,8 @@ public class SemanticAssetsControllerMvcTest {
                 .andDo(print())
                 .andExpect(status().isOk());
 
-        verify(searchService).search("", Set.of(), Set.of(), null, OffsetBasedPageRequest.of(0, 10));
+        verify(searchService).search("", Set.of(), Set.of(), null, OffsetBasedPageRequest.of(0, 10,
+                Sort.by(Sort.Order.asc("title"))));
     }
 
     @Test

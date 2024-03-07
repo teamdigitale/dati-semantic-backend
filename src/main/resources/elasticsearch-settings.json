@@ -54,6 +54,14 @@
           "italian_stemmer"
         ]
       }
+    },
+    "normalizer": {
+      "lowercase_normalizer": {
+        "type": "custom",
+        "filter": [
+          "lowercase"
+        ]
+      }
     }
   }
 }

@@ -6,6 +6,7 @@ import it.gov.innovazione.ndc.harvester.exception.SinglePathProcessingException;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetModel;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
 import it.gov.innovazione.ndc.harvester.model.extractors.RightsHolderExtractor;
+import it.gov.innovazione.ndc.harvester.model.index.NodeSummary;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
 import it.gov.innovazione.ndc.repository.TripleStoreRepository;
@@ -13,7 +14,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.jena.rdf.model.Resource;
 
+import java.util.Collections;
+import java.util.Objects;
+import java.util.Optional;
+
 import static it.gov.innovazione.ndc.harvester.model.SemanticAssetModelValidationContext.NO_VALIDATION;
+import static java.util.stream.Collectors.toList;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -67,7 +73,19 @@ public abstract class BaseSemanticAssetPathProcessor<P extends SemanticAssetPath
     private void indexMetadataForSearch(M model) {
         log.debug("Indexing {} for search", model.getMainResource());
         SemanticAssetMetadata metadata = model.extractMetadata();
+        postProcessMetadata(metadata);
         metadataRepository.save(metadata);
+    }
+
+    protected void postProcessMetadata(SemanticAssetMetadata metadata) {
+        if (Objects.nonNull(metadata)) {
+            metadata.setKeyClassesLabels(
+                    Optional.ofNullable(metadata)
+                            .map(SemanticAssetMetadata::getKeyClasses)
+                            .orElse(Collections.emptyList()).stream()
+                            .map(NodeSummary::getSummary)
+                            .collect(toList()));
+        }
     }
 
     private void persistModelToTripleStore(String repoUrl, P path, M model) {

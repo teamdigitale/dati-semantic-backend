@@ -32,8 +32,12 @@ public class SemanticAssetMetadata {
     @Field(type = Keyword)
     private String repoUrl;
 
-    @Field(type = Text, copyTo = "searchableText")
+
+    @Field(index = false, type = Keyword, normalizer = "lowercase_normalizer")
     private String title;
+    @Field(type = Text, copyTo = "searchableText")
+    private String rawTitle;
+
     @Field(type = Text, copyTo = "searchableText")
     private String description;
     @Field(type = Keyword, copyTo = "searchableText")
@@ -76,6 +80,11 @@ public class SemanticAssetMetadata {
     private String keyConcept;
     @Field(type = Keyword)
     private String agencyId;
+
+    @JsonIgnore
+    @Field(type = Text, copyTo = "searchableText")
+    private List<String> agencyLabel;
+
     @Field(index = false, type = Keyword)
     private String endpointUrl;
 
@@ -88,6 +97,9 @@ public class SemanticAssetMetadata {
     //Schema and Ontology specific
     @Field(index = false, type = FieldType.Object)
     private List<NodeSummary> keyClasses;
+
+    @Field(type = Text, copyTo = "searchableText")
+    private List<String> keyClassesLabels;
 
     //for the searchable content in multiple fields
     @JsonIgnore

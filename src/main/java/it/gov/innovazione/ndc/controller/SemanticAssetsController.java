@@ -1,5 +1,6 @@
 package it.gov.innovazione.ndc.controller;
 
+import com.github.jsonldjava.shaded.com.google.common.base.CaseFormat;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -15,6 +16,7 @@ import it.gov.innovazione.ndc.harvester.service.RepositoryService;
 import it.gov.innovazione.ndc.service.SemanticAssetSearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -26,6 +28,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static it.gov.innovazione.ndc.gen.dto.Direction.ASC;
 
 @RequiredArgsConstructor
 @RestController
@@ -63,7 +67,12 @@ public class SemanticAssetsController implements SemanticAssetsApi {
             Set<Theme> theme,
             Set<String> rightsHolder) {
 
-        Pageable pageable = OffsetBasedPageRequest.of(offset, limit);
+        String property = CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, sortBy.getValue());
+
+        Pageable pageable = OffsetBasedPageRequest.of(offset, limit,
+                Sort.by(direction == ASC
+                        ? Sort.Order.asc(property)
+                        : Sort.Order.desc(property)));
 
         return AppJsonResponse.ok(
                 searchService.search(q,
