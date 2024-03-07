@@ -1,7 +1,9 @@
 package it.gov.innovazione.ndc.controller;
 
+import it.gov.innovazione.ndc.gen.dto.Direction;
 import it.gov.innovazione.ndc.gen.dto.SearchResult;
 import it.gov.innovazione.ndc.gen.dto.SemanticAssetDetails;
+import it.gov.innovazione.ndc.gen.dto.SortBy;
 import it.gov.innovazione.ndc.gen.dto.Theme;
 import it.gov.innovazione.ndc.harvester.service.RepositoryService;
 import it.gov.innovazione.ndc.model.Builders;
@@ -10,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Sort;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -37,7 +40,7 @@ public class SemanticAssetsControllerTest {
 
         SearchResult actualResult =
             controller.search("searchTerm", 0, 10,
-                    null, null,
+                    SortBy.TITLE, Direction.ASC,
                 Set.of(CONTROLLED_VOCABULARY),
                     Set.of(Theme.EDUC),
                     Set.of()).getBody();
@@ -46,7 +49,7 @@ public class SemanticAssetsControllerTest {
             Set.of("CONTROLLED_VOCABULARY"),
             Set.of("http://publications.europa.eu/resource/authority/data-theme/EDUC"),
                 Set.of(),
-            OffsetBasedPageRequest.of(0, 10));
+                OffsetBasedPageRequest.of(0, 10, Sort.by("title").ascending()));
         assertThat(actualResult).isEqualTo(expectedResult);
     }
 

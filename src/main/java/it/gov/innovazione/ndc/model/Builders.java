@@ -19,6 +19,7 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.github.jsonldjava.shaded.com.google.common.base.CaseFormat.LOWER_CAMEL;
 import static com.github.jsonldjava.shaded.com.google.common.base.CaseFormat.UPPER_UNDERSCORE;
@@ -31,17 +32,24 @@ public class Builders {
     public static SearchResult newSearchResult(Integer totalCount, Integer limit, Integer offset, Pageable pageable, List<SearchResultItem> data) {
         SearchResult result = new SearchResult();
 
-        SortBy sortBy = pageable.getSort().stream()
-                .map(Sort.Order::getProperty)
-                .findFirst()
-                .map(property -> LOWER_CAMEL.to(UPPER_UNDERSCORE, property))
-                .map(SortBy::valueOf)
-                .orElse(null);
+        SortBy sortBy =
+                Optional.ofNullable(pageable)
+                        .map(Pageable::getSort)
+                        .flatMap(orders -> orders.stream()
+                                .findFirst()
+                                .map(Sort.Order::getProperty)
+                                .map(property -> LOWER_CAMEL.to(UPPER_UNDERSCORE, property))
+                                .map(SortBy::valueOf))
+                        .orElse(null);
 
-        Direction direction = pageable.getSort().stream()
-                                      .map(Sort.Order::getDirection)
-                                      .findFirst()
-                                      .orElse(null) == Sort.Direction.ASC ? Direction.ASC : Direction.DESC;
+        Direction direction =
+                Optional.ofNullable(pageable)
+                        .map(Pageable::getSort)
+                        .flatMap(orders -> orders.stream()
+                                .findFirst()
+                                .map(Sort.Order::getDirection)
+                                .map(dir -> dir == Sort.Direction.ASC ? Direction.ASC : Direction.DESC))
+                        .orElse(null);
 
         result.setTotalCount(totalCount);
         result.setLimit(limit);
