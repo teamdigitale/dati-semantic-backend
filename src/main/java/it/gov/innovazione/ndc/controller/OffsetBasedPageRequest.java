@@ -18,6 +18,10 @@ public class OffsetBasedPageRequest extends PageRequest {
         return new OffsetBasedPageRequest(offset, limit, Sort.unsorted());
     }
 
+    public static OffsetBasedPageRequest of(int offset, int limit, Sort sort) {
+        return new OffsetBasedPageRequest(offset, limit, sort);
+    }
+
     @Override
     public long getOffset() {
         return offset;
