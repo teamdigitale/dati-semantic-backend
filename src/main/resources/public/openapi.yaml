@@ -287,6 +287,7 @@ components:
       enum:
         - TITLE
         - MODIFIED_ON
+        - ISSUED_ON
       default: "TITLE"
     Direction:
       type: string
@@ -426,6 +427,11 @@ components:
         type:
           $ref: "#/components/schemas/AssetType"
         modifiedOn:
+          description: |-
+            TODO: identify the actual date format.
+          type: string
+          format: date
+        issuedOn:
           description: |-
             TODO: identify the actual date format.
           type: string
