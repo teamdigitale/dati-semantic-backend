@@ -35,7 +35,7 @@ public class RepositoryController {
 
     @GetMapping
     public List<Repository> getAllRepositories() {
-        return repositoryService.getAllRepos();
+        return repositoryService.getActiveRepos();
     }
 
     @PostMapping

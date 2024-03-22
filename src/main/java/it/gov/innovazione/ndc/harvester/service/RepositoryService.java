@@ -52,7 +52,13 @@ public class RepositoryService {
     @Value("#{'${harvester.repositories}'}")
     private final String repositories;
 
-    public List<Repository> getAllRepos() {
+    public List<Repository> getActiveRepos() {
+        return getAllRepos().stream()
+                .filter(Repository::getActive)
+                .collect(toList());
+    }
+
+    private List<Repository> getAllRepos() {
         List<Repository> allRepos = jdbcTemplate.query(
                 QUERY_GET_ALL,
                 (rs, rowNum) ->

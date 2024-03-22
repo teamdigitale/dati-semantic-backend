@@ -1,5 +1,6 @@
 package it.gov.innovazione.ndc.model.harvester;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -24,5 +25,6 @@ public class Repository {
     private Instant updatedAt;
     private String updatedBy;
     private Long maxFileSizeBytes;
+    @JsonIgnore
     private Map<String, Map<String, String>> rightsHolders;
 }
