@@ -44,16 +44,7 @@ public class RepositoryController {
     public void createRepository(
             @RequestBody CreateRepository repository,
             Principal principal) {
-        try {
-            new URL(repository.getUrl());
-        } catch (Exception e) {
-            log.error("Invalid URL", e);
-            throw new BadRequestException("Invalid URL", e);
-        }
-        if (StringUtils.isEmpty(repository.getName())) {
-            log.error("Name cannot be empty");
-            throw new BadRequestException("Name cannot be empty");
-        }
+        assertValidUrl(repository);
         repositoryService.createRepo(
                 repository.getUrl(),
                 repository.getName(),
@@ -62,12 +53,7 @@ public class RepositoryController {
                 principal);
     }
 
-    @PatchMapping("/{id}")
-    @SneakyThrows
-    public ResponseEntity<?> updateRepository(
-            @PathVariable String id,
-            @RequestBody CreateRepository repository,
-            Principal principal) {
+    private void assertValidUrl(@RequestBody CreateRepository repository) throws BadRequestException {
         try {
             new URL(repository.getUrl());
         } catch (Exception e) {
@@ -77,8 +63,16 @@ public class RepositoryController {
         if (StringUtils.isEmpty(repository.getName())) {
             log.error("Name cannot be empty");
             throw new BadRequestException("Name cannot be empty");
-
         }
+    }
+
+    @PatchMapping("/{id}")
+    @SneakyThrows
+    public ResponseEntity<Void> updateRepository(
+            @PathVariable String id,
+            @RequestBody CreateRepository repository,
+            Principal principal) {
+        assertValidUrl(repository);
         int updated = repositoryService.updateRepo(id, repository, principal);
 
         if (updated == 0) {
