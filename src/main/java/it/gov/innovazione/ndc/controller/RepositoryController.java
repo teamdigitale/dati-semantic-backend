@@ -1,5 +1,6 @@
 package it.gov.innovazione.ndc.controller;
 
+import it.gov.innovazione.ndc.harvester.HarvesterService;
 import it.gov.innovazione.ndc.harvester.service.RepositoryService;
 import it.gov.innovazione.ndc.model.harvester.Repository;
 import lombok.Data;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.net.URL;
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 
 import static org.springframework.http.HttpStatus.CREATED;
 
@@ -32,6 +34,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 public class RepositoryController {
 
     private final RepositoryService repositoryService;
+    private final HarvesterService harvesterService;
 
     @GetMapping
     public List<Repository> getAllRepositories() {
@@ -86,11 +89,27 @@ public class RepositoryController {
     public ResponseEntity<?> deleteRepository(
             @PathVariable String id,
             Principal principal) {
+        Optional<Repository> optionalRepository = repositoryService.getActiveRepos().stream()
+                .filter(repo -> repo.getId().equals(id))
+                .findFirst();
+
+        if (optionalRepository.isEmpty()) {
+            log.warn("Repository {} not found or not active", id);
+            return ResponseEntity.notFound().build();
+        }
+
+        Repository repository = optionalRepository.get();
+
+        harvesterService.clear(repository.getUrl());
+
         int deleted = repositoryService.delete(id, principal);
 
         if (deleted == 0) {
+            log.warn("Repository {} not found", id);
             return ResponseEntity.notFound().build();
         }
+
+        log.info("Repository {} deleted", repository);
         return ResponseEntity.noContent().build();
     }
 
