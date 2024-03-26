@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import lombok.With;
 
 import java.time.Instant;
@@ -12,6 +13,7 @@ import java.util.Map;
 @Data
 @Builder(toBuilder = true)
 @EqualsAndHashCode(exclude = {"id", "createdAt", "updatedAt"})
+@ToString(exclude = {"rightsHolders"})
 public class Repository {
     private String id;
     @With

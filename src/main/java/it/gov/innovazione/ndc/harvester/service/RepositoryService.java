@@ -149,6 +149,13 @@ public class RepositoryService {
 
     @SneakyThrows
     public void createRepo(String url, String name, String description, Long maxFileSizeBytes, Principal principal) {
+        if (repoAlreadyExists(url)) {
+            reactivate(url, name, description, maxFileSizeBytes, principal);
+            return;
+        }
+
+        // does not exist but repo to create is a substring of an existing repo,
+        // or existing repo is a substring of the repo to create
         boolean isDuplicate = getAllRepos().stream()
                 .anyMatch(repo ->
                         startsWithIgnoreCase(
@@ -189,6 +196,11 @@ public class RepositoryService {
                 maxFileSizeBytes);
     }
 
+    private boolean repoAlreadyExists(String url) {
+        return getAllRepos().stream()
+                .anyMatch(repo -> repo.getUrl().equals(url));
+    }
+
     public int updateRepo(String id, RepositoryController.CreateRepository loadedRepo, Principal principal) {
         String query = "UPDATE REPOSITORY SET "
                        + "URL = ?, "
@@ -219,6 +231,25 @@ public class RepositoryService {
                 java.sql.Timestamp.from(java.time.Instant.now()),
                 principal.getName(),
                 id);
+    }
+
+    public int reactivate(String url, String name, String description, Long maxFileSizeBytes, Principal principal) {
+        String query = "UPDATE REPOSITORY SET "
+                       + "ACTIVE = ?, "
+                       + "NAME = ?, "
+                       + "DESCRIPTION = ?, "
+                       + "MAX_FILE_SIZE_BYTES = ?, "
+                       + "UPDATED = ?, "
+                       + "UPDATED_BY = ? "
+                       + "WHERE URL = ?";
+        return jdbcTemplate.update(query,
+                true,
+                name,
+                description,
+                maxFileSizeBytes,
+                java.sql.Timestamp.from(java.time.Instant.now()),
+                principal.getName(),
+                url);
     }
 
     @SneakyThrows
