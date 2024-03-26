@@ -7,6 +7,7 @@ import it.gov.innovazione.ndc.model.harvester.Repository;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
@@ -274,10 +276,41 @@ public class RepositoryService {
                                 Map.Entry::getValue,
                                 toList())))
                 .entrySet().stream()
-                .map(entry -> RightsHolder.builder()
+                .map(entry -> withDefaultLangIfNecessary(RightsHolder.builder()
                         .identifier(entry.getKey())
                         .name(entry.getValue().get(0))
-                        .build())
+                        .build()))
                 .collect(Collectors.toList());
     }
+
+    private RightsHolder withDefaultLangIfNecessary(RightsHolder rightsHolder) {
+        if (containsSuitableLang(rightsHolder)) {
+            return rightsHolder;
+        }
+
+        Map<String, String> names = rightsHolder.getName();
+
+        String name = names
+                .entrySet()
+                .stream()
+                .findFirst()
+                .map(Map.Entry::getValue)
+                .filter(StringUtils::isNoneBlank)
+                .orElse(rightsHolder.getIdentifier());
+
+        return RightsHolder.builder()
+                .identifier(rightsHolder.getIdentifier())
+                .name(Collections.singletonMap("DEFAULT", name))
+                .build();
+    }
+
+    private boolean containsSuitableLang(RightsHolder rightsHolder) {
+        return Optional.ofNullable(rightsHolder.getName())
+                .map(Map::keySet)
+                .orElse(emptySet())
+                .stream()
+                .map(String::toLowerCase)
+                .anyMatch(lang -> lang.equals("en") || lang.equals("it"));
+    }
+
 }
