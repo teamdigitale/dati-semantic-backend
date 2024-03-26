@@ -4,7 +4,6 @@
 [![Get invited](https://slack.developers.italia.it/badge.svg)](https://slack.developers.italia.it/)
 [![18app on forum.italia.it](https://img.shields.io/badge/Forum-18app-blue.svg)](https://forum.italia.it/c/18app-carta-docente)
 
-
 # Backend for the National Data Catalog (NDC) for Semantic Interoperability
 
 This is the backend for the National Data Catalog (NDC) for Semantic Interoperability, a component of the PDND (Piattaforma Digitale Nazionale Dati) project.
