@@ -27,7 +27,7 @@ public class HarvesterJob {
     private final GitUtils gitUtils;
 
     public List<JobExecutionResponse> harvest(Boolean force) {
-        List<Repository> allRepos = repositoryService.getAllRepos();
+        List<Repository> allRepos = repositoryService.getActiveRepos();
         return harvest(allRepos, force);
     }
 

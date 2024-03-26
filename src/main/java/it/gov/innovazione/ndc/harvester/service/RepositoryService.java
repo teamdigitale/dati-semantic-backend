@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -52,7 +53,13 @@ public class RepositoryService {
     @Value("#{'${harvester.repositories}'}")
     private final String repositories;
 
-    public List<Repository> getAllRepos() {
+    public List<Repository> getActiveRepos() {
+        return getAllRepos().stream()
+                .filter(Repository::getActive)
+                .collect(toList());
+    }
+
+    private List<Repository> getAllRepos() {
         List<Repository> allRepos = jdbcTemplate.query(
                 QUERY_GET_ALL,
                 (rs, rowNum) ->
@@ -98,7 +105,7 @@ public class RepositoryService {
             return objectMapper.readValue(rightsHolders, Map.class);
         } catch (Exception e) {
             log.error("Error reading rights holders", e);
-            return null;
+            return Collections.emptyMap();
         }
     }
 
