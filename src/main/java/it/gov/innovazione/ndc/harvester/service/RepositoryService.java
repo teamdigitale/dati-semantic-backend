@@ -271,7 +271,7 @@ public class RepositoryService {
                 .map(Map::entrySet)
                 .flatMap(Collection::stream)
                 .collect(groupingBy(
-                        Map.Entry::getKey,
+                        entry -> entry.getKey().toLowerCase(),
                         mapping(
                                 Map.Entry::getValue,
                                 toList())))
