@@ -36,7 +36,7 @@ public class RightsHolderExtractor {
         Map<String, String> names = extractAllLanguages(rightsHolder.getResource(), FOAF.name);
 
         return RightsHolder.builder()
-                .identifier(idProperty.getString())
+                .identifier(idProperty.getString().toLowerCase())
                 .name(names)
                 .build();
     }
