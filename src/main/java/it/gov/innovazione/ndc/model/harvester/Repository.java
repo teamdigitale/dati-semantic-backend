@@ -29,4 +29,8 @@ public class Repository {
     private Long maxFileSizeBytes;
     @JsonIgnore
     private Map<String, Map<String, String>> rightsHolders;
+
+    public String forLogging() {
+        return String.format("[%s] %s (%s) %s", id, name, url, active ? "active" : "inactive");
+    }
 }

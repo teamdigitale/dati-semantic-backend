@@ -56,12 +56,12 @@ public class RepositoryService {
     private final String repositories;
 
     public List<Repository> getActiveRepos() {
-        return getAllRepos().stream()
+        return getAllReposIncludingInactive().stream()
                 .filter(Repository::getActive)
                 .collect(toList());
     }
 
-    private List<Repository> getAllRepos() {
+    private List<Repository> getAllReposIncludingInactive() {
         List<Repository> allRepos = jdbcTemplate.query(
                 QUERY_GET_ALL,
                 (rs, rowNum) ->
@@ -81,10 +81,10 @@ public class RepositoryService {
                                 .build());
 
         if (!allRepos.isEmpty()) {
-            allRepos.forEach(repo -> log.info("Repository: " + repo.toString()));
-            return allRepos.stream()
-                    .filter(Repository::getActive)
-                    .collect(toList());
+            log.info("Found {} repositories in the database", allRepos.size());
+            log.debug("Repositories: "
+                      + allRepos.stream().map(Repository::forLogging).collect(Collectors.joining(", ")));
+            return allRepos;
         }
 
         log.warn("No repositories found in the database. Using the default repositories from configuration");
@@ -116,6 +116,7 @@ public class RepositoryService {
     }
 
     private void save(Repository repo) {
+        log.info("Saving repository {}", repo);
         String query = "INSERT INTO REPOSITORY ("
                        + "ID, "
                        + "URL, "
@@ -142,23 +143,23 @@ public class RepositoryService {
                 repo.getMaxFileSizeBytes());
     }
 
-    public Optional<Repository> findRepoById(String id) {
-        return getAllRepos().stream()
+    public Optional<Repository> findActiveRepoById(String id) {
+        return getActiveRepos().stream()
                 .filter(repo -> repo.getId().equals(id))
-                .filter(Repository::getActive)
                 .findFirst();
     }
 
     @SneakyThrows
     public void createRepo(String url, String name, String description, Long maxFileSizeBytes, Principal principal) {
         if (repoAlreadyExists(url)) {
+            log.info("Repository {} already exists, reactivating", url);
             reactivate(url, name, description, maxFileSizeBytes, principal);
             return;
         }
 
         // does not exist but repo to create is a substring of an existing repo,
         // or existing repo is a substring of the repo to create
-        boolean isDuplicate = getAllRepos().stream()
+        boolean isDuplicate = getAllReposIncludingInactive().stream()
                 .anyMatch(repo ->
                         startsWithIgnoreCase(
                                 repo.getUrl(),
@@ -170,6 +171,8 @@ public class RepositoryService {
         if (isDuplicate) {
             throw new IllegalArgumentException("Duplicate repository " + url);
         }
+
+        log.info("Creating repository {}", url);
 
         String query = "INSERT INTO REPOSITORY ("
                        + "ID, "
@@ -199,13 +202,14 @@ public class RepositoryService {
     }
 
     private boolean repoAlreadyExists(String url) {
-        return getAllRepos().stream()
+        return getAllReposIncludingInactive().stream()
                 .anyMatch(repo -> repo.getUrl().equals(url));
     }
 
     public int updateRepo(String id, RepositoryController.CreateRepository loadedRepo, Principal principal) {
+        log.info("Updating repository {} using name={}, description={}, maxFileSizeBytes={}",
+                id, loadedRepo.getName(), loadedRepo.getDescription(), loadedRepo.getMaxFileSizeBytes());
         String query = "UPDATE REPOSITORY SET "
-                       + "URL = ?, "
                        + "NAME = ?, "
                        + "DESCRIPTION = ?, "
                        + "UPDATED = ?, "
@@ -213,7 +217,6 @@ public class RepositoryService {
                        + "MAX_FILE_SIZE_BYTES = ? "
                        + "WHERE ID = ?";
         return jdbcTemplate.update(query,
-                loadedRepo.getUrl(),
                 loadedRepo.getName(),
                 loadedRepo.getDescription(),
                 java.sql.Timestamp.from(java.time.Instant.now()),
@@ -223,6 +226,7 @@ public class RepositoryService {
     }
 
     public int delete(String id, Principal principal) {
+        log.info("Deleting repository {}", id);
         String query = "UPDATE REPOSITORY SET "
                        + "ACTIVE = ?, "
                        + "UPDATED = ?, "
@@ -236,6 +240,7 @@ public class RepositoryService {
     }
 
     public int reactivate(String url, String name, String description, Long maxFileSizeBytes, Principal principal) {
+        log.info("Reactivating repository {}", url);
         String query = "UPDATE REPOSITORY SET "
                        + "ACTIVE = ?, "
                        + "NAME = ?, "
@@ -256,7 +261,7 @@ public class RepositoryService {
 
     @SneakyThrows
     public void storeRightsHolders(Repository repository, Map<String, Map<String, String>> rightsHolders) {
-        log.info("Storing rights holders for repository {}", repository);
+        log.info("Storing {} rights holders for repository {}", rightsHolders.keySet().size(), repository);
         String query = "UPDATE REPOSITORY SET "
                        + "RIGHTS_HOLDER = ? "
                        + "WHERE ID = ?";
@@ -266,7 +271,7 @@ public class RepositoryService {
     }
 
     public List<RightsHolder> getRightsHolders() {
-        return getAllRepos().stream()
+        return getActiveRepos().stream()
                 .map(Repository::getRightsHolders)
                 .map(Map::entrySet)
                 .flatMap(Collection::stream)

@@ -53,7 +53,7 @@ public class HarvesterJob {
     }
 
     public JobExecutionResponse harvest(String repositoryId, String revision, Boolean force) {
-        Repository repository = repositoryService.findRepoById(repositoryId)
+        Repository repository = repositoryService.findActiveRepoById(repositoryId)
                 .orElseThrow(() -> new HarvestJobException(String.format("Repository %s not found", repositoryId)));
         String correlationId = UUID.randomUUID().toString();
         return harvest(repository, correlationId, revision, force);
