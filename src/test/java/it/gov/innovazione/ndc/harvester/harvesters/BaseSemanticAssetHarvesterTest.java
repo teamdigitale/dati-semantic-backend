@@ -87,9 +87,6 @@ class BaseSemanticAssetHarvesterTest {
                                     .rootPath("someRootPath")
                                     .build());
 
-            when(configService.getParsedOrGetDefault(any(), any()))
-                    .thenReturn(1L);
-
             TestHarvester harvester = new TestHarvester(List.of(path));
 
             harvester.harvest(repository, basePath);
