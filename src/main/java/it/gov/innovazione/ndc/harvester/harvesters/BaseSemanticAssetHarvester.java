@@ -105,7 +105,7 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
                                         path.getAllFiles(),
                                         maxFileSizeBytes))
                         .build());
-        log.warn("File {} is bigger than maxFileSizeBytes", path.getTtlPath());
+        log.warn("File {} is bigger than maxFileSizeBytes={}", path.getTtlPath(), maxFileSizeBytes);
     }
 
     private String relativize(String ttlFile, HarvestExecutionContext context) {
