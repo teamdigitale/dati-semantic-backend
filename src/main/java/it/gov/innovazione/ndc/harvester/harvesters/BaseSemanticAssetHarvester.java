@@ -42,14 +42,20 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
 
         Long maxFileSizeBytes;
 
-        Optional<Long> maxFileSizeBytesOpt = Optional.ofNullable(HarvestExecutionContextUtils.getContext()).map(HarvestExecutionContext::getRepository).map(Repository::getMaxFileSizeBytes);
+        Optional<Long> maxSizeFromRepo = Optional.ofNullable(HarvestExecutionContextUtils.getContext()).map(HarvestExecutionContext::getRepository).map(Repository::getMaxFileSizeBytes);
 
-        if (maxFileSizeBytesOpt.isPresent()) {
-            maxFileSizeBytes = maxFileSizeBytesOpt.get();
+        if (maxSizeFromRepo.isPresent()) {
+            maxFileSizeBytes = maxSizeFromRepo.get();
             log.info("[FILE-SCANNER] -- using maxFileSizeBytes={} from repository configuration", maxFileSizeBytes);
         } else {
-            maxFileSizeBytes = configService.getParsedOrGetDefault(MAX_FILE_SIZE_BYTES, () -> 0L);
-            log.info("[FILE-SCANNER] -- using maxFileSizeBytes={} from global configuration", maxFileSizeBytes);
+            Optional<Long> maxSizeFromConf = configService.findParsedOrGetDefault(MAX_FILE_SIZE_BYTES);
+            if (maxSizeFromConf.isPresent()) {
+                maxFileSizeBytes = maxSizeFromConf.get();
+                log.info("[FILE-SCANNER] -- using maxFileSizeBytes={} from global configuration", maxFileSizeBytes);
+            } else {
+                maxFileSizeBytes = 0L;
+                log.info("[FILE-SCANNER] -- no maxFileSizeBytes found in configuration");
+            }
         }
 
         log.debug("Found {} {} path(s) for processing", paths.size(), type);
@@ -72,7 +78,7 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
         if (Objects.nonNull(context) && Objects.nonNull(path)) {
             List<File> files = path.getAllFiles();
 
-            if (Objects.nonNull(maxFileSizeBytes) && maxFileSizeBytes > 0 && (isBiggerThan(maxFileSizeBytes, files))) {
+            if (Objects.nonNull(maxFileSizeBytes) && maxFileSizeBytes > 0 && isAnyBiggerThan(maxFileSizeBytes, files)) {
                 files.stream()
                         .filter(file -> file.length() > maxFileSizeBytes)
                         .forEach(file -> log.info("[FILE-SCANNER] -- File(s) {} is bigger than {} ", file.getName(), maxFileSizeBytes));
@@ -111,7 +117,7 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
         return new File(ttlFile).getParent();
     }
 
-    private boolean isBiggerThan(Long maxFileSizeBytes, List<File> files) {
+    private boolean isAnyBiggerThan(Long maxFileSizeBytes, List<File> files) {
         return maxFileSizeBytes != null
                && maxFileSizeBytes > 0
                && files.stream().anyMatch(file -> file.length() > maxFileSizeBytes);
