@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
-public class ActualConfigService implements ConfigService {
+public class ActualConfigService extends ConfigService {
 
     private static final String CONFIG_ID = "ndc";
     private static final TypeReference<Map<ConfigKey, ConfigEntry>> TYPE_REF = new TypeReference<>() {

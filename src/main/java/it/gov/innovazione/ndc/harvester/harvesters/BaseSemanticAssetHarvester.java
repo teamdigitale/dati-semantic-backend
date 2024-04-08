@@ -17,6 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 import static it.gov.innovazione.ndc.harvester.service.ActualConfigService.ConfigKey.MAX_FILE_SIZE_BYTES;
 
@@ -57,10 +59,17 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
         HarvestExecutionContext context = HarvestExecutionContextUtils.getContext();
         if (context != null) {
             List<File> files = path.getAllFiles();
-            Long maxFileSizeBytes = configService.getParsedOrGetDefault(
-                    MAX_FILE_SIZE_BYTES,
-                    () -> context.getRepository().getMaxFileSizeBytes());
-            if (isBiggerThan(maxFileSizeBytes, files)) {
+
+            Long maxFileSizeBytes =
+                    Optional.of(context)
+                            .map(HarvestExecutionContext::getRepository)
+                            .map(Repository::getMaxFileSizeBytes)
+                            .filter((size) -> size > 0)
+                            .orElse(configService.getParsedOrGetDefault(
+                                    MAX_FILE_SIZE_BYTES,
+                                    () -> 0L));
+
+            if (Objects.nonNull(maxFileSizeBytes) && maxFileSizeBytes > 0 && (isBiggerThan(maxFileSizeBytes, files))) {
                 notify(context, path);
             }
         }

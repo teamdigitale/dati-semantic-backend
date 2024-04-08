@@ -1,6 +1,7 @@
 package it.gov.innovazione.ndc.controller;
 
 import it.gov.innovazione.ndc.harvester.service.ActualConfigService;
+import it.gov.innovazione.ndc.harvester.service.ConfigService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,7 +30,7 @@ public class ConfigurationController {
     private final ActualConfigService configService;
 
     @GetMapping
-    public Map<ActualConfigService.ConfigKey, ActualConfigService.ConfigEntry> getConfig() {
+    public Map<ActualConfigService.ConfigKey, ConfigService.ConfigEntry> getConfig() {
         return configService.getNdcConfiguration().getValue();
     }
 
