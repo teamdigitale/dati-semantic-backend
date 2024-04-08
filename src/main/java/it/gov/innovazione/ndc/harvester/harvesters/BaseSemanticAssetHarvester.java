@@ -67,7 +67,7 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
                             .filter((size) -> size > 0)
                             .orElse(configService.getParsedOrGetDefault(
                                     MAX_FILE_SIZE_BYTES,
-                                    () -> context.getRepository().getMaxFileSizeBytes()));
+                                    () -> 0L));
 
             if (Objects.nonNull(maxFileSizeBytes) && maxFileSizeBytes > 0 && (isBiggerThan(maxFileSizeBytes, files))) {
                 notify(context, path);
