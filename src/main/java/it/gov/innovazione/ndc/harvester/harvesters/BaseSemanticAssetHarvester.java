@@ -44,12 +44,12 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
 
         Optional<Long> maxSizeFromRepo = Optional.ofNullable(HarvestExecutionContextUtils.getContext()).map(HarvestExecutionContext::getRepository).map(Repository::getMaxFileSizeBytes);
 
-        if (maxSizeFromRepo.isPresent()) {
+        if (maxSizeFromRepo.isPresent() && maxSizeFromRepo.get() > 0) {
             maxFileSizeBytes = maxSizeFromRepo.get();
             log.info("[FILE-SCANNER] -- using maxFileSizeBytes={} from repository configuration", maxFileSizeBytes);
         } else {
             Optional<Long> maxSizeFromConf = configService.findParsedOrGetDefault(MAX_FILE_SIZE_BYTES);
-            if (maxSizeFromConf.isPresent()) {
+            if (maxSizeFromConf.isPresent() && maxSizeFromConf.get() > 0) {
                 maxFileSizeBytes = maxSizeFromConf.get();
                 log.info("[FILE-SCANNER] -- using maxFileSizeBytes={} from global configuration", maxFileSizeBytes);
             } else {
