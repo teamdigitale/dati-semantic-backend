@@ -23,14 +23,16 @@ public class HarvestedFileTooBigEvent {
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     public static class ViolatingSemanticAsset {
         private final String pathInRepo;
+        private final Long maxFileSizeBytes;
         private final List<FileDetail> fileDetails;
 
         public static ViolatingSemanticAsset fromPath(
                 String pathInRepo,
                 List<File> files,
-                long maxFileSizeBytes) {
+                Long maxFileSizeBytes) {
             return new ViolatingSemanticAsset(
                     pathInRepo,
+                    maxFileSizeBytes,
                     files.stream()
                             .map(file -> new FileDetail(
                                     file.getPath(),

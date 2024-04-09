@@ -40,9 +40,27 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
 
         List<P> paths = scanForPaths(rootPath);
 
-        paths.forEach(this::notifyIfSizeExceed);
+        Long maxFileSizeBytes;
+
+        Optional<Long> maxSizeFromRepo = Optional.ofNullable(HarvestExecutionContextUtils.getContext()).map(HarvestExecutionContext::getRepository).map(Repository::getMaxFileSizeBytes);
+
+        if (maxSizeFromRepo.isPresent() && maxSizeFromRepo.get() > 0) {
+            maxFileSizeBytes = maxSizeFromRepo.get();
+            log.info("[FILE-SCANNER] -- using maxFileSizeBytes={} from repository configuration", maxFileSizeBytes);
+        } else {
+            Optional<Long> maxSizeFromConf = configService.findParsedOrGetDefault(MAX_FILE_SIZE_BYTES);
+            if (maxSizeFromConf.isPresent() && maxSizeFromConf.get() > 0) {
+                maxFileSizeBytes = maxSizeFromConf.get();
+                log.info("[FILE-SCANNER] -- using maxFileSizeBytes={} from global configuration", maxFileSizeBytes);
+            } else {
+                maxFileSizeBytes = 0L;
+                log.info("[FILE-SCANNER] -- no maxFileSizeBytes found in configuration");
+            }
+        }
 
         log.debug("Found {} {} path(s) for processing", paths.size(), type);
+
+        paths.forEach(p -> notifyIfSizeExceed(p, maxFileSizeBytes));
 
         for (P path : paths) {
             try {
@@ -55,27 +73,21 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
         }
     }
 
-    private void notifyIfSizeExceed(P path) {
+    private void notifyIfSizeExceed(P path, Long maxFileSizeBytes) {
         HarvestExecutionContext context = HarvestExecutionContextUtils.getContext();
-        if (context != null) {
+        if (Objects.nonNull(context) && Objects.nonNull(path)) {
             List<File> files = path.getAllFiles();
 
-            Long maxFileSizeBytes =
-                    Optional.of(context)
-                            .map(HarvestExecutionContext::getRepository)
-                            .map(Repository::getMaxFileSizeBytes)
-                            .filter((size) -> size > 0)
-                            .orElse(configService.getParsedOrGetDefault(
-                                    MAX_FILE_SIZE_BYTES,
-                                    () -> 0L));
-
-            if (Objects.nonNull(maxFileSizeBytes) && maxFileSizeBytes > 0 && (isBiggerThan(maxFileSizeBytes, files))) {
-                notify(context, path);
+            if (Objects.nonNull(maxFileSizeBytes) && maxFileSizeBytes > 0 && isAnyBiggerThan(maxFileSizeBytes, files)) {
+                files.stream()
+                        .filter(file -> file.length() > maxFileSizeBytes)
+                        .forEach(file -> log.info("[FILE-SCANNER] -- File(s) {} is bigger than {} ", file.getName(), maxFileSizeBytes));
+                notify(context, path, maxFileSizeBytes);
             }
         }
     }
 
-    private void notify(HarvestExecutionContext context, P path) {
+    private void notify(HarvestExecutionContext context, P path, Long maxFileSizeBytes) {
         eventPublisher.publishEvent(
                 "harvester",
                 "harvester.max-file-size-exceeded",
@@ -91,9 +103,9 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
                                                 path.getTtlPath(),
                                                 context),
                                         path.getAllFiles(),
-                                        context.getRepository().getMaxFileSizeBytes()))
+                                        maxFileSizeBytes))
                         .build());
-        log.warn("File {} is bigger than maxFileSizeBytes", path.getTtlPath());
+        log.warn("File {} is bigger than maxFileSizeBytes={}", path.getTtlPath(), maxFileSizeBytes);
     }
 
     private String relativize(String ttlFile, HarvestExecutionContext context) {
@@ -105,7 +117,7 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
         return new File(ttlFile).getParent();
     }
 
-    private boolean isBiggerThan(Long maxFileSizeBytes, List<File> files) {
+    private boolean isAnyBiggerThan(Long maxFileSizeBytes, List<File> files) {
         return maxFileSizeBytes != null
                && maxFileSizeBytes > 0
                && files.stream().anyMatch(file -> file.length() > maxFileSizeBytes);

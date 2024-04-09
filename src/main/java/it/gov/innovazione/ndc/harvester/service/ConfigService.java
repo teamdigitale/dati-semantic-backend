@@ -14,14 +14,18 @@ import java.util.function.Supplier;
 @Slf4j
 public abstract class ConfigService {
 
-    public <T> T getParsedOrGetDefault(ActualConfigService.ConfigKey key, Supplier<T> defaultValue) {
+    public <T> Optional<T> findParsedOrGetDefault(ActualConfigService.ConfigKey key) {
         Class<T> type = null;
         return Optional.ofNullable(getNdcConfiguration())
                 .map(NdcConfiguration::getValue)
                 .map(value -> value.get(key))
                 .map(ConfigEntry::getValue)
-                .map(value -> safelyParse(value, key, type))
-                .orElseGet(defaultValue);
+                .map(value -> safelyParse(value, key, type));
+    }
+
+
+    public <T> T getParsedOrGetDefault(ActualConfigService.ConfigKey key, Supplier<T> defaultValue) {
+        return (T) findParsedOrGetDefault(key).orElseGet(defaultValue);
     }
 
     @SuppressWarnings("unchecked")

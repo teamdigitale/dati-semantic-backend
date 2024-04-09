@@ -3,6 +3,7 @@ package it.gov.innovazione.ndc.harvester.harvesters;
 import it.gov.innovazione.ndc.harvester.AgencyRepositoryService;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
 import it.gov.innovazione.ndc.harvester.pathprocessors.OntologyPathProcessor;
+import it.gov.innovazione.ndc.harvester.service.ConfigService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -11,8 +12,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 
 import static it.gov.innovazione.ndc.harvester.service.RepositoryUtils.asRepo;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -22,6 +25,8 @@ class OntologyHarvesterTest {
     AgencyRepositoryService agencyRepositoryService;
     @Mock
     OntologyPathProcessor pathProcessor;
+    @Mock
+    ConfigService configService;
     @InjectMocks
     OntologyHarvester harvester;
 
@@ -31,6 +36,7 @@ class OntologyHarvesterTest {
         final String repoUrl = "my-repo.git";
         final SemanticAssetPath path1 = SemanticAssetPath.of("onto1.ttl");
         final SemanticAssetPath path2 = SemanticAssetPath.of("onto2.ttl");
+        when(configService.findParsedOrGetDefault(any())).thenReturn(Optional.empty());
         when(agencyRepositoryService.getOntologyPaths(ontologyBasePath)).thenReturn(List.of(path1, path2));
 
         harvester.harvest(asRepo(repoUrl), ontologyBasePath);

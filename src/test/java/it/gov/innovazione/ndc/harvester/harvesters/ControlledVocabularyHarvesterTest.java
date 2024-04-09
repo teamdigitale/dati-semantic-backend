@@ -3,6 +3,7 @@ package it.gov.innovazione.ndc.harvester.harvesters;
 import it.gov.innovazione.ndc.harvester.AgencyRepositoryService;
 import it.gov.innovazione.ndc.harvester.model.CvPath;
 import it.gov.innovazione.ndc.harvester.pathprocessors.ControlledVocabularyPathProcessor;
+import it.gov.innovazione.ndc.harvester.service.ConfigService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -12,9 +13,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 
 import static it.gov.innovazione.ndc.harvester.service.RepositoryUtils.asRepo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -24,6 +27,8 @@ class ControlledVocabularyHarvesterTest {
     AgencyRepositoryService agencyRepositoryService;
     @Mock
     ControlledVocabularyPathProcessor pathProcessor;
+    @Mock
+    ConfigService configService;
     @InjectMocks
     ControlledVocabularyHarvester harvester;
 
@@ -33,6 +38,7 @@ class ControlledVocabularyHarvesterTest {
         final String repoUrl = "my-repo.git";
         final CvPath path1 = CvPath.of("onto1.ttl", "onto1.csv");
         final CvPath path2 = CvPath.of("onto2.ttl", "onto2.csv");
+        when(configService.findParsedOrGetDefault(any())).thenReturn(Optional.empty());
         when(agencyRepositoryService.getControlledVocabularyPaths(cvBasePath)).thenReturn(List.of(path1, path2));
 
         harvester.harvest(asRepo(repoUrl), cvBasePath);
