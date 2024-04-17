@@ -9,12 +9,11 @@ import lombok.extern.slf4j.Slf4j;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 @Slf4j
 public abstract class ConfigService {
 
-    public <T> Optional<T> findParsedOrGetDefault(ActualConfigService.ConfigKey key) {
+    private <T> Optional<T> fromGlobal(ActualConfigService.ConfigKey key) {
         Class<T> type = null;
         return Optional.ofNullable(getNdcConfiguration())
                 .map(NdcConfiguration::getValue)
@@ -23,9 +22,32 @@ public abstract class ConfigService {
                 .map(value -> safelyParse(value, key, type));
     }
 
+    private <T> Optional<T> fromRepo(ActualConfigService.ConfigKey key, String repoId) {
+        Class<T> type = null;
+        return Optional.ofNullable(getRepoConfiguration(repoId))
+                .map(NdcConfiguration::getValue)
+                .map(value -> value.get(key))
+                .map(ConfigEntry::getValue)
+                .map(value -> safelyParse(value, key, type));
+    }
 
-    public <T> T getParsedOrGetDefault(ActualConfigService.ConfigKey key, Supplier<T> defaultValue) {
-        return (T) findParsedOrGetDefault(key).orElseGet(defaultValue);
+    public <T> T getFromRepoOrGlobalOrDefault(
+            ActualConfigService.ConfigKey key,
+            String repoId,
+            T defaultValue) {
+        Optional<T> repoValue = fromRepo(key, repoId);
+        if (repoValue.isPresent()) {
+            log.info("using {}={} from repository [{}] configuration", key, repoValue.get(), repoId);
+            return repoValue.get();
+        }
+        Optional<T> configValue = fromGlobal(key);
+        if (configValue.isPresent()) {
+            log.info("using {}={} from global configuration", key, configValue.get());
+            return configValue.get();
+        }
+        log.info("no {} found in repo configuration nor in global configuration, using defaultValue {}", key, defaultValue);
+
+        return defaultValue;
     }
 
     @SuppressWarnings("unchecked")
@@ -38,13 +60,21 @@ public abstract class ConfigService {
         }
     }
 
-    abstract ConfigService.NdcConfiguration getNdcConfiguration();
+    public abstract ConfigService.NdcConfiguration getNdcConfiguration();
 
-    abstract void writeConfigKey(ActualConfigService.ConfigKey key, String writtenBy, Object value);
+    public abstract NdcConfiguration getRepoConfiguration(String repoId);
 
-    abstract void setNdConfig(Map<ActualConfigService.ConfigKey, Object> config, String writtenBy);
+    public abstract void writeConfigKey(ActualConfigService.ConfigKey key, String writtenBy, Object value);
 
-    abstract void removeConfigKey(ActualConfigService.ConfigKey configKey, String writtenBy);
+    public abstract void writeConfigKey(ActualConfigService.ConfigKey key, String writtenBy, Object value, String repoId);
+
+    public abstract void setConfig(Map<ActualConfigService.ConfigKey, Object> config, String writtenBy);
+
+    public abstract void setConfig(Map<ActualConfigService.ConfigKey, Object> config, String writtenBy, String repoId);
+
+    public abstract void removeConfigKey(ActualConfigService.ConfigKey configKey, String writtenBy);
+
+    public abstract void removeConfigKey(ActualConfigService.ConfigKey configKey, String writtenBy, String repoId);
 
     @Getter
     @RequiredArgsConstructor(staticName = "of")
@@ -67,6 +97,7 @@ public abstract class ConfigService {
     @Builder
     public static class ConfigEvent {
         private final Map<ActualConfigService.ConfigKey, ConfigChange> changes;
+        private final String destination;
         private final Exception error;
     }
 

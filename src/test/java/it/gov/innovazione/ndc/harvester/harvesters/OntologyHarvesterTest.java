@@ -36,7 +36,7 @@ class OntologyHarvesterTest {
         final String repoUrl = "my-repo.git";
         final SemanticAssetPath path1 = SemanticAssetPath.of("onto1.ttl");
         final SemanticAssetPath path2 = SemanticAssetPath.of("onto2.ttl");
-        when(configService.findParsedOrGetDefault(any())).thenReturn(Optional.empty());
+        when(configService.getFromRepoOrGlobalOrDefault(any(), any(), any())).thenReturn(Optional.empty());
         when(agencyRepositoryService.getOntologyPaths(ontologyBasePath)).thenReturn(List.of(path1, path2));
 
         harvester.harvest(asRepo(repoUrl), ontologyBasePath);

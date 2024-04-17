@@ -27,6 +27,7 @@ public class Repository {
     private Instant updatedAt;
     private String updatedBy;
     private Long maxFileSizeBytes;
+    private String config;
     @JsonIgnore
     private Map<String, Map<String, String>> rightsHolders;
 

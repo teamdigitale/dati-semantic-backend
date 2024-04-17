@@ -16,6 +16,7 @@ import java.security.Principal;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -46,6 +47,7 @@ public class RepositoryService {
             + "UPDATED, "
             + "UPDATED_BY, "
             + "MAX_FILE_SIZE_BYTES, "
+            + "IFNULL(CONFIG, '{}') AS CONFIG, "
             + "RIGHTS_HOLDER "
             + "FROM REPOSITORY";
 
@@ -77,13 +79,13 @@ public class RepositoryService {
                                 .updatedAt(rs.getTimestamp("UPDATED").toInstant())
                                 .updatedBy(rs.getString("UPDATED_BY"))
                                 .maxFileSizeBytes(rs.getLong("MAX_FILE_SIZE_BYTES"))
+                                .config(rs.getString("CONFIG"))
                                 .rightsHolders(readSafely(rs.getString("RIGHTS_HOLDER")))
                                 .build());
 
         if (!allRepos.isEmpty()) {
             log.info("Found {} repositories in the database", allRepos.size());
-            log.debug("Repositories: "
-                      + allRepos.stream().map(Repository::forLogging).collect(Collectors.joining(", ")));
+            log.debug("Repositories: {}", allRepos.stream().map(Repository::forLogging).collect(Collectors.joining(", ")));
             return allRepos;
         }
 
@@ -146,6 +148,13 @@ public class RepositoryService {
     public Optional<Repository> findActiveRepoById(String id) {
         return getActiveRepos().stream()
                 .filter(repo -> repo.getId().equals(id))
+                .findFirst();
+    }
+
+    public Optional<Repository> findActiveRepoByUrl(String url) {
+        return getActiveRepos().stream()
+                .filter(repo -> repo.getUrl().equals(url))
+                .sorted(Comparator.comparing(Repository::getUpdatedAt).reversed())
                 .findFirst();
     }
 

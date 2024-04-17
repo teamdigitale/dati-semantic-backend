@@ -60,7 +60,8 @@ dependencies {
     implementation 'org.apache.jena:apache-jena-libs:4.9.0'
     implementation 'org.apache.jena:jena-querybuilder:4.9.0'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.eclipse.jgit:org.eclipse.jgit:5.13.0.202109080827-r'
+    implementation 'org.eclipse.jgit:org.eclipse.jgit:6.8.0.202311291450-r'
+    implementation 'org.kohsuke:github-api:1.321'
     implementation 'javax.xml.bind:jaxb-api:2.3.1'
 
     implementation 'org.flywaydb:flyway-core'

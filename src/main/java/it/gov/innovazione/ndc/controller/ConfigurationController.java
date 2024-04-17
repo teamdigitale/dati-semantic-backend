@@ -23,39 +23,58 @@ import static org.springframework.http.HttpStatus.CREATED;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/config/ndc")
+@RequestMapping("/config/{repoId}")
 @Slf4j
 public class ConfigurationController {
 
     private final ActualConfigService configService;
 
     @GetMapping
-    public Map<ActualConfigService.ConfigKey, ConfigService.ConfigEntry> getConfig() {
-        return configService.getNdcConfiguration().getValue();
+    public Map<ActualConfigService.ConfigKey, ConfigService.ConfigEntry> getConfig(
+            @PathVariable String repoId) {
+        if (repoId.equals("ndc")) {
+            return configService.getNdcConfiguration().getValue();
+        }
+        return configService.getRepoConfiguration(repoId).getValue();
     }
 
     @PostMapping
     @ResponseStatus(CREATED)
     public void setConfig(
+            @PathVariable String repoId,
             @RequestBody Map<ActualConfigService.ConfigKey, Object> config,
             Principal principal) {
-        configService.setNdConfig(config, principal.getName());
+        if (repoId.equals("ndc")) {
+            configService.setConfig(config, principal.getName());
+            return;
+        }
+        configService.setConfig(config, principal.getName(), repoId);
     }
 
     @PutMapping("/{configKey}")
     @ResponseStatus(ACCEPTED)
     public void updateRepository(
+            @PathVariable String repoId,
             @PathVariable ActualConfigService.ConfigKey configKey,
             @RequestParam String value,
             Principal principal) {
-        configService.writeConfigKey(configKey, principal.getName(), value);
+        if (repoId.equals("ndc")) {
+            configService.writeConfigKey(configKey, principal.getName(), value);
+            return;
+        }
+        configService.writeConfigKey(configKey, principal.getName(), value, repoId);
     }
 
     @DeleteMapping("/{configKey}")
     @ResponseStatus(ACCEPTED)
     public void deleteRepository(
+            @PathVariable String repoId,
             @PathVariable ActualConfigService.ConfigKey configKey,
             Principal principal) {
-        configService.removeConfigKey(configKey, principal.getName());
+        if (repoId.equals("ndc")) {
+            configService.removeConfigKey(configKey, principal.getName());
+            return;
+        }
+        configService.removeConfigKey(configKey, principal.getName(), repoId);
     }
 }
