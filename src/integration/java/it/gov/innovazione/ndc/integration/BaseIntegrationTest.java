@@ -100,7 +100,7 @@ public class BaseIntegrationTest {
     private void refreshAllIndicesUsedForBulkIndexing() {
         ArgumentCaptor<IndexCoordinates> indexCaptor = ArgumentCaptor.forClass(IndexCoordinates.class);
 
-        //verify(elasticsearchOperations).bulkIndex(anyList(), indexCaptor.capture());
+        verify(elasticsearchOperations).bulkIndex(anyList(), indexCaptor.capture());
         Set<IndexCoordinates> referencedIndices = new HashSet<>(indexCaptor.getAllValues());
         referencedIndices.forEach(ic -> elasticsearchOperations.indexOps(ic).refresh());
     }

@@ -40,9 +40,6 @@ public class RestApiIntegrationTests extends BaseIntegrationTest {
     @MockBean
     private GithubService githubService;
 
-    @MockBean
-    private FileUtils fileUtils;
-
     @DynamicPropertySource
     static void updateDynamicPropertySource(DynamicPropertyRegistry registry) {
         updateTestcontainersProperties(registry);
