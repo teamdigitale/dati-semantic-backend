@@ -1,12 +1,12 @@
 package it.gov.innovazione.ndc.harvester.harvesters;
 
-import it.gov.innovazione.ndc.config.HarvestExecutionContext;
-import it.gov.innovazione.ndc.config.HarvestExecutionContextUtils;
 import it.gov.innovazione.ndc.eventhandler.NdcEventPublisher;
 import it.gov.innovazione.ndc.eventhandler.event.HarvestedFileTooBigEvent;
 import it.gov.innovazione.ndc.eventhandler.event.HarvestedFileTooBigEvent.ViolatingSemanticAsset;
 import it.gov.innovazione.ndc.harvester.SemanticAssetHarvester;
 import it.gov.innovazione.ndc.harvester.SemanticAssetType;
+import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContext;
+import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContextUtils;
 import it.gov.innovazione.ndc.harvester.exception.SinglePathProcessingException;
 import it.gov.innovazione.ndc.harvester.harvesters.utils.PathUtils;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
@@ -19,6 +19,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import static it.gov.innovazione.ndc.harvester.service.ActualConfigService.ConfigKey.MAX_FILE_SIZE_BYTES;
 
@@ -52,8 +53,8 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
                 processPath(repository.getUrl(), path);
                 log.debug("Path {} processed correctly for {}", path, type);
             } catch (SinglePathProcessingException e) {
-                HarvestExecutionContextUtils.getContext()
-                        .addHarvestingError(repository, e, path.getAllFiles());
+                Optional.ofNullable(HarvestExecutionContextUtils.getContext())
+                        .ifPresent(context -> context.addHarvestingError(repository, e, path.getAllFiles()));
                 log.error("Error processing {} {} in repo {}", type, path, repository.getUrl(), e);
             }
         }

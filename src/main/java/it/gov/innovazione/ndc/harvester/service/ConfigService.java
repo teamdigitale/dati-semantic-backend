@@ -14,21 +14,32 @@ import java.util.Optional;
 public abstract class ConfigService {
 
     private <T> Optional<T> fromGlobal(ActualConfigService.ConfigKey key) {
-        Class<T> type = null;
-        return Optional.ofNullable(getNdcConfiguration())
-                .map(NdcConfiguration::getValue)
-                .map(value -> value.get(key))
-                .map(ConfigEntry::getValue)
-                .map(value -> safelyParse(value, key, type));
+        try {
+            Class<T> type = null;
+            return Optional.ofNullable(getNdcConfiguration())
+                    .map(NdcConfiguration::getValue)
+                    .map(value -> value.get(key))
+                    .map(ConfigEntry::getValue)
+                    .map(value -> safelyParse(value, key, type));
+        } catch (Exception e) {
+            log.error("Error reading global configuration", e);
+            return Optional.empty();
+        }
     }
 
     private <T> Optional<T> fromRepo(ActualConfigService.ConfigKey key, String repoId) {
-        Class<T> type = null;
-        return Optional.ofNullable(getRepoConfiguration(repoId))
-                .map(NdcConfiguration::getValue)
-                .map(value -> value.get(key))
-                .map(ConfigEntry::getValue)
-                .map(value -> safelyParse(value, key, type));
+        try {
+            Class<T> type = null;
+
+            return Optional.ofNullable(getRepoConfiguration(repoId))
+                    .map(NdcConfiguration::getValue)
+                    .map(value -> value.get(key))
+                    .map(ConfigEntry::getValue)
+                    .map(value -> safelyParse(value, key, type));
+        } catch (Exception e) {
+            log.error("Error reading configuration for repo [{}]", repoId, e);
+            return Optional.empty();
+        }
     }
 
     public <T> T getFromRepoOrGlobalOrDefault(

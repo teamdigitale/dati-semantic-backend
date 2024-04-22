@@ -1,8 +1,8 @@
 package it.gov.innovazione.ndc.service;
 
 
-import it.gov.innovazione.ndc.config.HarvestExecutionContext;
-import it.gov.innovazione.ndc.config.HarvestExecutionContextUtils;
+import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContext;
+import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContextUtils;
 import it.gov.innovazione.ndc.harvester.service.ActualConfigService;
 import it.gov.innovazione.ndc.harvester.service.ConfigService;
 import it.gov.innovazione.ndc.harvester.service.RepositoryService;
@@ -17,8 +17,8 @@ import org.kohsuke.github.GHIssueState;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.View;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
@@ -26,20 +26,18 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import static java.lang.String.format;
-import static java.util.stream.Collectors.joining;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class GithubService {
 
-    private final GitHub gitHub;
+    public static final String SCHEMA_GOV = "[SCHEMAGOV]";
+    private final NdcGitHubClient gitHubClient;
     private final ConfigService configService;
     private final RepositoryService repositoryService;
-    private final View error;
 
     public static Optional<OwnerRepo> extractOwnerRepo(String url) {
         try {
@@ -82,11 +80,17 @@ public class GithubService {
 
     @SneakyThrows
     private boolean isNdc(GHIssue issue) {
+        if (!gitHubClient.getEnabled()) {
+            log.warn("GitHub service is not enabled, skipping issue check");
+            return false;
+        }
+        GitHub gitHub = gitHubClient.getGitHub();
         String login = gitHub.getMyself().getLogin();
         String user = issue.getUser().getLogin();
         String title = issue.getTitle().toLowerCase();
 
-        boolean isNdc = title.contains("[schemagov]") && user.equalsIgnoreCase(login);
+        boolean isNdc = StringUtils.containsIgnoreCase(title, SCHEMA_GOV)
+                        && user.equalsIgnoreCase(login);
 
         if (isNdc) {
             log.info("issue #{} on repo {} is NDC -- title {}, user {}",
@@ -99,45 +103,67 @@ public class GithubService {
     }
 
     private List<GHIssue> getOpenedIssues(String repoUrl) {
+        return getRepository(repoUrl)
+                .map(ghRepository -> {
+                    try {
+                        return ghRepository.getIssues(GHIssueState.OPEN);
+                    } catch (IOException e) {
+                        log.error("Error getting issues", e);
+                        return List.<GHIssue>of();
+                    }
+                })
+                .orElse(List.of());
+    }
+
+    private Optional<GHRepository> getRepository(String repoUrl) {
+        if (!gitHubClient.getEnabled()) {
+            log.warn("GitHub service is not enabled, skipping issue check");
+            return Optional.empty();
+        }
+        GitHub gitHub = gitHubClient.getGitHub();
         try {
-            if (!isEnabled(repoUrl)) {
+            if (isIssuerDisabledForRepo(repoUrl)) {
                 log.warn("GitHub service is not enabled, or repository is not found");
-                return List.of();
+                return Optional.empty();
             }
+
             Optional<String> ownerRepo = extractOwnerRepo(repoUrl)
                     .map(OwnerRepo::toString);
 
             if (ownerRepo.isEmpty()) {
                 log.warn("This URL [{}] looks invalid, cannot use GitHubService on it", repoUrl);
-                return List.of();
+                return Optional.empty();
             }
 
-            GHRepository repository = gitHub.getRepository(ownerRepo.get());
-            return repository.getIssues(GHIssueState.OPEN);
+            return Optional.of(gitHub.getRepository(ownerRepo.get()));
 
         } catch (Exception e) {
-            log.error("Error getting issues", e);
-            return List.of();
+            log.error(String.format("Error getting repository for URL %s", repoUrl), e);
+            return Optional.empty();
         }
     }
 
-    private boolean isEnabled(String repoUrl) {
+    private boolean isIssuerDisabledForRepo(String repoUrl) {
         Optional<Repository> repository = repositoryService.findActiveRepoByUrl(repoUrl);
 
         if (repository.isEmpty()) {
             log.warn("Repository {} not found", repoUrl);
-            return false;
+            return true;
         }
 
-        return configService.getFromRepoOrGlobalOrDefault(
+        return !configService.getFromRepoOrGlobalOrDefault(
                 ActualConfigService.ConfigKey.GITHUB_ISSUER_ENABLED,
                 repository.get().getId(),
                 false);
     }
 
     public void openIssueIfNecessary() {
+        if (!gitHubClient.getEnabled()) {
+            log.warn("GitHub service is not enabled, skipping issue creation");
+            return;
+        }
         try {
-            if (!isEnabled(HarvestExecutionContextUtils.getContext().getRepository().getUrl())) {
+            if (isIssuerDisabledForRepo(HarvestExecutionContextUtils.getContext().getRepository().getUrl())) {
                 log.warn("GitHub service is not enabled, skipping issue creation");
                 return;
             }
@@ -149,17 +175,17 @@ public class GithubService {
                 return;
             }
             String repoUrl = context.getRepository().getUrl();
-            Optional<String> ownerRepo = extractOwnerRepo(repoUrl)
-                    .map(OwnerRepo::toString);
 
-            if (ownerRepo.isEmpty()) {
-                log.warn("This URL [{}] looks invalid, cannot use GitHubService on it", repoUrl);
+            Optional<GHRepository> ghRepository = getRepository(repoUrl);
+
+            if (ghRepository.isEmpty()) {
+                log.warn("Repository {} not found, skipping issue creation", repoUrl);
                 return;
             }
 
-            GHRepository repository = gitHub.getRepository(ownerRepo.get());
+            GHRepository repository = ghRepository.get();
 
-            String issueBody = Stream.of(
+            String issueBody = String.join("\n",
                     IntStream.range(0, errors.size())
                             .map(i -> i + 1)
                             .mapToObj(i -> asIssueBody(i, errors.get(i - 1)))
@@ -167,10 +193,26 @@ public class GithubService {
                     "---",
                     "**Origin**: Automatically opened by the harvester",
                     "**runId**: " + context.getRunId(),
-                    "").collect(joining("\n"));
+                    "");
 
             String issueTitle =
-                    format("[SCHEMAGOV] Error processing Semantic Assets (%s)", context.getRunId());
+                    format("%s Error processing Semantic Assets (%s)", SCHEMA_GOV, context.getRunId());
+
+            if (context.getMaintainers().isEmpty()) {
+                log.warn("No maintainers found for repository {}", repoUrl);
+                try {
+                    String maintainer = "@" + repository.getOwner().getLogin();
+                    issueBody += "\n\n" + maintainer;
+                } catch (IOException e) {
+                    log.error("Error getting owner", e);
+                }
+            } else {
+                String maintainers = context.getMaintainers().stream()
+                        .map(Repository.Maintainer::getGit)
+                        .map(s -> "@" + s)
+                        .collect(Collectors.joining(", "));
+                issueBody += "\n\n" + maintainers;
+            }
 
             repository.createIssue(issueTitle)
                     .body(issueBody)
@@ -183,15 +225,12 @@ public class GithubService {
     }
 
     private String asIssueBody(int i, HarvestExecutionContext.HarvesterExecutionError error) {
-        return Stream.of(
-                        format("### %d. Exception in File: [%s](%s) ", i,
-                                getFile(error),
-                                getFileUrl(error)),
-                        format("   - **Description**: %s", error.getException().getMessage()),
-                        format("   - **Date and Time**: %s", LocalDateTime.now()),
-                        "",
-                        "---")
-                .collect(joining("\n"));
+        return String.join("\n",
+                format("### %d. Exception in File: [%s](%s) ", i,
+                        getFile(error),
+                        getFileUrl(error)),
+                format("   - **Description**: %s", error.getException().getMessage()),
+                format("   - **Date and Time**: %s", LocalDateTime.now()), "", "");
     }
 
     private String getFile(HarvestExecutionContext.HarvesterExecutionError error) {
@@ -221,4 +260,5 @@ public class GithubService {
             return owner + "/" + repo;
         }
     }
+
 }

@@ -4,6 +4,12 @@ import it.gov.innovazione.ndc.eventhandler.NdcEventPublisher;
 import it.gov.innovazione.ndc.eventhandler.event.HarvesterFinishedEvent;
 import it.gov.innovazione.ndc.eventhandler.event.HarvesterStartedEvent;
 import it.gov.innovazione.ndc.harvester.HarvesterService;
+import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContext;
+import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContextUtils;
+import it.gov.innovazione.ndc.harvester.exception.HarvesterAlreadyExecuted;
+import it.gov.innovazione.ndc.harvester.exception.HarvesterAlreadyInProgress;
+import it.gov.innovazione.ndc.harvester.exception.HarvesterException;
+import it.gov.innovazione.ndc.harvester.exception.RepoContainsNdcIssueException;
 import it.gov.innovazione.ndc.harvester.service.HarvesterRunService;
 import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import it.gov.innovazione.ndc.model.harvester.Repository;
@@ -25,8 +31,6 @@ import java.util.stream.Collectors;
 import static it.gov.innovazione.ndc.config.AsyncConfiguration.THREAD_PREFIX;
 import static it.gov.innovazione.ndc.model.harvester.HarvesterRun.Status.ALREADY_RUNNING;
 import static it.gov.innovazione.ndc.model.harvester.HarvesterRun.Status.FAILURE;
-import static it.gov.innovazione.ndc.model.harvester.HarvesterRun.Status.NDC_ISSUES_PRESENT;
-import static it.gov.innovazione.ndc.model.harvester.HarvesterRun.Status.UNCHANGED;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.endsWith;
 import static org.apache.commons.lang3.StringUtils.startsWith;
@@ -44,8 +48,6 @@ public class SimpleHarvestRepositoryProcessor {
 
     private final List<String> locks = new ArrayList<>();
 
-    private boolean harvestingInProgress = false;
-
     public static List<String> getAllRunningHarvestThreadNames() {
         return ThreadUtils.getAllThreads().stream()
                 .map(Thread::getName)
@@ -54,17 +56,12 @@ public class SimpleHarvestRepositoryProcessor {
                 .collect(Collectors.toList());
     }
 
-    public boolean isHarvestingInProgress() {
-        return harvestingInProgress;
-    }
-
     private void setThreadName(String runId, String repoId, String revision, String status) {
         Thread.currentThread().setName(THREAD_PREFIX + "|" + runId + "|" + repoId + "|" + revision + "|" + status);
     }
 
     @Async
     public void execute(String runId, Repository repository, String correlationId, String revision, boolean force, String currentUserLogin) {
-        this.harvestingInProgress = true;
         try {
             setThreadName(runId, repository.getId(), revision, "RUNNING");
             publishHarvesterStartedEvent(repository, correlationId, revision, runId, currentUserLogin);
@@ -111,19 +108,19 @@ public class SimpleHarvestRepositoryProcessor {
 
             publishHarvesterSuccessfulEvent(repository, correlationId, revision, runId, currentUserLogin);
             setThreadName(runId, repository.getId(), revision, "IDLE");
-        } catch (HarvesterAlreadyExecuted e) {
-            publishHarvesterFailedEvent(repository, correlationId, revision, runId, UNCHANGED, e, currentUserLogin);
-        } catch (HarvesterAlreadyInProgress e) {
-            publishHarvesterFailedEvent(repository, correlationId, revision, runId, ALREADY_RUNNING, e, currentUserLogin);
-        } catch (RepoContainsNdcIssueException e) {
-            publishHarvesterFailedEvent(repository, correlationId, revision, runId, NDC_ISSUES_PRESENT, e, currentUserLogin);
-        } catch (Exception e) {
+        } catch (HarvesterException e) {
+            publishHarvesterFailedEvent(repository, correlationId, revision, runId, e.getHarvesterRunStatus(), e, currentUserLogin);
+        } catch (Exception e) { // other exceptions
             publishHarvesterFailedEvent(repository, correlationId, revision, runId, FAILURE, e, currentUserLogin);
             log.error("Unable to process {}", repository.getUrl(), e);
         }
+
+        // cleanup
         removeLock(repository, revision);
         setThreadName(runId, repository.getId(), revision, "IDLE");
-        this.harvestingInProgress = false;
+
+        // clean the context
+        HarvestExecutionContextUtils.clearContext();
     }
 
     private void verifyNoNdcIssuesInRepoIfNecessary(Repository repository) {

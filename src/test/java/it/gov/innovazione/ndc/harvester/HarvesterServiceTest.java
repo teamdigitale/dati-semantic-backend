@@ -1,6 +1,7 @@
 package it.gov.innovazione.ndc.harvester;
 
 import it.gov.innovazione.ndc.harvester.service.RepositoryService;
+import it.gov.innovazione.ndc.harvester.util.FileUtils;
 import it.gov.innovazione.ndc.model.harvester.Repository;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
 import it.gov.innovazione.ndc.repository.TripleStoreRepository;
@@ -39,6 +40,8 @@ class HarvesterServiceTest {
     private SemanticAssetHarvester harvester;
     @Mock
     private RepositoryService repositoryService;
+    @Mock
+    private FileUtils fileUtils;
 
     private HarvesterService harvesterService;
 
@@ -49,7 +52,8 @@ class HarvesterServiceTest {
                 List.of(harvester),
                 tripleStoreRepository,
                 metadataRepository,
-                repositoryService);
+                repositoryService,
+                fileUtils);
     }
 
     @Test

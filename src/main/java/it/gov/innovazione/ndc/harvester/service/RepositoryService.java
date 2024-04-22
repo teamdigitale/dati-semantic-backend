@@ -47,12 +47,14 @@ public class RepositoryService {
             + "UPDATED, "
             + "UPDATED_BY, "
             + "MAX_FILE_SIZE_BYTES, "
-            + "IFNULL(CONFIG, '{}') AS CONFIG, "
+            + "CONFIG, "
             + "RIGHTS_HOLDER "
             + "FROM REPOSITORY";
 
     private final JdbcTemplate jdbcTemplate;
     private final ObjectMapper objectMapper;
+    private final ConfigReaderService configReaderService;
+    private final OnceLogger onceLogger;
 
     @Value("#{'${harvester.repositories}'}")
     private final String repositories;
@@ -79,13 +81,15 @@ public class RepositoryService {
                                 .updatedAt(rs.getTimestamp("UPDATED").toInstant())
                                 .updatedBy(rs.getString("UPDATED_BY"))
                                 .maxFileSizeBytes(rs.getLong("MAX_FILE_SIZE_BYTES"))
-                                .config(rs.getString("CONFIG"))
+                                .config(configReaderService.toMap(rs.getString("CONFIG")))
                                 .rightsHolders(readSafely(rs.getString("RIGHTS_HOLDER")))
                                 .build());
 
         if (!allRepos.isEmpty()) {
-            log.info("Found {} repositories in the database", allRepos.size());
-            log.debug("Repositories: {}", allRepos.stream().map(Repository::forLogging).collect(Collectors.joining(", ")));
+            onceLogger.log("repositories", () -> {
+                log.info("Found {} repositories in the database", allRepos.size());
+                allRepos.forEach(repository -> log.debug(repository.toString()));
+            });
             return allRepos;
         }
 

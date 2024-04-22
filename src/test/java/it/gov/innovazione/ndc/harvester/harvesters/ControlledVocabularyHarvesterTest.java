@@ -13,7 +13,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Optional;
 
 import static it.gov.innovazione.ndc.harvester.service.RepositoryUtils.asRepo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -38,7 +37,7 @@ class ControlledVocabularyHarvesterTest {
         final String repoUrl = "my-repo.git";
         final CvPath path1 = CvPath.of("onto1.ttl", "onto1.csv");
         final CvPath path2 = CvPath.of("onto2.ttl", "onto2.csv");
-        when(configService.getFromRepoOrGlobalOrDefault(any(), any(), any())).thenReturn(Optional.empty());
+        when(configService.getFromRepoOrGlobalOrDefault(any(), any(), any())).thenReturn(0L);
         when(agencyRepositoryService.getControlledVocabularyPaths(cvBasePath)).thenReturn(List.of(path1, path2));
 
         harvester.harvest(asRepo(repoUrl), cvBasePath);

@@ -1,4 +1,4 @@
-package it.gov.innovazione.ndc.config;
+package it.gov.innovazione.ndc.harvester.context;
 
 import it.gov.innovazione.ndc.harvester.model.index.RightsHolder;
 import it.gov.innovazione.ndc.model.harvester.Repository;
@@ -16,9 +16,8 @@ import java.util.stream.Collectors;
 
 import static it.gov.innovazione.ndc.harvester.harvesters.utils.PathUtils.relativizeFile;
 
-@With
 @Data
-@Builder
+@Builder(toBuilder = true)
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class HarvestExecutionContext {
     private final Repository repository;
@@ -26,7 +25,10 @@ public class HarvestExecutionContext {
     private final String correlationId;
     private final String runId;
     private final String currentUserId;
+    @With
     private final String rootPath;
+    @Singular
+    private final List<Repository.Maintainer> maintainers = new ArrayList<>();
     @Singular
     private final List<RightsHolder> rightsHolders = new ArrayList<>();
     @Singular
@@ -44,6 +46,10 @@ public class HarvestExecutionContext {
                 .map(f -> relativizeFile(f.getAbsolutePath(), this))
                 .collect(Collectors.toList());
         errors.add(HarvesterExecutionError.of(repository, e.getCause(), relativizedFiles));
+    }
+
+    public void addMaintainers(List<Repository.Maintainer> maintainers) {
+        this.maintainers.addAll(maintainers);
     }
 
     @Data

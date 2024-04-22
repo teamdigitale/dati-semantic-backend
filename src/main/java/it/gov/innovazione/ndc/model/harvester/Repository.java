@@ -1,19 +1,21 @@
 package it.gov.innovazione.ndc.model.harvester;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import it.gov.innovazione.ndc.harvester.service.ActualConfigService;
+import it.gov.innovazione.ndc.harvester.service.ConfigService;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.ToString;
 import lombok.With;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Data
 @Builder(toBuilder = true)
 @EqualsAndHashCode(exclude = {"id", "createdAt", "updatedAt"})
-@ToString(exclude = {"rightsHolders"})
 public class Repository {
     private String id;
     @With
@@ -27,11 +29,23 @@ public class Repository {
     private Instant updatedAt;
     private String updatedBy;
     private Long maxFileSizeBytes;
-    private String config;
+    private Map<ActualConfigService.ConfigKey, ConfigService.ConfigEntry> config;
     @JsonIgnore
     private Map<String, Map<String, String>> rightsHolders;
+    private List<Maintainer> maintainers;
 
-    public String forLogging() {
-        return String.format("[%s] %s (%s) %s", id, name, url, active ? "active" : "inactive");
+    @Override
+    public String toString() {
+        return String.format("[%s] %s (%s) %s %s", id, name, url, active ? "active" : "inactive",
+                Optional.ofNullable(config)
+                        .map(Object::toString)
+                        .orElse(""));
+    }
+
+    @Data
+    public static class Maintainer {
+        private final String name;
+        private final String email;
+        private final String git;
     }
 }

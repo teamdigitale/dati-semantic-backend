@@ -1,7 +1,5 @@
 package it.gov.innovazione.ndc.harvester.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.innovazione.ndc.eventhandler.NdcEventPublisher;
 import it.gov.innovazione.ndc.model.harvester.Repository;
 import lombok.Getter;
@@ -15,7 +13,6 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -29,11 +26,10 @@ import java.util.stream.Stream;
 public class ActualConfigService extends ConfigService {
 
     private static final String CONFIG_ID = "ndc";
-    private static final TypeReference<Map<ConfigKey, ConfigEntry>> TYPE_REF = new TypeReference<>() {
-    };
+
     private final JdbcTemplate jdbcTemplate;
-    private final ObjectMapper objectMapper;
     private final NdcEventPublisher ndcEventPublisher;
+    private final ConfigReaderService configReaderService;
     private final RepositoryService repositoryService;
 
     @Override
@@ -42,7 +38,7 @@ public class ActualConfigService extends ConfigService {
             return jdbcTemplate.queryForObject(
                     "SELECT * FROM CONFIGURATION WHERE ID = ?",
                     new Object[]{CONFIG_ID},
-                    (rs, rowNum) -> NdcConfiguration.of(readSafely(rs.getString("VALUE"))));
+                    (rs, rowNum) -> NdcConfiguration.of(configReaderService.toMap(rs.getString("VALUE"))));
         } catch (EmptyResultDataAccessException e) {
             log.warn("No configuration found in the database. Returning an empty configuration.");
             return NdcConfiguration.of(Map.of());
@@ -56,7 +52,6 @@ public class ActualConfigService extends ConfigService {
     public NdcConfiguration getRepoConfiguration(String repoId) {
         return repositoryService.findActiveRepoById(repoId)
                 .map(Repository::getConfig)
-                .map(this::readSafely)
                 .map(NdcConfiguration::of)
                 .orElseThrow(() -> new IllegalArgumentException("Repository not found"));
     }
@@ -210,7 +205,7 @@ public class ActualConfigService extends ConfigService {
 
     @SneakyThrows
     private void writeConfig(Map<ConfigKey, ConfigEntry> config) {
-        String valueAsString = objectMapper.writeValueAsString(config);
+        String valueAsString = configReaderService.fromMap(config);
         jdbcTemplate.update(
                 "INSERT INTO CONFIGURATION (ID, VALUE) VALUES (?, ?) ON DUPLICATE KEY UPDATE VALUE = ?",
                 CONFIG_ID, valueAsString, valueAsString);
@@ -218,22 +213,9 @@ public class ActualConfigService extends ConfigService {
 
     @SneakyThrows
     private void writeConfig(Map<ConfigKey, ConfigEntry> config, String repoId) {
-        String valueAsString = objectMapper.writeValueAsString(config);
+        String valueAsString = configReaderService.fromMap(config);
         jdbcTemplate.update("UPDATE REPOSITORY SET CONFIG = ? WHERE ID = ?", valueAsString, repoId);
     }
-
-    @SneakyThrows
-    private Map<ConfigKey, ConfigEntry> readSafely(String value) {
-        if (Objects.isNull(value) || value.isEmpty()) {
-            return Map.of();
-        }
-        try {
-            return objectMapper.readValue(value, TYPE_REF);
-        } catch (Exception e) {
-            return Map.of();
-        }
-    }
-
 
     @Override
     public void removeConfigKey(ConfigKey configKey, String writtenBy) {

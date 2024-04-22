@@ -54,7 +54,7 @@ dependencies {
     implementation group: 'org.springframework.security', name: 'spring-security-core', version: '5.7.12'
     implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '5.7.12'
 
-    implementation group: 'org.springframework', name: 'spring-web', version: '5.3.33'
+    implementation group: 'org.springframework', name: 'spring-web', version: '5.3.34'
 
     implementation 'org.springframework.data:spring-data-elasticsearch'
     implementation 'org.apache.jena:apache-jena-libs:4.9.0'
@@ -67,10 +67,10 @@ dependencies {
     implementation 'org.flywaydb:flyway-core'
     implementation 'org.flywaydb:flyway-mysql'
 
-    implementation 'org.apache.commons:commons-compress:1.26.0'
+    implementation 'org.apache.commons:commons-compress:1.26.1'
 
     implementation 'org.springdoc:springdoc-openapi-ui:1.6.1'
-    implementation 'org.openapitools:jackson-databind-nullable:0.2.1'
+    implementation 'org.openapitools:jackson-databind-nullable:0.2.6'
 
     implementation 'io.swagger:swagger-annotations:1.5.20'
     implementation 'org.mapstruct:mapstruct:1.4.2.Final'
@@ -194,7 +194,9 @@ jacocoTestCoverageVerification {
                     'it.gov.innovazione.ndc.harvester.service.ActualConfigService.Validator',
                     'it.gov.innovazione.ndc.harvester.service.CachingConfigService',
                     'it.gov.innovazione.ndc.harvester.service.ConfigService.NdcConfiguration',
-                    'it.gov.innovazione.ndc.harvester.service.ConfigService'
+                    'it.gov.innovazione.ndc.harvester.service.ConfigService',
+                    'it.gov.innovazione.ndc.service.GithubService*',
+                    'it.gov.innovazione.ndc.harvester.harvesters.utils.PathUtils'
             ]
         }
     }

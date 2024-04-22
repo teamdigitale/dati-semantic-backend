@@ -5,7 +5,9 @@ import it.gov.innovazione.ndc.gen.dto.AssetType;
 import it.gov.innovazione.ndc.gen.dto.SearchResult;
 import it.gov.innovazione.ndc.gen.dto.SearchResultItem;
 import it.gov.innovazione.ndc.harvester.SemanticAssetType;
+import it.gov.innovazione.ndc.harvester.util.FileUtils;
 import it.gov.innovazione.ndc.model.profiles.NDC;
+import it.gov.innovazione.ndc.service.GithubService;
 import junit.framework.AssertionFailedError;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
@@ -13,6 +15,7 @@ import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.rdfconnection.RDFConnectionFactory;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -33,6 +36,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class RestApiIntegrationTests extends BaseIntegrationTest {
     public static final String AGENCY_ID = "agid";
     public static final String KEY_CONCEPT = "licences";
+
+    @MockBean
+    private GithubService githubService;
+
+    @MockBean
+    private FileUtils fileUtils;
 
     @DynamicPropertySource
     static void updateDynamicPropertySource(DynamicPropertyRegistry registry) {

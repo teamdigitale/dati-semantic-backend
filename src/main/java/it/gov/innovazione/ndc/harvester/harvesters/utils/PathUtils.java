@@ -1,6 +1,6 @@
 package it.gov.innovazione.ndc.harvester.harvesters.utils;
 
-import it.gov.innovazione.ndc.config.HarvestExecutionContext;
+import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContext;
 
 import java.io.File;
 

@@ -18,7 +18,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class RepositoryServiceTest {
+class RepositoryServiceTest {
 
     private JdbcTemplate jdbcTemplate;
     private RepositoryService repositoryService;
@@ -26,7 +26,10 @@ public class RepositoryServiceTest {
     @BeforeEach
     public void setUp() {
         jdbcTemplate = mock(JdbcTemplate.class);
-        repositoryService = new RepositoryService(jdbcTemplate, new ObjectMapper(), "repos");
+        repositoryService = new RepositoryService(jdbcTemplate, new ObjectMapper(),
+                mock(ConfigReaderService.class),
+                mock(OnceLogger.class),
+                "repos");
     }
 
     @Test
