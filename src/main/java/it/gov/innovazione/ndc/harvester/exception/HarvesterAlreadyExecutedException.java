@@ -2,8 +2,8 @@ package it.gov.innovazione.ndc.harvester.exception;
 
 import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 
-public class HarvesterAlreadyExecuted extends HarvesterException {
-    public HarvesterAlreadyExecuted(String format) {
+public class HarvesterAlreadyExecutedException extends HarvesterException {
+    public HarvesterAlreadyExecutedException(String format) {
         super(format);
     }
 

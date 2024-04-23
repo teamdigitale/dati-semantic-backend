@@ -188,6 +188,7 @@ jacocoTestCoverageVerification {
                     'it.gov.innovazione.ndc.harvester.service.HarvesterRunService',
                     'it.gov.innovazione.ndc.harvester.SecurityUtils',
                     'it.gov.innovazione.ndc.*Exception',
+                    'it.gov.innovazione.ndc.harvester.context.*',
                     'it.gov.innovazione.ndc.harvester.HarvesterJob',
                     'it.gov.innovazione.ndc.model.harvester.HarvesterRun.Status',
                     'it.gov.innovazione.ndc.harvester.service.ActualConfigService',
@@ -196,7 +197,9 @@ jacocoTestCoverageVerification {
                     'it.gov.innovazione.ndc.harvester.service.ConfigService.NdcConfiguration',
                     'it.gov.innovazione.ndc.harvester.service.ConfigService',
                     'it.gov.innovazione.ndc.service.GithubService*',
-                    'it.gov.innovazione.ndc.harvester.harvesters.utils.PathUtils'
+                    'it.gov.innovazione.ndc.harvester.harvesters.utils.PathUtils',
+                    'it.gov.innovazione.ndc.harvester.service.OnceLogger',
+                    'it.gov.innovazione.ndc.harvester.service.ConfigReaderService'
             ]
         }
     }

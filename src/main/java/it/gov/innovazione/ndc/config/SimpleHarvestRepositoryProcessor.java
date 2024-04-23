@@ -6,8 +6,8 @@ import it.gov.innovazione.ndc.eventhandler.event.HarvesterStartedEvent;
 import it.gov.innovazione.ndc.harvester.HarvesterService;
 import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContext;
 import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContextUtils;
-import it.gov.innovazione.ndc.harvester.exception.HarvesterAlreadyExecuted;
-import it.gov.innovazione.ndc.harvester.exception.HarvesterAlreadyInProgress;
+import it.gov.innovazione.ndc.harvester.exception.HarvesterAlreadyExecutedException;
+import it.gov.innovazione.ndc.harvester.exception.HarvesterAlreadyInProgressException;
 import it.gov.innovazione.ndc.harvester.exception.HarvesterException;
 import it.gov.innovazione.ndc.harvester.exception.RepoContainsNdcIssueException;
 import it.gov.innovazione.ndc.harvester.service.HarvesterRunService;
@@ -75,7 +75,7 @@ public class SimpleHarvestRepositoryProcessor {
                             revision,
                             runId,
                             ALREADY_RUNNING,
-                            new HarvesterAlreadyInProgress(
+                            new HarvesterAlreadyInProgressException(
                                     format("Harvesting for repo %s is already running",
                                             repository.getUrl())),
                             currentUserLogin);
@@ -142,14 +142,14 @@ public class SimpleHarvestRepositoryProcessor {
 
     private synchronized void verifySameRunWasNotExecuted(Repository repository, String revision) {
         if (harvesterRunService.isHarvestingAlreadyExecuted(repository.getId(), revision)) {
-            throw new HarvesterAlreadyExecuted(format("Harvesting for repo '%s' with revision '%s' was already executed and no force param was passed",
+            throw new HarvesterAlreadyExecutedException(format("Harvesting for repo '%s' with revision '%s' was already executed and no force param was passed",
                     repository.getUrl(), revision));
         }
     }
 
     private synchronized void verifyHarvestingIsNotInProgress(String runId, Repository repository) {
         if (harvesterRunService.isHarvestingInProgress(runId, repository)) {
-            throw new HarvesterAlreadyInProgress(format("Harvesting for repo '%s' is already in progress", repository.getUrl()));
+            throw new HarvesterAlreadyInProgressException(format("Harvesting for repo '%s' is already in progress", repository.getUrl()));
         }
     }
 
