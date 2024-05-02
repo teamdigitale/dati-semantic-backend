@@ -67,10 +67,10 @@ public class FileUtils {
                 log.info("Extracting maintainers from README.md in {}", path);
                 return extractMaintainers(readme);
             }
-            log.info("No README.md found in {}", path);
+            log.warn("No README.md found in {}", path);
             return List.of();
         }
-        log.info("Path {} does not exist", path);
+        log.warn("Path {} does not exist", path);
         return List.of();
 
     }
@@ -96,6 +96,7 @@ public class FileUtils {
         while (iterator.hasNext()) {
             String maintainerLine = iterator.next();
             if (maintainerLine.matches("^\\s*-\\t*\\s.*")) {
+                log.info("Extracting maintainer from line {}", maintainerLine);
                 try {
                     maintainers.add(extractMaintainer(maintainerLine));
                 } catch (Exception e) {
@@ -117,6 +118,7 @@ public class FileUtils {
         String[] partsTwo = partsOne[1].split("-");
         String git = partsTwo[0].trim().replace("git (", "").replace(")", "").trim();
         String email = partsTwo[1].trim().replace("email (", "").replace(")", "").trim();
+        log.info("Extracted maintainer {} {} {}", name, email, git);
         return new Repository.Maintainer(name, email, git);
     }
 }

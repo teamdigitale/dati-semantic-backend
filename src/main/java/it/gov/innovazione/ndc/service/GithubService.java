@@ -164,7 +164,8 @@ public class GithubService {
         }
         try {
             if (isIssuerDisabledForRepo(HarvestExecutionContextUtils.getContext().getRepository().getUrl())) {
-                log.warn("GitHub service is not enabled, skipping issue creation");
+                log.warn("GitHub service is not enabled for repo {}, skipping issue creation",
+                        HarvestExecutionContextUtils.getContext().getRepository().getUrl());
                 return;
             }
             HarvestExecutionContext context = HarvestExecutionContextUtils.getContext();
