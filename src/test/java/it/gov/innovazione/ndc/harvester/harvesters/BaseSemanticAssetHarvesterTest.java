@@ -1,9 +1,9 @@
 package it.gov.innovazione.ndc.harvester.harvesters;
 
-import it.gov.innovazione.ndc.config.HarvestExecutionContext;
-import it.gov.innovazione.ndc.config.HarvestExecutionContextUtils;
 import it.gov.innovazione.ndc.eventhandler.NdcEventPublisher;
 import it.gov.innovazione.ndc.harvester.SemanticAssetType;
+import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContext;
+import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContextUtils;
 import it.gov.innovazione.ndc.harvester.exception.InvalidAssetException;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
 import it.gov.innovazione.ndc.harvester.service.ConfigService;
@@ -74,6 +74,7 @@ class BaseSemanticAssetHarvesterTest {
                 .build();
 
         doNothing().when(processor).accept(repoUrl, path);
+        when(configService.getFromRepoOrGlobalOrDefault(any(), any(), any())).thenReturn(1L);
 
         try (MockedStatic<HarvestExecutionContextUtils> contextUtils = mockStatic(HarvestExecutionContextUtils.class)) {
             contextUtils.when(HarvestExecutionContextUtils::getContext)

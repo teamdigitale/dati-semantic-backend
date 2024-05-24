@@ -1,4 +1,4 @@
-package it.gov.innovazione.ndc.config;
+package it.gov.innovazione.ndc.harvester.context;
 
 import lombok.NoArgsConstructor;
 
@@ -13,5 +13,9 @@ public class HarvestExecutionContextUtils {
 
     public static void setContext(HarvestExecutionContext context) {
         CONTEXT_HOLDER.set(context);
+    }
+
+    public static void clearContext() {
+        CONTEXT_HOLDER.remove();
     }
 }

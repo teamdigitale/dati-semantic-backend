@@ -11,11 +11,12 @@ import java.util.Collection;
 @Slf4j
 @RequiredArgsConstructor
 public class NdcEventListener {
+
     private final Collection<NdcEventHandler> handlers;
 
     @EventListener(NdcEventWrapper.class)
     public void handleNdcEvent(NdcEventWrapper<?> event) {
-        log.info("Received event: {}", event);
+        log.trace("Received event: {}", event);
         handlers.stream()
                 .filter(handler -> handler.canHandle(event))
                 .forEach(handler -> handleSafely(() -> handler.handle(event)));

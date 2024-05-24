@@ -1,13 +1,14 @@
 package it.gov.innovazione.ndc.harvester.harvesters;
 
-import it.gov.innovazione.ndc.config.HarvestExecutionContext;
-import it.gov.innovazione.ndc.config.HarvestExecutionContextUtils;
 import it.gov.innovazione.ndc.eventhandler.NdcEventPublisher;
 import it.gov.innovazione.ndc.eventhandler.event.HarvestedFileTooBigEvent;
 import it.gov.innovazione.ndc.eventhandler.event.HarvestedFileTooBigEvent.ViolatingSemanticAsset;
 import it.gov.innovazione.ndc.harvester.SemanticAssetHarvester;
 import it.gov.innovazione.ndc.harvester.SemanticAssetType;
+import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContext;
+import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContextUtils;
 import it.gov.innovazione.ndc.harvester.exception.SinglePathProcessingException;
+import it.gov.innovazione.ndc.harvester.harvesters.utils.PathUtils;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
 import it.gov.innovazione.ndc.harvester.service.ConfigService;
 import it.gov.innovazione.ndc.model.harvester.Repository;
@@ -40,23 +41,8 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
 
         List<P> paths = scanForPaths(rootPath);
 
-        Long maxFileSizeBytes;
-
-        Optional<Long> maxSizeFromRepo = Optional.ofNullable(HarvestExecutionContextUtils.getContext()).map(HarvestExecutionContext::getRepository).map(Repository::getMaxFileSizeBytes);
-
-        if (maxSizeFromRepo.isPresent() && maxSizeFromRepo.get() > 0) {
-            maxFileSizeBytes = maxSizeFromRepo.get();
-            log.info("[FILE-SCANNER] -- using maxFileSizeBytes={} from repository configuration", maxFileSizeBytes);
-        } else {
-            Optional<Long> maxSizeFromConf = configService.findParsedOrGetDefault(MAX_FILE_SIZE_BYTES);
-            if (maxSizeFromConf.isPresent() && maxSizeFromConf.get() > 0) {
-                maxFileSizeBytes = maxSizeFromConf.get();
-                log.info("[FILE-SCANNER] -- using maxFileSizeBytes={} from global configuration", maxFileSizeBytes);
-            } else {
-                maxFileSizeBytes = 0L;
-                log.info("[FILE-SCANNER] -- no maxFileSizeBytes found in configuration");
-            }
-        }
+        Long maxFileSizeBytes = configService.getFromRepoOrGlobalOrDefault(
+                MAX_FILE_SIZE_BYTES, repository.getId(), 0L);
 
         log.debug("Found {} {} path(s) for processing", paths.size(), type);
 
@@ -66,8 +52,9 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
             try {
                 processPath(repository.getUrl(), path);
                 log.debug("Path {} processed correctly for {}", path, type);
-
             } catch (SinglePathProcessingException e) {
+                Optional.ofNullable(HarvestExecutionContextUtils.getContext())
+                        .ifPresent(context -> context.addHarvestingError(repository, e, path.getAllFiles()));
                 log.error("Error processing {} {} in repo {}", type, path, repository.getUrl(), e);
             }
         }
@@ -99,22 +86,13 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
                         .revision(context.getRevision())
                         .violatingSemanticAsset(
                                 ViolatingSemanticAsset.fromPath(
-                                        relativize(
+                                        PathUtils.relativizeFolder(
                                                 path.getTtlPath(),
                                                 context),
                                         path.getAllFiles(),
                                         maxFileSizeBytes))
                         .build());
         log.warn("File {} is bigger than maxFileSizeBytes={}", path.getTtlPath(), maxFileSizeBytes);
-    }
-
-    private String relativize(String ttlFile, HarvestExecutionContext context) {
-        return getFolderNameFromFile(ttlFile).replace(
-                context.getRootPath(), "");
-    }
-
-    private String getFolderNameFromFile(String ttlFile) {
-        return new File(ttlFile).getParent();
     }
 
     private boolean isAnyBiggerThan(Long maxFileSizeBytes, List<File> files) {

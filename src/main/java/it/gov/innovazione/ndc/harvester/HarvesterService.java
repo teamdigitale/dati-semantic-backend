@@ -1,9 +1,10 @@
 package it.gov.innovazione.ndc.harvester;
 
-import it.gov.innovazione.ndc.config.HarvestExecutionContext;
-import it.gov.innovazione.ndc.config.HarvestExecutionContextUtils;
+import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContext;
+import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContextUtils;
 import it.gov.innovazione.ndc.harvester.model.index.RightsHolder;
 import it.gov.innovazione.ndc.harvester.service.RepositoryService;
+import it.gov.innovazione.ndc.harvester.util.FileUtils;
 import it.gov.innovazione.ndc.model.harvester.Repository;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
 import it.gov.innovazione.ndc.repository.TripleStoreRepository;
@@ -32,6 +33,7 @@ public class HarvesterService {
     private final TripleStoreRepository tripleStoreRepository;
     private final SemanticAssetMetadataRepository semanticAssetMetadataRepository;
     private final RepositoryService repositoryService;
+    private final FileUtils fileUtils;
 
     public void harvest(Repository repository) throws IOException {
         harvest(repository, null);
@@ -46,7 +48,7 @@ public class HarvesterService {
             Path path = cloneRepoToTempPath(repoUrl, revision);
 
             try {
-                updateContextWithRootPath(path);
+                updateContext(path);
                 harvestClonedRepo(normalisedRepo, path);
             } finally {
                 agencyRepositoryService.removeClonedRepo(path);
@@ -55,6 +57,18 @@ public class HarvesterService {
         } catch (IOException e) {
             log.error("Exception while processing {}", repoUrl, e);
             throw e;
+        }
+    }
+
+    private void updateContext(Path path) {
+        updateContextWithRootPath(path);
+        updateContextWithMaintainers(fileUtils.getMaintainersIfPossible(path));
+    }
+
+    private static void updateContextWithMaintainers(List<Repository.Maintainer> maintainers) {
+        HarvestExecutionContext context = HarvestExecutionContextUtils.getContext();
+        if (Objects.nonNull(context)) {
+            context.addMaintainers(maintainers);
         }
     }
 

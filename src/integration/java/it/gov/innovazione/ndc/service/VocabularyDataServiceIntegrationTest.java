@@ -1,15 +1,16 @@
 package it.gov.innovazione.ndc.service;
 
-import it.gov.innovazione.ndc.integration.Containers;
 import it.gov.innovazione.ndc.controller.exception.VocabularyDataNotFoundException;
 import it.gov.innovazione.ndc.controller.exception.VocabularyItemNotFoundException;
 import it.gov.innovazione.ndc.gen.dto.VocabularyData;
 import it.gov.innovazione.ndc.harvester.csv.CsvParser;
+import it.gov.innovazione.ndc.integration.Containers;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
@@ -35,6 +36,9 @@ public class VocabularyDataServiceIntegrationTest {
 
     @Autowired
     private ElasticsearchOperations elasticOps;
+
+    @MockBean
+    private GithubService githubService;
 
     @DynamicPropertySource
     static void updateTestcontainersProperties(DynamicPropertyRegistry registry) {

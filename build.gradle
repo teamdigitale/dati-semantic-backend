@@ -54,22 +54,23 @@ dependencies {
     implementation group: 'org.springframework.security', name: 'spring-security-core', version: '5.7.12'
     implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '5.7.12'
 
-    implementation group: 'org.springframework', name: 'spring-web', version: '5.3.33'
+    implementation group: 'org.springframework', name: 'spring-web', version: '5.3.34'
 
     implementation 'org.springframework.data:spring-data-elasticsearch'
     implementation 'org.apache.jena:apache-jena-libs:4.9.0'
     implementation 'org.apache.jena:jena-querybuilder:4.9.0'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.eclipse.jgit:org.eclipse.jgit:5.13.0.202109080827-r'
+    implementation 'org.eclipse.jgit:org.eclipse.jgit:6.8.0.202311291450-r'
+    implementation 'org.kohsuke:github-api:1.321'
     implementation 'javax.xml.bind:jaxb-api:2.3.1'
 
     implementation 'org.flywaydb:flyway-core'
     implementation 'org.flywaydb:flyway-mysql'
 
-    implementation 'org.apache.commons:commons-compress:1.26.0'
+    implementation 'org.apache.commons:commons-compress:1.26.1'
 
     implementation 'org.springdoc:springdoc-openapi-ui:1.6.1'
-    implementation 'org.openapitools:jackson-databind-nullable:0.2.1'
+    implementation 'org.openapitools:jackson-databind-nullable:0.2.6'
 
     implementation 'io.swagger:swagger-annotations:1.5.20'
     implementation 'org.mapstruct:mapstruct:1.4.2.Final'
@@ -187,13 +188,18 @@ jacocoTestCoverageVerification {
                     'it.gov.innovazione.ndc.harvester.service.HarvesterRunService',
                     'it.gov.innovazione.ndc.harvester.SecurityUtils',
                     'it.gov.innovazione.ndc.*Exception',
+                    'it.gov.innovazione.ndc.harvester.context.*',
                     'it.gov.innovazione.ndc.harvester.HarvesterJob',
                     'it.gov.innovazione.ndc.model.harvester.HarvesterRun.Status',
                     'it.gov.innovazione.ndc.harvester.service.ActualConfigService',
                     'it.gov.innovazione.ndc.harvester.service.ActualConfigService.Validator',
                     'it.gov.innovazione.ndc.harvester.service.CachingConfigService',
                     'it.gov.innovazione.ndc.harvester.service.ConfigService.NdcConfiguration',
-                    'it.gov.innovazione.ndc.harvester.service.ConfigService'
+                    'it.gov.innovazione.ndc.harvester.service.ConfigService',
+                    'it.gov.innovazione.ndc.service.GithubService*',
+                    'it.gov.innovazione.ndc.harvester.harvesters.utils.PathUtils',
+                    'it.gov.innovazione.ndc.harvester.service.OnceLogger',
+                    'it.gov.innovazione.ndc.harvester.service.ConfigReaderService'
             ]
         }
     }

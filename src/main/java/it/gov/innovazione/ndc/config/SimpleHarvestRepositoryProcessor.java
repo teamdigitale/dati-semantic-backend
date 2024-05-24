@@ -4,21 +4,34 @@ import it.gov.innovazione.ndc.eventhandler.NdcEventPublisher;
 import it.gov.innovazione.ndc.eventhandler.event.HarvesterFinishedEvent;
 import it.gov.innovazione.ndc.eventhandler.event.HarvesterStartedEvent;
 import it.gov.innovazione.ndc.harvester.HarvesterService;
+import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContext;
+import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContextUtils;
+import it.gov.innovazione.ndc.harvester.exception.HarvesterAlreadyExecutedException;
+import it.gov.innovazione.ndc.harvester.exception.HarvesterAlreadyInProgressException;
+import it.gov.innovazione.ndc.harvester.exception.HarvesterException;
+import it.gov.innovazione.ndc.harvester.exception.RepoContainsNdcIssueException;
 import it.gov.innovazione.ndc.harvester.service.HarvesterRunService;
 import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import it.gov.innovazione.ndc.model.harvester.Repository;
+import it.gov.innovazione.ndc.service.GithubService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ThreadUtils;
+import org.kohsuke.github.GHIssue;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static it.gov.innovazione.ndc.config.AsyncConfiguration.THREAD_PREFIX;
+import static it.gov.innovazione.ndc.model.harvester.HarvesterRun.Status.ALREADY_RUNNING;
+import static it.gov.innovazione.ndc.model.harvester.HarvesterRun.Status.FAILURE;
+import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.endsWith;
 import static org.apache.commons.lang3.StringUtils.startsWith;
 
@@ -31,9 +44,9 @@ public class SimpleHarvestRepositoryProcessor {
     private final HarvesterService harvesterService;
     private final HarvesterRunService harvesterRunService;
     private final NdcEventPublisher ndcEventPublisher;
-    private final List<String> locks = new ArrayList<>();
+    private final GithubService githubService;
 
-    private boolean harvestingInProgress = false;
+    private final List<String> locks = new ArrayList<>();
 
     public static List<String> getAllRunningHarvestThreadNames() {
         return ThreadUtils.getAllThreads().stream()
@@ -43,17 +56,12 @@ public class SimpleHarvestRepositoryProcessor {
                 .collect(Collectors.toList());
     }
 
-    public boolean isHarvestingInProgress() {
-        return harvestingInProgress;
-    }
-
     private void setThreadName(String runId, String repoId, String revision, String status) {
         Thread.currentThread().setName(THREAD_PREFIX + "|" + runId + "|" + repoId + "|" + revision + "|" + status);
     }
 
     @Async
     public void execute(String runId, Repository repository, String correlationId, String revision, boolean force, String currentUserLogin) {
-        this.harvestingInProgress = true;
         try {
             setThreadName(runId, repository.getId(), revision, "RUNNING");
             publishHarvesterStartedEvent(repository, correlationId, revision, runId, currentUserLogin);
@@ -66,9 +74,9 @@ public class SimpleHarvestRepositoryProcessor {
                             correlationId,
                             revision,
                             runId,
-                            HarvesterRun.Status.ALREADY_RUNNING,
-                            new HarvesterAlreadyInProgress(
-                                    String.format("Harvesting for repo %s is already running",
+                            ALREADY_RUNNING,
+                            new HarvesterAlreadyInProgressException(
+                                    format("Harvesting for repo %s is already running",
                                             repository.getUrl())),
                             currentUserLogin);
                     setThreadName(runId, repository.getId(), revision, "IDLE");
@@ -92,21 +100,38 @@ public class SimpleHarvestRepositoryProcessor {
                             .currentUserId(currentUserLogin)
                             .build());
 
+            verifyNoNdcIssuesInRepoIfNecessary(repository);
+
             harvesterService.harvest(repository, revision);
+
+            githubService.openIssueIfNecessary();
 
             publishHarvesterSuccessfulEvent(repository, correlationId, revision, runId, currentUserLogin);
             setThreadName(runId, repository.getId(), revision, "IDLE");
-        } catch (HarvesterAlreadyExecuted e) {
-            publishHarvesterFailedEvent(repository, correlationId, revision, runId, HarvesterRun.Status.UNCHANGED, e, currentUserLogin);
-        } catch (HarvesterAlreadyInProgress e) {
-            publishHarvesterFailedEvent(repository, correlationId, revision, runId, HarvesterRun.Status.ALREADY_RUNNING, e, currentUserLogin);
-        } catch (Exception e) {
-            publishHarvesterFailedEvent(repository, correlationId, revision, runId, HarvesterRun.Status.FAILURE, e, currentUserLogin);
+        } catch (HarvesterException e) {
+            publishHarvesterFailedEvent(repository, correlationId, revision, runId, e.getHarvesterRunStatus(), e, currentUserLogin);
+        } catch (Exception e) { // other exceptions
+            publishHarvesterFailedEvent(repository, correlationId, revision, runId, FAILURE, e, currentUserLogin);
             log.error("Unable to process {}", repository.getUrl(), e);
         }
+
+        // cleanup
         removeLock(repository, revision);
         setThreadName(runId, repository.getId(), revision, "IDLE");
-        this.harvestingInProgress = false;
+
+        // clean the context
+        HarvestExecutionContextUtils.clearContext();
+    }
+
+    private void verifyNoNdcIssuesInRepoIfNecessary(Repository repository) {
+        Optional<GHIssue> ndcIssue = githubService.getNdcIssueIfPresent(repository.getUrl());
+        boolean hasIssues = ndcIssue.isPresent();
+        if (hasIssues) {
+            URL issueUrl = ndcIssue.get().getUrl();
+            throw new RepoContainsNdcIssueException(format("Repository %s has NDC issues [%s]",
+                    repository.getUrl(),
+                    issueUrl.toString()));
+        }
     }
 
     private void removeLock(Repository repository, String revision) {
@@ -117,14 +142,14 @@ public class SimpleHarvestRepositoryProcessor {
 
     private synchronized void verifySameRunWasNotExecuted(Repository repository, String revision) {
         if (harvesterRunService.isHarvestingAlreadyExecuted(repository.getId(), revision)) {
-            throw new HarvesterAlreadyExecuted(String.format("Harvesting for repo '%s' with revision '%s' was already executed and no force param was passed",
+            throw new HarvesterAlreadyExecutedException(format("Harvesting for repo '%s' with revision '%s' was already executed and no force param was passed",
                     repository.getUrl(), revision));
         }
     }
 
     private synchronized void verifyHarvestingIsNotInProgress(String runId, Repository repository) {
         if (harvesterRunService.isHarvestingInProgress(runId, repository)) {
-            throw new HarvesterAlreadyInProgress(String.format("Harvesting for repo '%s' is already in progress", repository.getUrl()));
+            throw new HarvesterAlreadyInProgressException(format("Harvesting for repo '%s' is already in progress", repository.getUrl()));
         }
     }
 

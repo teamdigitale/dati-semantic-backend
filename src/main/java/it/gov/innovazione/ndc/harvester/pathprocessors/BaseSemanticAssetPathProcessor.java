@@ -1,7 +1,7 @@
 package it.gov.innovazione.ndc.harvester.pathprocessors;
 
-import it.gov.innovazione.ndc.config.HarvestExecutionContext;
-import it.gov.innovazione.ndc.config.HarvestExecutionContextUtils;
+import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContext;
+import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContextUtils;
 import it.gov.innovazione.ndc.harvester.exception.SinglePathProcessingException;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetModel;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;

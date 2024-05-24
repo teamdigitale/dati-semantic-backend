@@ -2,6 +2,7 @@ package it.gov.innovazione.ndc.harvester.csv;
 
 import it.gov.innovazione.ndc.repository.MarkerElasticSearchRepository;
 import it.gov.innovazione.ndc.repository.VirtuosoClient;
+import it.gov.innovazione.ndc.service.GithubService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,6 +24,9 @@ class NoDeepestLevelExtractorIntTest {
 
     @MockBean
     private VirtuosoClient virtuosoClient;
+
+    @MockBean
+    private GithubService githubService;
 
     @Test
     void shouldNotBeActivated() {
