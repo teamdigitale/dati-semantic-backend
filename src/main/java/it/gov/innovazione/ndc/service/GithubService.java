@@ -16,6 +16,7 @@ import org.kohsuke.github.GHIssue;
 import org.kohsuke.github.GHIssueState;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
+import org.kohsuke.github.HttpException;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -163,16 +164,17 @@ public class GithubService {
             return;
         }
         try {
-            if (isIssuerDisabledForRepo(HarvestExecutionContextUtils.getContext().getRepository().getUrl())) {
+            if (isIssuerDisabledForRepo(
+                HarvestExecutionContextUtils.getContext().getRepository().getUrl())) {
                 log.warn("GitHub service is not enabled for repo {}, skipping issue creation",
-                        HarvestExecutionContextUtils.getContext().getRepository().getUrl());
+                    HarvestExecutionContextUtils.getContext().getRepository().getUrl());
                 return;
             }
             HarvestExecutionContext context = HarvestExecutionContextUtils.getContext();
             List<HarvestExecutionContext.HarvesterExecutionError> errors = context.getErrors();
             if (errors.isEmpty()) {
                 log.info("No errors detected on repository {}, skipping issue creation",
-                        context.getRepository().getUrl());
+                    context.getRepository().getUrl());
                 return;
             }
             String repoUrl = context.getRepository().getUrl();
@@ -187,17 +189,17 @@ public class GithubService {
             GHRepository repository = ghRepository.get();
 
             String issueBody = String.join("\n",
-                    IntStream.range(0, errors.size())
-                            .map(i -> i + 1)
-                            .mapToObj(i -> asIssueBody(i, errors.get(i - 1)))
-                            .collect(Collectors.joining("\n\n")),
-                    "---",
-                    "**Origin**: Automatically opened by the harvester",
-                    "**runId**: " + context.getRunId(),
-                    "");
+                IntStream.range(0, errors.size())
+                    .map(i -> i + 1)
+                    .mapToObj(i -> asIssueBody(i, errors.get(i - 1)))
+                    .collect(Collectors.joining("\n\n")),
+                "---",
+                "**Origin**: Automatically opened by the harvester",
+                "**runId**: " + context.getRunId(),
+                "");
 
             String issueTitle =
-                    format("%s Error processing Semantic Assets (%s)", SCHEMA_GOV, context.getRunId());
+                format("%s Error processing Semantic Assets (%s)", SCHEMA_GOV, context.getRunId());
 
             if (context.getMaintainers().isEmpty()) {
                 log.warn("No maintainers found for repository {}", repoUrl);
@@ -209,19 +211,28 @@ public class GithubService {
                 }
             } else {
                 String maintainers = context.getMaintainers().stream()
-                        .map(Repository.Maintainer::getGit)
-                        .map(s -> "@" + s)
-                        .collect(Collectors.joining(", "));
+                    .map(Repository.Maintainer::getGit)
+                    .map(s -> "@" + s)
+                    .collect(Collectors.joining(", "));
                 issueBody += "\n\n" + maintainers;
             }
 
             repository.createIssue(issueTitle)
-                    .body(issueBody)
-                    .label("ndc")
-                    .create();
-
+                .body(issueBody)
+                .label("ndc")
+                .create();
         } catch (Exception e) {
-            log.error("Error creating issue", e);
+            if (e instanceof HttpException) {
+                HttpException httpException = (HttpException) e;
+                if (StringUtils.containsIgnoreCase(httpException.getMessage(),
+                    "Issues are disabled")) {
+                    log.warn("Cannot create issue because issues feature is disabled for repo {}",
+                        HarvestExecutionContextUtils.getContext().getRepository().getUrl());
+                    return;
+                }
+            }
+            log.error("An error occurred while creating issue for repo {}",
+                HarvestExecutionContextUtils.getContext().getRepository().getUrl(), e);
         }
     }
 
