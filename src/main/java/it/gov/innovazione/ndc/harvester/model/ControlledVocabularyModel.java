@@ -30,16 +30,16 @@ public class ControlledVocabularyModel extends BaseSemanticAssetModel {
 
     private String endpointUrl = "";
 
-    public ControlledVocabularyModel(Model coreModel, String source, String repoUrl) {
-        super(coreModel, source, repoUrl);
+    public ControlledVocabularyModel(Model coreModel, String source, String repoUrl, Instance instance) {
+        super(coreModel, source, repoUrl, instance);
     }
 
-    private ControlledVocabularyModel(Model coreModel, String source, String repoUrl, SemanticAssetModelValidationContext validationContext) {
-        super(coreModel, source, repoUrl, validationContext);
+    private ControlledVocabularyModel(Model coreModel, String source, String repoUrl, SemanticAssetModelValidationContext validationContext, Instance instance) {
+        super(coreModel, source, repoUrl, validationContext, instance);
     }
 
-    public static ControlledVocabularyModel forValidation(Model coreModel, String source, String repoUrl) {
-        return new ControlledVocabularyModel(coreModel, source, repoUrl, SemanticAssetModelValidationContext.getForValidation());
+    public static ControlledVocabularyModel forValidation(Model coreModel, String source, String repoUrl, Instance instance) {
+        return new ControlledVocabularyModel(coreModel, source, repoUrl, SemanticAssetModelValidationContext.getForValidation(), instance);
     }
 
     public String getKeyConcept() {

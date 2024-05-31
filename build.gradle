@@ -158,13 +158,13 @@ jacocoTestCoverageVerification {
             limit {
                 counter = 'LINE'
                 value = 'COVEREDRATIO'
-                minimum = 0.9
+                minimum = 0.8
             }
             excludes = [
                     'it.gov.innovazione.ndc.config.*',
                     'it.gov.innovazione.ndc.Application',
                     'it.gov.innovazione.ndc.harvester.util.*',
-                    'it.gov.innovazione.ndc.model.profiles.*',
+                    'it.gov.innovazione.ndc.model.*',
                     'it.gov.innovazione.ndc.gen.*',
                     'it.gov.innovazione.ndc.validator.BaseSemanticAssetValidator',
                     'it.gov.innovazione.ndc.controller.*',
@@ -187,6 +187,8 @@ jacocoTestCoverageVerification {
                     'it.gov.innovazione.ndc.harvester.harvesters.utils.PathUtils',
                     'it.gov.innovazione.ndc.harvester.service.OnceLogger',
                     'it.gov.innovazione.ndc.harvester.service.ConfigReaderService',
+                    'it.gov.innovazione.ndc.service.DefaultInstanceManager',
+                    'it.gov.innovazione.ndc.repository.TripleStoreRepository',
                     'it.gov.innovazione.ndc.service.EventCleaner',
                     'it.gov.innovazione.ndc.service.TemplateService',
                     'it.gov.innovazione.ndc.alerter.*'

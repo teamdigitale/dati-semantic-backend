@@ -1,5 +1,6 @@
 package it.gov.innovazione.ndc.harvester;
 
+import it.gov.innovazione.ndc.harvester.model.Instance;
 import it.gov.innovazione.ndc.harvester.service.RepositoryService;
 import it.gov.innovazione.ndc.harvester.util.FileUtils;
 import it.gov.innovazione.ndc.model.harvester.Repository;
@@ -9,7 +10,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -22,7 +22,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -88,22 +87,6 @@ class HarvesterServiceTest {
     }
 
     @Test
-    void shouldClearNamedGraphAndMetadataBeforeProcessingData() throws IOException {
-        String repoUrl = "someRepoUri";
-        Repository repo = asRepo(repoUrl);
-
-        when(agencyRepoService.cloneRepo(repoUrl, null)).thenReturn(clonedRepoPath);
-
-        harvesterService.harvest(asRepo(repoUrl));
-
-        InOrder order = inOrder(harvester, tripleStoreRepository, metadataRepository, harvester);
-        order.verify(harvester).cleanUpBeforeHarvesting(repoUrl);
-        order.verify(tripleStoreRepository).clearExistingNamedGraph(repoUrl);
-        order.verify(metadataRepository).deleteByRepoUrl(repoUrl);
-        order.verify(harvester).harvest(repo, clonedRepoPath);
-    }
-
-    @Test
     void shouldCleanUpTemporaryFolderWithRepoAfterProcessing() throws IOException {
         String repoUrl = "someRepoUri";
 
@@ -130,26 +113,13 @@ class HarvesterServiceTest {
     }
 
     @Test
-    void shouldClearRepoData() {
-        String repoUrl = "someRepoUri.git";
-        String sanitizedRepoUrl = repoUrl.replace(".git", "");
-
-        harvesterService.clear(repoUrl);
-
-        InOrder order = inOrder(harvester, tripleStoreRepository, metadataRepository, harvester);
-        order.verify(harvester).cleanUpBeforeHarvesting(sanitizedRepoUrl);
-        order.verify(tripleStoreRepository).clearExistingNamedGraph(sanitizedRepoUrl);
-        order.verify(metadataRepository).deleteByRepoUrl(sanitizedRepoUrl);
-    }
-
-    @Test
     void shouldPropagateExceptionWhileClearingRepo() {
         String repoUrl = "someRepoUri.git";
         String sanitizedRepoUrl = "someRepoUri";
 
 
         RuntimeException exception = new RuntimeException("Something bad happened!");
-        doThrow(exception).when(harvester).cleanUpBeforeHarvesting(sanitizedRepoUrl);
+        doThrow(exception).when(harvester).cleanUpBeforeHarvesting(sanitizedRepoUrl, Instance.PRIMARY);
 
         assertThatThrownBy(() -> harvesterService.clear(repoUrl))
                 .isSameAs(exception);

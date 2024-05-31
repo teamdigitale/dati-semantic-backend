@@ -1,19 +1,29 @@
 package it.gov.innovazione.ndc.harvester.model;
 
 import it.gov.innovazione.ndc.harvester.model.exception.InvalidModelException;
+import it.gov.innovazione.ndc.service.DefaultInstanceManager;
+import it.gov.innovazione.ndc.service.InstanceManager;
 import org.apache.jena.rdf.model.Resource;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 class SemanticAssetModelFactoryTest {
 
     public static final String REPO_URL = "http://repo";
-    private final SemanticAssetModelFactory factory = new SemanticAssetModelFactory();
+    private SemanticAssetModelFactory factory;
+
+    @BeforeEach
+    void setUp() {
+        InstanceManager instanceManager = mock(DefaultInstanceManager.class);
+        factory = new SemanticAssetModelFactory(instanceManager);
+    }
 
     @Test
     void canBuildControlledVocabularyModel() {

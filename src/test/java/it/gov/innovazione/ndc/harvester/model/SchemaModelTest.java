@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static it.gov.innovazione.ndc.harvester.SemanticAssetType.SCHEMA;
+import static it.gov.innovazione.ndc.harvester.model.Instance.PRIMARY;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.apache.jena.rdf.model.ResourceFactory.createLangLiteral;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
@@ -101,7 +102,7 @@ public class SchemaModelTest {
 
     @Test
     void shouldExtractMetadataWithIri() {
-        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
+        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
         SemanticAssetMetadata metadata = model.extractMetadata();
 
         assertThat(metadata.getIri()).isEqualTo(SCHEMA_IRI);
@@ -109,7 +110,7 @@ public class SchemaModelTest {
 
     @Test
     void shouldExtractWithRepoUrl() {
-        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
+        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
         SemanticAssetMetadata metadata = model.extractMetadata();
 
         assertThat(metadata.getRepoUrl()).isEqualTo("http://repo");
@@ -117,7 +118,7 @@ public class SchemaModelTest {
 
     @Test
     void shouldExtractMetadataWithTitleInEnglish() {
-        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
+        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
         SemanticAssetMetadata metadata = model.extractMetadata();
 
         assertThat(metadata.getTitle()).isEqualTo("title");
@@ -125,7 +126,7 @@ public class SchemaModelTest {
 
     @Test
     void shouldFailWhenExtractingMetadataWithOutTitle() {
-        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
+        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
         jenaModel.getResource(SCHEMA_IRI).removeAll(title);
 
         assertThatThrownBy(model::extractMetadata).isInstanceOf(
@@ -134,7 +135,7 @@ public class SchemaModelTest {
 
     @Test
     void shouldExtractMetadataWithDescription() {
-        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
+        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
         SemanticAssetMetadata metadata = model.extractMetadata();
 
         assertThat(metadata.getDescription()).isEqualTo("description");
@@ -143,7 +144,7 @@ public class SchemaModelTest {
     @Test
     void shouldFailWhenExtractingMetadataWithOutDescription() {
         jenaModel.getResource(SCHEMA_IRI).removeAll(description);
-        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
+        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
 
         assertThatThrownBy(model::extractMetadata).isInstanceOf(
             InvalidModelException.class);
@@ -151,7 +152,7 @@ public class SchemaModelTest {
 
     @Test
     void shouldExtractMetadataWithSemanticAssetType() {
-        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
+        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
 
         SemanticAssetMetadata metadata = model.extractMetadata();
 
@@ -160,7 +161,7 @@ public class SchemaModelTest {
 
     @Test
     void shouldValidateMetadataWithSemanticAssetType() {
-        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
+        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
 
         SemanticAssetModelValidationContext semanticAssetModelValidationContext = model.validateMetadata();
 
@@ -170,7 +171,7 @@ public class SchemaModelTest {
     
     @Test
     void shouldExtractMetadataWithRightsHolder() {
-        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
+        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
         SemanticAssetMetadata metadata = model.extractMetadata();
 
         assertThat(metadata.getRightsHolder().getIri()).isEqualTo(RIGHTS_HOLDER_IRI);
@@ -180,7 +181,7 @@ public class SchemaModelTest {
     @Test
     void shouldFailWhenExtractingMetadataWithOutRightsHolder() {
         jenaModel.getResource(SCHEMA_IRI).removeAll(rightsHolder);
-        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
+        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
 
         assertThatThrownBy(model::extractMetadata).isInstanceOf(
             InvalidModelException.class);
@@ -188,7 +189,7 @@ public class SchemaModelTest {
 
     @Test
     void shouldExtractMetadataWithModified() {
-        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
+        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
         SemanticAssetMetadata metadata = model.extractMetadata();
 
         assertThat(metadata.getModifiedOn()).isEqualTo(LocalDate.of(2021, 3, 2));
@@ -197,7 +198,7 @@ public class SchemaModelTest {
     @Test
     void shouldFailWhenExtractingMetadataWithOutModified() {
         jenaModel.getResource(SCHEMA_IRI).removeAll(modified);
-        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
+        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
         SemanticAssetMetadata metadata = model.extractMetadata();
 
         assertThat(metadata.getModifiedOn()).isNull();
@@ -205,7 +206,7 @@ public class SchemaModelTest {
 
     @Test
     void shouldExtractMetadataWithTheme() {
-        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
+        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
         SemanticAssetMetadata metadata = model.extractMetadata();
 
         assertThat(metadata.getThemes()).containsExactly("theme");
@@ -214,7 +215,7 @@ public class SchemaModelTest {
     @Test
     void shouldFailWhenExtractingMetadataWithOutTheme() {
         jenaModel.getResource(SCHEMA_IRI).removeAll(theme);
-        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
+        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
 
         assertThatThrownBy(model::extractMetadata).isInstanceOf(
             InvalidModelException.class);
@@ -222,7 +223,7 @@ public class SchemaModelTest {
 
     @Test
     void shouldExtractMetadataWithDistribution() {
-        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
+        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
 
         SemanticAssetMetadata metadata = model.extractMetadata();
 
@@ -234,7 +235,7 @@ public class SchemaModelTest {
     @Test
     void shouldFailWhenExtractingMetadataWithOutDistribution() {
         jenaModel.getResource(SCHEMA_IRI).removeAll(distribution);
-        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
+        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
 
         assertThatThrownBy(model::extractMetadata).isInstanceOf(
             InvalidModelException.class);
@@ -242,7 +243,7 @@ public class SchemaModelTest {
 
     @Test
     void shouldExtractMetadataWithIssued() {
-        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
+        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
         SemanticAssetMetadata metadata = model.extractMetadata();
 
         assertThat(metadata.getIssuedOn()).isEqualTo(LocalDate.of(2020, 1, 3));
@@ -251,7 +252,7 @@ public class SchemaModelTest {
     @Test
     void shouldFailWhenExtractingMetadataWithOutIssued() {
         jenaModel.getResource(SCHEMA_IRI).removeAll(issued);
-        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
+        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
         SemanticAssetMetadata metadata = model.extractMetadata();
 
         assertThat(metadata.getIssuedOn()).isNull();
@@ -259,7 +260,7 @@ public class SchemaModelTest {
 
     @Test
     void shouldExtractMetadataWithVersionInfo() {
-        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
+        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
         SemanticAssetMetadata metadata = model.extractMetadata();
 
         assertThat(metadata.getVersionInfo()).isEqualTo("1.0");
@@ -267,7 +268,7 @@ public class SchemaModelTest {
 
     @Test
     void shouldFailWhenExtractingMetadataWithOutVersionInfo() {
-        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
+        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
         jenaModel.getResource(SCHEMA_IRI).removeAll(versionInfo);
 
         assertThatThrownBy(model::extractMetadata).isInstanceOf(
@@ -276,7 +277,7 @@ public class SchemaModelTest {
 
     @Test
     void shouldExtractMetadataWithKeywords() {
-        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
+        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
         SemanticAssetMetadata metadata = model.extractMetadata();
 
         assertThat(metadata.getKeywords()).containsExactlyInAnyOrder("keyword1", "keyword2");
@@ -285,7 +286,7 @@ public class SchemaModelTest {
     @Test
     void shouldExtractMetadataWithoutKeywords() {
         jenaModel.getResource(SCHEMA_IRI).removeAll(keyword);
-        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
+        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
 
         SemanticAssetMetadata metadata = model.extractMetadata();
 
@@ -294,7 +295,7 @@ public class SchemaModelTest {
 
     @Test
     void shouldExtractMetadataWithConformsTo() {
-        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
+        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
         SemanticAssetMetadata metadata = model.extractMetadata();
 
         assertThat(metadata.getConformsTo()).hasSize(2);
@@ -307,7 +308,7 @@ public class SchemaModelTest {
     @Test
     void shouldExtractMetadataWithoutConformsTo() {
         jenaModel.getResource(SCHEMA_IRI).removeAll(conformsTo);
-        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
+        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
 
         SemanticAssetMetadata metadata = model.extractMetadata();
 
@@ -316,7 +317,7 @@ public class SchemaModelTest {
 
     @Test
     void shouldExtractHasKeyClassProperty() {
-        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
+        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
 
         SemanticAssetMetadata metadata = model.extractMetadata();
 
@@ -330,7 +331,7 @@ public class SchemaModelTest {
     @Test
     void shouldExtractMetadataWithoutHasKeyClassProperty() {
         jenaModel.getResource(SCHEMA_IRI).removeAll(Admsapit.hasKeyClass);
-        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
+        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
 
         SemanticAssetMetadata metadata = model.extractMetadata();
 
@@ -339,7 +340,7 @@ public class SchemaModelTest {
 
     @Test
     void shouldExtractMetadataWithStatus() {
-        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
+        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
         SemanticAssetMetadata metadata = model.extractMetadata();
 
         assertThat(metadata.getStatus()).containsExactlyInAnyOrder("catalogued", "published");
@@ -348,7 +349,7 @@ public class SchemaModelTest {
     @Test
     void shouldExtractMetadataWithOutStatus() {
         jenaModel.getResource(SCHEMA_IRI).removeAll(Admsapit.status);
-        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL);
+        SchemaModel model = new SchemaModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
         SemanticAssetMetadata metadata = model.extractMetadata();
 
         assertThat(metadata.getStatus()).isEmpty();

@@ -4,6 +4,7 @@ import it.gov.innovazione.ndc.harvester.csv.CsvParser;
 import it.gov.innovazione.ndc.harvester.csv.CsvParser.CsvData;
 import it.gov.innovazione.ndc.harvester.model.ControlledVocabularyModel;
 import it.gov.innovazione.ndc.harvester.model.CvPath;
+import it.gov.innovazione.ndc.harvester.model.Instance;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetModelFactory;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
@@ -63,10 +64,10 @@ public class ControlledVocabularyPathProcessor extends BaseSemanticAssetPathProc
         vocabularyDataService.indexData(vocabularyIdentifier, flatData);
     }
 
-    public void dropCsvIndicesForRepo(String repoUrl) {
+    public void dropCsvIndicesForRepo(String repoUrl, Instance instance) {
         log.debug("Retrieving vocab metadata for {} to drop indices", repoUrl);
 
-        List<SemanticAssetMetadata> vocabs = metadataRepository.findVocabulariesForRepoUrl(repoUrl);
+        List<SemanticAssetMetadata> vocabs = metadataRepository.findVocabulariesForRepoUrl(repoUrl, instance);
 
         if (log.isDebugEnabled()) {
             log.debug("Found {} vocabs with indices to drop", vocabs.size());

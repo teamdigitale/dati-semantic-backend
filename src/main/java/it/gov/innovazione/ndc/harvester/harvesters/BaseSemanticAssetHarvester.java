@@ -13,6 +13,7 @@ import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContext;
 import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContextUtils;
 import it.gov.innovazione.ndc.harvester.exception.SinglePathProcessingException;
 import it.gov.innovazione.ndc.harvester.harvesters.utils.PathUtils;
+import it.gov.innovazione.ndc.harvester.model.Instance;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
 import it.gov.innovazione.ndc.model.harvester.Repository;
 import lombok.RequiredArgsConstructor;
@@ -118,7 +119,7 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
     }
 
     @Override
-    public void cleanUpBeforeHarvesting(String repoUrl) {
+    public void cleanUpBeforeHarvesting(String repoUrl, Instance instance) {
         // by default nothing specific
     }
 

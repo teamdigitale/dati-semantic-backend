@@ -30,6 +30,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class TripleStoreRepositoryTest {
     private static final String REPO_URL = "http://www.repos.org/reponame";
+    private static final String OLD_REPO_URL = "http://old.www.repos.org/reponame";
 
     @Mock
     RDFConnection connection;
@@ -49,21 +50,21 @@ class TripleStoreRepositoryTest {
         tripleStoreRepository.save(REPO_URL, model);
 
         verify(virtuosoClient).getConnection();
-        verify(connection).load(REPO_URL, model);
+        verify(connection).load(OLD_REPO_URL, model);
     }
 
     @Test
     void shouldThrowWhenLoadingFails() {
         Model model = createSimpleModel();
-        doThrow(new HttpException("Something bad happened")).when(connection).load(REPO_URL, model);
+        doThrow(new HttpException("Something bad happened")).when(connection).load(OLD_REPO_URL, model);
         when(virtuosoClient.getConnection()).thenReturn(connection);
 
         assertThatThrownBy(() -> tripleStoreRepository.save(REPO_URL, model))
             .isInstanceOf(TripleStoreRepositoryException.class)
-            .hasMessage(String.format("Could not save model to '%s'", REPO_URL));
+                .hasMessage(String.format("Could not save model to '%s'", OLD_REPO_URL));
 
         verify(virtuosoClient).getConnection();
-        verify(connection).load(REPO_URL, model);
+        verify(connection).load(OLD_REPO_URL, model);
     }
 
     @Test

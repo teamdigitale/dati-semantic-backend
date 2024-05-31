@@ -1,6 +1,7 @@
 package it.gov.innovazione.ndc.validator;
 
 import it.gov.innovazione.ndc.harvester.SemanticAssetType;
+import it.gov.innovazione.ndc.harvester.model.Instance;
 import it.gov.innovazione.ndc.harvester.model.SchemaModel;
 import org.apache.jena.rdf.model.Model;
 import org.springframework.stereotype.Component;
@@ -14,6 +15,6 @@ public class SchemaValidator extends BaseSemanticAssetValidator<SchemaModel> {
 
     @Override
     protected SchemaModel getValidatorModel(Model rdfModel) {
-        return SchemaModel.forValidation(rdfModel, null, null);
+        return SchemaModel.forValidation(rdfModel, null, null, Instance.PRIMARY);
     }
 }

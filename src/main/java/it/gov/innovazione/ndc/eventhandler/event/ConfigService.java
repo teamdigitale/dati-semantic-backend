@@ -35,7 +35,7 @@ public abstract class ConfigService {
         }
     }
 
-    private <T> Optional<T> fromRepo(ActualConfigService.ConfigKey key, String repoId) {
+    public <T> Optional<T> fromRepo(ActualConfigService.ConfigKey key, String repoId) {
         try {
             Class<T> type = null;
 

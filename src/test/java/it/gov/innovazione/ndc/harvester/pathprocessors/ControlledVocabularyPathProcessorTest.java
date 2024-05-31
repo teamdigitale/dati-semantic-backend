@@ -4,6 +4,7 @@ import it.gov.innovazione.ndc.harvester.csv.CsvParser;
 import it.gov.innovazione.ndc.harvester.csv.CsvParser.CsvData;
 import it.gov.innovazione.ndc.harvester.model.ControlledVocabularyModel;
 import it.gov.innovazione.ndc.harvester.model.CvPath;
+import it.gov.innovazione.ndc.harvester.model.Instance;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetModelFactory;
 import it.gov.innovazione.ndc.harvester.model.index.RightsHolder;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
@@ -123,11 +124,11 @@ class ControlledVocabularyPathProcessorTest {
         String concept1 = "accomodation-ratings";
         String concept2 = "education-levels";
         List<SemanticAssetMetadata> vocabsMetadata = buildVocabsMetadataWithAgencyAndConcepts(agencyId, List.of(concept1, concept2));
-        when(metadataRepository.findVocabulariesForRepoUrl(REPO_URL)).thenReturn(vocabsMetadata);
+        when(metadataRepository.findVocabulariesForRepoUrl(REPO_URL, Instance.PRIMARY)).thenReturn(vocabsMetadata);
 
-        pathProcessor.dropCsvIndicesForRepo(REPO_URL);
+        pathProcessor.dropCsvIndicesForRepo(REPO_URL, Instance.PRIMARY);
 
-        verify(metadataRepository).findVocabulariesForRepoUrl(REPO_URL);
+        verify(metadataRepository).findVocabulariesForRepoUrl(REPO_URL, Instance.PRIMARY);
         verify(vocabularyDataService).dropIndex(new VocabularyIdentifier(agencyId, concept1));
         verify(vocabularyDataService).dropIndex(new VocabularyIdentifier(agencyId, concept2));
     }
@@ -138,10 +139,10 @@ class ControlledVocabularyPathProcessorTest {
         String concept1 = "accomodation-ratings";
         String concept2 = "education-levels";
         List<SemanticAssetMetadata> vocabsMetadata = buildVocabsMetadataWithAgencyAndConcepts(agencyId, List.of(concept1, concept2));
-        when(metadataRepository.findVocabulariesForRepoUrl(REPO_URL)).thenReturn(vocabsMetadata);
+        when(metadataRepository.findVocabulariesForRepoUrl(REPO_URL, Instance.PRIMARY)).thenReturn(vocabsMetadata);
         doThrow(new RuntimeException("Could not drop index")).when(vocabularyDataService).dropIndex(new VocabularyIdentifier(agencyId, concept1));
 
-        pathProcessor.dropCsvIndicesForRepo(REPO_URL);
+        pathProcessor.dropCsvIndicesForRepo(REPO_URL, Instance.PRIMARY);
 
         verify(vocabularyDataService).dropIndex(new VocabularyIdentifier(agencyId, concept1));
         verify(vocabularyDataService).dropIndex(new VocabularyIdentifier(agencyId, concept2));

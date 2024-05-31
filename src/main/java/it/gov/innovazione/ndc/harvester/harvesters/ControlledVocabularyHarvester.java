@@ -5,6 +5,7 @@ import it.gov.innovazione.ndc.eventhandler.event.ConfigService;
 import it.gov.innovazione.ndc.harvester.AgencyRepositoryService;
 import it.gov.innovazione.ndc.harvester.SemanticAssetType;
 import it.gov.innovazione.ndc.harvester.model.CvPath;
+import it.gov.innovazione.ndc.harvester.model.Instance;
 import it.gov.innovazione.ndc.harvester.pathprocessors.ControlledVocabularyPathProcessor;
 import org.springframework.stereotype.Component;
 
@@ -33,7 +34,7 @@ public class ControlledVocabularyHarvester extends BaseSemanticAssetHarvester<Cv
     }
 
     @Override
-    public void cleanUpBeforeHarvesting(String repoUrl) {
-        pathProcessor.dropCsvIndicesForRepo(repoUrl);
+    public void cleanUpBeforeHarvesting(String repoUrl, Instance instance) {
+        pathProcessor.dropCsvIndicesForRepo(repoUrl, instance);
     }
 }

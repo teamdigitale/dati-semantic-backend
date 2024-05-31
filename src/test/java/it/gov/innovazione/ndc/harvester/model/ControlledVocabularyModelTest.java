@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 
 import static it.gov.innovazione.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
+import static it.gov.innovazione.ndc.harvester.model.Instance.PRIMARY;
 import static java.util.Objects.nonNull;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
@@ -82,7 +83,7 @@ class ControlledVocabularyModelTest {
     @Test
     void shouldExtractMainResource() {
         ControlledVocabularyModel model =
-                new ControlledVocabularyModel(jenaModel, TTL_FILE, REPO_URL);
+            new ControlledVocabularyModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
 
         Resource mainResource = model.getMainResource();
 
@@ -92,7 +93,7 @@ class ControlledVocabularyModelTest {
     @Test
     void shouldExtractMetadataWithSemanticAssetType() {
         ControlledVocabularyModel model =
-                new ControlledVocabularyModel(jenaModel, TTL_FILE, REPO_URL);
+            new ControlledVocabularyModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
 
         SemanticAssetMetadata metadata = model.extractMetadata();
 
@@ -102,7 +103,7 @@ class ControlledVocabularyModelTest {
     @Test
     void shouldValidateMetadataWithSemanticAssetType() {
         ControlledVocabularyModel model =
-                new ControlledVocabularyModel(jenaModel, TTL_FILE, REPO_URL);
+            new ControlledVocabularyModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
 
         SemanticAssetModelValidationContext semanticAssetModelValidationContext = model.validateMetadata();
 
@@ -119,7 +120,7 @@ class ControlledVocabularyModelTest {
         conceptStatements.forEach(s -> jenaModel.remove(s));
 
         ControlledVocabularyModel model = new ControlledVocabularyModel(jenaModel, TTL_FILE,
-                REPO_URL);
+            REPO_URL, PRIMARY);
 
         assertThatThrownBy(() -> model.getMainResource()).isInstanceOf(InvalidModelException.class);
     }
@@ -131,7 +132,7 @@ class ControlledVocabularyModelTest {
                 .addProperty(RDF.type, createResource(CONTROLLED_VOCABULARY.getTypeIri()));
 
         ControlledVocabularyModel model = new ControlledVocabularyModel(jenaModel, TTL_FILE,
-                REPO_URL);
+            REPO_URL, PRIMARY);
 
         assertThatThrownBy(() -> model.getMainResource()).isInstanceOf(InvalidModelException.class);
     }
@@ -139,7 +140,7 @@ class ControlledVocabularyModelTest {
     @Test
     void shouldExtractKeyConcept() {
         ControlledVocabularyModel model = new ControlledVocabularyModel(jenaModel, TTL_FILE,
-                REPO_URL);
+            REPO_URL, PRIMARY);
 
         assertThat(model.getKeyConcept()).isEqualTo("test-concept");
     }
@@ -147,7 +148,7 @@ class ControlledVocabularyModelTest {
     @Test
     void shouldExtractMetadataWithDistribution() {
         ControlledVocabularyModel model =
-                new ControlledVocabularyModel(jenaModel, TTL_FILE, REPO_URL);
+            new ControlledVocabularyModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
 
         SemanticAssetMetadata metadata = model.extractMetadata();
 
@@ -164,7 +165,7 @@ class ControlledVocabularyModelTest {
         );
 
         ControlledVocabularyModel model =
-                new ControlledVocabularyModel(jenaModel, TTL_FILE, REPO_URL);
+            new ControlledVocabularyModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
 
         assertThatThrownBy(() -> model.extractMetadata())
                 .isInstanceOf(InvalidModelException.class)
@@ -183,7 +184,7 @@ class ControlledVocabularyModelTest {
     void shouldFailWhenExtractingMetadataWithOutDistribution() {
         jenaModel.getResource(CV_IRI).removeAll(distribution);
         ControlledVocabularyModel model =
-                new ControlledVocabularyModel(jenaModel, TTL_FILE, REPO_URL);
+            new ControlledVocabularyModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
 
 
         assertThatThrownBy(() -> model.extractMetadata()).isInstanceOf(
@@ -195,7 +196,7 @@ class ControlledVocabularyModelTest {
         jenaModel.getResource(CV_IRI).removeAll(NDC.keyConcept);
 
         ControlledVocabularyModel model = new ControlledVocabularyModel(jenaModel, TTL_FILE,
-                REPO_URL);
+            REPO_URL, PRIMARY);
 
         assertThatThrownBy(() -> model.getKeyConcept()).isInstanceOf(InvalidModelException.class);
     }
@@ -206,7 +207,7 @@ class ControlledVocabularyModelTest {
         jenaModel.getResource(CV_IRI).getProperty(NDC.keyConcept).changeObject(keyConcept);
 
         ControlledVocabularyModel model = new ControlledVocabularyModel(jenaModel, TTL_FILE,
-                REPO_URL);
+            REPO_URL, PRIMARY);
 
         assertThatThrownBy(() -> model.getKeyConcept()).isInstanceOf(InvalidModelException.class);
     }
@@ -219,7 +220,7 @@ class ControlledVocabularyModelTest {
                 .addProperty(NDC.keyConcept, "another-concept");
 
         ControlledVocabularyModel model = new ControlledVocabularyModel(jenaModel, TTL_FILE,
-                REPO_URL);
+            REPO_URL, PRIMARY);
 
         assertThatThrownBy(() -> model.getKeyConcept()).isInstanceOf(InvalidModelException.class);
     }
@@ -227,7 +228,7 @@ class ControlledVocabularyModelTest {
     @Test
     void shouldExtractAgencyId() {
         ControlledVocabularyModel model = new ControlledVocabularyModel(jenaModel, TTL_FILE,
-                REPO_URL);
+            REPO_URL, PRIMARY);
 
         assertThat(model.getAgencyId().getIdentifier()).isEqualTo("agid");
     }
@@ -236,7 +237,7 @@ class ControlledVocabularyModelTest {
     void shouldComplainIfRightsHolderIsUndefined() {
         jenaModel.getResource(CV_IRI).getProperty(rightsHolder).remove();
         ControlledVocabularyModel model = new ControlledVocabularyModel(jenaModel, TTL_FILE,
-                REPO_URL);
+            REPO_URL, PRIMARY);
 
         assertThatThrownBy(() -> model.getAgencyId())
                 .isInstanceOf(InvalidModelException.class)
@@ -247,7 +248,7 @@ class ControlledVocabularyModelTest {
     void shouldComplainIfRightsHolderHasNoId() {
         jenaModel.getResource(RIGHTS_HOLDER_IRI).getProperty(identifier).remove();
         ControlledVocabularyModel model = new ControlledVocabularyModel(jenaModel, TTL_FILE,
-                REPO_URL);
+            REPO_URL, PRIMARY);
 
         assertThatThrownBy(() -> model.getAgencyId())
                 .isInstanceOf(InvalidModelException.class)
@@ -258,7 +259,7 @@ class ControlledVocabularyModelTest {
     @Test
     void shouldExtractKeyConceptMetaData() {
         ControlledVocabularyModel model = new ControlledVocabularyModel(jenaModel, TTL_FILE,
-                REPO_URL);
+            REPO_URL, PRIMARY);
 
         SemanticAssetMetadata semanticAssetMetadata = model.extractMetadata();
 
@@ -268,7 +269,7 @@ class ControlledVocabularyModelTest {
     @Test
     void shouldExtractAgencyIdMetaData() {
         ControlledVocabularyModel model = new ControlledVocabularyModel(jenaModel, TTL_FILE,
-                REPO_URL);
+            REPO_URL, PRIMARY);
 
         SemanticAssetMetadata semanticAssetMetadata = model.extractMetadata();
 
@@ -278,7 +279,7 @@ class ControlledVocabularyModelTest {
     @Test
     void shouldProvideEndpointUrlAsPartOfMetaDataAfterEnrichingModel() {
         ControlledVocabularyModel model = new ControlledVocabularyModel(jenaModel, TTL_FILE,
-                REPO_URL);
+            REPO_URL, PRIMARY);
 
         model.addNdcDataServiceProperties(ENDPOINT_BASE_URL);
 
@@ -290,7 +291,7 @@ class ControlledVocabularyModelTest {
     @Test
     void shouldAddDataService() {
         ControlledVocabularyModel model = new ControlledVocabularyModel(jenaModel, TTL_FILE,
-                REPO_URL);
+            REPO_URL, PRIMARY);
 
         model.addNdcDataServiceProperties(ENDPOINT_BASE_URL);
 
