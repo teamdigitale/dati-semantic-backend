@@ -58,10 +58,11 @@ public abstract class AbstractCrudController<T extends Nameable, D extends Namea
 
     @PostMapping
     @ResponseStatus(CREATED)
-    public void create(@Valid @RequestBody D dto) {
+    public D create(@Valid @RequestBody D dto) {
         handlePreCreate(dto);
         D createdEntity = getEntityService().create(dto);
         handlePostCreate(createdEntity);
+        return createdEntity;
     }
 
     protected void handlePreCreate(D dto) {
@@ -74,10 +75,11 @@ public abstract class AbstractCrudController<T extends Nameable, D extends Namea
 
     @PatchMapping
     @ResponseStatus(CREATED)
-    public void update(@Valid @RequestBody D dto) {
+    public D update(@Valid @RequestBody D dto) {
         handlePreUpdate(dto);
         D updatedDto = getEntityService().update(dto);
         handlePostUpdate(updatedDto);
+        return updatedDto;
     }
 
     protected void handlePreUpdate(D dto) {

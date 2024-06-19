@@ -26,9 +26,9 @@ public class EventController extends AbstractCrudController<Event, EventDto> {
     private final EventMapper entityMapper;
 
     @Override
-    public void create(@Valid @RequestBody EventDto entity) {
+    public EventDto create(@Valid @RequestBody EventDto entity) {
         // todo: logic to handle the event
-        super.create(entity);
+        return super.create(entity);
     }
 
     @Override
