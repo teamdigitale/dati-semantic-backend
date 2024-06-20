@@ -1,5 +1,5 @@
 package it.gov.innovazione.ndc.alerter.entities;
 
-public interface IdEntity {
+public interface Identifiable {
     String getId();
 }

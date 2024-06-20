@@ -3,6 +3,7 @@ package it.gov.innovazione.ndc.alerter.data;
 import it.gov.innovazione.ndc.alerter.entities.EventCategory;
 import it.gov.innovazione.ndc.alerter.entities.Profile;
 import it.gov.innovazione.ndc.alerter.entities.Severity;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,8 +29,10 @@ public class ProfileService extends EntityService<Profile> {
             Pair.of("Application Manager", List.of(EventCategory.APPLICATION)),
             Pair.of("Infrastructure Manager", List.of(EventCategory.INFRASTRUCTURE)),
             Pair.of("Administrator", List.of(EventCategory.SEMANTIC, EventCategory.APPLICATION, EventCategory.INFRASTRUCTURE)));
-    @Getter
+    @Getter(AccessLevel.PROTECTED)
     private final ProfileRepository repository;
+    @Getter(AccessLevel.PROTECTED)
+    private final String entityName = "Profile";
 
     @EventListener(ApplicationStartedEvent.class)
     public void onApplicationStarted() {

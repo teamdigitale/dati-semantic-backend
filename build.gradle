@@ -51,6 +51,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-jdbc'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
 
     implementation group: 'org.springframework.security', name: 'spring-security-core', version: '5.7.12'
     implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '5.7.12'
@@ -84,6 +87,8 @@ dependencies {
     testCompileOnly 'org.projectlombok:lombok'
     integrationCompileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
 
     compileOnly "com.github.spotbugs:spotbugs-annotations:${spotbugs.toolVersion.get()}"
 	testCompileOnly "com.github.spotbugs:spotbugs-annotations:${spotbugs.toolVersion.get()}"
