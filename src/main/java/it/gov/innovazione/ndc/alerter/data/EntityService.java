@@ -33,37 +33,31 @@ public abstract class EntityService<T extends Nameable> {
     }
 
     public T update(T entity) {
-        Optional<T> entityIfExists = getRepository().findById(entity.getId());
-        if (entityIfExists.isEmpty()) {
-            throw new ConflictingOperationException(getEntityName() + " does not exist");
+        if (entity.getId() == null) {
+            throw new ConflictingOperationException(getEntityName() + " id must not be null for update operation");
         }
-        return getRepository().save(entity);
-
+        T existingEntity = getById(entity.getId());
+        return getRepository().save(existingEntity);
     }
 
     public T delete(String id) {
-        Optional<T> entityIfExists = getRepository().findById(id);
-        if (entityIfExists.isEmpty()) {
-            throw new ConflictingOperationException(getEntityName() + " does not exist");
-        }
-        getRepository().delete(entityIfExists.get());
-        return entityIfExists.get();
+        T entity = getById(id);
+        getRepository().delete(entity);
+        return entity;
     }
 
     public T getById(String id) {
-        Optional<T> entityIfExists = getRepository().findById(id);
-        if (entityIfExists.isEmpty()) {
-            throw new ConflictingOperationException(getEntityName() + " does not exist");
-        }
-        return entityIfExists.get();
+        return getRepository().findById(id)
+                .orElseThrow(this::entityDoesNotExistsException);
     }
 
     public T getByName(String name) {
-        Optional<T> entityIfExists = getRepository().findByName(name);
-        if (entityIfExists.isEmpty()) {
-            throw new ConflictingOperationException(getEntityName() + " does not exist");
-        }
-        return entityIfExists.get();
+        return getRepository().findByName(name)
+                .orElseThrow(this::entityDoesNotExistsException);
+    }
+
+    private ConflictingOperationException entityDoesNotExistsException() {
+        return new ConflictingOperationException(getEntityName() + " does not exist");
     }
 
     @ResponseStatus(HttpStatus.CONFLICT)

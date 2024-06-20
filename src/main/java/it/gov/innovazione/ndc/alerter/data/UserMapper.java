@@ -9,8 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 @Mapper(componentModel = "spring")
 public abstract class UserMapper implements EntityMapper<User, UserDto> {
 
-    @Autowired
     protected ProfileService profileService;
+
+    @Autowired
+    public void setProfileService(ProfileService profileService) {
+        this.profileService = profileService;
+    }
 
     @Override
     @Mapping(target = "profile", source = "profile.name")

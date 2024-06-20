@@ -9,8 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 @Mapper(componentModel = "spring")
 public abstract class EventMapper implements EntityMapper<Event, EventDto> {
 
-    @Autowired
     protected ContextUtils contextUtils;
+
+    @Autowired
+    public void setContextUtils(ContextUtils contextUtils) {
+        this.contextUtils = contextUtils;
+    }
 
     @Override
     @Mapping(target = "context", expression = "java(contextUtils.toContext(entity.getContext()))")

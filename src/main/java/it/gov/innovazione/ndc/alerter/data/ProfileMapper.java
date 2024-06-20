@@ -7,9 +7,4 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public abstract class ProfileMapper implements EntityMapper<Profile, ProfileDto> {
 
-    @Override
-    public abstract ProfileDto toDto(Profile entity);
-
-    @Override
-    public abstract Profile toEntity(ProfileDto dto);
 }
