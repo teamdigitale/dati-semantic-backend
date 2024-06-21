@@ -65,8 +65,9 @@ public abstract class EntityService<T extends Nameable, D extends Nameable> {
 
     public D delete(String id) {
         T entity = getEntityById(id);
+        D dto = toDto(entity);
         getRepository().delete(entity);
-        return toDto(entity);
+        return dto;
     }
 
     public D getById(String id) {

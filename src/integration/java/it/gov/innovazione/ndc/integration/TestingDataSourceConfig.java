@@ -1,6 +1,6 @@
 package it.gov.innovazione.ndc.integration;
 
-import it.gov.innovazione.ndc.alerter.data.DataInitializer;
+import it.gov.innovazione.ndc.alerter.data.initializer.DataInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
