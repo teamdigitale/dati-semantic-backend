@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -27,9 +28,14 @@ public class ContextUtils {
 
     public Map<String, Object> toContext(String context) {
         try {
-            return objectMapper.readValue(context, TYPE_REF);
+            return objectMapper.readValue(defaultContextIfNull(context), TYPE_REF);
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException("Error while deserializing context: " + context, e);
         }
     }
+
+    private String defaultContextIfNull(String context) {
+        return Objects.nonNull(context) ? context : "{}";
+    }
+
 }

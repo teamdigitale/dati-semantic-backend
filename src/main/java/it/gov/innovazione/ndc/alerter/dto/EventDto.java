@@ -22,6 +22,5 @@ public class EventDto implements Nameable {
     private Severity severity = Severity.INFO;
     private Map<String, Object> context = Map.of();
     private Instant occurredAt = Instant.now();
-    private Instant createdAt = Instant.now();
     private String createdBy = "system";
 }

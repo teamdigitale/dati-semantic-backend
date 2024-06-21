@@ -21,6 +21,6 @@ public abstract class UserMapper implements EntityMapper<User, UserDto> {
     public abstract UserDto toDto(User entity);
 
     @Override
-    @Mapping(target = "profile", expression = "java(profileService.getByName(dto.getProfile()))")
+    @Mapping(target = "profile", expression = "java(profileService.getEntityByName(dto.getProfile()))")
     public abstract User toEntity(UserDto dto);
 }

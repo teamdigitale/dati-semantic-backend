@@ -22,5 +22,6 @@ public abstract class EventMapper implements EntityMapper<Event, EventDto> {
 
     @Override
     @Mapping(target = "context", expression = "java(contextUtils.fromContext(dto.getContext()))")
+    @Mapping(target = "createdAt", ignore = true)
     public abstract Event toEntity(EventDto dto);
 }

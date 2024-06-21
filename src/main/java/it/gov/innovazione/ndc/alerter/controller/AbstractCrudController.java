@@ -1,11 +1,13 @@
 package it.gov.innovazione.ndc.alerter.controller;
 
 
-import it.gov.innovazione.ndc.alerter.data.EntityMapper;
 import it.gov.innovazione.ndc.alerter.data.EntityService;
+import it.gov.innovazione.ndc.alerter.dto.SlimPager;
 import it.gov.innovazione.ndc.alerter.entities.Nameable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -15,8 +17,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import javax.validation.Valid;
-import java.util.List;
 
+import static java.util.stream.Collectors.toList;
 import static org.springframework.http.HttpStatus.CREATED;
 
 
@@ -24,25 +26,41 @@ import static org.springframework.http.HttpStatus.CREATED;
 @RequiredArgsConstructor
 public abstract class AbstractCrudController<T extends Nameable, D extends Nameable> {
 
-    abstract EntityService<T> getEntityService();
-
-    abstract EntityMapper<T, D> getEntityMapper();
+    abstract EntityService<T, D> getEntityService();
 
     @GetMapping
-    public List<D> getAll() {
-        return getEntityMapper().toDto(getEntityService().getAll());
+    public SlimPager<D> getPaginated(Pageable pageable) {
+        return toSlimPager(getEntityService().getPaginated(pageable));
+    }
+
+    private SlimPager<D> toSlimPager(Page<D> paginated) {
+        return SlimPager.of(
+                paginated.getContent(),
+                SlimPager.PageInfo.of(
+                        paginated.getSort().get()
+                                .map(order -> SlimPager.SlimOrder.of(
+                                        order.getProperty(),
+                                        order.getDirection()))
+                                .collect(toList()),
+                        paginated.getPageable().getPageNumber(),
+                        paginated.getPageable().getPageSize(),
+                        paginated.getTotalPages(),
+                        paginated.getTotalElements(),
+                        paginated.isFirst(),
+                        paginated.isLast()
+                ));
     }
 
     @GetMapping("{id}")
     public D getOne(@PathVariable String id) {
-        return getEntityMapper().toDto(getEntityService().getById(id));
+        return getEntityService().getById(id);
     }
 
     @PostMapping
     @ResponseStatus(CREATED)
     public void create(@Valid @RequestBody D dto) {
         handlePreCreate(dto);
-        T createdEntity = getEntityService().create(getEntityMapper().toEntity(dto));
+        D createdEntity = getEntityService().create(dto);
         handlePostCreate(createdEntity);
     }
 
@@ -50,7 +68,7 @@ public abstract class AbstractCrudController<T extends Nameable, D extends Namea
         log.info("Creating entity from dto: {}", dto);
     }
 
-    protected void handlePostCreate(T createdEntity) {
+    protected void handlePostCreate(D createdEntity) {
         log.info("Created entity: {}", createdEntity);
     }
 
@@ -58,31 +76,31 @@ public abstract class AbstractCrudController<T extends Nameable, D extends Namea
     @ResponseStatus(CREATED)
     public void update(@Valid @RequestBody D dto) {
         handlePreUpdate(dto);
-        T updatedEntity = getEntityService().update(getEntityMapper().toEntity(dto));
-        handlePostUpdate(updatedEntity);
+        D updatedDto = getEntityService().update(dto);
+        handlePostUpdate(updatedDto);
     }
 
     protected void handlePreUpdate(D dto) {
         log.info("Updating entity from dto: {}", dto);
     }
 
-    protected void handlePostUpdate(T updatedEntity) {
-        log.info("Updated entity: {}", updatedEntity);
+    protected void handlePostUpdate(D updatedDto) {
+        log.info("Updated entity: {}", updatedDto);
     }
 
     @DeleteMapping("{id}")
     @ResponseStatus(CREATED)
     public void delete(@PathVariable String id) {
         handlePreDelete(id);
-        T deletedEntity = getEntityService().delete(id);
-        handlePostDelete(deletedEntity);
+        D deletedDto = getEntityService().delete(id);
+        handlePostDelete(deletedDto);
     }
 
     protected void handlePreDelete(String id) {
         log.info("Deleting entity with id: {}", id);
     }
 
-    protected void handlePostDelete(T deletedEntity) {
-        log.info("Deleted entity: {}", deletedEntity);
+    protected void handlePostDelete(D deletedDto) {
+        log.info("Deleted entity: {}", deletedDto);
     }
 }
