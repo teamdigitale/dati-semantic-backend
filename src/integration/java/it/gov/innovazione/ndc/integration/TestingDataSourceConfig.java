@@ -1,5 +1,6 @@
 package it.gov.innovazione.ndc.integration;
 
+import it.gov.innovazione.ndc.alerter.data.DataInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -20,5 +21,12 @@ public class TestingDataSourceConfig {
                 .setScriptEncoding("UTF-8")
                 .ignoreFailedDrops(true)
                 .build();
+    }
+
+    @Bean
+    @Primary
+    public DataInitializer dataInitializer() {
+        return () -> {
+        };
     }
 }
