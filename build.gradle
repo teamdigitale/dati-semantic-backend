@@ -49,7 +49,11 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
 
     implementation group: 'org.springframework.security', name: 'spring-security-core', version: '5.7.12'
     implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '5.7.12'
@@ -84,6 +88,8 @@ dependencies {
     integrationCompileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+
     compileOnly "com.github.spotbugs:spotbugs-annotations:${spotbugs.toolVersion.get()}"
 	testCompileOnly "com.github.spotbugs:spotbugs-annotations:${spotbugs.toolVersion.get()}"
 	integrationCompileOnly "com.github.spotbugs:spotbugs-annotations:${spotbugs.toolVersion.get()}"
@@ -98,7 +104,7 @@ dependencies {
     integrationImplementation "org.testcontainers:elasticsearch:1.18.3"
     integrationImplementation "org.testcontainers:testcontainers:1.18.3"
     integrationImplementation "org.testcontainers:junit-jupiter:1.18.3"
-    integrationImplementation "com.h2database:h2:2.0.202"
+    integrationImplementation "com.h2database:h2:2.2.224"
 
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.4.2.Final'
@@ -199,7 +205,8 @@ jacocoTestCoverageVerification {
                     'it.gov.innovazione.ndc.service.GithubService*',
                     'it.gov.innovazione.ndc.harvester.harvesters.utils.PathUtils',
                     'it.gov.innovazione.ndc.harvester.service.OnceLogger',
-                    'it.gov.innovazione.ndc.harvester.service.ConfigReaderService'
+                    'it.gov.innovazione.ndc.harvester.service.ConfigReaderService',
+                    'it.gov.innovazione.ndc.alerter.*'
             ]
         }
     }
