@@ -1,6 +1,5 @@
 package it.gov.innovazione.ndc.alerter.dto;
 
-import it.gov.innovazione.ndc.alerter.entities.EventCategory;
 import it.gov.innovazione.ndc.alerter.entities.Nameable;
 import it.gov.innovazione.ndc.alerter.entities.Severity;
 import lombok.Data;
@@ -15,7 +14,7 @@ public class ProfileDto implements Nameable {
     @NotBlank(message = "Name is mandatory")
     private String name;
     @NotEmpty(message = "Event categories are mandatory")
-    private List<EventCategory> eventCategories;
+    private List<String> eventCategories;
     private Severity minSeverity = Severity.INFO;
     private Integer aggregationTime = 60;
 }
