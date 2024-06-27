@@ -32,7 +32,6 @@ public class Repository {
     private Map<ActualConfigService.ConfigKey, ConfigService.ConfigEntry> config;
     @JsonIgnore
     private Map<String, Map<String, String>> rightsHolders;
-    private List<Maintainer> maintainers;
 
     @Override
     public String toString() {
