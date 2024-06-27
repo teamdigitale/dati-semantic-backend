@@ -7,7 +7,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.ResponseStatus;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public abstract class EntityService<T extends Nameable, D extends Nameable> {
@@ -86,6 +90,13 @@ public abstract class EntityService<T extends Nameable, D extends Nameable> {
 
     private ConflictingOperationException entityDoesNotExistsException() {
         return new ConflictingOperationException(getEntityName() + " does not exist");
+    }
+
+    @Transactional(readOnly = true)
+    public List<D> findAll() {
+        return getRepository().findAll().stream()
+                .map(a -> getEntityMapper().toDto(a))
+                .collect(Collectors.toList());
     }
 
     @ResponseStatus(HttpStatus.CONFLICT)

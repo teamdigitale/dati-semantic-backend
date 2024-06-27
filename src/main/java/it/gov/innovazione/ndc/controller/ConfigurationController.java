@@ -1,7 +1,12 @@
 package it.gov.innovazione.ndc.controller;
 
+import it.gov.innovazione.ndc.alerter.entities.EventCategory;
+import it.gov.innovazione.ndc.alerter.entities.Severity;
+import it.gov.innovazione.ndc.alerter.event.AlertableEvent;
+import it.gov.innovazione.ndc.eventhandler.NdcEventPublisher;
+import it.gov.innovazione.ndc.eventhandler.event.ConfigService;
 import it.gov.innovazione.ndc.harvester.service.ActualConfigService;
-import it.gov.innovazione.ndc.harvester.service.ConfigService;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.ACCEPTED;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -28,6 +34,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 public class ConfigurationController {
 
     private final ActualConfigService configService;
+    private final NdcEventPublisher eventPublisher;
 
     @GetMapping
     public Map<ActualConfigService.ConfigKey, ConfigService.ConfigEntry> getConfig(
@@ -49,6 +56,10 @@ public class ConfigurationController {
             return;
         }
         configService.setConfig(config, principal.getName(), repoId);
+        eventPublisher.publishAlertableEvent("Configuration", WebConfigAlertableEvent.builder()
+                .repoId(repoId)
+                .config(config)
+                .build());
     }
 
     @PutMapping("/{configKey}")
@@ -63,6 +74,11 @@ public class ConfigurationController {
             return;
         }
         configService.writeConfigKey(configKey, principal.getName(), value, repoId);
+        eventPublisher.publishAlertableEvent("Configuration",
+                WebConfigAlertableEvent.builder()
+                        .repoId(repoId)
+                        .config(Map.of(configKey, value))
+                        .build());
     }
 
     @DeleteMapping("/{configKey}")
@@ -76,5 +92,43 @@ public class ConfigurationController {
             return;
         }
         configService.removeConfigKey(configKey, principal.getName(), repoId);
+        eventPublisher.publishAlertableEvent("Configuration",
+                WebConfigAlertableEvent.builder()
+                        .repoId(repoId)
+                        .config(Map.of(configKey, "removed"))
+                        .build());
+    }
+
+    @Builder
+    @RequiredArgsConstructor
+    private static class WebConfigAlertableEvent implements AlertableEvent {
+        private final String repoId;
+        private final Map<ActualConfigService.ConfigKey, Object> config;
+
+        @Override
+        public String getName() {
+            return "Configuration updated";
+        }
+
+        @Override
+        public String getDescription() {
+            return "Configuration updated for repository " + repoId;
+        }
+
+        @Override
+        public EventCategory getCategory() {
+            return EventCategory.APPLICATION;
+        }
+
+        @Override
+        public Severity getSeverity() {
+            return Severity.INFO;
+        }
+
+        @Override
+        public Map<String, Object> getContext() {
+            return config.entrySet().stream()
+                    .collect(Collectors.toMap(e -> e.getKey().name(), Map.Entry::getValue));
+        }
     }
 }

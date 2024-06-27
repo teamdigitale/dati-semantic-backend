@@ -5,6 +5,7 @@ import it.gov.innovazione.ndc.alerter.entities.EventCategory;
 import it.gov.innovazione.ndc.alerter.entities.Profile;
 import lombok.SneakyThrows;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,6 +14,10 @@ import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public abstract class ProfileMapper implements EntityMapper<Profile, ProfileDto> {
+
+    @Override
+    @Mapping(target = "lastAlertedAt", ignore = true)
+    public abstract Profile toEntity(ProfileDto dto);
 
     @SneakyThrows
     protected List<EventCategory> stringListToEventCategoryList(List<String> list) {

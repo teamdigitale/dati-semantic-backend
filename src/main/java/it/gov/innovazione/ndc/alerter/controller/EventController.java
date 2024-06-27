@@ -7,11 +7,8 @@ import it.gov.innovazione.ndc.alerter.entities.Event;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.validation.Valid;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,12 +21,6 @@ public class EventController extends AbstractCrudController<Event, EventDto> {
     private final EventService entityService;
     @Getter(AccessLevel.PROTECTED)
     private final EventMapper entityMapper;
-
-    @Override
-    public EventDto create(@Valid @RequestBody EventDto entity) {
-        // todo: logic to handle the event
-        return super.create(entity);
-    }
 
     @Override
     protected void handlePreUpdate(EventDto entity) {

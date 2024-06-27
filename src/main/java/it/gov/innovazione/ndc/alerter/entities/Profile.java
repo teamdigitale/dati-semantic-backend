@@ -13,6 +13,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import java.time.Instant;
 import java.util.List;
 
 @Data
@@ -34,5 +35,8 @@ public class Profile implements Nameable {
     @Column(nullable = false)
     private Severity minSeverity;
     @Column(nullable = false)
-    private Integer aggregationTime;
+    private Long aggregationTime;
+    @Column(nullable = false)
+    @Builder.Default
+    private Instant lastAlertedAt = Instant.now();
 }

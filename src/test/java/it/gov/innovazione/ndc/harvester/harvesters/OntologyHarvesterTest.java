@@ -1,9 +1,9 @@
 package it.gov.innovazione.ndc.harvester.harvesters;
 
+import it.gov.innovazione.ndc.eventhandler.event.ConfigService;
 import it.gov.innovazione.ndc.harvester.AgencyRepositoryService;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
 import it.gov.innovazione.ndc.harvester.pathprocessors.OntologyPathProcessor;
-import it.gov.innovazione.ndc.harvester.service.ConfigService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

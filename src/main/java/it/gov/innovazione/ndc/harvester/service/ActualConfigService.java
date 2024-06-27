@@ -1,6 +1,7 @@
 package it.gov.innovazione.ndc.harvester.service;
 
 import it.gov.innovazione.ndc.eventhandler.NdcEventPublisher;
+import it.gov.innovazione.ndc.eventhandler.event.ConfigService;
 import it.gov.innovazione.ndc.model.harvester.Repository;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -266,7 +267,8 @@ public class ActualConfigService extends ConfigService {
     @RequiredArgsConstructor
     public enum ConfigKey {
         MAX_FILE_SIZE_BYTES("The maximum file size in bytes of a file to be harvested", Validator.IS_LONG, Parser.TO_LONG),
-        GITHUB_ISSUER_ENABLED("Enable the GitHub issuer capability", Validator.IS_BOOLEAN, Parser.TO_BOOLEAN);
+        GITHUB_ISSUER_ENABLED("Enable the GitHub issuer capability", Validator.IS_BOOLEAN, Parser.TO_BOOLEAN),
+        ALERTER_ENABLED("Enable the Alerter capability", Validator.IS_BOOLEAN, Parser.TO_BOOLEAN);
 
         private final String description;
         private final Validator validator;

@@ -1,6 +1,10 @@
 package it.gov.innovazione.ndc.harvester.harvesters;
 
+import it.gov.innovazione.ndc.alerter.entities.EventCategory;
+import it.gov.innovazione.ndc.alerter.entities.Severity;
+import it.gov.innovazione.ndc.alerter.event.DefaultAlertableEvent;
 import it.gov.innovazione.ndc.eventhandler.NdcEventPublisher;
+import it.gov.innovazione.ndc.eventhandler.event.ConfigService;
 import it.gov.innovazione.ndc.eventhandler.event.HarvestedFileTooBigEvent;
 import it.gov.innovazione.ndc.eventhandler.event.HarvestedFileTooBigEvent.ViolatingSemanticAsset;
 import it.gov.innovazione.ndc.harvester.SemanticAssetHarvester;
@@ -10,7 +14,6 @@ import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContextUtils;
 import it.gov.innovazione.ndc.harvester.exception.SinglePathProcessingException;
 import it.gov.innovazione.ndc.harvester.harvesters.utils.PathUtils;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
-import it.gov.innovazione.ndc.harvester.service.ConfigService;
 import it.gov.innovazione.ndc.model.harvester.Repository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -55,6 +59,18 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
             } catch (SinglePathProcessingException e) {
                 Optional.ofNullable(HarvestExecutionContextUtils.getContext())
                         .ifPresent(context -> context.addHarvestingError(repository, e, path.getAllFiles()));
+                eventPublisher.publishAlertableEvent(
+                        "harvester",
+                        DefaultAlertableEvent.builder()
+                                .name("Harvester Single Path Processing Error")
+                                .description("Error processing " + type + " " + path + " in repo " + repository.getUrl())
+                                .category(EventCategory.SEMANTIC)
+                                .severity(Severity.WARNING)
+                                .context(Map.of(
+                                        "error", e.getMessage(),
+                                        "path", path.getTtlPath(),
+                                        "repo", repository.getUrl()))
+                                .build());
                 log.error("Error processing {} {} in repo {}", type, path, repository.getUrl(), e);
             }
         }

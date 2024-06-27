@@ -1,5 +1,9 @@
 package it.gov.innovazione.ndc.controller;
 
+import it.gov.innovazione.ndc.alerter.entities.EventCategory;
+import it.gov.innovazione.ndc.alerter.entities.Severity;
+import it.gov.innovazione.ndc.alerter.event.DefaultAlertableEvent;
+import it.gov.innovazione.ndc.eventhandler.NdcEventPublisher;
 import it.gov.innovazione.ndc.harvester.HarvesterService;
 import it.gov.innovazione.ndc.harvester.service.RepositoryService;
 import it.gov.innovazione.ndc.model.harvester.Repository;
@@ -23,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.net.URL;
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.springframework.http.HttpStatus.CREATED;
@@ -35,6 +40,7 @@ public class RepositoryController {
 
     private final RepositoryService repositoryService;
     private final HarvesterService harvesterService;
+    private final NdcEventPublisher eventPublisher;
 
     @GetMapping
     public List<Repository> getAllRepositories() {
@@ -54,6 +60,15 @@ public class RepositoryController {
                 repository.getDescription(),
                 repository.getMaxFileSizeBytes(),
                 principal);
+        eventPublisher.publishAlertableEvent(
+                "Configuration",
+                DefaultAlertableEvent.builder()
+                        .name("Configuration")
+                        .description("Repository " + repository.getName() + " created")
+                        .severity(Severity.INFO)
+                        .category(EventCategory.APPLICATION)
+                        .context(Map.of("repository", repository))
+                        .build());
     }
 
     private void assertValidUrl(@RequestBody CreateRepository repository) throws BadRequestException {
@@ -79,8 +94,26 @@ public class RepositoryController {
         int updated = repositoryService.updateRepo(id, repository, principal);
 
         if (updated == 0) {
+            eventPublisher.publishAlertableEvent(
+                    "Configuration",
+                    DefaultAlertableEvent.builder()
+                            .name("Configuration")
+                            .description("Repository " + id + " not found")
+                            .severity(Severity.WARNING)
+                            .category(EventCategory.APPLICATION)
+                            .context(Map.of("id", id, "repository", repository))
+                            .build());
             return ResponseEntity.notFound().build();
         }
+        eventPublisher.publishAlertableEvent(
+                "Configuration",
+                DefaultAlertableEvent.builder()
+                        .name("Configuration")
+                        .description("Repository " + id + " updated")
+                        .severity(Severity.INFO)
+                        .category(EventCategory.APPLICATION)
+                        .context(Map.of("id", id, "repository", repository))
+                        .build());
         return ResponseEntity.noContent().build();
     }
 
@@ -94,6 +127,15 @@ public class RepositoryController {
                 .findFirst();
 
         if (optionalRepository.isEmpty()) {
+            eventPublisher.publishAlertableEvent(
+                    "Configuration",
+                    DefaultAlertableEvent.builder()
+                            .name("Configuration")
+                            .description("Repository " + id + " not found")
+                            .severity(Severity.WARNING)
+                            .category(EventCategory.APPLICATION)
+                            .context(Map.of("id", id))
+                            .build());
             log.warn("Repository {} not found or not active", id);
             return ResponseEntity.notFound().build();
         }
@@ -109,6 +151,15 @@ public class RepositoryController {
             return ResponseEntity.notFound().build();
         }
 
+        eventPublisher.publishAlertableEvent(
+                "Configuration",
+                DefaultAlertableEvent.builder()
+                        .name("Configuration")
+                        .description("Repository " + id + " deleted")
+                        .severity(Severity.INFO)
+                        .category(EventCategory.APPLICATION)
+                        .context(Map.of("id", id, "repository", repository))
+                        .build());
         log.info("Repository {} deleted", repository);
         return ResponseEntity.noContent().build();
     }

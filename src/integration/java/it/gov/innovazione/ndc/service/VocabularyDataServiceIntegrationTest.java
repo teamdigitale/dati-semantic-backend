@@ -2,6 +2,7 @@ package it.gov.innovazione.ndc.service;
 
 import it.gov.innovazione.ndc.controller.exception.VocabularyDataNotFoundException;
 import it.gov.innovazione.ndc.controller.exception.VocabularyItemNotFoundException;
+import it.gov.innovazione.ndc.eventhandler.NdcEventPublisher;
 import it.gov.innovazione.ndc.gen.dto.VocabularyData;
 import it.gov.innovazione.ndc.harvester.csv.CsvParser;
 import it.gov.innovazione.ndc.integration.Containers;
@@ -39,6 +40,9 @@ public class VocabularyDataServiceIntegrationTest {
 
     @MockBean
     private GithubService githubService;
+
+    @MockBean
+    private NdcEventPublisher eventPublisher;
 
     @DynamicPropertySource
     static void updateTestcontainersProperties(DynamicPropertyRegistry registry) {

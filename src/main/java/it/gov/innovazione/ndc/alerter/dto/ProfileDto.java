@@ -6,6 +6,7 @@ import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
+import java.time.Instant;
 import java.util.List;
 
 @Data
@@ -17,4 +18,5 @@ public class ProfileDto implements Nameable {
     private List<String> eventCategories;
     private Severity minSeverity = Severity.INFO;
     private Integer aggregationTime = 60;
+    private Instant lastAlertedAt;
 }

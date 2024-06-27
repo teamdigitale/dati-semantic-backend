@@ -37,7 +37,7 @@ public class ProfileInitializer implements Initializer {
                         .name(pair.getLeft())
                         .eventCategories(pair.getRight())
                         .minSeverity(Severity.INFO)
-                        .aggregationTime(60)
+                        .aggregationTime(60L)
                         .build())
                 .forEach(p -> {
                     log.info("Creating default profile: {}", p.getName());

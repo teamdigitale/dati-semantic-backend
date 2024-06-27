@@ -2,6 +2,7 @@ package it.gov.innovazione.ndc.harvester.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import it.gov.innovazione.ndc.eventhandler.event.ConfigService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
