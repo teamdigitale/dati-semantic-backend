@@ -8,6 +8,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.util.List;
+
+import static java.util.stream.Collectors.toList;
+
 @Service
 @RequiredArgsConstructor
 public class EventService extends EntityService<Event, EventDto> {
@@ -29,5 +34,11 @@ public class EventService extends EntityService<Event, EventDto> {
         if (repository.existsByNameAndOccurredAt(dto.getName(), dto.getOccurredAt())) {
             throw new ConflictingOperationException("An event with the same name/occurredAt already exists: " + dto.getName() + "/" + dto.getOccurredAt());
         }
+    }
+
+    public List<EventDto> getEventsNewerThan(Instant instant) {
+        return repository.findByCreatedAtAfter(instant).stream()
+                .map(entityMapper::toDto)
+                .collect(toList());
     }
 }

@@ -19,4 +19,12 @@ public class UserService extends EntityService<User, UserDto> {
     private final String entityName = "User";
     @Getter(AccessLevel.PROTECTED)
     private final Sort defaultSorting = Sort.by("name").ascending();
+
+    @Override
+    protected void assertEntityDoesNotExists(UserDto dto) {
+        if (repository.existsByNameAndSurnameAndEmail(
+                dto.getName(), dto.getSurname(), dto.getEmail())) {
+            throw new ConflictingOperationException("An user with the same name/surname/email already exists: " + dto.getName() + "/" + dto.getSurname() + "/" + dto.getEmail());
+        }
+    }
 }

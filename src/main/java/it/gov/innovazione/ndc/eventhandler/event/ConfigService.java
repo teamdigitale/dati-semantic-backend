@@ -1,5 +1,6 @@
-package it.gov.innovazione.ndc.harvester.service;
+package it.gov.innovazione.ndc.eventhandler.event;
 
+import it.gov.innovazione.ndc.harvester.service.ActualConfigService;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
@@ -8,12 +9,13 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.time.Instant;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
 public abstract class ConfigService {
 
-    private <T> Optional<T> fromGlobal(ActualConfigService.ConfigKey key) {
+    public <T> Optional<T> fromGlobal(ActualConfigService.ConfigKey key) {
         try {
             Class<T> type = null;
             return Optional.ofNullable(getNdcConfiguration())
@@ -106,13 +108,27 @@ public abstract class ConfigService {
     }
 
     @Builder
+    @Getter
     public static class ConfigEvent {
         private final Map<ActualConfigService.ConfigKey, ConfigChange> changes;
         private final String destination;
         private final Exception error;
+
+        public boolean isChange(ActualConfigService.ConfigKey key) {
+            return Objects.nonNull(changes) && changes.containsKey(key);
+        }
+
+        public boolean isChange(ActualConfigService.ConfigKey key, Object newValue) {
+            try {
+                return isChange(key) && changes.get(key).getNewValue().getValue().equals(newValue);
+            } catch (Exception e) {
+                return false;
+            }
+        }
     }
 
     @Builder
+    @Getter
     public static class ConfigChange {
         private final ConfigEntry oldValue;
         private final ConfigEntry newValue;

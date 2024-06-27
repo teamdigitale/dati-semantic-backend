@@ -1,12 +1,12 @@
 package it.gov.innovazione.ndc.harvester.harvesters;
 
 import it.gov.innovazione.ndc.eventhandler.NdcEventPublisher;
+import it.gov.innovazione.ndc.eventhandler.event.ConfigService;
 import it.gov.innovazione.ndc.harvester.SemanticAssetType;
 import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContext;
 import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContextUtils;
 import it.gov.innovazione.ndc.harvester.exception.InvalidAssetException;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
-import it.gov.innovazione.ndc.harvester.service.ConfigService;
 import it.gov.innovazione.ndc.model.harvester.Repository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

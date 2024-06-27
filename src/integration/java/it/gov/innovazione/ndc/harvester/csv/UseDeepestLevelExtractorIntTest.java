@@ -1,5 +1,6 @@
 package it.gov.innovazione.ndc.harvester.csv;
 
+import it.gov.innovazione.ndc.eventhandler.NdcEventPublisher;
 import it.gov.innovazione.ndc.repository.MarkerElasticSearchRepository;
 import it.gov.innovazione.ndc.repository.VirtuosoClient;
 import it.gov.innovazione.ndc.service.GithubService;
@@ -27,6 +28,9 @@ class UseDeepestLevelExtractorIntTest {
 
     @MockBean
     private GithubService githubService;
+
+    @MockBean
+    private NdcEventPublisher eventPublisher;
 
     @Test
     void shouldBeActivated() {

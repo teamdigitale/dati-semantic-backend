@@ -1,11 +1,11 @@
 package it.gov.innovazione.ndc.integration;
 
 import io.restassured.response.Response;
+import it.gov.innovazione.ndc.eventhandler.NdcEventPublisher;
 import it.gov.innovazione.ndc.gen.dto.AssetType;
 import it.gov.innovazione.ndc.gen.dto.SearchResult;
 import it.gov.innovazione.ndc.gen.dto.SearchResultItem;
 import it.gov.innovazione.ndc.harvester.SemanticAssetType;
-import it.gov.innovazione.ndc.harvester.util.FileUtils;
 import it.gov.innovazione.ndc.model.profiles.NDC;
 import it.gov.innovazione.ndc.service.GithubService;
 import junit.framework.AssertionFailedError;
@@ -39,6 +39,8 @@ public class RestApiIntegrationTests extends BaseIntegrationTest {
 
     @MockBean
     private GithubService githubService;
+    @MockBean
+    private NdcEventPublisher ndcEventPublisher;
 
     @DynamicPropertySource
     static void updateDynamicPropertySource(DynamicPropertyRegistry registry) {

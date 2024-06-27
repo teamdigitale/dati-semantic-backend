@@ -1,8 +1,8 @@
 package it.gov.innovazione.ndc.model.harvester;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import it.gov.innovazione.ndc.eventhandler.event.ConfigService;
 import it.gov.innovazione.ndc.harvester.service.ActualConfigService;
-import it.gov.innovazione.ndc.harvester.service.ConfigService;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -32,7 +32,6 @@ public class Repository {
     private Map<ActualConfigService.ConfigKey, ConfigService.ConfigEntry> config;
     @JsonIgnore
     private Map<String, Map<String, String>> rightsHolders;
-    private List<Maintainer> maintainers;
 
     @Override
     public String toString() {
