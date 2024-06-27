@@ -36,7 +36,7 @@ public class Profile implements Nameable {
     private Severity minSeverity;
     @Column(nullable = false)
     private Long aggregationTime;
-    @Column(nullable = false)
+    @Column
     @Builder.Default
     private Instant lastAlertedAt = Instant.now();
 }

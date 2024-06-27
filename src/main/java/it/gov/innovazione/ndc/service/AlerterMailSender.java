@@ -7,6 +7,7 @@ import it.gov.innovazione.ndc.alerter.dto.EventDto;
 import it.gov.innovazione.ndc.alerter.dto.ProfileDto;
 import it.gov.innovazione.ndc.alerter.dto.UserDto;
 import it.gov.innovazione.ndc.alerter.entities.EventCategory;
+import it.gov.innovazione.ndc.eventhandler.event.ConfigService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -18,6 +19,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static it.gov.innovazione.ndc.harvester.service.ActualConfigService.ConfigKey.ALERTER_ENABLED;
 import static org.apache.commons.collections4.ListUtils.emptyIfNull;
 
 @Component
@@ -29,6 +31,7 @@ public class AlerterMailSender {
     private final ProfileService profileService;
     private final EventService eventService;
     private final UserService userService;
+    private final ConfigService configService;
 
     @Scheduled(fixedDelayString = "${alerter.mail-sender.fixed-delay:60000}")
     void getEventsAndAlert() {
@@ -47,14 +50,29 @@ public class AlerterMailSender {
         }
     }
 
+    private boolean isAlerterEnabled() {
+        return (boolean) configService.fromGlobal(ALERTER_ENABLED).orElse(false);
+    }
+
     private boolean isApplicableToProfile(EventDto eventDto, ProfileDto profileDto) {
         return emptyIfNull(profileDto.getEventCategories()).contains(eventDto.getCategory().name());
     }
 
     private void sendMessages(EventCategory category, List<EventDto> eventDtos, ProfileDto profileDto) {
+
         if (eventDtos.isEmpty()) {
             return;
         }
+
+        if (!isAlerterEnabled()) {
+            log.warn("Alerter is disabled, no mails will be sent, following events will be stored in the database."
+                            + "Events: {}",
+                    eventDtos.stream()
+                            .map(EventDto::toString)
+                            .collect(Collectors.joining(", ")));
+            return;
+        }
+
         log.info("Sending email for detected {} events, to users with profile {} for category: {}",
                 eventDtos.size(), profileDto.getName(), category);
         List<UserDto> recipients = userService.findAll().stream()
