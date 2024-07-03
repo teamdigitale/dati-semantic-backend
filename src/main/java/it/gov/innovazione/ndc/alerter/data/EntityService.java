@@ -58,7 +58,12 @@ public abstract class EntityService<T extends Nameable, D extends Nameable> {
             throw new ConflictingOperationException(getEntityName() + " id must not be null for update operation");
         }
         assertExistsById(dto.getId());
+        beforeUpdate(dto);
         return toDto(getRepository().save(getEntityMapper().toEntity(dto)));
+    }
+
+    protected void beforeUpdate(D dto) {
+
     }
 
     private void assertExistsById(String id) {
@@ -69,9 +74,14 @@ public abstract class EntityService<T extends Nameable, D extends Nameable> {
 
     public D delete(String id) {
         T entity = getEntityById(id);
+        beforeDelete(entity);
         D dto = toDto(entity);
         getRepository().delete(entity);
         return dto;
+    }
+
+    protected void beforeDelete(T entity) {
+
     }
 
     public D getById(String id) {

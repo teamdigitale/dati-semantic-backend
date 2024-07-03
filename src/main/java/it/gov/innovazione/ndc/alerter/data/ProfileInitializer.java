@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,11 +39,21 @@ public class ProfileInitializer implements Initializer {
                         .eventCategories(pair.getRight())
                         .minSeverity(Severity.INFO)
                         .aggregationTime(60L)
+                        .lastAlertedAt(Instant.now())
                         .build())
                 .forEach(p -> {
                     log.info("Creating default profile: {}", p.getName());
                     repository.save(p);
                 });
+    }
 
+    private List<String> getUnmodifiableProfileNames() {
+        return DEFAULT_PROFILES.stream()
+                .map(Pair::getLeft)
+                .collect(Collectors.toList());
+    }
+
+    public boolean isProfileNameUnmodifiable(String name) {
+        return getUnmodifiableProfileNames().contains(name);
     }
 }

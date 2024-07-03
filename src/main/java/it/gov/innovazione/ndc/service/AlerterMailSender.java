@@ -11,6 +11,7 @@ import it.gov.innovazione.ndc.eventhandler.event.ConfigService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -33,7 +34,14 @@ public class AlerterMailSender {
     private final UserService userService;
     private final ConfigService configService;
 
-    @Scheduled(fixedDelayString = "${alerter.mail-sender.fixed-delay:60000}")
+    @Value("${alerter.aggregation-time-multiplier:50}")
+    private final long aggregationTimeMultiplier;
+
+    private static boolean isNotTooRecent(ProfileDto profileDto, EventDto eventDto, Instant now) {
+        return eventDto.getCreatedAt().plusSeconds(profileDto.getAggregationTime()).isBefore(now);
+    }
+
+    @Scheduled(fixedDelayString = "${alerter.mail-sender.fixed-delay:6000}")
     void getEventsAndAlert() {
         Collection<ProfileDto> profiles = profileService.findAll();
         for (ProfileDto profileDto : profiles) {
@@ -42,12 +50,17 @@ public class AlerterMailSender {
             Instant lastAlertedAt = profileDto.getLastAlertedAt();
 
             eventService.getEventsNewerThan(lastAlertedAt).stream()
-                    .filter(eventDto -> eventDto.getCreatedAt().plusSeconds(profileDto.getAggregationTime()).isBefore(now))
-                    .filter(eventDto -> isSeverityHigherThanOrEqualsToMinSeverity(eventDto, profileDto))
+                    .filter(eventDto -> isNotTooRecent(profileDto, eventDto, now))
+                    .filter(eventDto -> isNotTooOld(eventDto, profileDto, now))
+                    .filter(eventDto -> isSeverityGteThanMin(eventDto, profileDto))
                     .filter(eventDto -> isApplicableToProfile(eventDto, profileDto))
                     .collect(Collectors.groupingBy(EventDto::getCategory))
                     .forEach((key, value) -> sendMessages(key, value, profileDto));
         }
+    }
+
+    private boolean isNotTooOld(EventDto eventDto, ProfileDto profileDto, Instant now) {
+        return eventDto.getCreatedAt().plusSeconds(aggregationTimeMultiplier * profileDto.getAggregationTime()).isAfter(now);
     }
 
     private boolean isAlerterEnabled() {
@@ -78,7 +91,13 @@ public class AlerterMailSender {
         List<UserDto> recipients = userService.findAll().stream()
                 .filter(user -> StringUtils.equals(user.getProfile(), profileDto.getName()))
                 .collect(Collectors.toList());
-        if (recipients.isEmpty()) {
+        if (!recipients.isEmpty()) {
+            for (UserDto recipient : recipients) {
+                emailService.sendEmail(recipient.getEmail(),
+                        "[SCHEMAGOV] [" + category + "] Alerter: Report degli eventi",
+                        getMessageBody(eventDtos, recipient, profileDto));
+            }
+        } else {
             log.warn("No recipients found for profile {}, "
                             + "for this profile no mails will be sent. "
                             + "It might still be possible these events will be notified to other profiles. "
@@ -87,19 +106,13 @@ public class AlerterMailSender {
                     eventDtos.stream()
                             .map(EventDto::toString)
                             .collect(Collectors.joining(", ")));
-            return;
         }
-        for (UserDto recipient : recipients) {
-            emailService.sendEmail(recipient.getEmail(),
-                    "[SCHEMAGOV] [" + category + "] Alerter: Report degli eventi",
-                    getMessageBody(eventDtos, recipient, profileDto));
-        }
-        profileService.setLastUpdated(profileDto.getId());
+        profileService.setLastAlertedAt(profileDto.getId());
     }
 
     private String getMessageBody(List<EventDto> eventDtos, UserDto recipient, ProfileDto profileDto) {
         StringBuilder message = new StringBuilder("Ciao " + recipient.getName() + " " + recipient.getSurname() + ",\n\n"
-                + "Di seguito i dettagli degli errori riscontrati:\n");
+                + "Di seguito i dettagli degli eventi riscontrati:\n");
         int i = 1;
         for (EventDto eventDto : eventDtos) {
             message.append(getDetailsForEvent(i, eventDto, recipient, profileDto));
@@ -119,7 +132,7 @@ public class AlerterMailSender {
                 + "Creato il: " + eventDto.getCreatedAt() + "\n\n";
     }
 
-    private boolean isSeverityHigherThanOrEqualsToMinSeverity(EventDto eventDto, ProfileDto profileDto) {
+    private boolean isSeverityGteThanMin(EventDto eventDto, ProfileDto profileDto) {
         return eventDto.getSeverity().ordinal() >= profileDto.getMinSeverity().ordinal();
     }
 

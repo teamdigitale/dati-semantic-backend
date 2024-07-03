@@ -21,6 +21,9 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
+import static org.apache.commons.lang3.StringUtils.trim;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -286,7 +289,7 @@ public class ActualConfigService extends ConfigService {
         public Predicate<String> getValidator() {
             return s -> {
                 try {
-                    parser.parser.apply(s);
+                    parser.parsingFunction.apply(s);
                     return true;
                 } catch (Exception e) {
                     return false;
@@ -299,7 +302,14 @@ public class ActualConfigService extends ConfigService {
     @RequiredArgsConstructor
     public enum Parser {
         TO_LONG(Long::parseLong),
-        TO_BOOLEAN(Boolean::parseBoolean);
-        private final Function<String, Object> parser;
+        TO_BOOLEAN(Parser::parseBoolean);
+        private final Function<String, Object> parsingFunction;
+
+        private static Boolean parseBoolean(String s) {
+            if (!equalsIgnoreCase(trim(s), "true") && !equalsIgnoreCase(trim(s), "false")) {
+                throw new IllegalArgumentException("Value must be 'true' or 'false'");
+            }
+            return Boolean.parseBoolean(trim(s));
+        }
     }    
 }
