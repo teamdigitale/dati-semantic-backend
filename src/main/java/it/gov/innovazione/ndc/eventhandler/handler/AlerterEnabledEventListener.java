@@ -39,9 +39,9 @@ public class AlerterEnabledEventListener implements NdcEventHandler {
         if (Objects.isNull(payload) || Objects.isNull(payload.getChanges())) {
             return;
         }
-        if (payload.isChange(ConfigKey.ALERTER_ENABLED, Boolean.TRUE)) {
+        if (payload.isChange(ConfigKey.ALERTER_ENABLED, Boolean.TRUE, Boolean.FALSE)) {
             log.info("Alerter enabled, setting all profiles last updated");
-            profileService.setAllLastUpdated(backoff);
+            profileService.setAllLastAlertedAt(backoff);
         }
     }
 }

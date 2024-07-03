@@ -4,10 +4,13 @@ import it.gov.innovazione.ndc.alerter.data.EventService;
 import it.gov.innovazione.ndc.alerter.dto.EventDto;
 import it.gov.innovazione.ndc.alerter.event.AlertableEvent;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.time.Instant;
+import java.util.Optional;
 
 import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
 
@@ -30,8 +33,10 @@ public class AlerterService {
     }
 
     private String getUser() {
-        return defaultIfNull(SecurityContextHolder.getContext().getAuthentication().getName(), "system");
-
+        return Optional.of(SecurityContextHolder.getContext())
+                .map(SecurityContext::getAuthentication)
+                .map(Principal::getName)
+                .orElse("system");
     }
 
 }

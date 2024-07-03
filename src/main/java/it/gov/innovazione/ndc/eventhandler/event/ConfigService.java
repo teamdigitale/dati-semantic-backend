@@ -1,5 +1,8 @@
 package it.gov.innovazione.ndc.eventhandler.event;
 
+import it.gov.innovazione.ndc.alerter.entities.EventCategory;
+import it.gov.innovazione.ndc.alerter.entities.Severity;
+import it.gov.innovazione.ndc.alerter.event.AlertableEvent;
 import it.gov.innovazione.ndc.harvester.service.ActualConfigService;
 import lombok.Builder;
 import lombok.Data;
@@ -11,6 +14,9 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static org.eclipse.jgit.util.StringUtils.equalsIgnoreCase;
 
 @Slf4j
 public abstract class ConfigService {
@@ -66,7 +72,7 @@ public abstract class ConfigService {
     @SuppressWarnings("unchecked")
     <T> T safelyParse(Object value, ActualConfigService.ConfigKey key, Class<T> clazz) {
         try {
-            return (T) key.getParser().getParser().apply(value.toString());
+            return (T) key.getParser().getParsingFunction().apply(value.toString());
         } catch (Exception e) {
             log.warn("Error parsing value for key {} with value \"{}\"", key, value, e);
             return null;
@@ -109,21 +115,76 @@ public abstract class ConfigService {
 
     @Builder
     @Getter
-    public static class ConfigEvent {
+    public static class ConfigEvent implements AlertableEvent {
         private final Map<ActualConfigService.ConfigKey, ConfigChange> changes;
         private final String destination;
         private final Exception error;
 
-        public boolean isChange(ActualConfigService.ConfigKey key) {
+        public boolean isChangeKey(ActualConfigService.ConfigKey key) {
             return Objects.nonNull(changes) && changes.containsKey(key);
         }
 
-        public boolean isChange(ActualConfigService.ConfigKey key, Object newValue) {
+        public boolean isChange(ActualConfigService.ConfigKey key, Object newValue, Object oldValue) {
             try {
-                return isChange(key) && changes.get(key).getNewValue().getValue().equals(newValue);
+                return isChangeKey(key) && isNewValue(key, newValue) && isOldValue(key, oldValue);
             } catch (Exception e) {
                 return false;
             }
+        }
+
+        private boolean isNewValue(ActualConfigService.ConfigKey key, Object newValue) {
+            return isValue(key, newValue, ConfigChange::getNewValue);
+        }
+
+        private Boolean isOldValue(ActualConfigService.ConfigKey key, Object oldValue) {
+            return isValue(key, oldValue, ConfigChange::getOldValue);
+        }
+
+        private Boolean isValue(ActualConfigService.ConfigKey key,
+                                Object value,
+                                java.util.function.Function<ConfigChange, ConfigEntry> valueGetter) {
+            return Optional.ofNullable(changes)
+                    .map(c -> c.get(key))
+                    .map(valueGetter)
+                    .map(ConfigEntry::getValue)
+                    .map(Object::toString)
+                    .map(v -> equalsIgnoreCase(v, value.toString()))
+                    .orElse(false);
+        }
+
+        @Override
+        public String getName() {
+            if (Objects.nonNull(error)) {
+                return "Configuration update error: " + error.getMessage();
+            }
+            return "Configuration updated";
+        }
+
+        @Override
+        public String getDescription() {
+            if (Objects.nonNull(error)) {
+                return "Error updating configuration for " + destination + ", cause: " + error.getMessage();
+            }
+            return "Configuration updated for " + destination;
+        }
+
+        @Override
+        public EventCategory getCategory() {
+            return EventCategory.APPLICATION;
+        }
+
+        @Override
+        public Severity getSeverity() {
+            if (Objects.nonNull(error)) {
+                return Severity.ERROR;
+            }
+            return Severity.INFO;
+        }
+
+        @Override
+        public Map<String, Object> getContext() {
+            return changes.entrySet().stream()
+                    .collect(Collectors.toMap(e -> e.getKey().name(), Map.Entry::getValue));
         }
     }
 

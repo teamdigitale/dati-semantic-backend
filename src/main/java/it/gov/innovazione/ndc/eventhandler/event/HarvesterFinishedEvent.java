@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.util.Map;
+import java.util.Optional;
 
 @Builder
 @Data
@@ -36,7 +37,7 @@ public class HarvesterFinishedEvent implements AlertableEvent {
 
     @Override
     public Severity getSeverity() {
-        if (status == HarvesterRun.Status.ALREADY_RUNNING) {
+        if (status == HarvesterRun.Status.ALREADY_RUNNING || status == HarvesterRun.Status.NDC_ISSUES_PRESENT) {
             return Severity.WARNING;
         } else if (status == HarvesterRun.Status.SUCCESS || status == HarvesterRun.Status.UNCHANGED) {
             return Severity.INFO;
@@ -53,7 +54,7 @@ public class HarvesterFinishedEvent implements AlertableEvent {
                 "repository", repository,
                 "revision", revision,
                 "status", status,
-                "exception", exception
+                "exception", Optional.ofNullable(exception).map(Exception::getMessage).orElse("")
         );
     }
 }

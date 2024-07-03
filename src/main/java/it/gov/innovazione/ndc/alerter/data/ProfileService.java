@@ -22,6 +22,8 @@ public class ProfileService extends EntityService<Profile, ProfileDto> {
     @Getter(AccessLevel.PROTECTED)
     private final ProfileRepository repository;
 
+    private final ProfileInitializer profileInitializer;
+
     @Getter(AccessLevel.PROTECTED)
     private final ProfileMapper entityMapper;
 
@@ -31,17 +33,35 @@ public class ProfileService extends EntityService<Profile, ProfileDto> {
     @Getter(AccessLevel.PROTECTED)
     private final Sort defaultSorting = Sort.by("name").ascending();
 
-    public void setLastUpdated(String id) {
+    public void setLastAlertedAt(String id) {
         Profile profile = repository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("Profile not found: " + id));
         profile.setLastAlertedAt(Instant.now());
         repository.save(profile);
     }
 
-    public void setAllLastUpdated(Duration backoff) {
+    public void setAllLastAlertedAt(Duration backoff) {
         repository.findAll().forEach(profile -> {
-            profile.setLastAlertedAt(Instant.now().minus(backoff));
+            Instant lastAlertedAt = Instant.now().minus(backoff);
+            log.info("Setting last updated {} for profile {}", lastAlertedAt, profile.getName());
+            profile.setLastAlertedAt(lastAlertedAt);
             repository.save(profile);
         });
+    }
+
+    @Override
+    public void beforeDelete(Profile profile) {
+        if (profileInitializer.isProfileNameUnmodifiable(profile.getName())) {
+            throw new ConflictingOperationException("Profile " + profile.getName() + " cannot be deleted");
+        }
+    }
+
+    @Override
+    public void beforeUpdate(ProfileDto dto) {
+        Profile profile = repository.findById(dto.getId())
+                .orElseThrow(() -> new IllegalStateException("Profile not found: " + dto.getId()));
+        if (profileInitializer.isProfileNameUnmodifiable(dto.getName()) && !profile.getName().equals(dto.getName())) {
+            throw new ConflictingOperationException("Profile " + profile.getName() + " cannot be renamed");
+        }
     }
 }
