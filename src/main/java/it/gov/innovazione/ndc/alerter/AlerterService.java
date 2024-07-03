@@ -32,7 +32,7 @@ public class AlerterService {
                 .build());
     }
 
-    private String getUser() {
+    public static String getUser() {
         return Optional.of(SecurityContextHolder.getContext())
                 .map(SecurityContext::getAuthentication)
                 .map(Principal::getName)
