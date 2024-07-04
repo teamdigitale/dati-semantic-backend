@@ -37,21 +37,18 @@ public class AlerterMailSender {
         return lastAlertedAt.plusSeconds(aggregationTime).isBefore(now);
     }
 
-    @Scheduled(fixedDelayString = "${alerter.mail-sender.fixed-delay:6000}")
+    @Scheduled(fixedDelayString = "${alerter.mail-sender.fixed-delay:10000}")
     void getEventsAndAlert() {
-
-        log.info("Executing AlerterMailSenderJob");
 
         Collection<ProfileDto> profiles = profileService.findAll();
         for (ProfileDto profileDto : profiles) {
-
-
-            log.info("Checking for alertable events for profile: {}", profileDto.getName());
 
             Instant now = Instant.now();
             Instant lastAlertedAt = profileDto.getLastAlertedAt();
 
             if (isAlertable(lastAlertedAt, profileDto.getAggregationTime(), now)) {
+
+                log.info("[{}-{}] Getting alertable events", profileDto.getName(), now);
 
                 List<EventDto> eventsNewerThan = eventService.getEventsNewerThan(lastAlertedAt).stream()
                         .filter(eventDto -> isApplicableToProfile(eventDto, profileDto))
@@ -60,24 +57,24 @@ public class AlerterMailSender {
                 List<EventDto> filteredEvents = eventsNewerThan.stream()
                         .filter(eventDto -> eventDto.getCreatedAt().isBefore(now))
                         .filter(eventDto -> isSeverityGteThanMin(eventDto, profileDto))
-                        .filter(eventDto -> isApplicableToProfile(eventDto, profileDto))
                         .collect(Collectors.toList());
 
-                log.info("Found {} event applicable to profile {}, of which {} match the conditions for alert",
-                        eventsNewerThan.size(),
+                log.info("[{}-{}] Found {} applicable events, {} match the conditions for alert",
                         profileDto.getName(),
-                        filteredEvents);
+                        now,
+                        eventsNewerThan.size(),
+                        filteredEvents.size());
 
                 filteredEvents.stream()
                         .collect(Collectors.groupingBy(EventDto::getCategory))
-                        .forEach((key, value) -> sendMessages(key, value, profileDto));
+                        .forEach((key, value) -> sendMessages(key, value, profileDto, now));
 
-                log.info("Updating profile {} using lastAlertedAt {}", profileDto.getName(), now);
+                log.info("[{}-{}] next check around {}",
+                        profileDto.getName(),
+                        now,
+                        now.plusSeconds(profileDto.getAggregationTime()));
                 profileService.setLastAlertedAt(profileDto.getId(), now);
-                return;
             }
-
-            log.info("No alertable events found");
         }
     }
 
@@ -89,7 +86,7 @@ public class AlerterMailSender {
         return emptyIfNull(profileDto.getEventCategories()).contains(eventDto.getCategory().name());
     }
 
-    private void sendMessages(EventCategory category, List<EventDto> eventDtos, ProfileDto profileDto) {
+    private void sendMessages(EventCategory category, List<EventDto> eventDtos, ProfileDto profileDto, Instant now) {
 
         if (eventDtos.isEmpty()) {
             return;
@@ -104,15 +101,19 @@ public class AlerterMailSender {
             return;
         }
 
-        log.info("Sending email for detected {} events, to users with profile {} for category: {}",
-                eventDtos.size(), profileDto.getName(), category);
-
         List<UserDto> recipients = userService.findAll().stream()
                 .filter(user -> StringUtils.equals(user.getProfile(), profileDto.getName()))
                 .collect(Collectors.toList());
 
         if (!recipients.isEmpty()) {
             for (UserDto recipient : recipients) {
+                log.info("[{}-{}] Sending email to user {} ({}) for detected {} events in category {}",
+                        profileDto.getName(),
+                        now,
+                        recipient.getName() + " " + recipient.getSurname(),
+                        recipient.getEmail(),
+                        eventDtos.size(),
+                        category);
                 emailService.sendEmail(recipient.getEmail(),
                         "[SCHEMAGOV] [" + category + "] Alerter: Report degli eventi",
                         getMessageBody(eventDtos, recipient));
@@ -120,11 +121,11 @@ public class AlerterMailSender {
             return;
         }
 
-        log.warn("No recipients found for profile {}, "
-                        + "for this profile no mails will be sent. "
+        log.warn("[{}-{}] No recipients found - no mails will be sent. "
                         + "It might still be possible these events will be notified to other profiles. "
                         + "Events: {}",
                 profileDto.getName(),
+                now,
                 eventDtos.stream()
                         .map(EventDto::toString)
                         .collect(Collectors.joining(", ")));

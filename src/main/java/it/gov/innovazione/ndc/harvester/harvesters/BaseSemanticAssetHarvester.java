@@ -67,7 +67,7 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
                                 .category(EventCategory.SEMANTIC)
                                 .severity(Severity.WARNING)
                                 .context(Map.of(
-                                        "error", e.getMessage(),
+                                        "error", e.getRealErrorMessage(),
                                         "path", path.getTtlPath(),
                                         "repo", repository.getUrl()))
                                 .build());
