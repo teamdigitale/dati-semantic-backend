@@ -11,7 +11,6 @@ import it.gov.innovazione.ndc.eventhandler.event.ConfigService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -34,33 +33,52 @@ public class AlerterMailSender {
     private final UserService userService;
     private final ConfigService configService;
 
-    @Value("${alerter.aggregation-time-multiplier:50}")
-    private final long aggregationTimeMultiplier;
-
-    private static boolean isNotTooRecent(ProfileDto profileDto, EventDto eventDto, Instant now) {
-        return eventDto.getCreatedAt().plusSeconds(profileDto.getAggregationTime()).isBefore(now);
+    private static boolean isAlertable(Instant lastAlertedAt, Integer aggregationTime, Instant now) {
+        return lastAlertedAt.plusSeconds(aggregationTime).isBefore(now);
     }
 
     @Scheduled(fixedDelayString = "${alerter.mail-sender.fixed-delay:6000}")
     void getEventsAndAlert() {
+
+        log.info("Executing AlerterMailSenderJob");
+
         Collection<ProfileDto> profiles = profileService.findAll();
         for (ProfileDto profileDto : profiles) {
+
+
+            log.info("Checking for alertable events for profile: {}", profileDto.getName());
 
             Instant now = Instant.now();
             Instant lastAlertedAt = profileDto.getLastAlertedAt();
 
-            eventService.getEventsNewerThan(lastAlertedAt).stream()
-                    .filter(eventDto -> isNotTooRecent(profileDto, eventDto, now))
-                    .filter(eventDto -> isNotTooOld(eventDto, profileDto, now))
-                    .filter(eventDto -> isSeverityGteThanMin(eventDto, profileDto))
-                    .filter(eventDto -> isApplicableToProfile(eventDto, profileDto))
-                    .collect(Collectors.groupingBy(EventDto::getCategory))
-                    .forEach((key, value) -> sendMessages(key, value, profileDto));
-        }
-    }
+            if (isAlertable(lastAlertedAt, profileDto.getAggregationTime(), now)) {
 
-    private boolean isNotTooOld(EventDto eventDto, ProfileDto profileDto, Instant now) {
-        return eventDto.getCreatedAt().plusSeconds(aggregationTimeMultiplier * profileDto.getAggregationTime()).isAfter(now);
+                List<EventDto> eventsNewerThan = eventService.getEventsNewerThan(lastAlertedAt).stream()
+                        .filter(eventDto -> isApplicableToProfile(eventDto, profileDto))
+                        .collect(Collectors.toList());
+
+                List<EventDto> filteredEvents = eventsNewerThan.stream()
+                        .filter(eventDto -> eventDto.getCreatedAt().isBefore(now))
+                        .filter(eventDto -> isSeverityGteThanMin(eventDto, profileDto))
+                        .filter(eventDto -> isApplicableToProfile(eventDto, profileDto))
+                        .collect(Collectors.toList());
+
+                log.info("Found {} event applicable to profile {}, of which {} match the conditions for alert",
+                        eventsNewerThan.size(),
+                        profileDto.getName(),
+                        filteredEvents);
+
+                filteredEvents.stream()
+                        .collect(Collectors.groupingBy(EventDto::getCategory))
+                        .forEach((key, value) -> sendMessages(key, value, profileDto));
+
+                log.info("Updating profile {} using lastAlertedAt {}", profileDto.getName(), now);
+                profileService.setLastAlertedAt(profileDto.getId(), now);
+                return;
+            }
+
+            log.info("No alertable events found");
+        }
     }
 
     private boolean isAlerterEnabled() {
@@ -78,7 +96,7 @@ public class AlerterMailSender {
         }
 
         if (!isAlerterEnabled()) {
-            log.warn("Alerter is disabled, no mails will be sent, following events will be stored in the database."
+            log.warn("Alerter is disabled, no mails will be sent, following events will be just stored in the database."
                             + "Events: {}",
                     eventDtos.stream()
                             .map(EventDto::toString)
@@ -88,34 +106,36 @@ public class AlerterMailSender {
 
         log.info("Sending email for detected {} events, to users with profile {} for category: {}",
                 eventDtos.size(), profileDto.getName(), category);
+
         List<UserDto> recipients = userService.findAll().stream()
                 .filter(user -> StringUtils.equals(user.getProfile(), profileDto.getName()))
                 .collect(Collectors.toList());
+
         if (!recipients.isEmpty()) {
             for (UserDto recipient : recipients) {
                 emailService.sendEmail(recipient.getEmail(),
                         "[SCHEMAGOV] [" + category + "] Alerter: Report degli eventi",
-                        getMessageBody(eventDtos, recipient, profileDto));
+                        getMessageBody(eventDtos, recipient));
             }
-        } else {
-            log.warn("No recipients found for profile {}, "
-                            + "for this profile no mails will be sent. "
-                            + "It might still be possible these events will be notified to other profiles. "
-                            + "Events: {}",
-                    profileDto.getName(),
-                    eventDtos.stream()
-                            .map(EventDto::toString)
-                            .collect(Collectors.joining(", ")));
+            return;
         }
-        profileService.setLastAlertedAt(profileDto.getId());
+
+        log.warn("No recipients found for profile {}, "
+                        + "for this profile no mails will be sent. "
+                        + "It might still be possible these events will be notified to other profiles. "
+                        + "Events: {}",
+                profileDto.getName(),
+                eventDtos.stream()
+                        .map(EventDto::toString)
+                        .collect(Collectors.joining(", ")));
     }
 
-    private String getMessageBody(List<EventDto> eventDtos, UserDto recipient, ProfileDto profileDto) {
+    private String getMessageBody(List<EventDto> eventDtos, UserDto recipient) {
         StringBuilder message = new StringBuilder("Ciao " + recipient.getName() + " " + recipient.getSurname() + ",\n\n"
                 + "Di seguito i dettagli degli eventi riscontrati:\n");
         int i = 1;
         for (EventDto eventDto : eventDtos) {
-            message.append(getDetailsForEvent(i, eventDto, recipient, profileDto));
+            message.append(getDetailsForEvent(i, eventDto));
             i++;
         }
         message.append("Origine: Generata automaticamente dall'harvester.\n\n");
@@ -123,7 +143,7 @@ public class AlerterMailSender {
         return message.toString();
     }
 
-    private String getDetailsForEvent(int i, EventDto eventDto, UserDto recipient, ProfileDto profileDto) {
+    private String getDetailsForEvent(int i, EventDto eventDto) {
         return i + ". Titolo: " + eventDto.getName() + "\n"
                 + "Descrizione: " + eventDto.getDescription() + "\n"
                 + "Severity: " + eventDto.getSeverity() + "\n"

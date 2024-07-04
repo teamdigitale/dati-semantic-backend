@@ -33,10 +33,10 @@ public class ProfileService extends EntityService<Profile, ProfileDto> {
     @Getter(AccessLevel.PROTECTED)
     private final Sort defaultSorting = Sort.by("name").ascending();
 
-    public void setLastAlertedAt(String id) {
+    public void setLastAlertedAt(String id, Instant instant) {
         Profile profile = repository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("Profile not found: " + id));
-        profile.setLastAlertedAt(Instant.now());
+        profile.setLastAlertedAt(instant);
         repository.save(profile);
     }
 
