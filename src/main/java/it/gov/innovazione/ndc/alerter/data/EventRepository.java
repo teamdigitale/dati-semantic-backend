@@ -12,4 +12,8 @@ interface EventRepository extends NameableRepository<Event, String> {
     boolean existsByNameAndOccurredAt(String name, Instant occurredAt);
 
     List<Event> findByCreatedAtAfter(Instant instant);
+
+    Long countByCreatedAtBefore(Instant threshold);
+
+    void deleteByCreatedAtBefore(Instant threshold);
 }

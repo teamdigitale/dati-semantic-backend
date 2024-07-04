@@ -2,6 +2,7 @@ package it.gov.innovazione.ndc.alerter.data;
 
 import it.gov.innovazione.ndc.alerter.dto.EventDto;
 import it.gov.innovazione.ndc.alerter.entities.Event;
+import it.gov.innovazione.ndc.eventhandler.NdcEventPublisher;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,9 @@ import static java.util.stream.Collectors.toList;
 @Service
 @RequiredArgsConstructor
 public class EventService extends EntityService<Event, EventDto> {
+
+    @Getter(AccessLevel.PROTECTED)
+    private final NdcEventPublisher eventPublisher;
 
     @Getter(AccessLevel.PROTECTED)
     private final EventRepository repository;
@@ -40,5 +44,26 @@ public class EventService extends EntityService<Event, EventDto> {
         return repository.findByCreatedAtAfter(instant).stream()
                 .map(entityMapper::toDto)
                 .collect(toList());
+    }
+
+    public long deleteOlderThanAndGetCount(Instant threshold) {
+        long count = repository.countByCreatedAtBefore(threshold);
+        repository.deleteByCreatedAtBefore(threshold);
+        return count;
+    }
+
+    @Override
+    protected void afterCreate(EventDto returnable) {
+        // do nothing because events are already saved
+    }
+
+    @Override
+    protected void afterUpdate(EventDto returnable) {
+        // do nothing because events are immutable
+    }
+
+    @Override
+    protected void afterDelete(EventDto dto) {
+        // do nothing because events are immutable
     }
 }

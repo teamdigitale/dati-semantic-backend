@@ -209,6 +209,7 @@ jacocoTestCoverageVerification {
                     'it.gov.innovazione.ndc.harvester.harvesters.utils.PathUtils',
                     'it.gov.innovazione.ndc.harvester.service.OnceLogger',
                     'it.gov.innovazione.ndc.harvester.service.ConfigReaderService',
+                    'it.gov.innovazione.ndc.service.EventCleaner',
                     'it.gov.innovazione.ndc.alerter.*'
             ]
         }
