@@ -65,7 +65,7 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
                                 .name("Harvester Single Path Processing Error")
                                 .description("Error processing " + type + " " + path + " in repo " + repository.getUrl())
                                 .category(EventCategory.SEMANTIC)
-                                .severity(Severity.WARNING)
+                                .severity(Severity.ERROR)
                                 .context(Map.of(
                                         "error", e.getRealErrorMessage(),
                                         "path", path.getTtlPath(),
