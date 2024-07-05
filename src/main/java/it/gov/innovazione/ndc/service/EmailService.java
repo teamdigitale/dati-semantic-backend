@@ -34,6 +34,7 @@ class EmailService {
         if (mailDebug) {
             log.info("Sending test email");
             sendEmail("servicedesk-schema@istat.it", "Test", "Test");
+            log.info("Test email sent");
         }
     }
 
