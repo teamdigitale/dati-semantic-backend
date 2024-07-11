@@ -15,12 +15,16 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static it.gov.innovazione.ndc.harvester.service.ActualConfigService.ConfigKey.ALERTER_ENABLED;
 import static org.apache.commons.collections4.ListUtils.emptyIfNull;
+import static org.apache.commons.text.StringSubstitutor.replace;
 
 @Component
 @RequiredArgsConstructor
@@ -32,6 +36,7 @@ public class AlerterMailSender {
     private final EventService eventService;
     private final UserService userService;
     private final ConfigService configService;
+    private final TemplateService templateService;
 
     private static boolean isAlertable(Instant lastAlertedAt, Integer aggregationTime, Instant now) {
         return lastAlertedAt.plusSeconds(aggregationTime).isBefore(now);
@@ -114,9 +119,9 @@ public class AlerterMailSender {
                         recipient.getEmail(),
                         eventDtos.size(),
                         category);
-                emailService.sendEmail(recipient.getEmail(),
+                emailService.sendHtmlEmail(recipient.getEmail(),
                         "[SCHEMAGOV] [" + category + "] Alerter: Report degli eventi",
-                        getMessageBody(eventDtos, recipient));
+                        getHtmlMessageBodyFromTemplates(eventDtos, recipient));
             }
             return;
         }
@@ -131,30 +136,47 @@ public class AlerterMailSender {
                         .collect(Collectors.joining(", ")));
     }
 
-    private String getMessageBody(List<EventDto> eventDtos, UserDto recipient) {
-        StringBuilder message = new StringBuilder("Ciao " + recipient.getName() + " " + recipient.getSurname() + ",\n\n"
-                + "Di seguito i dettagli degli eventi riscontrati:\n");
-        int i = 1;
-        for (EventDto eventDto : eventDtos) {
-            message.append(getDetailsForEvent(i, eventDto));
-            i++;
-        }
-        message.append("Origine: Generata automaticamente dall'harvester.\n\n");
-        message.append("Cordiali saluti,\n\nIl team di supporto di Schemagov");
-        return message.toString();
+    private String getHtmlMessageBodyFromTemplates(List<EventDto> eventDtos, UserDto recipient) {
+        return replace(
+                templateService.getAlerterMailTemplate(),
+                Map.of(
+                        "recipient.name", recipient.getName(),
+                        "recipient.surname", recipient.getSurname(),
+                        "eventList", replace(
+                                templateService.getEventListTemplate(),
+                                Map.of(
+                                        "events", getEvents(eventDtos)))));
     }
 
-    private String getDetailsForEvent(int i, EventDto eventDto) {
-        return i + ". Titolo: " + eventDto.getName() + "\n"
-                + "Descrizione: " + eventDto.getDescription() + "\n"
-                + "Severity: " + eventDto.getSeverity() + "\n"
-                + "Contesto: " + eventDto.getContext() + "\n"
-                + "Creato da: " + eventDto.getCreatedBy() + "\n"
-                + "Creato il: " + eventDto.getCreatedAt() + "\n\n";
+    private String getEvents(List<EventDto> eventDtos) {
+        return eventDtos.stream()
+                .map(eventDto -> replace(
+                        templateService.getEventTemplate(),
+                        Map.of(
+                                "event.name", eventDto.getName(),
+                                "event.description", eventDto.getDescription(),
+                                "event.severity", eventDto.getSeverity(),
+                                "event.context", toSubList(eventDto.getContext()),
+                                "event.createdBy", eventDto.getCreatedBy(),
+                                "event.createdAt", toLocalDate(eventDto.getCreatedAt()))))
+                .collect(Collectors.joining());
+    }
+
+    private String toLocalDate(Instant createdAt) {
+        return DateTimeFormatter.ofPattern("dd MMMM yyyy HH:mm:ss")
+                .withZone(ZoneId.systemDefault())
+                .format(createdAt);
+    }
+
+    private String toSubList(Map<String, Object> context) {
+        return "<ul>"
+                + context.entrySet().stream()
+                .map(entry -> "<li><b>" + entry.getKey() + ":</b>" + entry.getValue() + "</li>")
+                .collect(Collectors.joining())
+                + "</ul>";
     }
 
     private boolean isSeverityGteThanMin(EventDto eventDto, ProfileDto profileDto) {
         return eventDto.getSeverity().ordinal() >= profileDto.getMinSeverity().ordinal();
     }
-
 }

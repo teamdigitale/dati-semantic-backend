@@ -1,13 +1,15 @@
 package it.gov.innovazione.ndc.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.event.ApplicationStartedEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
+
+import javax.mail.internet.MimeMessage;
 
 @Component
 @RequiredArgsConstructor
@@ -17,8 +19,6 @@ class EmailService {
     private final JavaMailSender javaMailSender;
     @Value("${alerter.mail.sender}")
     private final String from;
-    @Value("${spring.mail.properties.mail.debug:false}")
-    private boolean mailDebug;
 
     void sendEmail(String to, String subject, String text) {
         SimpleMailMessage message = new SimpleMailMessage();
@@ -29,13 +29,14 @@ class EmailService {
         javaMailSender.send(message);
     }
 
-    @EventListener(ApplicationStartedEvent.class)
-    void debugSendMail() {
-        if (mailDebug) {
-            log.info("Sending test email");
-            sendEmail("servicedesk-schema@istat.it", "Test", "Test");
-            log.info("Test email sent");
-        }
+    @SneakyThrows
+    void sendHtmlEmail(String to, String subject, String htmlMessage) {
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
+        helper.setText(htmlMessage, true);
+        helper.setTo(to);
+        helper.setSubject(subject);
+        helper.setFrom(from);
+        javaMailSender.send(mimeMessage);
     }
-
 }
