@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: curl https://italia.github.io/api-oas-checker/spectral-full.yml > .spectral.yml
+      - run: curl https://raw.githubusercontent.com/italia/api-oas-checker/ff44a035af8f9ebcdd605f3edb93c7b054c17a22/rulesets/spectral-full.yml > .spectral.yml
 
       # Get additional module required by spectral-full
       - run: mkdir functions
