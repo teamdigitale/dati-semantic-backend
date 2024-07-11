@@ -164,14 +164,14 @@ public class AlerterMailSender {
 
     private String toLocalDate(Instant createdAt) {
         return DateTimeFormatter.ofPattern("dd MMMM yyyy HH:mm:ss")
-                .withZone(ZoneId.systemDefault())
+                .withZone(ZoneId.of("Europe/Rome"))
                 .format(createdAt);
     }
 
     private String toSubList(Map<String, Object> context) {
         return "<ul>"
                 + context.entrySet().stream()
-                .map(entry -> "<li><b>" + entry.getKey() + ":</b>" + entry.getValue() + "</li>")
+                .map(entry -> "<li><b>" + entry.getKey() + ":</b> " + entry.getValue() + "</li>")
                 .collect(Collectors.joining())
                 + "</ul>";
     }
