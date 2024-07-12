@@ -42,7 +42,7 @@ public class AlerterMailSender {
         return lastAlertedAt.plusSeconds(aggregationTime).isBefore(now);
     }
 
-    @Scheduled(fixedDelayString = "${alerter.mail-sender.fixed-delay:10000}")
+    @Scheduled(fixedDelayString = "${alerter.mail-sender.fixed-delay-ms}")
     void getEventsAndAlert() {
 
         Collection<ProfileDto> profiles = profileService.findAll();
