@@ -21,10 +21,10 @@ services:
     environment:
       - discovery.type=single-node
       - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - ELASTIC_PASSWORD=changeme
 
   mysql:
-    image: mysql
-    command: --mysql-native-password=ON
+    image: mysql:9.0.0
     restart: no
     ports:
       - 3306:3306

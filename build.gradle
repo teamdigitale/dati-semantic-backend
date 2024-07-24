@@ -56,8 +56,10 @@ dependencies {
 
     implementation 'org.mapstruct:mapstruct:1.5.5.Final'
 
-    implementation group: 'org.springframework.security', name: 'spring-security-core', version: '5.7.12'
-    implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '5.7.12'
+    implementation group: 'org.springframework.security', name: 'spring-security-web', version: '5.8.13'
+    implementation group: 'org.springframework.security', name: 'spring-security-config', version: '5.8.13'
+    implementation group: 'org.springframework.security', name: 'spring-security-core', version: '5.8.13'
+    implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '5.8.13'
 
     implementation group: 'org.springframework', name: 'spring-web', version: '5.3.34'
 
