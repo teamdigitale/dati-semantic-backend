@@ -6,7 +6,6 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
@@ -28,8 +27,7 @@ public class Event implements Nameable {
     private String id;
     @Column(nullable = false)
     private String name;
-    @Lob
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "LONGTEXT")
     private String description;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -37,8 +35,7 @@ public class Event implements Nameable {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Severity severity;
-    @Lob
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "LONGTEXT")
     private String context;
     @Column(nullable = false)
     private Instant occurredAt;
