@@ -6,6 +6,7 @@ import it.gov.innovazione.ndc.eventhandler.NdcEventPublisher;
 import it.gov.innovazione.ndc.gen.dto.VocabularyData;
 import it.gov.innovazione.ndc.harvester.csv.CsvParser;
 import it.gov.innovazione.ndc.integration.Containers;
+import org.elasticsearch.client.RestClient;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -20,9 +21,12 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static it.gov.innovazione.ndc.integration.Containers.ELASTICSEARCH_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -38,6 +42,9 @@ public class VocabularyDataServiceIntegrationTest {
     @Autowired
     private ElasticsearchOperations elasticOps;
 
+    @Autowired
+    private RestClient restClient;
+
     @MockBean
     private GithubService githubService;
 
@@ -46,7 +53,7 @@ public class VocabularyDataServiceIntegrationTest {
 
     @DynamicPropertySource
     static void updateTestcontainersProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.elasticsearch.rest.uris", elasticsearchContainer::getHttpHostAddress);
+        registry.add("elastic.test.exposed-port", () -> elasticsearchContainer.getMappedPort(ELASTICSEARCH_PORT));
     }
 
     @BeforeAll
@@ -64,9 +71,10 @@ public class VocabularyDataServiceIntegrationTest {
         assertThatThrownBy(() -> vocabularyDataService.getData(VOCABULARY_IDENTIFIER, Pageable.ofSize(20)))
                 .isInstanceOf(VocabularyDataNotFoundException.class);
 
-        Map<String, String> martinRecord = Map.of("id", "martin", "name", "Martin Fowler");
-        Map<String, String> kentRecord = Map.of("id", "kent", "name", "Kent Beck");
-        CsvParser.CsvData data = new CsvParser.CsvData(List.of(kentRecord, martinRecord), "id");
+        Map<String, String> martinRecord = new HashMap<>(Map.of("id", "martin", "name", "Martin Fowler"));
+        Map<String, String> kentRecord = new HashMap<>(Map.of("id", "kent", "name", "Kent Beck"));
+        CsvParser.CsvData data = new CsvParser.CsvData(
+                new ArrayList<>(List.of(kentRecord, martinRecord)), "id");
 
         vocabularyDataService.indexData(VOCABULARY_IDENTIFIER, data);
 
