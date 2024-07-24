@@ -4,6 +4,7 @@ package it.gov.innovazione.ndc.alerter.controller;
 import it.gov.innovazione.ndc.alerter.data.EntityService;
 import it.gov.innovazione.ndc.alerter.dto.SlimPager;
 import it.gov.innovazione.ndc.alerter.entities.Nameable;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -16,9 +17,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import javax.validation.Valid;
-
-import static java.util.stream.Collectors.toList;
 import static org.springframework.http.HttpStatus.CREATED;
 
 
@@ -41,7 +39,7 @@ public abstract class AbstractCrudController<T extends Nameable, D extends Namea
                                 .map(order -> SlimPager.SlimOrder.of(
                                         order.getProperty(),
                                         order.getDirection()))
-                                .collect(toList()),
+                                .toList(),
                         paginated.getPageable().getPageNumber(),
                         paginated.getPageable().getPageSize(),
                         paginated.getTotalPages(),

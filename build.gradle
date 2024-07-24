@@ -1,19 +1,18 @@
 plugins {
-    id 'org.springframework.boot' version '2.7.18'
-    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'org.springframework.boot' version '3.3.2'
+    id 'io.spring.dependency-management' version '1.1.6'
     id 'java'
     id 'com.google.cloud.tools.jib' version '3.1.4'
     id 'checkstyle'
     id 'jacoco'
     id 'org.owasp.dependencycheck' version '8.2.1'
     id 'com.github.spotbugs' version '5.0.14'
-    id 'org.openapi.generator' version '5.3.0'
+    id 'org.openapi.generator' version '6.6.0'
     id 'idea'
 }
 
 group = 'it.gov.innovazione'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '11'
 
 configurations {
     compileOnly {
@@ -22,23 +21,6 @@ configurations {
     integrationImplementation.extendsFrom testImplementation
     integrationRuntime.extendsFrom testRuntime
     integrationCompileOnly.extendsFrom testCompileOnly
-
-    all {
-        resolutionStrategy.eachDependency { details ->
-            if (details.requested.group == 'com.google.guava' && details.requested.name=='guava') {
-                details.useVersion "32.0.1-jre"
-            }
-            if (details.requested.group == 'org.apache.bcel' && details.requested.name=='bcel') {
-                details.useVersion "6.6.1"
-            }
-            if (details.requested.group == 'org.apache.logging.log4j' && details.requested.name=='log4j-core') {
-                details.useVersion "2.22.0"
-            }
-            if (details.requested.group == 'org.yaml' && details.requested.name=='snakeyaml') {
-                details.useVersion "2.0"
-            }         
-        }
-    }
 }
 
 repositories {
@@ -54,14 +36,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
 
+    runtimeOnly("org.springframework.boot:spring-boot-properties-migrator")
+
     implementation 'org.mapstruct:mapstruct:1.5.5.Final'
-
-    implementation group: 'org.springframework.security', name: 'spring-security-web', version: '5.8.13'
-    implementation group: 'org.springframework.security', name: 'spring-security-config', version: '5.8.13'
-    implementation group: 'org.springframework.security', name: 'spring-security-core', version: '5.8.13'
-    implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '5.8.13'
-
-    implementation group: 'org.springframework', name: 'spring-web', version: '5.3.34'
 
     implementation 'org.springframework.data:spring-data-elasticsearch'
     implementation 'org.apache.jena:apache-jena-libs:4.9.0'
@@ -77,10 +54,10 @@ dependencies {
 
     implementation 'org.apache.commons:commons-compress:1.26.1'
 
-    implementation 'org.springdoc:springdoc-openapi-ui:1.6.1'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
     implementation 'org.openapitools:jackson-databind-nullable:0.2.6'
 
-    implementation 'io.swagger:swagger-annotations:1.5.20'
+    implementation 'io.swagger.core.v3:swagger-annotations:2.2.22'
     implementation 'org.mapstruct:mapstruct:1.4.2.Final'
 
     implementation 'org.eclipse.parsson:parsson:1.0.5'
@@ -101,21 +78,18 @@ dependencies {
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.mockito', module: 'mockito-core'
     }
-    testImplementation 'io.rest-assured:rest-assured:4.0.0'
-    testImplementation 'io.rest-assured:json-path:4.0.0'
+    testImplementation 'io.rest-assured:rest-assured:5.5.0'
+    testImplementation 'io.rest-assured:json-path:5.5.0'
     testImplementation 'org.mockito:mockito-inline:3.9.0'
 
-    integrationImplementation "org.testcontainers:elasticsearch:1.18.3"
-    integrationImplementation "org.testcontainers:testcontainers:1.18.3"
-    integrationImplementation "org.testcontainers:junit-jupiter:1.18.3"
+    integrationImplementation "org.testcontainers:elasticsearch:1.20.0"
+    integrationImplementation "org.testcontainers:testcontainers:1.20.0"
+    integrationImplementation "org.testcontainers:junit-jupiter:1.20.0"
     integrationImplementation "com.h2database:h2:2.2.224"
 
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.4.2.Final'
 }
-
-ext['log4j2.version'] = '2.22.0'
-ext['logback.version'] = '1.2.13'
 
 test {
     useJUnitPlatform()
@@ -135,6 +109,7 @@ openApiGenerate {
     invokerPackage = 'it.gov.innovazione.ndc.gen.invoker'
     modelPackage = 'it.gov.innovazione.ndc.gen.dto'
     configOptions = [
+            useSpringBoot3       : 'true',
             library              : 'spring-boot',
             performBeanValidation: 'true',
             dateLibrary          : 'java8',

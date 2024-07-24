@@ -8,7 +8,7 @@ import it.gov.innovazione.ndc.gen.dto.SortBy;
 import it.gov.innovazione.ndc.gen.dto.VocabulariesResult;
 import it.gov.innovazione.ndc.gen.dto.VocabularyData;
 import it.gov.innovazione.ndc.gen.dto.VocabularySummary;
-import it.gov.innovazione.ndc.gen.dto.VocabularySummaryLinks;
+import it.gov.innovazione.ndc.gen.dto.VocabularySummaryLinksInner;
 import lombok.Builder;
 import lombok.SneakyThrows;
 import org.springframework.data.domain.Pageable;
@@ -98,13 +98,12 @@ public class Builders {
         return dto;
     }
 
-    public static List<VocabularySummaryLinks> getVocabularySummaryLinks(String endpointUrl) {
-        VocabularySummaryLinks link = new VocabularySummaryLinks();
+    public static List<VocabularySummaryLinksInner> getVocabularySummaryLinks(String endpointUrl) {
+        VocabularySummaryLinksInner link = new VocabularySummaryLinksInner();
         link.setType("GET");
         link.setHref(endpointUrl);
         link.setRel("items");
-        List<VocabularySummaryLinks> links = List.of(link);
-        return links;
+        return List.of(link);
     }
 
     @Builder(builderMethodName = "problem")

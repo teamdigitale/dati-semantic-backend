@@ -1,11 +1,10 @@
 package it.gov.innovazione.ndc.alerter.dto;
 
 import it.gov.innovazione.ndc.alerter.entities.Nameable;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
-
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
 
 @Data
 public class UserDto implements Nameable {

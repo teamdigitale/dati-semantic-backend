@@ -6,7 +6,7 @@ import it.gov.innovazione.ndc.gen.dto.SemanticAssetDetails;
 import it.gov.innovazione.ndc.gen.dto.Theme;
 import it.gov.innovazione.ndc.gen.dto.VocabulariesResult;
 import it.gov.innovazione.ndc.gen.dto.VocabularySummary;
-import it.gov.innovazione.ndc.gen.dto.VocabularySummaryLinks;
+import it.gov.innovazione.ndc.gen.dto.VocabularySummaryLinksInner;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import lombok.SneakyThrows;
 import org.mapstruct.Mapper;
@@ -44,7 +44,7 @@ public interface SemanticAssetsMetadataMapper {
                 .build();
     }
 
-    default List<VocabularySummaryLinks> linksForEndpointUrl(String endpointUrl) {
+    default List<VocabularySummaryLinksInner> linksForEndpointUrl(String endpointUrl) {
         return Builders.getVocabularySummaryLinks(endpointUrl);
     }
 

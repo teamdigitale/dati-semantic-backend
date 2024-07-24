@@ -1,6 +1,7 @@
 package it.gov.innovazione.ndc.controller.exception;
 
 import it.gov.innovazione.ndc.gen.dto.Problem;
+import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -8,7 +9,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import javax.validation.ConstraintViolationException;
 import java.util.Set;
 import java.util.stream.Stream;
 

@@ -1,9 +1,10 @@
 package it.gov.innovazione.ndc.controller;
 
 import com.github.jsonldjava.shaded.com.google.common.base.CaseFormat;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import it.gov.innovazione.ndc.gen.api.SemanticAssetsApi;
 import it.gov.innovazione.ndc.gen.dto.AssetType;
 import it.gov.innovazione.ndc.gen.dto.Direction;
@@ -18,8 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
@@ -43,14 +43,14 @@ public class SemanticAssetsController implements SemanticAssetsApi {
      *
      * @return OK (status code 200)
      */
-    @ApiOperation(value = "", nickname = "getRightsHolders", notes = "Retrieves the rights holders",
-            response = SemanticAssetDetails.class, tags = {"semantic-assets"})
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = SemanticAssetDetails.class)})
-    @RequestMapping(
-            method = RequestMethod.GET,
-            value = "/semantic-assets/rights-holders",
-            produces = {"application/json"}
-    )
+    @Operation(tags = {"semantic-assets"},
+            summary = "Retrieves the rights holders",
+            description = "Retrieves the rights holders of the semantic assets.",
+            operationId = "getRightsHolders",
+            responses = {@ApiResponse(responseCode = "200", description = "OK", content = {
+                @Content(mediaType = "application/json", schema = @Schema(implementation = RightsHolder.class))
+            })})
+    @GetMapping(value = "/semantic-assets/rights-holders", produces = {"application/json"})
     List<RightsHolder> getRightsHolders() {
         return repositoryService.getRightsHolders();
 

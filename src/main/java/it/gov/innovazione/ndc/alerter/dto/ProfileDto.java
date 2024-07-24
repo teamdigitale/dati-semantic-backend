@@ -2,10 +2,10 @@ package it.gov.innovazione.ndc.alerter.dto;
 
 import it.gov.innovazione.ndc.alerter.entities.Nameable;
 import it.gov.innovazione.ndc.alerter.entities.Severity;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
 import java.time.Instant;
 import java.util.List;
 

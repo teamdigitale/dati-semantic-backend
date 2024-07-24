@@ -1,11 +1,10 @@
 package it.gov.innovazione.ndc.config;
 
-import org.springdoc.core.SpringDocConfigProperties;
-import org.springdoc.core.SpringDocConfiguration;
+import org.springdoc.core.configuration.SpringDocConfiguration;
+import org.springdoc.core.properties.SpringDocConfigProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
-@Configuration
+//@Configuration
 public class OpenApiConfiguration {
     @Bean
     SpringDocConfiguration springDocConfiguration() {

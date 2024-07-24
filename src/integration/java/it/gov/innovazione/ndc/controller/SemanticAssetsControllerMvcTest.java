@@ -8,6 +8,7 @@ import it.gov.innovazione.ndc.model.Builders;
 import it.gov.innovazione.ndc.service.SemanticAssetSearchService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
@@ -30,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(SemanticAssetsController.class)
+@WebMvcTest(controllers = SemanticAssetsController.class, excludeAutoConfiguration = SecurityAutoConfiguration.class)
 public class SemanticAssetsControllerMvcTest {
     @Autowired
     private MockMvc mockMvc;
@@ -113,7 +114,7 @@ public class SemanticAssetsControllerMvcTest {
         verify(searchService).search("searchText",
                 Set.of("CONTROLLED_VOCABULARY", "ONTOLOGY"),
                 Set.of("http://publications.europa.eu/resource/authority/data-theme/AGRI", "http://publications.europa.eu/resource/authority/data-theme/EDUC"),
-                null,
+                Set.of(),
                 pageable);
     }
 
@@ -136,7 +137,7 @@ public class SemanticAssetsControllerMvcTest {
                 .accept(MediaType.APPLICATION_JSON)
         );
 
-        verify(searchService).search("", Set.of(), Set.of(), null, pageable);
+        verify(searchService).search("", Set.of(), Set.of(), Set.of(), pageable);
 
         apiResult
                 .andDo(print())
@@ -153,7 +154,7 @@ public class SemanticAssetsControllerMvcTest {
                 .andDo(print())
                 .andExpect(status().isOk());
 
-        verify(searchService).search("", Set.of(), Set.of(), null, OffsetBasedPageRequest.of(0, 10,
+        verify(searchService).search("", Set.of(), Set.of(), Set.of(), OffsetBasedPageRequest.of(0, 10,
                 Sort.by(Sort.Order.asc("title"))));
     }
 

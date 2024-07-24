@@ -5,9 +5,8 @@ import it.gov.innovazione.ndc.gen.dto.Distribution;
 import it.gov.innovazione.ndc.gen.dto.SearchResultItem;
 import it.gov.innovazione.ndc.gen.dto.SemanticAssetDetails;
 import it.gov.innovazione.ndc.gen.dto.Theme;
-import it.gov.innovazione.ndc.gen.dto.VocabulariesResult;
 import it.gov.innovazione.ndc.gen.dto.VocabularySummary;
-import it.gov.innovazione.ndc.gen.dto.VocabularySummaryLinks;
+import it.gov.innovazione.ndc.gen.dto.VocabularySummaryLinksInner;
 import it.gov.innovazione.ndc.harvester.SemanticAssetType;
 import it.gov.innovazione.ndc.harvester.model.index.NodeSummary;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
@@ -192,7 +191,7 @@ class SemanticAssetsMetadataMapperTest {
         assertThat(dto.getDescription()).isEqualTo("description");
         assertThat(dto.getAgencyId()).isEqualTo("agid");
         assertThat(dto.getKeyConcept()).isEqualTo("interesting-stuff");
-        List<VocabularySummaryLinks> links = dto.getLinks();
+        List<VocabularySummaryLinksInner> links = dto.getLinks();
         assertThat(links).hasSize(1);
         assertThat(links.get(0).getHref()).isEqualTo("https://www.disney.com");
     }

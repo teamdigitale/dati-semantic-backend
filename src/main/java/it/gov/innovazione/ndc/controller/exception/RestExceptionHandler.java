@@ -2,6 +2,7 @@ package it.gov.innovazione.ndc.controller.exception;
 
 import it.gov.innovazione.ndc.gen.dto.Problem;
 import it.gov.innovazione.ndc.model.Builders;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -10,8 +11,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-
-import javax.validation.ConstraintViolationException;
 
 @Slf4j
 @ControllerAdvice

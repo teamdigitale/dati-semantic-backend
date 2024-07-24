@@ -1,6 +1,27 @@
 package it.gov.innovazione.ndc.controller;
 
-import static org.hamcrest.Matchers.containsString;
+import it.gov.innovazione.ndc.controller.exception.VocabularyDataNotFoundException;
+import it.gov.innovazione.ndc.controller.exception.VocabularyItemNotFoundException;
+import it.gov.innovazione.ndc.gen.dto.VocabulariesResult;
+import it.gov.innovazione.ndc.gen.dto.VocabularyData;
+import it.gov.innovazione.ndc.gen.dto.VocabularySummary;
+import it.gov.innovazione.ndc.model.Builders;
+import it.gov.innovazione.ndc.service.SemanticAssetSearchService;
+import it.gov.innovazione.ndc.service.VocabularyDataService;
+import it.gov.innovazione.ndc.service.VocabularyIdentifier;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.List;
+import java.util.Map;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -12,29 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import it.gov.innovazione.ndc.controller.exception.VocabularyDataNotFoundException;
-import it.gov.innovazione.ndc.controller.exception.VocabularyItemNotFoundException;
-import it.gov.innovazione.ndc.gen.dto.VocabulariesResult;
-import it.gov.innovazione.ndc.gen.dto.VocabularySummary;
-import it.gov.innovazione.ndc.model.Builders;
-import it.gov.innovazione.ndc.service.SemanticAssetSearchService;
-import it.gov.innovazione.ndc.service.VocabularyDataService;
-import it.gov.innovazione.ndc.service.VocabularyIdentifier;
-import it.gov.innovazione.ndc.gen.dto.VocabularyData;
-
-import java.util.List;
-import java.util.Map;
-
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-
-@WebMvcTest(VocabularyDataController.class)
+@WebMvcTest(controllers = VocabularyDataController.class, excludeAutoConfiguration = {SecurityAutoConfiguration.class})
 public class VocabularyDataControllerMvcTest {
     @MockBean
     private VocabularyDataService vocabularyDataService;
