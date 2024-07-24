@@ -1,9 +1,9 @@
 package it.gov.innovazione.ndc.controller;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Sort;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class OffsetBasedPageRequestTest {
 

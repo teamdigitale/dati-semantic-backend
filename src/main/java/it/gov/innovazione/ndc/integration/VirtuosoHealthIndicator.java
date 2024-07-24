@@ -1,7 +1,6 @@
 package it.gov.innovazione.ndc.integration;
 
 import it.gov.innovazione.ndc.repository.TripleStoreRepository;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -11,6 +10,8 @@ import org.springframework.boot.actuate.autoconfigure.health.ConditionalOnEnable
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.stereotype.Component;
+
+import java.util.Objects;
 
 @RequiredArgsConstructor
 @Slf4j
