@@ -33,7 +33,9 @@ public class SemanticAssetMetadataRepositoryIntegrationTest {
     public static void beforeAll() {
         elastic.start();
         elasticsearchOperations = buildElasticsearchOps();
-        repository = new SemanticAssetMetadataRepository(elasticsearchOperations, new InMemoryInstanceManager());
+        InMemoryInstanceManager instanceManager = new InMemoryInstanceManager();
+        instanceManager.setAllInstances(Instance.PRIMARY);
+        repository = new SemanticAssetMetadataRepository(elasticsearchOperations, instanceManager);
     }
 
     @NotNull

@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static it.gov.innovazione.ndc.harvester.service.RepositoryUtils.asRepo;
+import static it.gov.innovazione.ndc.integration.Containers.ELASTICSEARCH_PORT;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doNothing;
@@ -82,10 +83,9 @@ public class BaseIntegrationTest {
 
     static void updateTestcontainersProperties(DynamicPropertyRegistry registry) {
         String url = "http://localhost:" + virtuoso.getMappedPort(Containers.VIRTUOSO_PORT);
-        String elasticSearchAddress = elasticsearchContainer.getHttpHostAddress();
         registry.add("virtuoso.sparql", () -> url + "/sparql");
         registry.add("virtuoso.sparql-graph-store", () -> url + "/sparql-graph-crud/");
-        registry.add("spring.elasticsearch.rest.uris", () -> elasticSearchAddress);
+        registry.add("elastic.test.exposed-port", () -> elasticsearchContainer.getMappedPort(ELASTICSEARCH_PORT));
     }
 
     private void dataIsHarvested() throws IOException {

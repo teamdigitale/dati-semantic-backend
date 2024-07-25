@@ -3,6 +3,7 @@ package it.gov.innovazione.ndc.integration;
 import it.gov.innovazione.ndc.harvester.model.Instance;
 import it.gov.innovazione.ndc.model.harvester.Repository;
 import it.gov.innovazione.ndc.service.InstanceManager;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
@@ -13,9 +14,17 @@ import java.util.stream.Collectors;
 
 @Service
 @Primary
+@RequiredArgsConstructor
 public class InMemoryInstanceManager implements InstanceManager {
 
     private final Map<String, Instance> instances = new HashMap<>();
+
+    private Instance allInstances = Instance.PRIMARY;
+
+    public void setAllInstances(Instance allInstances) {
+        this.allInstances = allInstances;
+        instances.replaceAll((k, v) -> allInstances);
+    }
 
     @Override
     public Instance getNextOnlineInstance(String repoUrl) {
@@ -36,7 +45,7 @@ public class InMemoryInstanceManager implements InstanceManager {
     @Override
     public Instance getCurrentInstance(Repository repository) {
         if (!instances.containsKey(repository.getUrl())) {
-            instances.put(repository.getUrl(), Instance.PRIMARY);
+            instances.put(repository.getUrl(), allInstances);
         }
         return instances.get(repository.getUrl());
     }
@@ -52,5 +61,9 @@ public class InMemoryInstanceManager implements InstanceManager {
         return instances.entrySet().stream()
                 .map(entry -> RepositoryInstance.of(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
+    }
+
+    public void switchAllInstances() {
+        instances.replaceAll((k, v) -> v.switchInstance());
     }
 }
