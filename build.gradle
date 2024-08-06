@@ -6,7 +6,7 @@ plugins {
     id 'checkstyle'
     id 'jacoco'
     id 'org.owasp.dependencycheck' version '8.2.1'
-    id 'com.github.spotbugs' version '5.0.14'
+    id 'com.github.spotbugs' version '6.0.19'
     id 'org.openapi.generator' version '6.6.0'
     id 'idea'
 }
@@ -126,7 +126,7 @@ idea {
 }
 
 checkstyle {
-    toolVersion = '9.0.1'
+    toolVersion = '10.12.4'
     maxWarnings = 0
     ignoreFailures false
     configDirectory = file("${rootProject.projectDir}/config/checkstyle")

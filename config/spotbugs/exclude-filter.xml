@@ -15,6 +15,9 @@
         <Bug pattern="ES_COMPARING_PARAMETER_STRING_WITH_EQ"/><!-- False positive when using lombok -->
     </Match>
     <Match>
-        <Bug pattern="SS_SHOULD_BE_STATIC"/><!-- leave me alone, I know what I'm doing -->
+        <Bug pattern="SS_SHOULD_BE_STATIC"/>
+    </Match>
+    <Match>
+        <Bug pattern="CT_CONSTRUCTOR_THROW"/>
     </Match>
 </FindBugsFilter>
