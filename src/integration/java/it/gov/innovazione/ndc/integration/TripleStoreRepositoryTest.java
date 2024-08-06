@@ -1,7 +1,5 @@
 package it.gov.innovazione.ndc.integration;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import it.gov.innovazione.ndc.repository.TripleStoreProperties;
 import it.gov.innovazione.ndc.repository.TripleStoreRepository;
 import it.gov.innovazione.ndc.repository.VirtuosoClient;
@@ -24,6 +22,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TripleStoreRepositoryTest {
 

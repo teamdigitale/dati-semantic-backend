@@ -40,7 +40,6 @@ servers:
 #   and `additionalProperties`. See [additionalProperties security](https://apisecurity.io/encyclopedia/content/oasv3/datavalidation/schema/v3-schema-object-additionalproperties-true.htm)
 x-components:
   constants:
-    max-url-size: &max-url-size 2000
     max-vocabulary-size: &max-vocabulary-size 100000  # 100_000
     max-array-size-default: &max-array-size-default 20
 paths:
@@ -220,7 +219,6 @@ paths:
               An utility schema for URI and URL.
             type: string
             format: uri
-            maxLength: *max-url-size
       responses:
         '200':
           description: OK
@@ -382,7 +380,6 @@ components:
             An utility schema for URI and URL.
           type: string
           format: url
-          maxLength: *max-url-size
         summary:
           type: string
           maxLength: 120
@@ -417,7 +414,6 @@ components:
             An utility schema for URI and URL.
           type: string
           format: url
-          maxLength: *max-url-size
         title:
           type: string
           maxLength: 64
@@ -518,7 +514,6 @@ components:
                 An utility schema for URI and URL.
               type: string
               format: url
-              maxLength: *max-url-size
             keyClasses:
               type: array
               minItems: 0

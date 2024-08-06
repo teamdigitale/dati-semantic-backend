@@ -1,7 +1,7 @@
 package it.gov.innovazione.ndc.harvester.scanners;
 
-import it.gov.innovazione.ndc.harvester.model.CvPath;
 import it.gov.innovazione.ndc.harvester.exception.InvalidAssetFolderException;
+import it.gov.innovazione.ndc.harvester.model.CvPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

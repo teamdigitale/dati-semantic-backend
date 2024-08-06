@@ -1,22 +1,24 @@
 package it.gov.innovazione.ndc.integration;
 
+import it.gov.innovazione.ndc.config.ElasticConfigurator;
 import it.gov.innovazione.ndc.harvester.SemanticAssetType;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
-import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.RestClient;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.data.elasticsearch.client.ClientConfiguration;
-import org.springframework.data.elasticsearch.client.RestClients;
+import org.springframework.data.elasticsearch.client.elc.ElasticsearchClients;
+import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
-import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static it.gov.innovazione.ndc.integration.Containers.ELASTIC_PASSWORD;
+import static it.gov.innovazione.ndc.integration.Containers.ELASTIC_USERNAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class SemanticAssetMetadataRepositoryIntegrationTest {
@@ -35,14 +37,13 @@ public class SemanticAssetMetadataRepositoryIntegrationTest {
 
     @NotNull
     private static ElasticsearchOperations buildElasticsearchOps() {
-        ClientConfiguration clientConfiguration
-                = ClientConfiguration.builder()
-                .connectedTo("localhost:" + elastic.getMappedPort(Containers.ELASTICSEARCH_PORT))
-                .build();
+        RestClient client = new ElasticConfigurator(
+                "localhost",
+                elastic.getMappedPort(Containers.ELASTICSEARCH_PORT), "https",
+                ELASTIC_USERNAME, ELASTIC_PASSWORD).client();
 
-        RestHighLevelClient client = RestClients.create(clientConfiguration).rest();
-
-        return new ElasticsearchRestTemplate(client);
+        return new ElasticsearchTemplate(
+                ElasticsearchClients.createImperative(client));
     }
 
     @AfterAll

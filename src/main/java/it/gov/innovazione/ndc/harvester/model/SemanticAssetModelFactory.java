@@ -1,13 +1,13 @@
 package it.gov.innovazione.ndc.harvester.model;
 
-import static java.lang.String.format;
-
 import it.gov.innovazione.ndc.harvester.model.exception.InvalidModelException;
 import lombok.RequiredArgsConstructor;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.springframework.stereotype.Component;
+
+import static java.lang.String.format;
 
 @Component
 @RequiredArgsConstructor

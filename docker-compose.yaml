@@ -15,16 +15,16 @@ services:
       - DEFAULT_GRAPH=http://www.ndc.com/test-graph
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.12.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.14.3
     ports:
       - 9200:9200
     environment:
       - discovery.type=single-node
       - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - ELASTIC_PASSWORD=changeme
 
   mysql:
-    image: mysql
-    command: --mysql-native-password=ON
+    image: mysql:9.0.0
     restart: no
     ports:
       - 3306:3306

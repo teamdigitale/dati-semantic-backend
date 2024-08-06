@@ -1,6 +1,5 @@
 package it.gov.innovazione.ndc.validator;
 
-import it.gov.innovazione.ndc.harvester.SemanticAssetType;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
 

@@ -3,11 +3,11 @@ package it.gov.innovazione.ndc.alerter.dto;
 import it.gov.innovazione.ndc.alerter.entities.EventCategory;
 import it.gov.innovazione.ndc.alerter.entities.Nameable;
 import it.gov.innovazione.ndc.alerter.entities.Severity;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.Map;
 

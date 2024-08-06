@@ -1,9 +1,5 @@
 package it.gov.innovazione.ndc.integration;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import it.gov.innovazione.ndc.repository.TripleStoreRepository;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.query.QueryExecution;
@@ -14,6 +10,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class VirtuosoHealthIndicatorTest {
 

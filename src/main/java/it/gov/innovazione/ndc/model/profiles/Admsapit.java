@@ -1,6 +1,7 @@
 package it.gov.innovazione.ndc.model.profiles;
 
 import org.apache.jena.rdf.model.Property;
+
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 
 public class Admsapit {

@@ -1,18 +1,24 @@
 package it.gov.innovazione.ndc.config;
 
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
+public class SecurityConfiguration {
 
     @Value("#{'${harvester.auth.user:admin}'}")
     private final String user;
@@ -20,23 +26,24 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Value("#{'${harvester.auth.password:password}'}")
     private final String password;
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable()
-                .authorizeRequests()
-                .antMatchers("/jobs/**").hasRole("HARVESTER")
-                .antMatchers("/config/**").hasRole("HARVESTER")
-                .anyRequest().permitAll()
-                .and()
-                .httpBasic();
+    @Bean
+    @SneakyThrows
+    SecurityFilterChain filterChain(HttpSecurity http) {
+        return http.csrf(CsrfConfigurer::disable)
+                .authorizeHttpRequests(req ->
+                        req.requestMatchers("/jobs/**", "/config/**").hasRole("HARVESTER")
+                                .anyRequest().permitAll())
+                .httpBasic(Customizer.withDefaults())
+                .build();
     }
 
-    @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth)
-            throws Exception {
-        auth.inMemoryAuthentication()
-                .withUser(user)
-                .password("{noop}" + password)
-                .roles("HARVESTER");
+    @Bean
+    public UserDetailsService users() {
+        return new InMemoryUserDetailsManager(
+                User.builder()
+                        .username(user)
+                        .password("{noop}" + password)
+                        .roles("HARVESTER")
+                        .build());
     }
 }

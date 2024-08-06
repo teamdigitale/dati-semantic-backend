@@ -1,17 +1,24 @@
 package it.gov.innovazione.ndc.integration;
 
+import it.gov.innovazione.ndc.config.ElasticConfigurator;
 import it.gov.innovazione.ndc.harvester.AgencyRepositoryService;
 import it.gov.innovazione.ndc.harvester.HarvesterService;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.gov.innovazione.ndc.harvester.service.RepositoryService;
 import it.gov.innovazione.ndc.repository.TripleStoreProperties;
+import org.elasticsearch.client.RestClient;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -28,9 +35,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Import({BaseIntegrationTest.TestConfig.class})
 public class BaseIntegrationTest {
 
     private static final ElasticsearchContainer elasticsearchContainer =
@@ -99,5 +108,29 @@ public class BaseIntegrationTest {
         verify(elasticsearchOperations).bulkIndex(anyList(), indexCaptor.capture());
         Set<IndexCoordinates> referencedIndices = new HashSet<>(indexCaptor.getAllValues());
         referencedIndices.forEach(ic -> elasticsearchOperations.indexOps(ic).refresh());
+    }
+
+    @Configuration
+    public static class TestConfig {
+
+        @Value("${elastic.test.exposed-port:-1}")
+        private int port;
+
+        @Bean
+        @Primary
+        public RestClient testClient() {
+            try {
+                int elasticPort = port == -1 ? elasticsearchContainer.getMappedPort(Containers.ELASTICSEARCH_PORT) : port;
+                return new ElasticConfigurator(
+                        "localhost",
+                        elasticPort,
+                        "https",
+                        Containers.ELASTIC_USERNAME,
+                        Containers.ELASTIC_PASSWORD).client();
+            } catch (Exception e) {
+                // bad workaround for a bad design
+                return mock(RestClient.class);
+            }
+        }
     }
 }

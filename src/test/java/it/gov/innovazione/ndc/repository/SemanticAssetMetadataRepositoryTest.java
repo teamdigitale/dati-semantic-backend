@@ -1,10 +1,7 @@
 package it.gov.innovazione.ndc.repository;
 
+import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.MatchAllQueryBuilder;
-import org.elasticsearch.index.query.MatchQueryBuilder;
-import org.elasticsearch.index.query.TermsQueryBuilder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -12,18 +9,24 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.SearchPage;
 import org.springframework.data.elasticsearch.core.query.ByQueryResponse;
-import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
+import org.springframework.data.elasticsearch.core.query.DeleteQuery;
+import org.springframework.data.elasticsearch.core.query.Query;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
-import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -68,19 +71,25 @@ class SemanticAssetMetadataRepositoryTest {
 
     @Test
     void shouldDeleteByIri() {
-        ArgumentCaptor<NativeSearchQuery> captor = ArgumentCaptor.forClass(NativeSearchQuery.class);
+        ArgumentCaptor<DeleteQuery> captor = ArgumentCaptor.forClass(DeleteQuery.class);
+
         ByQueryResponse deletedResponse = ByQueryResponse.builder()
             .withDeleted(1L)
             .build();
+
         when(esOps.delete(captor.capture(), any(Class.class))).thenReturn(deletedResponse);
 
         long deleteCount = repository.deleteByRepoUrl("someRepoUrl");
 
         assertThat(deleteCount).isEqualTo(1);
-        MatchQueryBuilder query = (MatchQueryBuilder) captor.getValue().getQuery();
-        assert query != null;
-        assertThat(query.fieldName()).isEqualTo("repoUrl");
-        assertThat(query.value()).isEqualTo("someRepoUrl");
+        Query query = captor.getValue().getQuery();
+        assertNotNull(query);
+        assertEquals("Query: {\"match\":{\"repoUrl\":{\"query\":\"someRepoUrl\"}}}",
+                Optional.of(query)
+                        .map(q -> (NativeQuery) q)
+                        .map(NativeQuery::getQuery)
+                        .map(Object::toString)
+                        .orElse(null));
     }
 
     @Test
@@ -96,7 +105,7 @@ class SemanticAssetMetadataRepositoryTest {
 
     @Test
     void shouldSearchUsingQueryStringAndFiltersAndPagination() {
-        ArgumentCaptor<NativeSearchQuery> captor = ArgumentCaptor.forClass(NativeSearchQuery.class);
+        ArgumentCaptor<NativeQuery> captor = ArgumentCaptor.forClass(NativeQuery.class);
 
         when(esOps.search(captor.capture(), any(Class.class))).thenReturn(searchHits);
 
@@ -104,27 +113,30 @@ class SemanticAssetMetadataRepositoryTest {
                 repository.search("query", Set.of("TYPE1"), Set.of("THEME1"), Collections.emptySet(), PageRequest.of(0, 10));
 
         assertThat(searchResult.getSearchHits()).isEqualTo(searchHits);
-        BoolQueryBuilder query = (BoolQueryBuilder) captor.getValue().getQuery();
-        assert query != null;
-        assertThat(query.must().size()).isEqualTo(1);
-        MatchQueryBuilder matchQuery = (MatchQueryBuilder) query.must().get(0);
-        assertThat(matchQuery.fieldName()).isEqualTo("searchableText");
-        assertThat(matchQuery.value()).isEqualTo("query");
 
-        assertThat(query.filter().size()).isEqualTo(2);
+        NativeQuery query = captor.getValue();
+        assertNotNull(query);
 
-        TermsQueryBuilder typeFilter = (TermsQueryBuilder) query.filter().get(0);
-        assertThat(typeFilter.fieldName()).isEqualTo("type");
-        assertThat(typeFilter.values()).containsExactlyInAnyOrder("TYPE1");
+        List<co.elastic.clients.elasticsearch._types.query_dsl.Query> must =
+                Optional.of(query)
+                        .map(NativeQuery::getQuery)
+                        .map(co.elastic.clients.elasticsearch._types.query_dsl.Query::_get)
+                        .map(BoolQuery.class::cast)
+                        .map(BoolQuery::must)
+                        .orElse(null);
 
-        TermsQueryBuilder themeFilter = (TermsQueryBuilder) query.filter().get(1);
-        assertThat(themeFilter.fieldName()).isEqualTo("themes");
-        assertThat(themeFilter.values()).containsExactlyInAnyOrder("THEME1");
+        assertThat(must).hasSize(3);
+
+        Stream.of(
+                "Query: {\"match\":{\"searchableText\":{\"query\":\"query\"}}}",
+                "Query: {\"terms\":{\"type\":[\"TYPE1\"]}}",
+                "Query: {\"terms\":{\"themes\":[\"THEME1\"]}}")
+                .forEach(qs -> assertTrue(must.stream().map(Object::toString).anyMatch(qs::equals)));
     }
 
     @Test
     void shouldSearchWithoutFiltersAndSearchText() {
-        ArgumentCaptor<NativeSearchQuery> captor = ArgumentCaptor.forClass(NativeSearchQuery.class);
+        ArgumentCaptor<NativeQuery> captor = ArgumentCaptor.forClass(NativeQuery.class);
 
         when(esOps.search(captor.capture(), any(Class.class))).thenReturn(searchHits);
 
@@ -132,11 +144,8 @@ class SemanticAssetMetadataRepositoryTest {
                 repository.search("", Set.of(), Set.of(), Collections.emptySet(), PageRequest.of(0, 10));
 
         assertThat(searchResult.getSearchHits()).isEqualTo(searchHits);
-        BoolQueryBuilder query = (BoolQueryBuilder) captor.getValue().getQuery();
-        assert query != null;
-        assertThat(requireNonNull(query).must().size()).isEqualTo(1);
-        assertThat(query.must().get(0)).isInstanceOf(MatchAllQueryBuilder.class);
-
-        assertThat(query.filter().size()).isEqualTo(0);
+        NativeQuery query = captor.getValue();
+        assertNotNull(query);
+        assertThat(query.getQuery().toString()).isEqualTo("Query: {\"bool\":{\"must\":[]}}");
     }
 }
