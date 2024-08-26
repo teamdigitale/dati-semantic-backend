@@ -5,6 +5,7 @@ import it.gov.innovazione.ndc.harvester.service.RepositoryService;
 import it.gov.innovazione.ndc.harvester.util.GitUtils;
 import it.gov.innovazione.ndc.model.harvester.Repository;
 import it.gov.innovazione.ndc.repository.HarvestJobException;
+import it.gov.innovazione.ndc.service.DefaultInstanceManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -25,6 +26,7 @@ public class HarvesterJob {
     private final RepositoryService repositoryService;
     private final SimpleHarvestRepositoryProcessor simpleHarvestRepositoryProcessor;
     private final GitUtils gitUtils;
+    private final DefaultInstanceManager defaultInstanceManager;
 
     public List<JobExecutionResponse> harvest(Boolean force) {
         List<Repository> allRepos = repositoryService.getActiveRepos();
@@ -84,4 +86,9 @@ public class HarvesterJob {
 
     }
 
+    public void rollback(String repositoryId) {
+        Repository repository = repositoryService.findActiveRepoById(repositoryId)
+                .orElseThrow(() -> new HarvestJobException(String.format("Repository %s not found", repositoryId)));
+        defaultInstanceManager.rollbackInstance(repository);
+    }
 }
