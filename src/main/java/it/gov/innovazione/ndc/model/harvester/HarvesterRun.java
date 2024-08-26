@@ -14,6 +14,7 @@ public class HarvesterRun {
     private final String correlationId;
     private final String repositoryId;
     private final String repositoryUrl;
+    private final String instance;
     private final Instant startedAt;
     private final String startedBy;
     private final Instant endedAt;

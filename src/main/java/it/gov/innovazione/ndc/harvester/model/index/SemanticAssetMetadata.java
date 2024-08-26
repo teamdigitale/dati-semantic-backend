@@ -31,7 +31,8 @@ public class SemanticAssetMetadata {
     private SemanticAssetType type;
     @Field(type = Keyword)
     private String repoUrl;
-
+    @Field(type = Keyword)
+    private String instance;
 
     @Field(index = false, type = Keyword, normalizer = "lowercase_normalizer")
     private String title;

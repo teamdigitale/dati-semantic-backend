@@ -5,6 +5,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static it.gov.innovazione.ndc.harvester.service.ActualConfigService.Parser.TO_BOOLEAN;
@@ -52,7 +53,8 @@ class ActualConfigServiceTest {
     @ParameterizedTest
     @MethodSource("provideInvalidValues")
     void testParseNull(ActualConfigService.Parser parser, String invalidValue) {
-        assertThrows(IllegalArgumentException.class, () -> parser.getParsingFunction().apply(invalidValue));
+        Function<String, Object> parsingFunction = parser.getParsingFunction();
+        assertThrows(IllegalArgumentException.class, () -> parsingFunction.apply(invalidValue));
     }
 
 }

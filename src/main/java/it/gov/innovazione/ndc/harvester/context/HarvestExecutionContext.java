@@ -1,5 +1,6 @@
 package it.gov.innovazione.ndc.harvester.context;
 
+import it.gov.innovazione.ndc.harvester.model.Instance;
 import it.gov.innovazione.ndc.harvester.model.index.RightsHolder;
 import it.gov.innovazione.ndc.model.harvester.Repository;
 import lombok.AccessLevel;
@@ -27,6 +28,8 @@ public class HarvestExecutionContext {
     private final String currentUserId;
     @With
     private final String rootPath;
+    @With
+    private final Instance instance;
     @Singular
     private final List<Repository.Maintainer> maintainers = new ArrayList<>();
     @Singular

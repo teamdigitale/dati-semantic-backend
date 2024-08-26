@@ -8,13 +8,17 @@ import it.gov.innovazione.ndc.gen.dto.SearchResultItem;
 import it.gov.innovazione.ndc.harvester.SemanticAssetType;
 import it.gov.innovazione.ndc.model.profiles.NDC;
 import it.gov.innovazione.ndc.service.GithubService;
+import it.gov.innovazione.ndc.service.InstanceManager;
 import junit.framework.AssertionFailedError;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.rdfconnection.RDFConnectionFactory;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -41,11 +45,24 @@ public class RestApiIntegrationTests extends BaseIntegrationTest {
     private GithubService githubService;
     @MockBean
     private NdcEventPublisher ndcEventPublisher;
+    @Autowired
+    private InstanceManager instanceManager;
 
     @DynamicPropertySource
     static void updateDynamicPropertySource(DynamicPropertyRegistry registry) {
         updateTestcontainersProperties(registry);
     }
+
+    @BeforeEach
+    public void beforeSetup() {
+        ((InMemoryInstanceManager) instanceManager).switchAllInstances();
+    }
+
+    @AfterEach
+    public void afterSetup() {
+        ((InMemoryInstanceManager) instanceManager).switchAllInstances();
+    }
+
 
     @Test
     void shouldBeAbleToHarvestAndSearchControlledVocabularySuccessfully() {

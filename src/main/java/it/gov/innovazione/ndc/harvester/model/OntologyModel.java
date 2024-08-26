@@ -23,16 +23,16 @@ import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 
 public class OntologyModel extends BaseSemanticAssetModel {
 
-    public OntologyModel(Model coreModel, String source, String repoUrl) {
-        super(coreModel, source, repoUrl);
+    public OntologyModel(Model coreModel, String source, String repoUrl, Instance instance) {
+        super(coreModel, source, repoUrl, instance);
     }
 
-    private OntologyModel(Model coreModel, String source, String repoUrl, SemanticAssetModelValidationContext validationContext) {
-        super(coreModel, source, repoUrl, validationContext);
+    private OntologyModel(Model coreModel, String source, String repoUrl, SemanticAssetModelValidationContext validationContext, Instance instance) {
+        super(coreModel, source, repoUrl, validationContext, instance);
     }
 
-    public static OntologyModel forValidation(Model rdfModel, String source, String repoUrl) {
-        return new OntologyModel(rdfModel, source, repoUrl, SemanticAssetModelValidationContext.getForValidation());
+    public static OntologyModel forValidation(Model rdfModel, String source, String repoUrl, Instance instance) {
+        return new OntologyModel(rdfModel, source, repoUrl, SemanticAssetModelValidationContext.getForValidation(), instance);
     }
 
     @Override

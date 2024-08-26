@@ -66,22 +66,25 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
     protected final String source;
     private Resource mainResource;
     protected final String repoUrl;
+    protected final Instance instance;
 
     @Getter
     protected final SemanticAssetModelValidationContext validationContext;
 
-    protected BaseSemanticAssetModel(Model rdfModel, String source, String repoUrl) {
+    protected BaseSemanticAssetModel(Model rdfModel, String source, String repoUrl, Instance instance) {
         this.rdfModel = rdfModel;
         this.source = source;
         this.repoUrl = repoUrl;
         this.validationContext = NO_VALIDATION;
+        this.instance = instance;
     }
 
-    protected BaseSemanticAssetModel(Model rdfModel, String source, String repoUrl, SemanticAssetModelValidationContext validationContext) {
+    protected BaseSemanticAssetModel(Model rdfModel, String source, String repoUrl, SemanticAssetModelValidationContext validationContext, Instance instance) {
         this.rdfModel = rdfModel;
         this.source = source;
         this.repoUrl = repoUrl;
         this.validationContext = validationContext;
+        this.instance = instance;
     }
 
     @Override
@@ -205,6 +208,7 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
         Resource mainResource = getMainResource();
         RightsHolder agencyId = getAgencyId(mainResource, validationContext);
         return SemanticAssetMetadata.builder()
+                .instance(instance.name())
                 .iri(mainResource.getURI())
                 .repoUrl(repoUrl)
                 .rightsHolder(extractRequiredNodeSummary(mainResource, rightsHolder, FOAF.name))

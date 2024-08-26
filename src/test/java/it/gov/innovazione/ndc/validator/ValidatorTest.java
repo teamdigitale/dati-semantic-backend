@@ -16,9 +16,9 @@ class ValidatorTest {
     @Test
     void assertValidatorGetModel() {
         Stream.of(
-                Pair.of(ONTOLOGY, new OntologyValidator()),
-                Pair.of(CONTROLLED_VOCABULARY, new ControlledVocabularyValidator()),
-                Pair.of(SCHEMA, new SchemaValidator()))
+                        Pair.of(ONTOLOGY, new OntologyValidator()),
+                        Pair.of(CONTROLLED_VOCABULARY, new ControlledVocabularyValidator()),
+                        Pair.of(SCHEMA, new SchemaValidator()))
                 .forEach(pair -> {
                     assertEquals(pair.getKey(), pair.getValue().getType());
                     try {

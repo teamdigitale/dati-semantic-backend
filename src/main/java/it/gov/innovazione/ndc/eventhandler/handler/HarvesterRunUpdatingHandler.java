@@ -65,6 +65,7 @@ public class HarvesterRunUpdatingHandler implements NdcEventHandler {
                 .correlationId(event.getCorrelationId())
                 .repositoryId(event.getPayload().getRepository().getId())
                 .repositoryUrl(event.getPayload().getRepository().getUrl())
+                .instance(event.getPayload().getInstance().name())
                 .startedAt(event.getTimestamp())
                 .startedBy(event.getUser())
                 .revision(event.getPayload().getRevision())

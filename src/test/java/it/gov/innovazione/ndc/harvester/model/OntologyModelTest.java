@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static it.gov.innovazione.ndc.harvester.SemanticAssetType.ONTOLOGY;
+import static it.gov.innovazione.ndc.harvester.model.Instance.PRIMARY;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
@@ -89,7 +90,7 @@ class OntologyModelTest {
 
     @Test
     void shouldExtractMetadataWithSemanticAssetType() {
-        OntologyModel model = new OntologyModel(jenaModel, TTL_FILE, REPO_URL);
+        OntologyModel model = new OntologyModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
 
         SemanticAssetMetadata metadata = model.extractMetadata();
 
@@ -98,7 +99,7 @@ class OntologyModelTest {
 
     @Test
     void shouldValidateMetadataWithSemanticAssetType() {
-        OntologyModel model = new OntologyModel(jenaModel, TTL_FILE, REPO_URL);
+        OntologyModel model = new OntologyModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
 
         SemanticAssetModelValidationContext semanticAssetModelValidationContext = model.validateMetadata();
 
@@ -108,7 +109,7 @@ class OntologyModelTest {
 
     @Test
     void shouldExtractHasSemanticAssetDistributionProperty() {
-        OntologyModel ontologyModel = new OntologyModel(jenaModel, TTL_FILE, REPO_URL);
+        OntologyModel ontologyModel = new OntologyModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
 
         SemanticAssetMetadata metadata = ontologyModel.extractMetadata();
 
@@ -122,7 +123,7 @@ class OntologyModelTest {
     void shouldFailWhenExtractingMetadataWithOutDistribution() {
         jenaModel.getResource(ONTOLOGY_IRI).removeAll(Admsapit.hasSemanticAssetDistribution);
         ControlledVocabularyModel model =
-            new ControlledVocabularyModel(jenaModel, TTL_FILE, REPO_URL);
+            new ControlledVocabularyModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
 
         assertThatThrownBy(model::extractMetadata).isInstanceOf(
             InvalidModelException.class);
@@ -130,7 +131,7 @@ class OntologyModelTest {
 
     @Test
     void shouldExtractHasKeyClassProperty() {
-        OntologyModel ontologyModel = new OntologyModel(jenaModel, TTL_FILE, REPO_URL);
+        OntologyModel ontologyModel = new OntologyModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
 
         SemanticAssetMetadata metadata = ontologyModel.extractMetadata();
 
@@ -144,7 +145,7 @@ class OntologyModelTest {
     @Test
     void shouldExtractMetadataWithoutHasKeyClassProperty() {
         jenaModel.getResource(ONTOLOGY_IRI).removeAll(Admsapit.hasKeyClass);
-        OntologyModel ontologyModel = new OntologyModel(jenaModel, TTL_FILE, REPO_URL);
+        OntologyModel ontologyModel = new OntologyModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
 
         SemanticAssetMetadata metadata = ontologyModel.extractMetadata();
 
@@ -154,7 +155,7 @@ class OntologyModelTest {
     @Test
     void shouldExtractMetadataWithPrefix() {
 
-        OntologyModel ontologyModel = new OntologyModel(jenaModel, TTL_FILE, REPO_URL);
+        OntologyModel ontologyModel = new OntologyModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
 
         SemanticAssetMetadata metadata = ontologyModel.extractMetadata();
 
@@ -164,7 +165,7 @@ class OntologyModelTest {
     @Test
     void shouldExtractMetadataWithOutPrefix() {
         jenaModel.getResource(ONTOLOGY_IRI).removeAll(Admsapit.prefix);
-        OntologyModel ontologyModel = new OntologyModel(jenaModel, TTL_FILE, REPO_URL);
+        OntologyModel ontologyModel = new OntologyModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
 
         SemanticAssetMetadata metadata = ontologyModel.extractMetadata();
 
@@ -173,7 +174,7 @@ class OntologyModelTest {
 
     @Test
     void shouldExtractMetadataWithProject() {
-        OntologyModel ontologyModel = new OntologyModel(jenaModel, TTL_FILE, REPO_URL);
+        OntologyModel ontologyModel = new OntologyModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
 
         SemanticAssetMetadata metadata = ontologyModel.extractMetadata();
 
@@ -187,7 +188,7 @@ class OntologyModelTest {
     @Test
     void shouldExtractMetadataWithOutProject() {
         jenaModel.getResource(ONTOLOGY_IRI).removeAll(Admsapit.semanticAssetInUse);
-        OntologyModel ontologyModel = new OntologyModel(jenaModel, TTL_FILE, REPO_URL);
+        OntologyModel ontologyModel = new OntologyModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
 
         SemanticAssetMetadata metadata = ontologyModel.extractMetadata();
 

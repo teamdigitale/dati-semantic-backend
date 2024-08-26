@@ -1,6 +1,7 @@
 package it.gov.innovazione.ndc.harvester.service;
 
 import it.gov.innovazione.ndc.eventhandler.NdcEventPublisher;
+import it.gov.innovazione.ndc.harvester.model.Instance;
 import it.gov.innovazione.ndc.eventhandler.event.ConfigService;
 import it.gov.innovazione.ndc.model.harvester.Repository;
 import lombok.Getter;
@@ -271,7 +272,8 @@ public class ActualConfigService extends ConfigService {
     public enum ConfigKey {
         MAX_FILE_SIZE_BYTES("The maximum file size in bytes of a file to be harvested", Validator.IS_LONG, Parser.TO_LONG),
         GITHUB_ISSUER_ENABLED("Enable the GitHub issuer capability", Validator.IS_BOOLEAN, Parser.TO_BOOLEAN),
-        ALERTER_ENABLED("Enable the Alerter capability", Validator.IS_BOOLEAN, Parser.TO_BOOLEAN);
+        ALERTER_ENABLED("Enable the Alerter capability", Validator.IS_BOOLEAN, Parser.TO_BOOLEAN),
+        ACTIVE_INSTANCE("The atomic writer active instance", Validator.IS_INSTANCE, Parser.TO_INSTANCE);
 
         private final String description;
         private final Validator validator;
@@ -282,7 +284,8 @@ public class ActualConfigService extends ConfigService {
     @RequiredArgsConstructor
     private enum Validator {
         IS_LONG(Parser.TO_LONG),
-        IS_BOOLEAN(Parser.TO_BOOLEAN);
+        IS_BOOLEAN(Parser.TO_BOOLEAN),
+        IS_INSTANCE(Parser.TO_INSTANCE);
 
         private final Parser parser;
 
@@ -302,7 +305,9 @@ public class ActualConfigService extends ConfigService {
     @RequiredArgsConstructor
     public enum Parser {
         TO_LONG(Long::parseLong),
-        TO_BOOLEAN(Parser::parseBoolean);
+        TO_BOOLEAN(Parser::parseBoolean),
+        TO_INSTANCE(s -> Instance.valueOf(s.toUpperCase()));
+
         private final Function<String, Object> parsingFunction;
 
         private static Boolean parseBoolean(String s) {
@@ -311,5 +316,5 @@ public class ActualConfigService extends ConfigService {
             }
             return Boolean.parseBoolean(trim(s));
         }
-    }    
+    }
 }

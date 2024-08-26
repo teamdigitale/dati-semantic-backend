@@ -1,7 +1,9 @@
 package it.gov.innovazione.ndc.repository;
 
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
+import it.gov.innovazione.ndc.harvester.model.Instance;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
+import it.gov.innovazione.ndc.service.InstanceManager;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -35,6 +37,8 @@ import static org.mockito.Mockito.when;
 class SemanticAssetMetadataRepositoryTest {
     @Mock
     private ElasticsearchOperations esOps;
+    @Mock
+    private InstanceManager instanceManager;
 
     @Mock
     private SearchHits<SemanticAssetMetadata> searchHits;
@@ -79,12 +83,12 @@ class SemanticAssetMetadataRepositoryTest {
 
         when(esOps.delete(captor.capture(), any(Class.class))).thenReturn(deletedResponse);
 
-        long deleteCount = repository.deleteByRepoUrl("someRepoUrl");
+        long deleteCount = repository.deleteByRepoUrl("someRepoUrl", Instance.PRIMARY);
 
         assertThat(deleteCount).isEqualTo(1);
         Query query = captor.getValue().getQuery();
         assertNotNull(query);
-        assertEquals("Query: {\"match\":{\"repoUrl\":{\"query\":\"someRepoUrl\"}}}",
+        assertEquals("Query: {\"bool\":{\"must\":[{\"terms\":{\"repoUrl\":[\"someRepoUrl\"]}},{\"terms\":{\"instance\":[\"PRIMARY\"]}}]}}",
                 Optional.of(query)
                         .map(q -> (NativeQuery) q)
                         .map(NativeQuery::getQuery)
@@ -105,6 +109,8 @@ class SemanticAssetMetadataRepositoryTest {
 
     @Test
     void shouldSearchUsingQueryStringAndFiltersAndPagination() {
+        when(instanceManager.getCurrentInstances()).thenReturn(List.of());
+
         ArgumentCaptor<NativeQuery> captor = ArgumentCaptor.forClass(NativeQuery.class);
 
         when(esOps.search(captor.capture(), any(Class.class))).thenReturn(searchHits);
@@ -136,6 +142,8 @@ class SemanticAssetMetadataRepositoryTest {
 
     @Test
     void shouldSearchWithoutFiltersAndSearchText() {
+        when(instanceManager.getCurrentInstances()).thenReturn(List.of());
+
         ArgumentCaptor<NativeQuery> captor = ArgumentCaptor.forClass(NativeQuery.class);
 
         when(esOps.search(captor.capture(), any(Class.class))).thenReturn(searchHits);
