@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.SearchPage;
 import org.springframework.data.elasticsearch.core.query.ByQueryResponse;
@@ -30,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -50,10 +52,12 @@ class SemanticAssetMetadataRepositoryTest {
 
     @Test
     void shouldFindById() {
-        when(esOps.get("http://www.example.org/asset/1", SemanticAssetMetadata.class))
-            .thenReturn(SemanticAssetMetadata.builder()
-                .iri("http://www.example.org/asset/1")
-                .build());
+        SearchHit<SemanticAssetMetadata> searchHit = mock(SearchHit.class);
+        SearchHits<SemanticAssetMetadata> searchHits = mock(SearchHits.class);
+        when(searchHits.get()).thenReturn(Stream.of(searchHit));
+        when(searchHit.getContent()).thenReturn(SemanticAssetMetadata.builder().iri("http://www.example.org/asset/1").build());
+
+        when(esOps.search(any(Query.class), any(Class.class))).thenReturn(searchHits);
 
         Optional<SemanticAssetMetadata> asset =
             repository.findByIri("http://www.example.org/asset/1");
@@ -64,8 +68,8 @@ class SemanticAssetMetadataRepositoryTest {
 
     @Test
     void shouldNotFindById() {
-        when(esOps.get("http://www.example.org/asset/1", SemanticAssetMetadata.class))
-            .thenReturn(null);
+        when(esOps.search(any(Query.class), any(Class.class))).thenReturn(null);
+
 
         Optional<SemanticAssetMetadata> asset =
             repository.findByIri("http://www.example.org/asset/1");

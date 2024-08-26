@@ -135,15 +135,15 @@ public class HarvesterService {
 
     private void clearRepo(String repoUrl, Instance instance) {
         cleanUpWithHarvesters(repoUrl, instance);
-        cleanUpTripleStore(repoUrl, OLD_GRAPH_PREFIX);
+        cleanUpTripleStore(repoUrl, TMP_GRAPH_PREFIX);
         cleanUpIndexedMetadata(repoUrl, instance);
     }
 
     private void clearRepoAllInstances(String repoUrl) {
         cleanUpWithHarvesters(repoUrl, Instance.PRIMARY);
         cleanUpWithHarvesters(repoUrl, Instance.SECONDARY);
-        cleanUpTripleStore(repoUrl, OLD_GRAPH_PREFIX);
         cleanUpTripleStore(repoUrl, TMP_GRAPH_PREFIX);
+        cleanUpTripleStore(repoUrl, OLD_GRAPH_PREFIX);
         cleanUpTripleStore(repoUrl, ONLINE_GRAPH_PREFIX);
         cleanUpIndexedMetadata(repoUrl, Instance.PRIMARY);
         cleanUpIndexedMetadata(repoUrl, Instance.SECONDARY);

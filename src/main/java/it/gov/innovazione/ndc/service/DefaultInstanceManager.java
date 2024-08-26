@@ -34,6 +34,10 @@ public class DefaultInstanceManager implements InstanceManager {
         return getCurrentInstance(repository).switchInstance();
     }
 
+    public Instance getOldOnlineInstance(Repository repository) {
+        return getCurrentInstance(repository).switchInstance();
+    }
+
     public Instance getCurrentInstance(Repository repository) {
         Optional<Instance> instance = configService.fromRepo(ACTIVE_INSTANCE, repository.getId());
         return instance.orElse(Instance.PRIMARY);
@@ -45,6 +49,13 @@ public class DefaultInstanceManager implements InstanceManager {
 
         // switch instance on Virtuoso
         tripleStoreRepository.switchInstances(repository);
+    }
+
+    public void rollbackInstance(Repository repository) {
+        // rollback instance on Repositories
+        configService.writeConfigKey(ACTIVE_INSTANCE, "system", getOldOnlineInstance(repository), repository.getId());
+        // rollback instance on Virtuoso
+        tripleStoreRepository.rollbackInstance(repository);
     }
 
     @Override

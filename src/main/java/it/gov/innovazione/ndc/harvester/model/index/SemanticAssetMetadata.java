@@ -5,6 +5,7 @@ import it.gov.innovazione.ndc.harvester.SemanticAssetType;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldNameConstants;
+import org.springframework.data.annotation.AccessType;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
@@ -18,14 +19,14 @@ import static org.springframework.data.elasticsearch.annotations.FieldType.Date;
 import static org.springframework.data.elasticsearch.annotations.FieldType.Keyword;
 import static org.springframework.data.elasticsearch.annotations.FieldType.Text;
 
-@Document(indexName = "semantic-asset-metadata-3")
+@Document(indexName = "semantic-asset-metadata-4")
 @Setting(settingPath = "elasticsearch-settings.json")
 @Data
 @Builder(toBuilder = true)
 @FieldNameConstants
 public class SemanticAssetMetadata {
 
-    @Id
+    @Field(type = Keyword)
     private String iri;
     @Field(type = Keyword)
     private SemanticAssetType type;
@@ -105,4 +106,10 @@ public class SemanticAssetMetadata {
     //for the searchable content in multiple fields
     @JsonIgnore
     private String searchableText;
+
+    @Id
+    @AccessType(AccessType.Type.PROPERTY)
+    public String getElasticsearchId() {
+        return iri + '-' + instance;
+    }
 }
