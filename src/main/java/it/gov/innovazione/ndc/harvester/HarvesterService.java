@@ -2,6 +2,7 @@ package it.gov.innovazione.ndc.harvester;
 
 import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContext;
 import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContextUtils;
+import it.gov.innovazione.ndc.harvester.model.Instance;
 import it.gov.innovazione.ndc.harvester.model.index.RightsHolder;
 import it.gov.innovazione.ndc.harvester.service.RepositoryService;
 import it.gov.innovazione.ndc.harvester.util.FileUtils;
@@ -20,6 +21,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import static it.gov.innovazione.ndc.repository.TripleStoreRepository.OLD_GRAPH_PREFIX;
+import static it.gov.innovazione.ndc.repository.TripleStoreRepository.ONLINE_GRAPH_PREFIX;
+import static it.gov.innovazione.ndc.repository.TripleStoreRepository.TMP_GRAPH_PREFIX;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -35,11 +39,29 @@ public class HarvesterService {
     private final RepositoryService repositoryService;
     private final FileUtils fileUtils;
 
-    public void harvest(Repository repository) throws IOException {
-        harvest(repository, null);
+    private static void updateContextWithMaintainers(List<Repository.Maintainer> maintainers) {
+        HarvestExecutionContext context = HarvestExecutionContextUtils.getContext();
+        if (Objects.isNull(context)) {
+            context = HarvestExecutionContext.builder()
+                    .build();
+        }
+        context.addMaintainers(maintainers);
     }
 
-    public void harvest(Repository repository, String revision) throws IOException {
+    private static void updateContextWithRootPath(Path path) {
+        HarvestExecutionContext context = HarvestExecutionContextUtils.getContext();
+        if (Objects.isNull(context)) {
+            context = HarvestExecutionContext.builder()
+                    .build();
+        }
+        HarvestExecutionContextUtils.setContext(context.withRootPath(path.toString()));
+    }
+
+    public void harvest(Repository repository) throws IOException {
+        harvest(repository, null, Instance.PRIMARY);
+    }
+
+    public void harvest(Repository repository, String revision, Instance instance) throws IOException {
         log.info("Processing repo {}", repository.getUrl());
         Repository normalisedRepo = repository.withUrl(normaliseRepoUrl(repository.getUrl()));
         String repoUrl = normalisedRepo.getUrl();
@@ -48,7 +70,7 @@ public class HarvesterService {
             Path path = cloneRepoToTempPath(repoUrl, revision);
 
             try {
-                updateContext(path);
+                updateContext(path, instance);
                 harvestClonedRepo(normalisedRepo, path);
             } finally {
                 agencyRepositoryService.removeClonedRepo(path);
@@ -60,23 +82,19 @@ public class HarvesterService {
         }
     }
 
-    private void updateContext(Path path) {
+    private void updateContext(Path path, Instance instance) {
         updateContextWithRootPath(path);
         updateContextWithMaintainers(fileUtils.getMaintainersIfPossible(path));
+        updateContextWithInstance(instance);
     }
 
-    private static void updateContextWithMaintainers(List<Repository.Maintainer> maintainers) {
+    private void updateContextWithInstance(Instance instance) {
         HarvestExecutionContext context = HarvestExecutionContextUtils.getContext();
-        if (Objects.nonNull(context)) {
-            context.addMaintainers(maintainers);
+        if (Objects.isNull(context)) {
+            context = HarvestExecutionContext.builder()
+                    .build();
         }
-    }
-
-    private static void updateContextWithRootPath(Path path) {
-        HarvestExecutionContext context = HarvestExecutionContextUtils.getContext();
-        if (Objects.nonNull(context)) {
-            HarvestExecutionContextUtils.setContext(context.withRootPath(path.toString()));
-        }
+        HarvestExecutionContextUtils.setContext(context.withInstance(instance));
     }
 
     public void clear(String repoUrl) {
@@ -84,7 +102,7 @@ public class HarvesterService {
         repoUrl = normaliseRepoUrl(repoUrl);
         log.debug("Normalised repo url {}", repoUrl);
         try {
-            clearRepo(repoUrl);
+            clearRepoAllInstances(repoUrl);
             log.info("Repo {} cleared", repoUrl);
         } catch (Exception e) {
             log.error("Error while clearing {}", repoUrl, e);
@@ -97,8 +115,7 @@ public class HarvesterService {
     }
 
     private void harvestClonedRepo(Repository repository, Path path) {
-        clearRepo(repository.getUrl());
-
+        clearRepo(repository.getUrl(), HarvestExecutionContextUtils.getContext().getInstance());
         harvestSemanticAssets(repository, path);
         storeRightsHolders(repository);
 
@@ -116,16 +133,26 @@ public class HarvesterService {
         repositoryService.storeRightsHolders(repository, rightsHolders);
     }
 
-    private void clearRepo(String repoUrl) {
-        cleanUpWithHarvesters(repoUrl);
-        cleanUpTripleStore(repoUrl);
-        cleanUpIndexedMetadata(repoUrl);
+    private void clearRepo(String repoUrl, Instance instance) {
+        cleanUpWithHarvesters(repoUrl, instance);
+        cleanUpTripleStore(repoUrl, OLD_GRAPH_PREFIX);
+        cleanUpIndexedMetadata(repoUrl, instance);
     }
 
-    private void cleanUpWithHarvesters(String repoUrl) {
+    private void clearRepoAllInstances(String repoUrl) {
+        cleanUpWithHarvesters(repoUrl, Instance.PRIMARY);
+        cleanUpWithHarvesters(repoUrl, Instance.SECONDARY);
+        cleanUpTripleStore(repoUrl, OLD_GRAPH_PREFIX);
+        cleanUpTripleStore(repoUrl, TMP_GRAPH_PREFIX);
+        cleanUpTripleStore(repoUrl, ONLINE_GRAPH_PREFIX);
+        cleanUpIndexedMetadata(repoUrl, Instance.PRIMARY);
+        cleanUpIndexedMetadata(repoUrl, Instance.SECONDARY);
+    }
+
+    private void cleanUpWithHarvesters(String repoUrl, Instance instance) {
         semanticAssetHarvesters.forEach(h -> {
             log.debug("Cleaning for {} before harvesting {}", h.getType(), repoUrl);
-            h.cleanUpBeforeHarvesting(repoUrl);
+            h.cleanUpBeforeHarvesting(repoUrl, instance);
 
             log.debug("Cleaned for {}", h.getType());
         });
@@ -146,14 +173,14 @@ public class HarvesterService {
         return path;
     }
 
-    private void cleanUpTripleStore(String repoUrl) {
+    private void cleanUpTripleStore(String repoUrl, String prefix) {
         log.debug("Cleaning up triple store for {}", repoUrl);
-        tripleStoreRepository.clearExistingNamedGraph(repoUrl);
+        tripleStoreRepository.clearExistingNamedGraph(repoUrl, prefix);
     }
 
-    private void cleanUpIndexedMetadata(String repoUrl) {
+    private void cleanUpIndexedMetadata(String repoUrl, Instance instance) {
         log.debug("Cleaning up indexed metadata for {}", repoUrl);
-        long deletedCount = semanticAssetMetadataRepository.deleteByRepoUrl(repoUrl);
+        long deletedCount = semanticAssetMetadataRepository.deleteByRepoUrl(repoUrl, instance);
         log.debug("Deleted {} indexed metadata for {}", deletedCount, repoUrl);
     }
 }

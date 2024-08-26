@@ -30,6 +30,7 @@ public class TripleStoreRepositoryTest {
     private static String sparqlUrl;
     private static String sparqlGraphUrl;
     private static final String graphName = "http://www.fantasy.org/graph";
+    private static final String oldGraphName = "http://old.www.fantasy.org/graph";
 
     private static TripleStoreRepository repository;
 
@@ -75,7 +76,7 @@ public class TripleStoreRepositoryTest {
                 "<http://purl.org/dc/terms/accrualPeriodicity>",
                 "?o"
             )
-            .from(graphName)
+                .from(oldGraphName)
             .build();
         QueryExecution queryExecution =
             QueryExecutionFactory.sparqlService(sparqlUrl, findPeriodicity);
@@ -105,7 +106,7 @@ public class TripleStoreRepositoryTest {
                 "<http://www.w3.org/ns/dcat#keyword>",
                 "?k"
             )
-            .from(graphName)
+                .from(oldGraphName)
             .build();
         QueryExecution queryExecution =
             QueryExecutionFactory.sparqlService(sparqlUrl, keywordQuery);

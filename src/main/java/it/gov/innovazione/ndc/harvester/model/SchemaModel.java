@@ -40,16 +40,16 @@ import static org.apache.jena.vocabulary.OWL.versionInfo;
 
 public class SchemaModel extends BaseSemanticAssetModel {
 
-    public SchemaModel(Model coreModel, String source, String repoUrl) {
-        super(coreModel, source, repoUrl);
+    public SchemaModel(Model coreModel, String source, String repoUrl, Instance instance) {
+        super(coreModel, source, repoUrl, instance);
     }
 
-    private SchemaModel(Model coreModel, String source, String repoUrl, SemanticAssetModelValidationContext validationContext) {
-        super(coreModel, source, repoUrl, validationContext);
+    private SchemaModel(Model coreModel, String source, String repoUrl, SemanticAssetModelValidationContext validationContext, Instance instance) {
+        super(coreModel, source, repoUrl, validationContext, instance);
     }
 
-    public static SchemaModel forValidation(Model rdfModel, String source, String repoUrl) {
-        return new SchemaModel(rdfModel, source, repoUrl, SemanticAssetModelValidationContext.getForValidation());
+    public static SchemaModel forValidation(Model rdfModel, String source, String repoUrl, Instance instance) {
+        return new SchemaModel(rdfModel, source, repoUrl, SemanticAssetModelValidationContext.getForValidation(), instance);
     }
 
     @Override
@@ -62,6 +62,7 @@ public class SchemaModel extends BaseSemanticAssetModel {
         Resource mainResource = getMainResource();
         RightsHolder rightsHolderObj = RightsHolderExtractor.getAgencyId(mainResource, validationContext);
         return SemanticAssetMetadata.builder()
+                .instance(instance.name())
                 .iri(mainResource.getURI())
                 .repoUrl(repoUrl)
                 .title(LiteralExtractor.extract(mainResource, title, validationContext))

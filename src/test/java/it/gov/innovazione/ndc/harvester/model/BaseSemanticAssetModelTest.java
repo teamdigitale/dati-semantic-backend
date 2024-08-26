@@ -442,7 +442,7 @@ class BaseSemanticAssetModelTest {
 
 
         public TestBaseSemanticAssetModel(Model coreModel, String source, String repoUrl) {
-            super(coreModel, source, repoUrl);
+            super(coreModel, source, repoUrl, Instance.PRIMARY);
         }
 
         @Override
