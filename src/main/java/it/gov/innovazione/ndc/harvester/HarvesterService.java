@@ -73,7 +73,9 @@ public class HarvesterService {
                 updateContext(path, instance);
                 harvestClonedRepo(normalisedRepo, path);
             } finally {
+                log.info("Cleaning up pending data for {}", path);
                 agencyRepositoryService.removeClonedRepo(path);
+                log.info("Cleaned up data for {} completed", path);
             }
             log.info("Repo {} processed correctly", repoUrl);
         } catch (IOException e) {
@@ -182,5 +184,21 @@ public class HarvesterService {
         log.debug("Cleaning up indexed metadata for {}", repoUrl);
         long deletedCount = semanticAssetMetadataRepository.deleteByRepoUrl(repoUrl, instance);
         log.debug("Deleted {} indexed metadata for {}", deletedCount, repoUrl);
+    }
+
+    public void cleanTempGraphsForConfiguredRepo() {
+        log.info("Cleaning up temp graphs for configured repos");
+
+        List<String> repoUrls = repositoryService.getActiveRepos().stream()
+                .map(Repository::getUrl)
+                .toList();
+
+        repoUrls.forEach(tripleStoreRepository::clearTempGraphIfExists);
+
+        log.info("Cleaning up temp graphs for configured repos completed");
+    }
+
+    public void clearTempGraphIfExists(String url) {
+        tripleStoreRepository.clearTempGraphIfExists(url);
     }
 }

@@ -5,6 +5,7 @@ import it.gov.innovazione.ndc.harvester.AgencyRepositoryService;
 import it.gov.innovazione.ndc.harvester.HarvesterService;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.gov.innovazione.ndc.harvester.service.RepositoryService;
+import it.gov.innovazione.ndc.harvester.service.startupjob.StartupJobsRunner;
 import it.gov.innovazione.ndc.repository.TripleStoreProperties;
 import org.elasticsearch.client.RestClient;
 import org.junit.jupiter.api.BeforeAll;
@@ -28,6 +29,7 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static it.gov.innovazione.ndc.harvester.service.RepositoryUtils.asRepo;
@@ -131,6 +133,12 @@ public class BaseIntegrationTest {
                 // bad workaround for a bad design
                 return mock(RestClient.class);
             }
+        }
+
+        @Bean
+        @Primary
+        public StartupJobsRunner startupJobsRunner() {
+            return new StartupJobsRunner(List.of());
         }
     }
 }
