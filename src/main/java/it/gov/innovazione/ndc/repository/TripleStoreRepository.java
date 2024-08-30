@@ -125,4 +125,13 @@ public class TripleStoreRepository {
         }
     }
 
+    public void clearTempGraphIfExists(String repoUrl) {
+        try {
+            log.info("Clearing temp graph for {}", repoUrl);
+            clearExistingNamedGraph(repoUrl, TMP_GRAPH_PREFIX);
+            log.info("Cleared temp graph for {}", repoUrl);
+        } catch (Exception e) {
+            log.error(format("Could not clear temp graph for %s", repoUrl), e);
+        }
+    }
 }

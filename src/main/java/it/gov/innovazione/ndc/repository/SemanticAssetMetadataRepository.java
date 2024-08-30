@@ -65,7 +65,7 @@ public class SemanticAssetMetadataRepository {
                 .withPageable(pageable)
                 .build();
 
-        log.info("Searching for assets with query: {}", query);
+        log.info("Searching for assets with query: {}", query.getQuery());
 
         return searchPageFor(esOps.search(query, SemanticAssetMetadata.class), pageable);
     }

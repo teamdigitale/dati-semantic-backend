@@ -123,6 +123,10 @@ public class SimpleHarvestRepositoryProcessor {
         } catch (Exception e) { // other exceptions
             publishHarvesterFailedEvent(repository, correlationId, revision, runId, FAILURE, e, currentUserLogin);
             log.error("Unable to process {}", repository.getUrl(), e);
+        } finally {
+            log.info("Cleaning up after processing {}", repository.getUrl());
+            harvesterService.clearTempGraphIfExists(repository.getUrl());
+            log.info("Cleaned up after processing {}", repository.getUrl());
         }
 
         // cleanup
