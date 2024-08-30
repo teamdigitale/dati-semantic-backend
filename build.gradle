@@ -193,6 +193,7 @@ jacocoTestCoverageVerification {
                     'it.gov.innovazione.ndc.repository.TripleStoreRepository',
                     'it.gov.innovazione.ndc.service.EventCleaner',
                     'it.gov.innovazione.ndc.service.TemplateService',
+                    'it.gov.innovazione.ndc.harvester.service.startupjob.TempEraserStartupJob',
                     'it.gov.innovazione.ndc.alerter.*'
             ]
         }
