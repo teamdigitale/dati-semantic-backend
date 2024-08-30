@@ -57,11 +57,6 @@ public class InMemoryInstanceManager implements InstanceManager {
     }
 
     @Override
-    public void rollbackInstance(Repository repository) {
-        switchInstances(repository);
-    }
-
-    @Override
     public List<RepositoryInstance> getCurrentInstances() {
         return instances.entrySet().stream()
                 .map(entry -> RepositoryInstance.of(entry.getKey(), entry.getValue()))

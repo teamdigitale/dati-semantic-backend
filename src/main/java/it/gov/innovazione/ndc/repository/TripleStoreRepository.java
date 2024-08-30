@@ -21,7 +21,6 @@ import static java.lang.String.format;
 public class TripleStoreRepository {
     private static final String DROP_SILENT_GRAPH_WITH_LOG_ENABLE_3 = "DEFINE sql:log-enable 3%nDROP SILENT GRAPH <%s>%n";
     public static final String TMP_GRAPH_PREFIX = "tmp";
-    public static final String OLD_GRAPH_PREFIX = "old";
     public static final String ONLINE_GRAPH_PREFIX = "";
     private static final String RENAME_GRAPH = "DEFINE sql:log-enable 3%nMOVE SILENT GRAPH <%s> to <%s>%n";
 
@@ -63,7 +62,7 @@ public class TripleStoreRepository {
     }
 
     public void clearExistingNamedGraph(String repoUrl) {
-        clearExistingNamedGraph(repoUrl, "");
+        clearExistingNamedGraph(repoUrl, ONLINE_GRAPH_PREFIX);
     }
 
     public void clearExistingNamedGraph(String repoUrl, String prefix) {
@@ -93,28 +92,19 @@ public class TripleStoreRepository {
 
     public void switchInstances(it.gov.innovazione.ndc.model.harvester.Repository repository) {
         String tmpGraphName = reworkRepoUrlIfNecessary(repository.getUrl(), TMP_GRAPH_PREFIX);
-        String oldGraphName = reworkRepoUrlIfNecessary(repository.getUrl(), OLD_GRAPH_PREFIX);
-        clearExistingNamedGraph(repository.getUrl(), OLD_GRAPH_PREFIX);
-        rename(repository.getUrl(), oldGraphName);
+        clearExistingNamedGraph(repository.getUrl());
         rename(tmpGraphName, repository.getUrl());
-    }
-
-
-    public void rollbackInstance(it.gov.innovazione.ndc.model.harvester.Repository repository) {
-        String tmpGraphName = reworkRepoUrlIfNecessary(repository.getUrl(), TMP_GRAPH_PREFIX);
-        String oldGraphName = reworkRepoUrlIfNecessary(repository.getUrl(), OLD_GRAPH_PREFIX);
-        rename(repository.getUrl(), tmpGraphName);
-        rename(oldGraphName, repository.getUrl());
-        rename(tmpGraphName, oldGraphName);
     }
 
     public void rename(String oldGraph, String newGraph) {
         try {
             String sparqlEndpoint = virtuosoClient.getSparqlEndpoint();
+            log.info("Renaming {} into {}", oldGraph, newGraph);
             UpdateExecution
                     .service(sparqlEndpoint)
                     .updateString(getRenameCommand(oldGraph, newGraph))
                     .execute();
+            log.info("Renamed {} into {}", oldGraph, newGraph);
         } catch (Exception e) {
             log.error(format("Could not rename %s into %s ", oldGraph, newGraph), e);
             throw new TripleStoreRepositoryException(format("Could not rename - '%s' -> '%s'", oldGraph, newGraph), e);

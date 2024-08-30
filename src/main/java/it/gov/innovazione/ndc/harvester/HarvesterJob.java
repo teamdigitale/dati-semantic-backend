@@ -85,10 +85,4 @@ public class HarvesterJob {
         return responseBuilder.build();
 
     }
-
-    public void rollback(String repositoryId) {
-        Repository repository = repositoryService.findActiveRepoById(repositoryId)
-                .orElseThrow(() -> new HarvestJobException(String.format("Repository %s not found", repositoryId)));
-        defaultInstanceManager.rollbackInstance(repository);
-    }
 }

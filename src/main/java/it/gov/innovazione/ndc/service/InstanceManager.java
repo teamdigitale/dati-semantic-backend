@@ -16,8 +16,6 @@ public interface InstanceManager {
 
     void switchInstances(Repository repository);
 
-    void rollbackInstance(Repository repository);
-
     List<RepositoryInstance> getCurrentInstances();
 
     @Data

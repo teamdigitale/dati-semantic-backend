@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import static it.gov.innovazione.ndc.repository.TripleStoreRepository.OLD_GRAPH_PREFIX;
 import static it.gov.innovazione.ndc.repository.TripleStoreRepository.ONLINE_GRAPH_PREFIX;
 import static it.gov.innovazione.ndc.repository.TripleStoreRepository.TMP_GRAPH_PREFIX;
 import static java.util.stream.Collectors.groupingBy;
@@ -143,7 +142,6 @@ public class HarvesterService {
         cleanUpWithHarvesters(repoUrl, Instance.PRIMARY);
         cleanUpWithHarvesters(repoUrl, Instance.SECONDARY);
         cleanUpTripleStore(repoUrl, TMP_GRAPH_PREFIX);
-        cleanUpTripleStore(repoUrl, OLD_GRAPH_PREFIX);
         cleanUpTripleStore(repoUrl, ONLINE_GRAPH_PREFIX);
         cleanUpIndexedMetadata(repoUrl, Instance.PRIMARY);
         cleanUpIndexedMetadata(repoUrl, Instance.SECONDARY);
