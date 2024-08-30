@@ -103,6 +103,13 @@ public class HarvestJobController {
                         .build());
     }
 
+    @PostMapping(value = "jobs/rollback", params = "repositoryId")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void rollback(@RequestParam("repositoryId") String repositoryId) {
+        log.info("Starting rollback job at " + LocalDateTime.now() + "for repository " + repositoryId);
+        harvesterJob.rollback(repositoryId);
+    }
+
     @Getter
     @Builder
     private static class WebHarversterAlertableEvent implements AlertableEvent {

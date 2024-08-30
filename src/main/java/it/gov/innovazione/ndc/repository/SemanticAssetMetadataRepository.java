@@ -120,7 +120,21 @@ public class SemanticAssetMetadataRepository {
     }
 
     public Optional<SemanticAssetMetadata> findByIri(String iri) {
-        return Optional.ofNullable(esOps.get(iri, SemanticAssetMetadata.class));
+        List<Query> queries = new ArrayList<>();
+        queries.add(termQuery("iri", iri)._toQuery());
+        getConditionForInstances()
+                .map(QueryVariant::_toQuery)
+                .ifPresent(queries::add);
+        NativeQuery query = NativeQuery.builder()
+                .withQuery(BoolQuery.of(bq -> bq.must(queries))._toQuery())
+                .build();
+        try {
+            SearchHits<SemanticAssetMetadata> search = esOps.search(query, SemanticAssetMetadata.class);
+            return search.get().findFirst().map(SearchHit::getContent);
+        } catch (Exception e) {
+            log.error("Error while searching for asset with iri: {}", iri, e);
+        }
+        return Optional.empty();
     }
 
     public long deleteByRepoUrl(String repoUrl, Instance instance) {

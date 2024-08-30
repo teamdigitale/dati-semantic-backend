@@ -30,7 +30,7 @@ public class TripleStoreRepositoryTest {
     private static String sparqlUrl;
     private static String sparqlGraphUrl;
     private static final String graphName = "http://www.fantasy.org/graph";
-    private static final String oldGraphName = "http://old.www.fantasy.org/graph";
+    private static final String oldGraphName = "http://tmp.www.fantasy.org/graph";
 
     private static TripleStoreRepository repository;
 

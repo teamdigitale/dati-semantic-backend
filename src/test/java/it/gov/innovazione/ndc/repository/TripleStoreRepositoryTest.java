@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class TripleStoreRepositoryTest {
     private static final String REPO_URL = "http://www.repos.org/reponame";
-    private static final String OLD_REPO_URL = "http://old.www.repos.org/reponame";
+    private static final String OLD_REPO_URL = "http://tmp.www.repos.org/reponame";
 
     @Mock
     RDFConnection connection;
