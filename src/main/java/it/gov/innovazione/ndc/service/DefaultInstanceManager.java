@@ -51,13 +51,6 @@ public class DefaultInstanceManager implements InstanceManager {
         tripleStoreRepository.switchInstances(repository);
     }
 
-    public void rollbackInstance(Repository repository) {
-        // rollback instance on Repositories
-        configService.writeConfigKey(ACTIVE_INSTANCE, "system", getOldOnlineInstance(repository), repository.getId());
-        // rollback instance on Virtuoso
-        tripleStoreRepository.rollbackInstance(repository);
-    }
-
     @Override
     public List<RepositoryInstance> getCurrentInstances() {
         return repositoryService.getActiveRepos().stream()
