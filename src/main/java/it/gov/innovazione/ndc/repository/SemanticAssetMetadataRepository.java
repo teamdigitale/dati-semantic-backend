@@ -1,6 +1,5 @@
 package it.gov.innovazione.ndc.repository;
 
-import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.MatchQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
@@ -19,17 +18,14 @@ import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.SearchPage;
-import org.springframework.data.elasticsearch.core.query.DeleteQuery;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static it.gov.innovazione.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
 import static java.util.Objects.nonNull;
@@ -41,6 +37,7 @@ import static org.springframework.data.elasticsearch.core.SearchHitSupport.searc
 @Slf4j
 public class SemanticAssetMetadataRepository {
     private final ElasticsearchOperations esOps;
+    private final SemanticAssetMetadataDeleter semanticAssetMetadataDeleter;
     private final InstanceManager instanceManager;
 
     public SearchPage<SemanticAssetMetadata> search(String queryPattern, Set<String> types,
@@ -74,7 +71,7 @@ public class SemanticAssetMetadataRepository {
         List<RepositoryInstance> currentRepoInstances = instanceManager.getCurrentInstances();
 
         List<Query> repoInstanceQueries = currentRepoInstances.stream()
-                .map(repositoryInstance -> getBoolQueryForRepo(
+                .map(repositoryInstance -> SemanticAssetMetadataQuery.getBoolQueryForRepo(
                         repositoryInstance.getUrl(),
                         repositoryInstance.getInstance()))
                 .map(QueryVariant::_toQuery)
@@ -87,36 +84,12 @@ public class SemanticAssetMetadataRepository {
         return Optional.of(BoolQuery.of(bq -> bq.should(repoInstanceQueries)));
     }
 
-    private BoolQuery getBoolQueryForRepo(String url, Instance instance) {
-        List<Query> termsQueries = Stream.of(
-                        termsQuery("repoUrl", url),
-                        termsQuery("instance", instance.name()))
-                .map(QueryVariant::_toQuery)
-                .toList();
-
-        return BoolQuery.of(bq -> bq.must(termsQueries));
-    }
-
-
     private List<TermsQuery> getQueriesForParams(Set<String> types, Set<String> themes, Set<String> rightsHolder) {
         return Map.of("type", types, "themes", themes, "agencyId", rightsHolder).entrySet().stream()
                 .filter(e -> nonNull(e.getValue()))
                 .filter(e -> !e.getValue().isEmpty())
-                .map(e -> termsQuery(e.getKey(), e.getValue()))
+                .map(e -> SemanticAssetMetadataQuery.termsQuery(e.getKey(), e.getValue()))
                 .toList();
-    }
-
-    private TermsQuery termsQuery(String field, String value) {
-        return termsQuery(field, Set.of(value));
-    }
-
-
-    private TermsQuery termsQuery(String field, Set<String> values) {
-        return TermsQuery.of(t -> t.field(field).terms(
-                terms -> terms.value(values.stream()
-                        .filter(Objects::nonNull)
-                        .map(FieldValue::of)
-                        .toList())));
     }
 
     public Optional<SemanticAssetMetadata> findByIri(String iri) {
@@ -138,13 +111,7 @@ public class SemanticAssetMetadataRepository {
     }
 
     public long deleteByRepoUrl(String repoUrl, Instance instance) {
-        return esOps.delete(
-                DeleteQuery.builder(
-                                NativeQuery.builder()
-                                        .withQuery(getBoolQueryForRepo(repoUrl, instance)._toQuery())
-                                        .build())
-                        .build(),
-                SemanticAssetMetadata.class).getDeleted();
+        return semanticAssetMetadataDeleter.deleteByRepoUrl(repoUrl, instance);
     }
 
     public void save(SemanticAssetMetadata metadata) {
@@ -156,7 +123,7 @@ public class SemanticAssetMetadataRepository {
                 bq -> bq.must(
                         List.of(
                                 termQuery("repoUrl", repoUrl)._toQuery(),
-                                termsQuery("instance", instance.name())._toQuery(),
+                                SemanticAssetMetadataQuery.termsQuery("instance", instance.name())._toQuery(),
                                 termQuery("type", CONTROLLED_VOCABULARY.name())._toQuery())));
 
         NativeQuery query = NativeQuery.builder()

@@ -49,6 +49,8 @@ class SemanticAssetMetadataRepositoryTest {
 
     @InjectMocks
     private SemanticAssetMetadataRepository repository;
+    @InjectMocks
+    private SemanticAssetMetadataDeleter deleter;
 
     @Test
     void shouldFindById() {
@@ -87,7 +89,7 @@ class SemanticAssetMetadataRepositoryTest {
 
         when(esOps.delete(captor.capture(), any(Class.class))).thenReturn(deletedResponse);
 
-        long deleteCount = repository.deleteByRepoUrl("someRepoUrl", Instance.PRIMARY);
+        long deleteCount = deleter.deleteByRepoUrl("someRepoUrl", Instance.PRIMARY);
 
         assertThat(deleteCount).isEqualTo(1);
         Query query = captor.getValue().getQuery();

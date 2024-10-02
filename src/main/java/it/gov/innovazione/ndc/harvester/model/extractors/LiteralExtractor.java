@@ -4,7 +4,7 @@ import it.gov.innovazione.ndc.harvester.model.SemanticAssetModelValidationContex
 import it.gov.innovazione.ndc.harvester.model.exception.InvalidModelException;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.apache.commons.lang3.tuple.Pair;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
@@ -17,10 +17,13 @@ import java.util.function.Predicate;
 import static it.gov.innovazione.ndc.harvester.model.BaseSemanticAssetModel.maybeThrowInvalidModelException;
 import static it.gov.innovazione.ndc.harvester.model.SemanticAssetModelValidationContext.NO_VALIDATION;
 import static java.lang.String.format;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Slf4j
 public class LiteralExtractor {
 
     public static String extractOptional(Resource mainResource, Property versionInfo) {
@@ -58,10 +61,26 @@ public class LiteralExtractor {
     }
 
     public static Map<String, String> extractAllLanguages(Resource resource, Property property) {
-        return resource.listProperties(property).toList().stream()
+        Map<String, List<String>> collect = resource.listProperties(property).toList().stream()
                 .filter(s -> s.getObject().isLiteral())
-                .map(s -> Pair.of(s.getLanguage(), s.getString()))
-                .collect(toMap(Pair::getLeft, Pair::getRight));
+                .collect(groupingBy(
+                        Statement::getLanguage,
+                        mapping(Statement::getString, toList())));
+
+        // log if any entry has more than one value
+        collect.entrySet().stream()
+                .filter(e -> e.getValue().size() > 1)
+                .forEach(e -> {
+                    String message = format("Found multiple values for language '%s' in property '%s' for resource '%s': %s",
+                            e.getKey(), property, resource, e.getValue());
+                    log.warn(message);
+                });
+
+        return collect
+                .entrySet().stream()
+                .collect(toMap(
+                        Map.Entry::getKey,
+                        e -> e.getValue().stream().sorted().toList().get(0)));
     }
 
     public static List<String> extractAll(Resource resource, Property property) {

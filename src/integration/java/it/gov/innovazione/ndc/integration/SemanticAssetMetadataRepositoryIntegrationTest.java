@@ -4,6 +4,7 @@ import it.gov.innovazione.ndc.config.ElasticConfigurator;
 import it.gov.innovazione.ndc.harvester.SemanticAssetType;
 import it.gov.innovazione.ndc.harvester.model.Instance;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
+import it.gov.innovazione.ndc.repository.SemanticAssetMetadataDeleter;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
 import org.elasticsearch.client.RestClient;
 import org.jetbrains.annotations.NotNull;
@@ -27,6 +28,7 @@ public class SemanticAssetMetadataRepositoryIntegrationTest {
     public static final int INDEX_COUNT = 2;
     public static final int ASSET_COUNT = 5;
     private static SemanticAssetMetadataRepository repository;
+    private static SemanticAssetMetadataDeleter deleter;
     private static ElasticsearchOperations elasticsearchOperations;
 
     @BeforeAll
@@ -35,7 +37,8 @@ public class SemanticAssetMetadataRepositoryIntegrationTest {
         elasticsearchOperations = buildElasticsearchOps();
         InMemoryInstanceManager instanceManager = new InMemoryInstanceManager();
         instanceManager.setAllInstances(Instance.PRIMARY);
-        repository = new SemanticAssetMetadataRepository(elasticsearchOperations, instanceManager);
+        deleter = new SemanticAssetMetadataDeleter(elasticsearchOperations);
+        repository = new SemanticAssetMetadataRepository(elasticsearchOperations, deleter, instanceManager);
     }
 
     @NotNull

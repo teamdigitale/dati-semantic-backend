@@ -4,6 +4,7 @@ import it.gov.innovazione.ndc.eventhandler.event.ConfigService;
 import it.gov.innovazione.ndc.harvester.model.Instance;
 import it.gov.innovazione.ndc.harvester.service.RepositoryService;
 import it.gov.innovazione.ndc.model.harvester.Repository;
+import it.gov.innovazione.ndc.repository.SemanticAssetMetadataDeleter;
 import it.gov.innovazione.ndc.repository.TripleStoreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ public class DefaultInstanceManager implements InstanceManager {
     private final ConfigService configService;
     private final RepositoryService repositoryService;
     private final TripleStoreRepository tripleStoreRepository;
+    private final SemanticAssetMetadataDeleter deleter;
 
     public Instance getNextOnlineInstance(String repoUrl) {
         Optional<Repository> repository = repositoryService.findActiveRepoByUrl(repoUrl);
@@ -45,7 +47,12 @@ public class DefaultInstanceManager implements InstanceManager {
 
     public void switchInstances(Repository repository) {
         // switch instance on Repositories
-        configService.writeConfigKey(ACTIVE_INSTANCE, "system", getNextOnlineInstance(repository), repository.getId());
+        Instance newInstance = getNextOnlineInstance(repository);
+        configService.writeConfigKey(ACTIVE_INSTANCE, "system", newInstance, repository.getId());
+
+        Instance instanceToDelete = newInstance.switchInstance();
+
+        deleter.deleteByRepoUrl(repository.getUrl(), instanceToDelete);
 
         // switch instance on Virtuoso
         tripleStoreRepository.switchInstances(repository);
