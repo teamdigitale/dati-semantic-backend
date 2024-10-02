@@ -1,5 +1,5 @@
 plugins {
-    id 'org.springframework.boot' version '3.3.2'
+    id 'org.springframework.boot' version '3.3.4'
     id 'io.spring.dependency-management' version '1.1.6'
     id 'java'
     id 'checkstyle'
@@ -41,6 +41,8 @@ dependencies {
     runtimeOnly("org.springframework.boot:spring-boot-properties-migrator")
 
     implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+
+    implementation group: 'com.google.protobuf', name: 'protobuf-java', version: '3.25.5'
 
     implementation 'org.springframework.data:spring-data-elasticsearch'
     implementation 'org.apache.jena:apache-jena-libs:4.9.0'
