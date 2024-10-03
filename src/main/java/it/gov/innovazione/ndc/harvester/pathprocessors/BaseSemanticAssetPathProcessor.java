@@ -27,23 +27,12 @@ public abstract class BaseSemanticAssetPathProcessor<P extends SemanticAssetPath
     private final TripleStoreRepository tripleStoreRepository;
     protected final SemanticAssetMetadataRepository metadataRepository;
 
-    @Override
-    public void process(String repoUrl, P path) {
+    private static <M extends SemanticAssetModel> SemanticAssetMetadata tryExtractMetadata(M model) {
         try {
-            log.info("Processing path {}", path);
-
-            log.debug("Loading model");
-            M model = loadModel(path.getTtlPath(), repoUrl);
-
-            log.debug("Extracting main resource");
-            Resource resource = model.getMainResource();
-            log.info("Found resource {}", resource);
-
-            processWithModel(repoUrl, path, model);
-            log.info("Path {} processed", path);
+            return model.extractMetadata();
         } catch (Exception e) {
-            log.error("Error processing {}", path, e);
-            throw new SinglePathProcessingException(String.format("Cannot process '%s'", path), e);
+            log.error("Error extracting metadata for {}", model.getMainResource(), e);
+            throw new SinglePathProcessingException("Cannot extract metadata", e, false);
         }
     }
 
@@ -70,11 +59,39 @@ public abstract class BaseSemanticAssetPathProcessor<P extends SemanticAssetPath
         // maybe call super() in there, anyways.
     }
 
+    @Override
+    public void process(String repoUrl, P path) {
+        try {
+            log.info("Processing path {}", path);
+
+            log.debug("Loading model");
+            M model = loadModel(path.getTtlPath(), repoUrl);
+
+            log.debug("Extracting main resource");
+            Resource resource = model.getMainResource();
+            log.info("Found resource {}", resource);
+
+            processWithModel(repoUrl, path, model);
+            log.info("Path {} processed", path);
+        } catch (Exception e) {
+            log.error("Error processing {}", path, e);
+            if (e instanceof SinglePathProcessingException singlePathProcessingException) {
+                throw new SinglePathProcessingException(String.format("Cannot process '%s'", path), e, singlePathProcessingException.isFatal());
+            }
+            throw new SinglePathProcessingException(String.format("Cannot process '%s'", path), e, false);
+        }
+    }
+
     private void indexMetadataForSearch(M model) {
         log.debug("Indexing {} for search", model.getMainResource());
-        SemanticAssetMetadata metadata = model.extractMetadata();
+        SemanticAssetMetadata metadata = tryExtractMetadata(model);
         postProcessMetadata(metadata);
-        metadataRepository.save(metadata);
+        try {
+            metadataRepository.save(metadata);
+        } catch (Exception e) {
+            log.error("Error saving metadata for {}", model.getMainResource(), e);
+            throw new SinglePathProcessingException("Cannot save metadata", e, true);
+        }
     }
 
     protected void postProcessMetadata(SemanticAssetMetadata metadata) {
@@ -90,7 +107,12 @@ public abstract class BaseSemanticAssetPathProcessor<P extends SemanticAssetPath
 
     private void persistModelToTripleStore(String repoUrl, P path, M model) {
         log.debug("Storing RDF content for {} in Virtuoso", model.getMainResource());
-        tripleStoreRepository.save(repoUrl, model.getRdfModel());
+        try {
+            tripleStoreRepository.save(repoUrl, model.getRdfModel());
+        } catch (Exception e) {
+            log.error("Error saving RDF content for {}", model.getMainResource(), e);
+            throw new SinglePathProcessingException("Cannot save RDF content", e, true);
+        }
     }
 
     protected abstract M loadModel(String ttlFile, String repoUrl);

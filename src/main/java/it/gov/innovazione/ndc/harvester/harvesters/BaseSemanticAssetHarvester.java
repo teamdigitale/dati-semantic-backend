@@ -70,9 +70,13 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
                                 .context(Map.of(
                                         "error", e.getRealErrorMessage(),
                                         "path", path.getTtlPath(),
-                                        "repo", repository.getUrl()))
+                                        "repo", repository.getUrl(),
+                                        "isFatal", e.isFatal()))
                                 .build());
                 log.error("Error processing {} {} in repo {}", type, path, repository.getUrl(), e);
+                if (e.isFatal()) {
+                    throw e;
+                }
             }
         }
     }
