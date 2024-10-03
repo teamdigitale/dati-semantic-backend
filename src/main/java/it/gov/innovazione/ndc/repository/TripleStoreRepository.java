@@ -30,8 +30,13 @@ public class TripleStoreRepository {
         this.virtuosoClient = virtuosoClient;
     }
 
+    private static String getCommandAndLog(String command) {
+        log.info("Update command: {}", command);
+        return command;
+    }
+
     private static String getRenameCommand(String oldGraph, String newGraph) {
-        return format(RENAME_GRAPH, oldGraph, newGraph);
+        return getCommandAndLog(format(RENAME_GRAPH, oldGraph, newGraph));
     }
 
     private void saveWithConnection(String graphName, Model model, RDFConnection connection) {
@@ -48,7 +53,7 @@ public class TripleStoreRepository {
     }
 
     private static String getUpdateCommand(String repoUrl, String repoUrlPrefix) {
-        return format(DROP_SILENT_GRAPH_WITH_LOG_ENABLE_3, reworkRepoUrlIfNecessary(repoUrl, repoUrlPrefix));
+        return getCommandAndLog(format(DROP_SILENT_GRAPH_WITH_LOG_ENABLE_3, reworkRepoUrlIfNecessary(repoUrl, repoUrlPrefix)));
     }
 
     @SneakyThrows
@@ -62,11 +67,13 @@ public class TripleStoreRepository {
     }
 
     public void clearExistingNamedGraph(String repoUrl) {
+        log.info("Clearing existing named graph for {}", repoUrl);
         clearExistingNamedGraph(repoUrl, ONLINE_GRAPH_PREFIX);
     }
 
     public void clearExistingNamedGraph(String repoUrl, String prefix) {
         try {
+            log.info("Clearing existing named graph for {} with prefix {}", repoUrl, prefix);
             String sparqlEndpoint = virtuosoClient.getSparqlEndpoint();
             UpdateExecution
                     .service(sparqlEndpoint)
@@ -92,6 +99,7 @@ public class TripleStoreRepository {
 
     public void switchInstances(it.gov.innovazione.ndc.model.harvester.Repository repository) {
         String tmpGraphName = reworkRepoUrlIfNecessary(repository.getUrl(), TMP_GRAPH_PREFIX);
+        log.info("Switching instances on Virtuoso ({}, {})", repository.getUrl(), tmpGraphName);
         clearExistingNamedGraph(repository.getUrl());
         rename(tmpGraphName, repository.getUrl());
     }
