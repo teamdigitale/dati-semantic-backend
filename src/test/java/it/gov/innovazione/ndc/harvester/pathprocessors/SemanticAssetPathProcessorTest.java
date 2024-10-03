@@ -9,6 +9,7 @@ import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
 import it.gov.innovazione.ndc.repository.TripleStoreRepository;
 import it.gov.innovazione.ndc.repository.TripleStoreRepositoryException;
 import org.apache.jena.rdf.model.Model;
+import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
@@ -93,7 +94,8 @@ class SemanticAssetPathProcessorTest {
 
         assertThatThrownBy(() -> processor.process(repoUrl, path))
             .isInstanceOf(SinglePathProcessingException.class)
-            .hasCause(repositoryException);
+                .has(new Condition<>(e -> e.getCause().getCause() == repositoryException, "cause is the expected exception"))
+                .has(new Condition<>(e -> ((SinglePathProcessingException) e).isFatal(), "is fatal"));
 
         verify(tripleStoreRepository).save(repoUrl, model);
         verify(metadataRepository, never()).save(metadata);
