@@ -7,6 +7,7 @@ import it.gov.innovazione.ndc.model.harvester.Repository;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataDeleter;
 import it.gov.innovazione.ndc.repository.TripleStoreRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,6 +18,7 @@ import static it.gov.innovazione.ndc.harvester.service.ActualConfigService.Confi
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class DefaultInstanceManager implements InstanceManager {
 
     private final ConfigService configService;
@@ -47,12 +49,20 @@ public class DefaultInstanceManager implements InstanceManager {
 
     public void switchInstances(Repository repository) {
         // switch instance on Repositories
+        log.info("Switching instance for repository {}", repository.getUrl());
         Instance newInstance = getNextOnlineInstance(repository);
+
+        log.info("Switching Elastic search to instance {} for repo {}", newInstance, repository.getUrl());
+
         configService.writeConfigKey(ACTIVE_INSTANCE, "system", newInstance, repository.getId());
 
         Instance instanceToDelete = newInstance.switchInstance();
 
+        log.info("Deleting metadata for instance {} for repo {}", instanceToDelete, repository.getUrl());
+
         deleter.deleteByRepoUrl(repository.getUrl(), instanceToDelete);
+
+        log.info("Switching instances on Virtuoso for repo {}", repository.getUrl());
 
         // switch instance on Virtuoso
         tripleStoreRepository.switchInstances(repository);

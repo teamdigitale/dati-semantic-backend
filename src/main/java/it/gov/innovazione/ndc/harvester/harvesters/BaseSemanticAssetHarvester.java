@@ -21,16 +21,21 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 import static it.gov.innovazione.ndc.harvester.service.ActualConfigService.ConfigKey.MAX_FILE_SIZE_BYTES;
 
 @Slf4j
 @RequiredArgsConstructor
 public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> implements SemanticAssetHarvester {
+
+    private static final List<String> INFRASTRUCTURE_EXCEPTIONS = List.of("java.net", "org.apache.http");
+
     private final SemanticAssetType type;
     private final NdcEventPublisher eventPublisher;
     private final ConfigService configService;
@@ -38,6 +43,10 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
     @Override
     public SemanticAssetType getType() {
         return type;
+    }
+
+    private static boolean isInfrastructureTypeException(Throwable cause) {
+        return INFRASTRUCTURE_EXCEPTIONS.stream().anyMatch(cause.getClass().getName()::contains);
     }
 
     @Override
@@ -58,6 +67,7 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
                 processPath(repository.getUrl(), path);
                 log.debug("Path {} processed correctly for {}", path, type);
             } catch (SinglePathProcessingException e) {
+                boolean isInfrastuctureError = checkInfrastructureError(e);
                 Optional.ofNullable(HarvestExecutionContextUtils.getContext())
                         .ifPresent(context -> context.addHarvestingError(repository, e, path.getAllFiles()));
                 eventPublisher.publishAlertableEvent(
@@ -65,7 +75,7 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
                         DefaultAlertableEvent.builder()
                                 .name("Harvester Single Path Processing Error")
                                 .description("Error processing " + type + " " + path + " in repo " + repository.getUrl())
-                                .category(EventCategory.SEMANTIC)
+                                .category(isInfrastuctureError ? EventCategory.INFRASTRUCTURE : EventCategory.SEMANTIC)
                                 .severity(Severity.ERROR)
                                 .context(Map.of(
                                         "error", e.getRealErrorMessage(),
@@ -79,6 +89,22 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
                 }
             }
         }
+    }
+
+    private boolean checkInfrastructureError(SinglePathProcessingException e) {
+        // checks if in the chain of exceptions there is an infrastructure error (es. java.net, httpException, etc)
+        Throwable cause = e;
+        Set<Throwable> seen = new HashSet<>();
+        while (cause != null) {
+            if (!seen.add(cause)) {
+                return false;
+            }
+            if (isInfrastructureTypeException(cause)) {
+                return true;
+            }
+            cause = cause.getCause();
+        }
+        return false;
     }
 
     private void notifyIfSizeExceed(P path, Long maxFileSizeBytes) {
