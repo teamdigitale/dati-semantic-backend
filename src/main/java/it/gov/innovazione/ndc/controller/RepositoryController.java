@@ -1,5 +1,6 @@
 package it.gov.innovazione.ndc.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import it.gov.innovazione.ndc.alerter.entities.EventCategory;
 import it.gov.innovazione.ndc.alerter.entities.Severity;
 import it.gov.innovazione.ndc.alerter.event.DefaultAlertableEvent;
@@ -43,6 +44,10 @@ public class RepositoryController {
     private final NdcEventPublisher eventPublisher;
 
     @GetMapping
+    @Operation(
+            operationId = "getAllRepositories",
+            description = "Get all repositories",
+            summary = "Get all repositories")
     public List<Repository> getAllRepositories() {
         return repositoryService.getActiveRepos();
     }
@@ -50,6 +55,10 @@ public class RepositoryController {
     @PostMapping
     @ResponseStatus(CREATED)
     @SneakyThrows
+    @Operation(
+            operationId = "createRepository",
+            description = "Create a new repository",
+            summary = "Create a new repository")
     public void createRepository(
             @RequestBody CreateRepository repository,
             Principal principal) {
@@ -86,6 +95,10 @@ public class RepositoryController {
 
     @PatchMapping("/{id}")
     @SneakyThrows
+    @Operation(
+            operationId = "updateRepository",
+            description = "Update a repository",
+            summary = "Update a repository")
     public ResponseEntity<Void> updateRepository(
             @PathVariable String id,
             @RequestBody CreateRepository repository,
@@ -119,6 +132,10 @@ public class RepositoryController {
 
     @DeleteMapping("/{id}")
     @SneakyThrows
+    @Operation(
+            operationId = "deleteRepository",
+            description = "Delete a repository",
+            summary = "Delete a repository")
     public ResponseEntity<?> deleteRepository(
             @PathVariable String id,
             Principal principal) {
