@@ -1,5 +1,6 @@
 package it.gov.innovazione.ndc.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import it.gov.innovazione.ndc.alerter.entities.EventCategory;
 import it.gov.innovazione.ndc.alerter.entities.Severity;
 import it.gov.innovazione.ndc.alerter.event.AlertableEvent;
@@ -40,6 +41,10 @@ public class HarvestJobController {
     private final NdcEventPublisher eventPublisher;
 
     @PostMapping("jobs/harvest")
+    @Operation(
+            operationId = "startHarvestJob",
+            description = "Start a new harvest job",
+            summary = "Start a new harvest job")
     public List<JobExecutionResponse> startHarvestJob(@RequestParam(required = false, defaultValue = "false") Boolean force) {
         log.info("Starting Harvest job at " + LocalDateTime.now());
         List<JobExecutionResponse> harvest = harvesterJob.harvest(force);
@@ -53,16 +58,28 @@ public class HarvestJobController {
     }
 
     @GetMapping("jobs/harvest/run")
+    @Operation(
+            operationId = "getHarvestRuns",
+            description = "Get all harvest runs",
+            summary = "Get all harvest runs")
     public List<HarvesterRun> getAllRuns() {
         return harvesterRunService.getAllRuns();
     }
 
     @GetMapping("jobs/harvest/running")
+    @Operation(
+            operationId = "getRunningInstances",
+            description = "Get all running instances",
+            summary = "Get all running instances")
     public List<RunningInstance> getAllRunningInstance() {
         return harvesterRunService.getAllRunningInstances();
     }
 
     @DeleteMapping("jobs/harvest/run")
+    @Operation(
+            operationId = "deletePendingRuns",
+            description = "Delete all pending runs",
+            summary = "Delete all pending runs")
     public void deletePendingRuns() {
         harvesterRunService.deletePendingRuns();
         eventPublisher.publishAlertableEvent(
@@ -73,6 +90,10 @@ public class HarvestJobController {
     }
 
     @PostMapping(value = "jobs/harvest", params = "repositoryId")
+    @Operation(
+            operationId = "harvestRepositories",
+            description = "Harvest a specific repository",
+            summary = "Harvest a specific repository")
     public JobExecutionResponse harvestRepositories(
             @RequestParam("repositoryId") String repositoryId,
             @RequestParam(required = false, defaultValue = "") String revision,
@@ -90,6 +111,10 @@ public class HarvestJobController {
 
     @PostMapping("jobs/clear")
     @ResponseStatus(HttpStatus.ACCEPTED)
+    @Operation(
+            operationId = "clearRepo",
+            description = "Clear a repository",
+            summary = "Clear a repository")
     public void clearRepo(@RequestParam("repo_url") String repoUrl) {
         if (StringUtils.isEmpty(repoUrl)) {
             throw new IllegalArgumentException("repo_url is required");

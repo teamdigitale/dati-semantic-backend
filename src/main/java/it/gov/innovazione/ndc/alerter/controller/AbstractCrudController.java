@@ -1,6 +1,7 @@
 package it.gov.innovazione.ndc.alerter.controller;
 
 
+import io.swagger.v3.oas.annotations.Operation;
 import it.gov.innovazione.ndc.alerter.data.EntityService;
 import it.gov.innovazione.ndc.alerter.dto.SlimPager;
 import it.gov.innovazione.ndc.alerter.entities.Nameable;
@@ -27,6 +28,10 @@ public abstract class AbstractCrudController<T extends Nameable, D extends Namea
     abstract EntityService<T, D> getEntityService();
 
     @GetMapping
+    @Operation(
+            operationId = "getAll",
+            description = "Get all entities",
+            summary = "Get all entities")
     public SlimPager<D> getPaginated(Pageable pageable) {
         return toSlimPager(getEntityService().getPaginated(pageable));
     }
@@ -50,12 +55,20 @@ public abstract class AbstractCrudController<T extends Nameable, D extends Namea
     }
 
     @GetMapping("{id}")
+    @Operation(
+            operationId = "getOne",
+            description = "Get one entity",
+            summary = "Get one entity")
     public D getOne(@PathVariable String id) {
         return getEntityService().getById(id);
     }
 
     @PostMapping
     @ResponseStatus(CREATED)
+    @Operation(
+            operationId = "create",
+            description = "Create a new entity",
+            summary = "Create a new entity")
     public D create(@Valid @RequestBody D dto) {
         handlePreCreate(dto);
         D createdEntity = getEntityService().create(dto);
@@ -73,6 +86,10 @@ public abstract class AbstractCrudController<T extends Nameable, D extends Namea
 
     @PatchMapping
     @ResponseStatus(CREATED)
+    @Operation(
+            operationId = "update",
+            description = "Update an entity",
+            summary = "Update an entity")
     public D update(@Valid @RequestBody D dto) {
         handlePreUpdate(dto);
         D updatedDto = getEntityService().update(dto);
@@ -90,6 +107,10 @@ public abstract class AbstractCrudController<T extends Nameable, D extends Namea
 
     @DeleteMapping("{id}")
     @ResponseStatus(CREATED)
+    @Operation(
+            operationId = "delete",
+            description = "Delete an entity",
+            summary = "Delete an entity")
     public void delete(@PathVariable String id) {
         handlePreDelete(id);
         D deletedDto = getEntityService().delete(id);

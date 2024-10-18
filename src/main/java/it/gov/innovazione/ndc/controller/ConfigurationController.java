@@ -1,5 +1,6 @@
 package it.gov.innovazione.ndc.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import it.gov.innovazione.ndc.eventhandler.NdcEventPublisher;
 import it.gov.innovazione.ndc.eventhandler.event.ConfigService;
 import it.gov.innovazione.ndc.harvester.service.ActualConfigService;
@@ -32,6 +33,10 @@ public class ConfigurationController {
     private final NdcEventPublisher eventPublisher;
 
     @GetMapping
+    @Operation(
+            operationId = "getConfig",
+            description = "Get the configuration for a repository",
+            summary = "Get the configuration for a repository")
     public Map<ActualConfigService.ConfigKey, ConfigService.ConfigEntry> getConfig(
             @PathVariable String repoId) {
         if (repoId.equals("ndc")) {
@@ -42,6 +47,10 @@ public class ConfigurationController {
 
     @PostMapping
     @ResponseStatus(CREATED)
+    @Operation(
+            operationId = "setConfig",
+            description = "Set the configuration for a repository",
+            summary = "Set the configuration for a repository")
     public void setConfig(
             @PathVariable String repoId,
             @RequestBody Map<ActualConfigService.ConfigKey, Object> config,
@@ -55,6 +64,10 @@ public class ConfigurationController {
 
     @PutMapping("/{configKey}")
     @ResponseStatus(ACCEPTED)
+    @Operation(
+            operationId = "updateRepository",
+            description = "Update a configuration key for a repository",
+            summary = "Update a configuration key for a repository")
     public void updateRepository(
             @PathVariable String repoId,
             @PathVariable ActualConfigService.ConfigKey configKey,
@@ -69,6 +82,10 @@ public class ConfigurationController {
 
     @DeleteMapping("/{configKey}")
     @ResponseStatus(ACCEPTED)
+    @Operation(
+            operationId = "deleteRepository",
+            description = "Delete a configuration key for a repository",
+            summary = "Delete a configuration key for a repository")
     public void deleteRepository(
             @PathVariable String repoId,
             @PathVariable ActualConfigService.ConfigKey configKey,
