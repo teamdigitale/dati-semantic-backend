@@ -21,6 +21,10 @@ import java.net.URL;
 @Slf4j
 public class CheckUrlController {
 
+    public static final String ACCEPTED_MIME_TYPES =
+            "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,"
+            + "image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7";
+
     @GetMapping
     @SneakyThrows
     @Operation(
@@ -38,6 +42,7 @@ public class CheckUrlController {
         log.info("Checking url {}", url);
         HttpURLConnection huc = (HttpURLConnection) new URL(url).openConnection();
         huc.setConnectTimeout(5000);
+        huc.setRequestProperty("Accept", ACCEPTED_MIME_TYPES);
         log.info("Response code for url {} is : {}", url, huc.getResponseCode());
         return new ResponseEntity<>(HttpStatus.valueOf(huc.getResponseCode()));
     }
