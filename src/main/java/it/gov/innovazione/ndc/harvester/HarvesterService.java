@@ -6,9 +6,11 @@ import it.gov.innovazione.ndc.harvester.model.Instance;
 import it.gov.innovazione.ndc.harvester.model.index.RightsHolder;
 import it.gov.innovazione.ndc.harvester.service.RepositoryService;
 import it.gov.innovazione.ndc.harvester.util.FileUtils;
+import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import it.gov.innovazione.ndc.model.harvester.Repository;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
 import it.gov.innovazione.ndc.repository.TripleStoreRepository;
+import it.gov.innovazione.ndc.service.logging.LoggingContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -20,9 +22,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static it.gov.innovazione.ndc.repository.TripleStoreRepository.ONLINE_GRAPH_PREFIX;
 import static it.gov.innovazione.ndc.repository.TripleStoreRepository.TMP_GRAPH_PREFIX;
+import static it.gov.innovazione.ndc.service.logging.HarvesterStage.CLONE_REPO;
+import static it.gov.innovazione.ndc.service.logging.HarvesterStage.MAINTAINER_EXTRACTION;
+import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticInfo;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -43,6 +49,17 @@ public class HarvesterService {
         if (Objects.isNull(context)) {
             context = HarvestExecutionContext.builder()
                     .build();
+        }
+        if (!maintainers.isEmpty()) {
+            logSemanticInfo(LoggingContext.builder()
+                    .stage(MAINTAINER_EXTRACTION)
+                    .harvesterStatus(HarvesterRun.Status.RUNNING)
+                    .message("Adding maintainers to context")
+                    .additionalInfo("maintainers",
+                            maintainers.stream()
+                                    .map(Repository.Maintainer::toString)
+                                    .collect(Collectors.joining(",")))
+                    .build());
         }
         context.addMaintainers(maintainers);
     }
@@ -67,6 +84,16 @@ public class HarvesterService {
         log.debug("Normalised repo url {}", repoUrl);
         try {
             Path path = cloneRepoToTempPath(repoUrl, revision);
+
+            logSemanticInfo(LoggingContext.builder()
+                    .stage(CLONE_REPO)
+                    .harvesterStatus(HarvesterRun.Status.RUNNING)
+                    .repoUrl(repoUrl)
+                    .message("Repository cloned")
+                    .additionalInfo("tempPath", path.toAbsolutePath())
+                    .additionalInfo("revision", revision)
+                    .additionalInfo("instance", instance)
+                    .build());
 
             try {
                 updateContext(path, instance);

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Appender standard per la console -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [-%5p] %logger{36} - %m%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Appender personalizzato per una classe specifica -->
+    <appender name="NDC_HARVESTER_LOGGER" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!-- Qui definisci il pattern personalizzato -->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [-%5p] %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Logger per l'intero progetto -->
+    <!--root level="INFO">
+        <appender-ref ref="CONSOLE" />
+    </root-->
+
+    <!-- Logger specifico per una classe (es: com.example.mypackage.MyClass) -->
+    <logger name="it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger" level="DEBUG" additivity="false">
+        <appender-ref ref="NDC_HARVESTER_LOGGER"/>
+    </logger>
+</configuration>
