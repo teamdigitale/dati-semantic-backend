@@ -3,12 +3,17 @@ package it.gov.innovazione.ndc.harvester.scanners;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
 import it.gov.innovazione.ndc.harvester.util.FileUtils;
 import it.gov.innovazione.ndc.harvester.util.PropertiesUtils;
+import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
+import it.gov.innovazione.ndc.service.logging.HarvesterStage;
+import it.gov.innovazione.ndc.service.logging.LoggingContext;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticInfo;
 
 @Component
 public class OntologyFolderScanner implements FolderScanner<SemanticAssetPath> {
@@ -27,7 +32,7 @@ public class OntologyFolderScanner implements FolderScanner<SemanticAssetPath> {
 
     @Override
     public List<SemanticAssetPath> scanFolder(Path folder) throws IOException {
-        return fileUtils.listContents(folder)
+        List<SemanticAssetPath> assets = fileUtils.listContents(folder)
                 .stream()
                 // only accept ttls
                 .filter(this::isTurtleFilePath)
@@ -37,13 +42,42 @@ public class OntologyFolderScanner implements FolderScanner<SemanticAssetPath> {
                 .map(path -> SemanticAssetPath.of(path.toString()))
                 // collect to a list
                 .collect(Collectors.toList());
+
+        logSemanticInfo(LoggingContext.builder()
+                .stage(HarvesterStage.PATH_SCANNING)
+                .harvesterStatus(HarvesterRun.Status.RUNNING)
+                .message("Scanned folder for ontology files")
+                .additionalInfo("folder", folder.toString())
+                .additionalInfo("assets", assets.size())
+                .build());
+
+        return assets;
+
     }
 
     private boolean isTurtleFilePath(Path path) {
-        return fileUtils.getLowerCaseFileName(path).endsWith(TURTLE_FILE_EXTENSION);
+        boolean isTurtle = fileUtils.getLowerCaseFileName(path).endsWith(TURTLE_FILE_EXTENSION);
+        if (!isTurtle) {
+            logSemanticInfo(LoggingContext.builder()
+                    .stage(HarvesterStage.PATH_SCANNING)
+                    .harvesterStatus(HarvesterRun.Status.RUNNING)
+                    .additionalInfo("file", path.toString())
+                    .message("Skipping file due to extension - it's not a turtle file")
+                    .build());
+        }
+        return isTurtle;
     }
 
     private boolean fileNameDoesNotContainSkipWords(Path path) {
-        return lowerSkipWords.stream().noneMatch(fileUtils.getLowerCaseFileName(path)::contains);
+        boolean skip = lowerSkipWords.stream().noneMatch(fileUtils.getLowerCaseFileName(path)::contains);
+        if (!skip) {
+            logSemanticInfo(LoggingContext.builder()
+                    .stage(HarvesterStage.PATH_SCANNING)
+                    .harvesterStatus(HarvesterRun.Status.RUNNING)
+                    .additionalInfo("file", path.toString())
+                    .message("Skipping file due to skip words")
+                    .build());
+        }
+        return skip;
     }
 }

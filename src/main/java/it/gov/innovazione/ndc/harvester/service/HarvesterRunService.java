@@ -60,10 +60,11 @@ public class HarvesterRunService {
                 harvesterRun.getReason());
     }
 
-    public boolean isHarvestingInProgress(String runId, Repository repository) {
+    public Optional<HarvesterRun> isHarvestingInProgress(String runId, Repository repository) {
         return getRecentRuns(HARVESTING_RECENT_DAYS)
                 .filter(harvesterRun -> !equalsIgnoreCase(harvesterRun.getId(), runId))
-                .anyMatch(harvesterRun -> isAlreadyRunning(harvesterRun, repository));
+                .filter(harvesterRun -> isAlreadyRunning(harvesterRun, repository))
+                .findFirst();
     }
 
     private boolean isMoreRecentThan(HarvesterRun harvesterRun, Long days) {
@@ -85,13 +86,12 @@ public class HarvesterRunService {
                 && harvesterRun.getStatus() == HarvesterRun.Status.RUNNING;
     }
 
-    public boolean isHarvestingAlreadyExecuted(String repositoryId, String revision) {
+    public Optional<HarvesterRun> isHarvestingAlreadyExecuted(String repositoryId, String revision) {
         return getRecentRuns(HARVESTING_RECENT_DAYS)
                 .filter(harvesterRun -> harvesterRun.getRepositoryId().equals(repositoryId))
                 .filter(harvesterRun -> harvesterRun.getStatus() == HarvesterRun.Status.SUCCESS)
                 .max(Comparator.comparing(HarvesterRun::getStartedAt))
-                .filter(harvesterRun -> equalsIgnoreCase(harvesterRun.getRevision(), revision))
-                .isPresent();
+                .filter(harvesterRun -> equalsIgnoreCase(harvesterRun.getRevision(), revision));
     }
 
     public int updateHarvesterRun(HarvesterRun harvesterRun) {

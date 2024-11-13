@@ -1,6 +1,8 @@
 package it.gov.innovazione.ndc.repository;
 
 import com.apicatalog.jsonld.StringUtils;
+import it.gov.innovazione.ndc.service.logging.HarvesterStage;
+import it.gov.innovazione.ndc.service.logging.LoggingContext;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -14,6 +16,9 @@ import org.springframework.stereotype.Repository;
 
 import java.net.URL;
 
+import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logInfrastructureError;
+import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticError;
+import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticInfo;
 import static java.lang.String.format;
 
 @Slf4j
@@ -74,6 +79,13 @@ public class TripleStoreRepository {
     public void clearExistingNamedGraph(String repoUrl, String prefix) {
         try {
             log.info("Clearing existing named graph for {} with prefix {}", repoUrl, prefix);
+
+            logSemanticInfo(LoggingContext.builder()
+                    .stage(HarvesterStage.CLEANING_VIRTUOSO)
+                    .message("Clearing existing named graph for repo " + repoUrl)
+                    .additionalInfo("prefix", prefix)
+                    .build());
+
             String sparqlEndpoint = virtuosoClient.getSparqlEndpoint();
             UpdateExecution
                     .service(sparqlEndpoint)
@@ -81,9 +93,21 @@ public class TripleStoreRepository {
                     .execute();
         } catch (Exception e) {
             log.error(format("Could not clear existing named graph! - %s", repoUrl), e);
-            if (e instanceof HttpException) {
+            boolean isHttpException = e instanceof HttpException;
+            if (isHttpException) {
                 HttpException httpException = (HttpException) e;
                 log.error("HttpException: {}", httpException.getResponse());
+            }
+            LoggingContext loggingContext = LoggingContext.builder()
+                    .stage(HarvesterStage.CLEANING_VIRTUOSO)
+                    .message("Could not clear existing named graph for repo " + repoUrl)
+                    .details(e.getMessage())
+                    .additionalInfo("prefix", prefix)
+                    .build();
+            if (isHttpException) {
+                logInfrastructureError(loggingContext);
+            } else {
+                logSemanticError(loggingContext);
             }
             throw new TripleStoreRepositoryException(format("Could not delete graph - '%s'", repoUrl), e);
         }

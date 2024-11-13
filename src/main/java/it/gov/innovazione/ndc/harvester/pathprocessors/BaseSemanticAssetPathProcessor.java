@@ -8,8 +8,11 @@ import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
 import it.gov.innovazione.ndc.harvester.model.extractors.RightsHolderExtractor;
 import it.gov.innovazione.ndc.harvester.model.index.NodeSummary;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
+import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
 import it.gov.innovazione.ndc.repository.TripleStoreRepository;
+import it.gov.innovazione.ndc.service.logging.HarvesterStage;
+import it.gov.innovazione.ndc.service.logging.LoggingContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.jena.rdf.model.Resource;
@@ -19,6 +22,10 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static it.gov.innovazione.ndc.harvester.model.SemanticAssetModelValidationContext.NO_VALIDATION;
+import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logInfrastructureError;
+import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticError;
+import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticInfo;
+import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticWarn;
 import static java.util.stream.Collectors.toList;
 
 @RequiredArgsConstructor
@@ -48,8 +55,20 @@ public abstract class BaseSemanticAssetPathProcessor<P extends SemanticAssetPath
         try {
             HarvestExecutionContext context = HarvestExecutionContextUtils.getContext();
             context.addRightsHolder(RightsHolderExtractor.getAgencyId(model.getMainResource(), NO_VALIDATION));
+            logSemanticInfo(LoggingContext.builder()
+                    .message("Added rights holder to context")
+                    .stage(HarvesterStage.PROCESS_RESOURCE)
+                    .harvesterStatus(HarvesterRun.Status.RUNNING)
+                    .additionalInfo("rightsHolder", context.getRightsHolders())
+                    .build());
         } catch (Exception e) {
             log.error("Error adding rights holder to repo " + repoUrl, e);
+            logSemanticWarn(LoggingContext.builder()
+                    .message("Error adding rights holder to context")
+                    .details(e.getMessage())
+                    .stage(HarvesterStage.PROCESS_RESOURCE)
+                    .harvesterStatus(HarvesterRun.Status.RUNNING)
+                    .build());
         }
     }
 
@@ -76,8 +95,20 @@ public abstract class BaseSemanticAssetPathProcessor<P extends SemanticAssetPath
         } catch (Exception e) {
             log.error("Error processing {}", path, e);
             if (e instanceof SinglePathProcessingException singlePathProcessingException) {
+                logSemanticError(LoggingContext.builder()
+                        .message("Error processing " + path)
+                        .details(singlePathProcessingException.getRealErrorMessage())
+                        .stage(HarvesterStage.PROCESS_RESOURCE)
+                        .harvesterStatus(HarvesterRun.Status.RUNNING)
+                        .build());
                 throw new SinglePathProcessingException(String.format("Cannot process '%s'", path), e, singlePathProcessingException.isFatal());
             }
+            logInfrastructureError(LoggingContext.builder()
+                    .message("Error processing " + path)
+                    .details(e.getMessage())
+                    .stage(HarvesterStage.PROCESS_RESOURCE)
+                    .harvesterStatus(HarvesterRun.Status.RUNNING)
+                    .build());
             throw new SinglePathProcessingException(String.format("Cannot process '%s'", path), e, false);
         }
     }
@@ -88,6 +119,12 @@ public abstract class BaseSemanticAssetPathProcessor<P extends SemanticAssetPath
         postProcessMetadata(metadata);
         try {
             metadataRepository.save(metadata);
+            logSemanticInfo(LoggingContext.builder()
+                    .message("Indexed metadata for " + model.getMainResource())
+                    .stage(HarvesterStage.PROCESS_RESOURCE)
+                    .harvesterStatus(HarvesterRun.Status.RUNNING)
+                    .additionalInfo("metadata", metadata)
+                    .build());
         } catch (Exception e) {
             log.error("Error saving metadata for {}", model.getMainResource(), e);
             throw new SinglePathProcessingException("Cannot save metadata", e, true);
@@ -109,6 +146,11 @@ public abstract class BaseSemanticAssetPathProcessor<P extends SemanticAssetPath
         log.debug("Storing RDF content for {} in Virtuoso", model.getMainResource());
         try {
             tripleStoreRepository.save(repoUrl, model.getRdfModel());
+            logSemanticInfo(LoggingContext.builder()
+                    .message("Saved RDF content for " + model.getMainResource())
+                    .stage(HarvesterStage.PROCESS_RESOURCE)
+                    .harvesterStatus(HarvesterRun.Status.RUNNING)
+                    .build());
         } catch (Exception e) {
             log.error("Error saving RDF content for {}", model.getMainResource(), e);
             throw new SinglePathProcessingException("Cannot save RDF content", e, true);

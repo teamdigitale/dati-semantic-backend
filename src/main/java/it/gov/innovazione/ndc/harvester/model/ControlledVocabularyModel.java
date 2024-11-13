@@ -6,7 +6,10 @@ import it.gov.innovazione.ndc.harvester.model.extractors.RightsHolderExtractor;
 import it.gov.innovazione.ndc.harvester.model.index.Distribution;
 import it.gov.innovazione.ndc.harvester.model.index.RightsHolder;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
+import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import it.gov.innovazione.ndc.model.profiles.NDC;
+import it.gov.innovazione.ndc.service.logging.HarvesterStage;
+import it.gov.innovazione.ndc.service.logging.LoggingContext;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
@@ -20,6 +23,7 @@ import java.util.function.Consumer;
 import static it.gov.innovazione.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
 import static it.gov.innovazione.ndc.harvester.model.SemanticAssetModelValidationContext.NO_VALIDATION;
 import static it.gov.innovazione.ndc.model.profiles.EuropePublicationVocabulary.FILE_TYPE_RDF_TURTLE;
+import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticInfo;
 import static java.lang.String.format;
 import static org.apache.jena.vocabulary.DCAT.distribution;
 
@@ -102,7 +106,15 @@ public class ControlledVocabularyModel extends BaseSemanticAssetModel {
         rdfModel.add(dataServiceNode, NDC.servesDataset, getMainResource());
         rdfModel.add(getMainResource(), NDC.hasDataService, dataServiceNode);
         rdfModel.add(dataServiceNode, NDC.endpointURL, endpointUrl);
+        logSemanticInfo(LoggingContext.builder()
+                .message("Added NDC data service properties")
+                .stage(HarvesterStage.PROCESS_RESOURCE)
+                .harvesterStatus(HarvesterRun.Status.RUNNING)
+                .additionalInfo("dataServiceNode", dataServiceNode)
+                .additionalInfo("endpointUrl", endpointUrl)
+                .build());
     }
+
 
     private String buildDataServiceIndividualUri() {
         return format("https://w3id.org/italia/data/data-service/%s-%s", getAgencyId().getIdentifier(), getKeyConcept());
