@@ -16,9 +16,9 @@
     </appender>
 
     <!-- Logger per l'intero progetto -->
-    <!--root level="INFO">
+    <root level="INFO">
         <appender-ref ref="CONSOLE" />
-    </root-->
+    </root>
 
     <!-- Logger specifico per una classe (es: com.example.mypackage.MyClass) -->
     <logger name="it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger" level="DEBUG" additivity="false">

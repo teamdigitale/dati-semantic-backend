@@ -16,6 +16,8 @@ import it.gov.innovazione.ndc.harvester.harvesters.utils.PathUtils;
 import it.gov.innovazione.ndc.harvester.model.Instance;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
 import it.gov.innovazione.ndc.model.harvester.Repository;
+import it.gov.innovazione.ndc.service.logging.HarvesterStage;
+import it.gov.innovazione.ndc.service.logging.LoggingContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,8 +29,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static it.gov.innovazione.ndc.harvester.service.ActualConfigService.ConfigKey.MAX_FILE_SIZE_BYTES;
+import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logInfrastructureError;
+import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticError;
+import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticWarn;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -84,6 +90,23 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
                                         "isFatal", e.isFatal()))
                                 .build());
                 log.error("Error processing {} {} in repo {}", type, path, repository.getUrl(), e);
+                if (isInfrastuctureError) {
+                    logInfrastructureError(
+                            LoggingContext.builder()
+                                    .stage(HarvesterStage.PROCESS_RESOURCE)
+                                    .message("Infrastructure error processing " + type + " " + path)
+                                    .details(e.getRealErrorMessage())
+                                    .additionalInfo("error", e.getRealErrorMessage())
+                                    .build());
+                } else {
+                    logSemanticError(
+                            LoggingContext.builder()
+                                    .stage(HarvesterStage.PROCESS_RESOURCE)
+                                    .message("Error processing " + type + " " + path)
+                                    .details(e.getRealErrorMessage())
+                                    .additionalInfo("error", e.getRealErrorMessage())
+                                    .build());
+                }
                 if (e.isFatal()) {
                     throw e;
                 }
@@ -113,10 +136,24 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
             List<File> files = path.getAllFiles();
 
             if (Objects.nonNull(maxFileSizeBytes) && maxFileSizeBytes > 0 && isAnyBiggerThan(maxFileSizeBytes, files)) {
+
                 files.stream()
                         .filter(file -> file.length() > maxFileSizeBytes)
                         .forEach(file -> log.info("[FILE-SCANNER] -- File(s) {} is bigger than {} ", file.getName(), maxFileSizeBytes));
                 notify(context, path, maxFileSizeBytes);
+
+                logSemanticWarn(LoggingContext.builder()
+                        .stage(HarvesterStage.PATH_SCANNING)
+                        .message("File is bigger than maxFileSizeBytes")
+                        .additionalInfo("Ttlpath", path.getTtlPath())
+                        .additionalInfo("files", files.size())
+                        .additionalInfo("filesBiggerThanMaxSize",
+                                files.stream()
+                                        .filter(file -> file.length() > maxFileSizeBytes)
+                                        .map(File::toString)
+                                        .collect(Collectors.joining(",")))
+                        .additionalInfo("maxFileSizeBytes", maxFileSizeBytes)
+                        .build());
             }
         }
     }

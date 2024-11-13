@@ -11,6 +11,7 @@ import it.gov.innovazione.ndc.model.harvester.Repository;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
 import it.gov.innovazione.ndc.repository.TripleStoreRepository;
 import it.gov.innovazione.ndc.service.logging.LoggingContext;
+import it.gov.innovazione.ndc.service.logging.NDCHarvesterLoggerUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -26,8 +27,10 @@ import java.util.stream.Collectors;
 
 import static it.gov.innovazione.ndc.repository.TripleStoreRepository.ONLINE_GRAPH_PREFIX;
 import static it.gov.innovazione.ndc.repository.TripleStoreRepository.TMP_GRAPH_PREFIX;
+import static it.gov.innovazione.ndc.service.logging.HarvesterStage.CLEANING_METADATA;
 import static it.gov.innovazione.ndc.service.logging.HarvesterStage.CLONE_REPO;
 import static it.gov.innovazione.ndc.service.logging.HarvesterStage.MAINTAINER_EXTRACTION;
+import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logInfrastructureError;
 import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticInfo;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
@@ -85,14 +88,13 @@ public class HarvesterService {
         try {
             Path path = cloneRepoToTempPath(repoUrl, revision);
 
-            logSemanticInfo(LoggingContext.builder()
+            NDCHarvesterLoggerUtils.overrideContext(LoggingContext.builder()
                     .stage(CLONE_REPO)
-                    .harvesterStatus(HarvesterRun.Status.RUNNING)
-                    .repoUrl(repoUrl)
+                    .build());
+
+            logSemanticInfo(LoggingContext.builder()
                     .message("Repository cloned")
                     .additionalInfo("tempPath", path.toAbsolutePath())
-                    .additionalInfo("revision", revision)
-                    .additionalInfo("instance", instance)
                     .build());
 
             try {
@@ -104,7 +106,7 @@ public class HarvesterService {
                 log.info("Cleaned up data for {} completed", path);
             }
             log.info("Repo {} processed correctly", repoUrl);
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("Exception while processing {}", repoUrl, e);
             throw e;
         }
@@ -206,9 +208,22 @@ public class HarvesterService {
     }
 
     private void cleanUpIndexedMetadata(String repoUrl, Instance instance) {
-        log.debug("Cleaning up indexed metadata for {}", repoUrl);
-        long deletedCount = semanticAssetMetadataRepository.deleteByRepoUrl(repoUrl, instance);
-        log.debug("Deleted {} indexed metadata for {}", deletedCount, repoUrl);
+        try {
+            log.debug("Cleaning up indexed metadata for {}", repoUrl);
+            long deletedCount = semanticAssetMetadataRepository.deleteByRepoUrl(repoUrl, instance);
+            logSemanticInfo(LoggingContext.builder()
+                    .stage(CLEANING_METADATA)
+                    .message("Deleted " + deletedCount + " indexed metadata")
+                    .additionalInfo("deletedCount", deletedCount)
+                    .build());
+            log.debug("Deleted {} indexed metadata for {}", deletedCount, repoUrl);
+        } catch (Exception e) {
+            logInfrastructureError(LoggingContext.builder()
+                    .stage(CLEANING_METADATA)
+                    .message("Error while cleaning up indexed metadata")
+                    .build());
+            log.error("Error while cleaning up indexed metadata for {}", repoUrl, e);
+        }
     }
 
     public void cleanTempGraphsForConfiguredRepo() {

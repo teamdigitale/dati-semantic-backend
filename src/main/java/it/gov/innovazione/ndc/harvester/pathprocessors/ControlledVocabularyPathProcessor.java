@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticError;
 import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticInfo;
 
 @Component
@@ -50,6 +51,16 @@ public class ControlledVocabularyPathProcessor extends BaseSemanticAssetPathProc
             String keyConcept = model.getKeyConcept();
             String agencyId = model.getAgencyId().getIdentifier();
             VocabularyIdentifier vocabularyIdentifier = new VocabularyIdentifier(agencyId, keyConcept);
+
+            logSemanticError(LoggingContext.builder()
+                    .stage(HarvesterStage.PROCESS_RESOURCE)
+                    .harvesterStatus(HarvesterRun.Status.RUNNING)
+                    .message("Indexing CSV for " + vocabularyIdentifier)
+                    .additionalInfo("csvPath", p)
+                    .additionalInfo("vocabularyIdentifier", vocabularyIdentifier)
+                    .additionalInfo("keyConcept", keyConcept)
+                    .additionalInfo("agencyId", agencyId)
+                    .build());
 
             parseAndIndexCsv(vocabularyIdentifier, p);
         });
@@ -84,12 +95,9 @@ public class ControlledVocabularyPathProcessor extends BaseSemanticAssetPathProc
         }
 
         logSemanticInfo(LoggingContext.builder()
-                .repoUrl(repoUrl)
-                .harvesterStatus(HarvesterRun.Status.RUNNING)
                 .stage(HarvesterStage.CLEANING_METADATA)
                 .message("Cleaning " + vocabs.size() + " found vocabularies")
                 .additionalInfo("vocabs", vocabs.stream().map(SemanticAssetMetadata::getIri).collect(Collectors.joining(",")))
-                .additionalInfo("instance", instance)
                 .build());
 
         vocabs.forEach(v -> {
@@ -105,6 +113,13 @@ public class ControlledVocabularyPathProcessor extends BaseSemanticAssetPathProc
             vocabularyDataService.dropIndex(vocabId);
             log.info("{} dropped", vocabId);
         } catch (Exception e) {
+            logSemanticError(LoggingContext.builder()
+                    .stage(HarvesterStage.CLEANING_METADATA)
+                    .harvesterStatus(HarvesterRun.Status.RUNNING)
+                    .message("Could not drop index " + vocabId)
+                    .additionalInfo("vocabId", vocabId)
+                    .additionalInfo("iri", v.getIri())
+                    .build());
             log.error("Could not drop index {}", vocabId, e);
         }
     }

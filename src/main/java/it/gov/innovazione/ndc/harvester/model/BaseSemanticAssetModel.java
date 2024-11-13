@@ -8,7 +8,10 @@ import it.gov.innovazione.ndc.harvester.model.index.Distribution;
 import it.gov.innovazione.ndc.harvester.model.index.NodeSummary;
 import it.gov.innovazione.ndc.harvester.model.index.RightsHolder;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
+import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import it.gov.innovazione.ndc.model.profiles.Admsapit;
+import it.gov.innovazione.ndc.service.logging.HarvesterStage;
+import it.gov.innovazione.ndc.service.logging.LoggingContext;
 import lombok.Getter;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
@@ -39,6 +42,8 @@ import static it.gov.innovazione.ndc.harvester.model.extractors.NodeExtractor.re
 import static it.gov.innovazione.ndc.harvester.model.extractors.NodeSummaryExtractor.extractRequiredNodeSummary;
 import static it.gov.innovazione.ndc.harvester.model.extractors.NodeSummaryExtractor.maybeNodeSummaries;
 import static it.gov.innovazione.ndc.harvester.model.extractors.RightsHolderExtractor.getAgencyId;
+import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticError;
+import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticInfo;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
@@ -98,6 +103,13 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
             mainResource = getUniqueResourceByType(getMainResourceTypeIri());
         }
 
+        logSemanticInfo(LoggingContext.builder()
+                .harvesterStatus(HarvesterRun.Status.RUNNING)
+                .repoUrl(repoUrl)
+                .message(format("Main resource found: %s", mainResource.getURI()))
+                .stage(HarvesterStage.PROCESS_RESOURCE)
+                .build());
+
         return mainResource;
     }
 
@@ -132,10 +144,28 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
         }
 
         if (resources.isEmpty()) {
+            logSemanticError(LoggingContext.builder()
+                    .harvesterStatus(HarvesterRun.Status.RUNNING)
+                    .repoUrl(repoUrl)
+                    .message(format("No resource of type '%s' in '%s'", typeIri, StringUtils.hasLength(source) ? source : "provided file"))
+                    .stage(HarvesterStage.PROCESS_RESOURCE)
+                    .additionalInfo("source", source)
+                    .additionalInfo("typeIri", typeIri)
+                    .build());
             maybeThrowInvalidModelException(validationContext,
                     () -> new InvalidModelException(
                             format("No resource of type '%s' in '%s'", typeIri, StringUtils.hasLength(source) ? source : "provided file")), true);
         }
+        logSemanticError(LoggingContext.builder()
+                .harvesterStatus(HarvesterRun.Status.RUNNING)
+                .repoUrl(repoUrl)
+                .message(format("Found %d resources of type '%s' in '%s', expecting only 1",
+                        resources.size(), typeIri, StringUtils.hasLength(source) ? source : "provided file"))
+                .stage(HarvesterStage.PROCESS_RESOURCE)
+                .additionalInfo("source", source)
+                .additionalInfo("typeIri", typeIri)
+                .additionalInfo("resources", resources.stream().map(Resource::getURI).collect(Collectors.joining(",")))
+                .build());
         maybeThrowInvalidModelException(validationContext,
                 () -> new InvalidModelException(
                         format("Found %d resources of type '%s' in '%s', expecting only 1",

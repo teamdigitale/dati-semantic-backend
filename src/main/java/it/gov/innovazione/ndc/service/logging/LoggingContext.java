@@ -12,6 +12,7 @@ import org.springframework.boot.logging.LogLevel;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -32,7 +33,7 @@ public class LoggingContext {
     @Builder.Default
     private final LogLevel level = LogLevel.INFO;
     @Builder.Default
-    private final String component = "HARVESTER";
+    private final String component;
     private final String jobId;
     private final String repoUrl;
     private final String path;
@@ -58,9 +59,10 @@ public class LoggingContext {
                         .collect(Collectors.joining(" "));
 
         String logHeaders =
-                Stream.of(component,
-                                stage.name(),
-                                jobId)
+                Stream.of("NDC_HARVESTER_LOGGER",
+                                Optional.ofNullable(component).orElse("NO_COMPONENT"),
+                                Optional.ofNullable(stage).map(HarvesterStage::name).orElse("NO_STAGE"),
+                                Optional.ofNullable(jobId).orElse("NO_JOB_ID"))
                         .map(s -> Objects.isNull(s) ? "" : s)
                         .map(String::toUpperCase)
                         .map(String::trim)
@@ -76,6 +78,10 @@ public class LoggingContext {
 
     public LoggingContext infrastructure() {
         return this.withEventCategory(EventCategory.INFRASTRUCTURE);
+    }
+
+    public LoggingContext application() {
+        return this.withEventCategory(EventCategory.APPLICATION);
     }
 
     public LoggingContext warn() {

@@ -18,6 +18,7 @@ import it.gov.innovazione.ndc.service.GithubService;
 import it.gov.innovazione.ndc.service.InstanceManager;
 import it.gov.innovazione.ndc.service.logging.HarvesterStage;
 import it.gov.innovazione.ndc.service.logging.LoggingContext;
+import it.gov.innovazione.ndc.service.logging.NDCHarvesterLoggerUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ThreadUtils;
@@ -86,13 +87,24 @@ public class SimpleHarvestRepositoryProcessor {
                             .instance(instanceToHarvest)
                             .build());
 
+            NDCHarvesterLoggerUtils.setInitialContext(
+                    LoggingContext.builder()
+                            .jobId(runId)
+                            .repoUrl(repository.getUrl())
+                            .stage(HarvesterStage.START)
+                            .harvesterStatus(RUNNING)
+                            .component("HARVESTER")
+                            .additionalInfo("revision", revision)
+                            .additionalInfo("correlationId", correlationId)
+                            .additionalInfo("currentUserLogin", currentUserLogin)
+                            .additionalInfo("instance", instanceToHarvest)
+                            .additionalInfo("force", force)
+                            .build());
+
             publishHarvesterStartedEvent(repository, correlationId, revision, runId, currentUserLogin, instanceToHarvest);
 
             logSemanticInfo(LoggingContext.builder()
-                    .stage(HarvesterStage.START)
-                    .harvesterStatus(RUNNING)
                     .message("Starting harvester on repo " + repository.getUrl())
-                    .additionalInfo("force", force)
                     .build());
 
             synchronized (locks) {
@@ -110,11 +122,9 @@ public class SimpleHarvestRepositoryProcessor {
                             currentUserLogin);
 
                     logSemanticError(LoggingContext.builder()
-                            .stage(HarvesterStage.START)
                             .harvesterStatus(ALREADY_RUNNING)
                             .message("Failed harvester on repo " + repository.getUrl())
                             .details("Harvester on repo " + repository.getUrl() + " is already running")
-                            .additionalInfo("force", force)
                             .build());
 
                     setThreadName(runId, repository.getId(), revision, "IDLE");
@@ -148,7 +158,9 @@ public class SimpleHarvestRepositoryProcessor {
         } finally {
             log.info("Cleaning up after processing {}", repository.getUrl());
             harvesterService.clearTempGraphIfExists(repository.getUrl());
+            NDCHarvesterLoggerUtils.clearContext();
             log.info("Cleaned up after processing {}", repository.getUrl());
+
         }
 
         // cleanup
@@ -165,7 +177,6 @@ public class SimpleHarvestRepositoryProcessor {
         if (hasIssues) {
             URL issueUrl = ndcIssue.get().getUrl();
             logSemanticError(LoggingContext.builder()
-                    .stage(HarvesterStage.START)
                     .harvesterStatus(FAILURE)
                     .repoUrl(repository.getUrl())
                     .message("Repository has at least one open NDC issues")
@@ -187,12 +198,9 @@ public class SimpleHarvestRepositoryProcessor {
         Optional<HarvesterRun> harvesterRun = harvesterRunService.isHarvestingAlreadyExecuted(repository.getId(), revision);
         if (harvesterRun.isPresent()) {
             logSemanticWarn(LoggingContext.builder()
-                    .stage(HarvesterStage.START)
                     .harvesterStatus(HarvesterRun.Status.UNCHANGED)
-                    .repoUrl(repository.getUrl())
                     .message("Harvesting for repo '" + repository.getUrl() + "' was already executed")
                     .additionalInfo("otherJobId", harvesterRun.get().getId())
-                    .additionalInfo("revision", revision)
                     .build());
             throw new HarvesterAlreadyExecutedException(format("Harvesting for repo '%s' with revision '%s' was already executed and no force param was passed",
                     repository.getUrl(), revision));
@@ -203,10 +211,8 @@ public class SimpleHarvestRepositoryProcessor {
         Optional<HarvesterRun> harvestingInProgress = harvesterRunService.isHarvestingInProgress(runId, repository);
         if (harvestingInProgress.isPresent()) {
             logSemanticError(LoggingContext.builder()
-                    .jobId(runId)
                     .message("Harvesting for repo '" + repository.getUrl() + "' is already in progress")
                     .harvesterStatus(ALREADY_RUNNING)
-                    .repoUrl(repository.getUrl())
                     .additionalInfo("otherJobId", harvestingInProgress.get().getId())
                     .build());
             throw new HarvesterAlreadyInProgressException(format("Harvesting for repo '%s' is already in progress", repository.getUrl()));
