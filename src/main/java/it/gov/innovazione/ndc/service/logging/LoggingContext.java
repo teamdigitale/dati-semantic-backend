@@ -32,7 +32,6 @@ public class LoggingContext {
                     8, Pair.of("EventCategory", LoggingContext::getEventCategory));
     @Builder.Default
     private final LogLevel level = LogLevel.INFO;
-    @Builder.Default
     private final String component;
     private final String jobId;
     private final String repoUrl;
