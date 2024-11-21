@@ -1,5 +1,7 @@
 package it.gov.innovazione.ndc.model.harvester;
 
+import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContext;
+import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContextUtils;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,14 @@ public class HarvesterRun {
     private final Instant revisionCommittedAt;
     private final Status status;
     private final String reason;
+
+    public static String getCurrentRunId() {
+        HarvestExecutionContext context = HarvestExecutionContextUtils.getContext();
+        if (context == null) {
+            return null;
+        }
+        return context.getRunId();
+    }
 
     public enum Status {
         SUCCESS, UNCHANGED, ALREADY_RUNNING, RUNNING, NDC_ISSUES_PRESENT, FAILURE

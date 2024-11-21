@@ -1,5 +1,7 @@
 package it.gov.innovazione.ndc.harvester;
 
+import it.gov.innovazione.ndc.eventhandler.NdcEventPublisher;
+import it.gov.innovazione.ndc.eventhandler.event.HarvesterUpdateCommitDateEvent;
 import it.gov.innovazione.ndc.harvester.exception.InvalidAssetFolderException;
 import it.gov.innovazione.ndc.harvester.model.CvPath;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
@@ -11,6 +13,7 @@ import it.gov.innovazione.ndc.harvester.util.FileUtils;
 import it.gov.innovazione.ndc.harvester.util.GitUtils;
 import it.gov.innovazione.ndc.harvester.util.PropertiesUtils;
 import it.gov.innovazione.ndc.harvester.util.Version;
+import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import it.gov.innovazione.ndc.service.logging.HarvesterStage;
 import it.gov.innovazione.ndc.service.logging.LoggingContext;
 import lombok.SneakyThrows;
@@ -19,6 +22,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -40,19 +44,22 @@ public class AgencyRepositoryService {
     private final ControlledVocabularyFolderScanner controlledVocabularyFolderScanner;
     private final SchemaFolderScanner schemaFolderScanner;
     private final List<String> lowerSkipWords;
+    private final NdcEventPublisher eventPublisher;
 
     public AgencyRepositoryService(FileUtils fileUtils,
                                    GitUtils gitUtils,
                                    OntologyFolderScanner ontologyFolderScanner,
                                    ControlledVocabularyFolderScanner controlledVocabularyFolderScanner,
                                    SchemaFolderScanner schemaFolderScanner,
-                                   AgencyRepositoryServiceProperties agencyRepositoryServiceProperties) {
+                                   AgencyRepositoryServiceProperties agencyRepositoryServiceProperties,
+                                   NdcEventPublisher eventPublisher) {
         this.fileUtils = fileUtils;
         this.gitUtils = gitUtils;
         this.ontologyFolderScanner = ontologyFolderScanner;
         this.controlledVocabularyFolderScanner = controlledVocabularyFolderScanner;
         this.schemaFolderScanner = schemaFolderScanner;
         this.lowerSkipWords = PropertiesUtils.lowerSkipWords(agencyRepositoryServiceProperties.getSkipWords(), MIN_SKIP_WORD_LENGTH);
+        this.eventPublisher = eventPublisher;
     }
 
     public Path cloneRepo(String repoUrl) throws IOException {
@@ -62,7 +69,12 @@ public class AgencyRepositoryService {
     public Path cloneRepo(String repoUrl, String revision) throws IOException {
         Path cloneDir = fileUtils.createTempDirectory(TEMP_DIR_PREFIX);
         log.info("Cloning repo {} @ revision {}, at location {}", repoUrl, revision, cloneDir);
-        gitUtils.cloneRepo(repoUrl, cloneDir.toFile(), revision);
+        Instant instant = gitUtils.cloneRepoAndGetLastCommitDate(repoUrl, cloneDir.toFile(), revision);
+        eventPublisher.publishEvent("harvester", "harvester.get.commit.date", null, "harvester",
+                HarvesterUpdateCommitDateEvent.builder()
+                        .runId(HarvesterRun.getCurrentRunId())
+                        .commitDate(instant)
+                        .build());
         return cloneDir;
     }
 

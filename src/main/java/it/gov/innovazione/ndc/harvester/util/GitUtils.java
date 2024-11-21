@@ -28,6 +28,10 @@ public class GitUtils {
     private final FileUtils fileUtils;
 
     public void cloneRepo(String repoUrl, File destination, String revision) {
+        cloneRepoAndGetLastCommitDate(repoUrl, destination, revision);
+    }
+
+    public Instant cloneRepoAndGetLastCommitDate(String repoUrl, File destination, String revision) {
         try {
             Git call = Git.cloneRepository()
                     .setURI(repoUrl)
@@ -37,6 +41,7 @@ public class GitUtils {
             if (StringUtils.isNotBlank(revision)) {
                 call.checkout().setName(revision).call();
             }
+            return safelyGetLastCommitDate(call);
         } catch (GitAPIException e) {
             throw new GitRepoCloneException(String.format("Cannot clone repo '%s'", repoUrl), e);
         }
@@ -74,8 +79,7 @@ public class GitUtils {
             return Optional.empty();
         }
 
-
-        Optional<Instant> instant = gitOpt.map(this::safelyGetRevCommits);
+        Optional<Instant> instant = gitOpt.map(this::safelyGetLastCommitDate);
         tryRemoveDirectory(tempDirectory.get());
         return instant;
     }
@@ -105,7 +109,7 @@ public class GitUtils {
         }
     }
 
-    private Instant safelyGetRevCommits(Git git) {
+    private Instant safelyGetLastCommitDate(Git git) {
         try {
             return StreamSupport.stream(git.log().call().spliterator(), false)
                     .findFirst()
