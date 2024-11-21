@@ -3,6 +3,9 @@ package it.gov.innovazione.ndc.controller;
 import lombok.Builder;
 import lombok.Data;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 @Data
 @Builder
 public class SemanticAssetStats {
@@ -22,7 +25,11 @@ public class SemanticAssetStats {
         }
 
         public double getIncrementPercentageOverLastYear() {
-            return lastYear == 0 ? 0 : ((double) current - lastYear) / lastYear * 100;
+            BigDecimal bigDecimal = BigDecimal.valueOf(
+                    lastYear == 0
+                            ? 0
+                            : ((double) current - lastYear) / lastYear * 100);
+            return bigDecimal.setScale(1, RoundingMode.HALF_UP).doubleValue();
         }
     }
 }
