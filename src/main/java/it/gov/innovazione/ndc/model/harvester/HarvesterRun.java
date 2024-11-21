@@ -3,6 +3,7 @@ package it.gov.innovazione.ndc.model.harvester;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.With;
 
 import java.time.Instant;
 
@@ -19,6 +20,8 @@ public class HarvesterRun {
     private final String startedBy;
     private final Instant endedAt;
     private final String revision;
+    @With
+    private final Instant revisionCommittedAt;
     private final Status status;
     private final String reason;
 

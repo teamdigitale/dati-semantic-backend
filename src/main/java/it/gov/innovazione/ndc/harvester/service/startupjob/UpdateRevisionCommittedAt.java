@@ -1,0 +1,75 @@
+package it.gov.innovazione.ndc.harvester.service.startupjob;
+
+import it.gov.innovazione.ndc.harvester.service.HarvesterRunService;
+import it.gov.innovazione.ndc.harvester.util.GitUtils;
+import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
+import it.gov.innovazione.ndc.service.GithubService;
+import it.gov.innovazione.ndc.service.logging.LoggingContext;
+import it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger;
+import it.gov.innovazione.ndc.service.logging.NDCHarvesterLoggerUtils;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.stereotype.Service;
+
+import javax.swing.text.html.Option;
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static java.util.Objects.isNull;
+
+@Service
+@RequiredArgsConstructor
+public class UpdateRevisionCommittedAt implements StartupJob {
+
+    private final GitUtils gitUtils;
+    private final HarvesterRunService harvesterRunService;
+
+    @Override
+    public void run() {
+        NDCHarvesterLoggerUtils.setInitialContext(LoggingContext.builder()
+                .component("UpdateRevisionCommittedAt")
+                .build());
+        List<HarvesterRun> harvesterRunsToUpdate = harvesterRunService.getAllRuns().stream()
+                .filter(harvesterRun -> isNull(harvesterRun.getRevisionCommittedAt()))
+                .toList();
+        NDCHarvesterLogger.logApplicationInfo(
+                LoggingContext.builder()
+                        .message(String.format("Found %d harvester runs to update", harvesterRunsToUpdate.size()))
+                        .build());
+        Map<Pair<String, String>, List<HarvesterRun>> byRepositoryAndRevision = harvesterRunsToUpdate.stream()
+                .collect(Collectors.groupingBy(harvesterRun -> Pair.of(harvesterRun.getRepositoryUrl(), harvesterRun.getRevision())));
+
+        byRepositoryAndRevision.entrySet().stream()
+                .map(this::withUpdatedRevisionCommittedAt)
+                .flatMap(List::stream)
+                .forEach(this::logAndUpdate);
+
+    }
+
+    private void logAndUpdate(HarvesterRun harvesterRun) {
+        Instant revisionCommittedAt = harvesterRun.getRevisionCommittedAt();
+        String repositoryUrl = harvesterRun.getRepositoryUrl();
+        String revision = harvesterRun.getRevision();
+        String harvesterRunId = harvesterRun.getId();
+        NDCHarvesterLogger.logApplicationInfo(
+                LoggingContext.builder()
+                        .message(String.format("Updated revisionCommittedAt for harvester run %s with revision %s and repository %s to %s",
+                                harvesterRunId, revision, repositoryUrl, revisionCommittedAt))
+                        .build());
+        harvesterRunService.updateHarvesterRunCommittedAt(harvesterRun);
+    }
+
+    private List<HarvesterRun> withUpdatedRevisionCommittedAt(Map.Entry<Pair<String, String>, List<HarvesterRun>> byRepositoryAndRevision) {
+        Pair<String, String> repositoryAndRevision = byRepositoryAndRevision.getKey();
+        Optional<Instant> commitDate = gitUtils.getCommitDate(repositoryAndRevision.getLeft(), repositoryAndRevision.getRight());
+        return commitDate.map(instant -> byRepositoryAndRevision.getValue().stream()
+                .map(harvesterRun -> harvesterRun.withRevisionCommittedAt(instant))
+                .toList()).orElseGet(byRepositoryAndRevision::getValue);
+    }
+}
+

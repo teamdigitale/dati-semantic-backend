@@ -3,6 +3,7 @@ package it.gov.innovazione.ndc.service.logging;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.logging.LogLevel;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -68,5 +69,9 @@ public class NDCHarvesterLogger {
 
     public static void logApplicationWarn(LoggingContext build) {
         log(build.withLevel(LogLevel.WARN).application());
+    }
+
+    public static void logApplicationError(LoggingContext build) {
+        log(build.withLevel(LogLevel.ERROR).application());
     }
 }
