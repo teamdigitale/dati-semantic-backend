@@ -5,6 +5,9 @@ import it.gov.innovazione.ndc.controller.exception.VocabularyItemNotFoundExcepti
 import it.gov.innovazione.ndc.gen.dto.VocabularyData;
 import it.gov.innovazione.ndc.harvester.csv.CsvParser;
 import it.gov.innovazione.ndc.model.Builders;
+import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
+import it.gov.innovazione.ndc.service.logging.HarvesterStage;
+import it.gov.innovazione.ndc.service.logging.LoggingContext;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logInfrastructureInfo;
 
 @Service
 @Slf4j
@@ -73,6 +78,14 @@ public class VocabularyDataService {
                 .collect(Collectors.toList());
 
         elasticsearchOperations.bulkIndex(indexQueries, IndexCoordinates.of(indexName));
+
+        logInfrastructureInfo(LoggingContext.builder()
+                .stage(HarvesterStage.PROCESS_RESOURCE)
+                .harvesterStatus(HarvesterRun.Status.RUNNING)
+                .message("Indexed CSV for " + vocabularyIdentifier)
+                .additionalInfo("vocabularyIdentifier", vocabularyIdentifier)
+                .additionalInfo("records", indexQueries.size())
+                .build());
     }
 
     private IndexQuery buildIndexQuery(String idName, Map<String, String> record) {

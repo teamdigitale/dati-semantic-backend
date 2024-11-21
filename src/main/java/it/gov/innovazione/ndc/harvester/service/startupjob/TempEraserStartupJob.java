@@ -1,6 +1,8 @@
 package it.gov.innovazione.ndc.harvester.service.startupjob;
 
 import it.gov.innovazione.ndc.harvester.HarvesterService;
+import it.gov.innovazione.ndc.service.logging.LoggingContext;
+import it.gov.innovazione.ndc.service.logging.NDCHarvesterLoggerUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +14,9 @@ public class TempEraserStartupJob implements StartupJob {
 
     @Override
     public void run() {
+        NDCHarvesterLoggerUtils.setInitialContext(LoggingContext.builder()
+                .component("TempEraserStartupJob")
+                .build());
         harvesterService.cleanTempGraphsForConfiguredRepo();
     }
 

@@ -11,6 +11,8 @@ import it.gov.innovazione.ndc.harvester.util.FileUtils;
 import it.gov.innovazione.ndc.harvester.util.GitUtils;
 import it.gov.innovazione.ndc.harvester.util.PropertiesUtils;
 import it.gov.innovazione.ndc.harvester.util.Version;
+import it.gov.innovazione.ndc.service.logging.HarvesterStage;
+import it.gov.innovazione.ndc.service.logging.LoggingContext;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -22,8 +24,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
+import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticInfo;
+import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticWarn;
 import static java.util.function.Predicate.not;
 
 @Component
@@ -84,8 +87,21 @@ public class AgencyRepositoryService {
         if (!fileUtils.folderExists(assetRootPath)) {
             log.warn("No {} folder found in {}", type.getDescription(), clonedRepo);
 
+            logSemanticWarn(LoggingContext.builder()
+                    .stage(HarvesterStage.PATH_SCANNING)
+                    .message("No " + type.getFolderName() + " folder found in " + clonedRepo)
+                    .additionalInfo("path", clonedRepo.toString())
+                    .build());
+
             assetRootPath = Path.of(clonedRepo.toString(), type.getLegacyFolderName()); 
             if (!fileUtils.folderExists(assetRootPath)) {
+                logSemanticWarn(LoggingContext.builder()
+                        .stage(HarvesterStage.PATH_SCANNING)
+                        .message("No " + type.getLegacyFolderName() + " folder found in " + clonedRepo)
+                        .additionalInfo("path", clonedRepo.toString())
+                        .build());
+                log.warn("No {} or {} folder found in {}", type.getDescription(), type.getLegacyFolderName(), clonedRepo);
+
                 return List.of();
             }
         }
@@ -95,14 +111,23 @@ public class AgencyRepositoryService {
 
     private boolean isDirectoryToBeSkipped(Path path) {
         String directoryName = fileUtils.getLowerCaseFileName(path);
-        return fileUtils.isDirectory(path) && this.lowerSkipWords.stream().anyMatch(directoryName::contains);
+        boolean skip = fileUtils.isDirectory(path) && this.lowerSkipWords.stream().anyMatch(directoryName::contains);
+        if (skip) {
+            logSemanticWarn(LoggingContext.builder()
+                    .stage(HarvesterStage.PATH_SCANNING)
+                    .message("Skipping directory " + path)
+                    .additionalInfo("directory", path.toString())
+                    .additionalInfo("skipWords", lowerSkipWords)
+                    .build());
+        }
+        return skip;
     }
 
     @SneakyThrows
     private <P extends SemanticAssetPath> List<P> createSemanticAssetPaths(Path path, FolderScanner<P> scanner, boolean ignoreObsoleteVersions) {
         List<Path> dirContents = fileUtils.listContents(path).stream()
                 .filter(c -> !isDirectoryToBeSkipped(c))
-                .collect(Collectors.toList());
+                .toList();
         boolean hasSubDir = dirContents.stream().anyMatch(fileUtils::isDirectory);
         if (!hasSubDir) {
             return tryScanDir(path, scanner);
@@ -117,7 +142,7 @@ public class AgencyRepositoryService {
             }
         }
 
-        return dirContents.stream()
+        List<P> assets = dirContents.stream()
                 // consider folders for recursion
                 .filter(fileUtils::isDirectory)
                 // only consider folders which are not obsolete
@@ -125,13 +150,28 @@ public class AgencyRepositoryService {
                 // recurse and flatten
                 .flatMap(subDir -> createSemanticAssetPaths(subDir, scanner, ignoreObsoleteVersions).stream())
                 // then collect
-                .collect(Collectors.toList());
+                .toList();
+
+        logSemanticInfo(LoggingContext.builder()
+                .stage(HarvesterStage.PATH_SCANNING)
+                .message("Scanned folder for " + scanner.getClass().getSimpleName())
+                .additionalInfo("folder", path.toString())
+                .additionalInfo("assets", assets.size())
+                .build());
+
+        return assets;
     }
 
     private <P extends SemanticAssetPath> List<P> tryScanDir(Path dir, FolderScanner<P> scanner) throws IOException {
         try {
             return scanner.scanFolder(dir);
         } catch (InvalidAssetFolderException e) {
+            logSemanticWarn(LoggingContext.builder()
+                    .stage(HarvesterStage.PATH_SCANNING)
+                    .message("Invalid folder " + dir + "; skipping")
+                    .details(e.getRealErrorMessage())
+                    .additionalInfo("folder", dir.toString())
+                    .build());
             log.warn("Invalid folder {}; skipping", dir, e);
             return Collections.emptyList();
         }
@@ -148,7 +188,14 @@ public class AgencyRepositoryService {
         return path -> {
             String fileName = path.getFileName().toString();
             boolean hasValidVersion = Version.of(fileName).isPresent();
-            return hasValidVersion && !latestVersionString.equals(fileName);
+            boolean isObsolete = hasValidVersion && !latestVersionString.equals(fileName);
+            logSemanticWarn(LoggingContext.builder()
+                    .stage(HarvesterStage.PATH_SCANNING)
+                    .message("Skipping obsolete version " + path)
+                    .additionalInfo("path", path.toString())
+                    .additionalInfo("latestVersion", latestVersionString)
+                    .build());
+            return isObsolete;
         };
     }
 }

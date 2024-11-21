@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import it.gov.innovazione.ndc.alerter.data.EntityService;
 import it.gov.innovazione.ndc.alerter.dto.SlimPager;
 import it.gov.innovazione.ndc.alerter.entities.Nameable;
+import it.gov.innovazione.ndc.service.logging.LoggingContext;
+import it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -82,6 +84,14 @@ public abstract class AbstractCrudController<T extends Nameable, D extends Namea
 
     protected void handlePostCreate(D createdEntity) {
         log.info("Created entity: {}", createdEntity);
+        NDCHarvesterLogger.logApplicationInfo(
+                LoggingContext.builder()
+                        .component("EntityCreation")
+                        .message("Created entity")
+                        .additionalInfo("entityName", createdEntity.getName())
+                        .additionalInfo("entityId", createdEntity.getId())
+                        .additionalInfo("entityType", createdEntity.getClass().getSimpleName())
+                        .build());
     }
 
     @PatchMapping
@@ -103,6 +113,14 @@ public abstract class AbstractCrudController<T extends Nameable, D extends Namea
 
     protected void handlePostUpdate(D updatedDto) {
         log.info("Updated entity: {}", updatedDto);
+        NDCHarvesterLogger.logApplicationInfo(
+                LoggingContext.builder()
+                        .component("EntityUpdate")
+                        .message("Updated entity")
+                        .additionalInfo("entityName", updatedDto.getName())
+                        .additionalInfo("entityId", updatedDto.getId())
+                        .additionalInfo("entityType", updatedDto.getClass().getSimpleName())
+                        .build());
     }
 
     @DeleteMapping("{id}")
@@ -123,5 +141,13 @@ public abstract class AbstractCrudController<T extends Nameable, D extends Namea
 
     protected void handlePostDelete(D deletedDto) {
         log.info("Deleted entity: {}", deletedDto);
+        NDCHarvesterLogger.logApplicationInfo(
+                LoggingContext.builder()
+                        .component("EntityDeletion")
+                        .message("Deleted entity")
+                        .additionalInfo("entityName", deletedDto.getName())
+                        .additionalInfo("entityId", deletedDto.getId())
+                        .additionalInfo("entityType", deletedDto.getClass().getSimpleName())
+                        .build());
     }
 }

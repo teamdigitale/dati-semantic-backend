@@ -1,7 +1,6 @@
 package it.gov.innovazione.ndc.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import it.gov.innovazione.ndc.eventhandler.NdcEventPublisher;
 import it.gov.innovazione.ndc.eventhandler.event.ConfigService;
 import it.gov.innovazione.ndc.harvester.service.ActualConfigService;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +29,6 @@ import static org.springframework.http.HttpStatus.CREATED;
 public class ConfigurationController {
 
     private final ActualConfigService configService;
-    private final NdcEventPublisher eventPublisher;
 
     @GetMapping
     @Operation(

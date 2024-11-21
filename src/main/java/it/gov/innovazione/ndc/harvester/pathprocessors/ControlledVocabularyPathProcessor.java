@@ -7,15 +7,22 @@ import it.gov.innovazione.ndc.harvester.model.CvPath;
 import it.gov.innovazione.ndc.harvester.model.Instance;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetModelFactory;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
+import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
 import it.gov.innovazione.ndc.repository.TripleStoreRepository;
 import it.gov.innovazione.ndc.service.VocabularyDataService;
 import it.gov.innovazione.ndc.service.VocabularyIdentifier;
+import it.gov.innovazione.ndc.service.logging.HarvesterStage;
+import it.gov.innovazione.ndc.service.logging.LoggingContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticError;
+import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticInfo;
 
 @Component
 @Slf4j
@@ -45,6 +52,16 @@ public class ControlledVocabularyPathProcessor extends BaseSemanticAssetPathProc
             String agencyId = model.getAgencyId().getIdentifier();
             VocabularyIdentifier vocabularyIdentifier = new VocabularyIdentifier(agencyId, keyConcept);
 
+            logSemanticError(LoggingContext.builder()
+                    .stage(HarvesterStage.PROCESS_RESOURCE)
+                    .harvesterStatus(HarvesterRun.Status.RUNNING)
+                    .message("Indexing CSV for " + vocabularyIdentifier)
+                    .additionalInfo("csvPath", p)
+                    .additionalInfo("vocabularyIdentifier", vocabularyIdentifier)
+                    .additionalInfo("keyConcept", keyConcept)
+                    .additionalInfo("agencyId", agencyId)
+                    .build());
+
             parseAndIndexCsv(vocabularyIdentifier, p);
         });
     }
@@ -73,6 +90,16 @@ public class ControlledVocabularyPathProcessor extends BaseSemanticAssetPathProc
             log.debug("Found {} vocabs with indices to drop", vocabs.size());
         }
 
+        if (vocabs.isEmpty()) {
+            return;
+        }
+
+        logSemanticInfo(LoggingContext.builder()
+                .stage(HarvesterStage.CLEANING_METADATA)
+                .message("Cleaning " + vocabs.size() + " found vocabularies")
+                .additionalInfo("vocabs", vocabs.stream().map(SemanticAssetMetadata::getIri).collect(Collectors.joining(",")))
+                .build());
+
         vocabs.forEach(v -> {
             VocabularyIdentifier vocabId = new VocabularyIdentifier(v.getAgencyId(), v.getKeyConcept());
 
@@ -86,6 +113,13 @@ public class ControlledVocabularyPathProcessor extends BaseSemanticAssetPathProc
             vocabularyDataService.dropIndex(vocabId);
             log.info("{} dropped", vocabId);
         } catch (Exception e) {
+            logSemanticError(LoggingContext.builder()
+                    .stage(HarvesterStage.CLEANING_METADATA)
+                    .harvesterStatus(HarvesterRun.Status.RUNNING)
+                    .message("Could not drop index " + vocabId)
+                    .additionalInfo("vocabId", vocabId)
+                    .additionalInfo("iri", v.getIri())
+                    .build());
             log.error("Could not drop index {}", vocabId, e);
         }
     }

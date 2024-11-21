@@ -31,7 +31,7 @@ public class ProfileInitializer implements Initializer {
     public void init() {
         List<String> existingProfileNames = repository.findAll().stream()
                 .map(Profile::getName)
-                .collect(Collectors.toList());
+                .toList();
         DEFAULT_PROFILES.stream()
                 .filter(not(p -> existingProfileNames.contains(p.getLeft())))
                 .map(pair -> Profile.builder()

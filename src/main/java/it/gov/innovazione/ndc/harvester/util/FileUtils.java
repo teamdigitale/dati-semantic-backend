@@ -2,6 +2,8 @@ package it.gov.innovazione.ndc.harvester.util;
 
 import it.gov.innovazione.ndc.harvester.exception.InvalidAssetFolderException;
 import it.gov.innovazione.ndc.model.harvester.Repository;
+import it.gov.innovazione.ndc.service.logging.HarvesterStage;
+import it.gov.innovazione.ndc.service.logging.LoggingContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +18,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
+import static it.gov.innovazione.ndc.model.harvester.HarvesterRun.Status.RUNNING;
+import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticError;
+import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticWarn;
 import static java.util.Comparator.reverseOrder;
 import static org.apache.commons.io.FileUtils.readLines;
 
@@ -67,9 +72,21 @@ public class FileUtils {
                 log.info("Extracting maintainers from README.md in {}", path);
                 return extractMaintainers(readme);
             }
+            logSemanticWarn(LoggingContext.builder()
+                    .stage(HarvesterStage.MAINTAINER_EXTRACTION)
+                    .harvesterStatus(RUNNING)
+                    .message("No README.md found in " + path)
+                    .additionalInfo("path", path.toString())
+                    .build());
             log.warn("No README.md found in {}", path);
             return List.of();
         }
+        logSemanticWarn(LoggingContext.builder()
+                .stage(HarvesterStage.MAINTAINER_EXTRACTION)
+                .harvesterStatus(RUNNING)
+                .message("Path does not exist " + path)
+                .additionalInfo("path", path.toString())
+                .build());
         log.warn("Path {} does not exist", path);
         return List.of();
 
@@ -86,6 +103,13 @@ public class FileUtils {
                 }
             }
         } catch (IOException e) {
+            logSemanticError(LoggingContext.builder()
+                    .message("Error reading README.md to extract maintainers")
+                    .harvesterStatus(RUNNING)
+                    .stage(HarvesterStage.MAINTAINER_EXTRACTION)
+                    .details(e.getMessage())
+                    .additionalInfo("path", readme.toString())
+                    .build());
             log.error("Error reading README.md {}", readme, e);
         }
         return List.of();

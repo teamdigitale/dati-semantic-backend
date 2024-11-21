@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.innovazione.ndc.controller.RepositoryController;
 import it.gov.innovazione.ndc.harvester.model.index.RightsHolder;
 import it.gov.innovazione.ndc.model.harvester.Repository;
+import it.gov.innovazione.ndc.service.logging.HarvesterStage;
+import it.gov.innovazione.ndc.service.logging.LoggingContext;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticInfo;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.groupingBy;
@@ -281,6 +284,11 @@ public class RepositoryService {
         jdbcTemplate.update(query,
                 objectMapper.writeValueAsString(rightsHolders),
                 repository.getId());
+        logSemanticInfo(LoggingContext.builder()
+                .message("Stored rights holders for " + repository)
+                .stage(HarvesterStage.MAINTAINER_EXTRACTION)
+                .additionalInfo("rightsHolders", rightsHolders)
+                .build());
     }
 
     public List<RightsHolder> getRightsHolders() {
