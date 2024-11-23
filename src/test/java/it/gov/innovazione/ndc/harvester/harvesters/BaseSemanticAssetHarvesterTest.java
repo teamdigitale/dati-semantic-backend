@@ -6,7 +6,9 @@ import it.gov.innovazione.ndc.harvester.SemanticAssetType;
 import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContext;
 import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContextUtils;
 import it.gov.innovazione.ndc.harvester.exception.InvalidAssetException;
+import it.gov.innovazione.ndc.harvester.model.HarvesterStatsHolder;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
+import it.gov.innovazione.ndc.harvester.service.SemanticContentStatsService;
 import it.gov.innovazione.ndc.model.harvester.Repository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,6 +37,8 @@ class BaseSemanticAssetHarvesterTest {
     private NdcEventPublisher eventPublisher;
     @Mock
     private ConfigService configService;
+    @Mock
+    private SemanticContentStatsService semanticContentStatsService;
 
     @Test
     void shouldMoveOnToNextOntologyIfProcessingOneFails() {
@@ -74,6 +78,8 @@ class BaseSemanticAssetHarvesterTest {
                 .build();
 
         doNothing().when(processor).accept(repoUrl, path);
+        doNothing().when(semanticContentStatsService).updateStats(any());
+
         when(configService.getFromRepoOrGlobalOrDefault(any(), any(), any())).thenReturn(1L);
 
         try (MockedStatic<HarvestExecutionContextUtils> contextUtils = mockStatic(HarvestExecutionContextUtils.class)) {
@@ -105,13 +111,14 @@ class BaseSemanticAssetHarvesterTest {
         private final List<SemanticAssetPath> paths;
 
         public TestHarvester(List<SemanticAssetPath> paths) {
-            super(SemanticAssetType.ONTOLOGY, eventPublisher, configService);
+            super(SemanticAssetType.ONTOLOGY, eventPublisher, configService, semanticContentStatsService);
             this.paths = paths;
         }
 
         @Override
-        protected void processPath(String repoUrl, SemanticAssetPath path) {
+        protected HarvesterStatsHolder processPath(String repoUrl, SemanticAssetPath path) {
             processor.accept(repoUrl, path);
+            return HarvesterStatsHolder.builder().build();
         }
 
         @Override

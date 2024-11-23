@@ -41,11 +41,12 @@ public class HarvesterRunService {
                 + "REPOSITORY_URL, "
                 + "INSTANCE, "
                 + "REVISION, "
+                + "REVISION_COMMITTED_AT, "
                 + "STARTED, "
                 + "STARTED_BY, "
                 + "FINISHED, "
                 + "STATUS, "
-                + "REASON) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                + "REASON) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         return jdbcTemplate.update(query,
                 harvesterRun.getId(),
                 harvesterRun.getCorrelationId(),
@@ -53,6 +54,7 @@ public class HarvesterRunService {
                 harvesterRun.getRepositoryUrl(),
                 harvesterRun.getInstance(),
                 harvesterRun.getRevision(),
+                harvesterRun.getRevisionCommittedAt(),
                 harvesterRun.getStartedAt(),
                 harvesterRun.getStartedBy(),
                 harvesterRun.getEndedAt(),
@@ -107,6 +109,15 @@ public class HarvesterRunService {
                 harvesterRun.getId());
     }
 
+    public int updateHarvesterRunCommittedAt(HarvesterRun harvesterRun) {
+        String query = "UPDATE HARVESTER_RUN SET "
+                + "REVISION_COMMITTED_AT = ? "
+                + "WHERE ID = ?";
+        return jdbcTemplate.update(query,
+                harvesterRun.getRevisionCommittedAt(),
+                harvesterRun.getId());
+    }
+
     public Stream<HarvesterRun> getRecentRuns(Long days) {
         return getAllRuns().stream()
                 .filter(harvesterRun -> isMoreRecentThan(harvesterRun, days));
@@ -120,6 +131,7 @@ public class HarvesterRunService {
                 + "REPOSITORY_URL, "
                 + "INSTANCE, "
                 + "REVISION, "
+                + "REVISION_COMMITTED_AT, "
                 + "STARTED, "
                 + "STARTED_BY, "
                 + "FINISHED, "
@@ -135,6 +147,7 @@ public class HarvesterRunService {
                         .repositoryUrl(rs.getString("REPOSITORY_URL"))
                         .instance(rs.getString("INSTANCE"))
                         .revision(rs.getString("REVISION"))
+                        .revisionCommittedAt(getInstant(rs, "REVISION_COMMITTED_AT"))
                         .startedAt(getInstant(rs, "STARTED"))
                         .startedBy(rs.getString("STARTED_BY"))
                         .endedAt(getInstant(rs, "FINISHED"))

@@ -34,7 +34,7 @@ public class NDCHarvesterLoggerUtils {
     public static void clearContext() {
         SEEN_MESSAGES.get().clear();
         CONTEXT_HOLDER.remove();
-        log.info("Context cleared");
+        log.info("Contexts cleared");
     }
 
     public static boolean notSeen(String message) {

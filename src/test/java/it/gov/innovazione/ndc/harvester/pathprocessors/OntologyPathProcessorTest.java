@@ -4,6 +4,7 @@ import it.gov.innovazione.ndc.harvester.model.OntologyModel;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetModelFactory;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
+import it.gov.innovazione.ndc.harvester.service.SemanticContentStatsService;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
 import it.gov.innovazione.ndc.repository.TripleStoreRepository;
 import org.apache.jena.rdf.model.Resource;
@@ -27,6 +28,8 @@ class OntologyPathProcessorTest {
     Resource ontology;
     @Mock
     TripleStoreRepository repository;
+    @Mock
+    SemanticContentStatsService semanticContentStatsService;
     @Mock
     SemanticAssetMetadataRepository metadataRepository;
 

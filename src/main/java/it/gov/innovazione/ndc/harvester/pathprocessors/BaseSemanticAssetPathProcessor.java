@@ -3,7 +3,9 @@ package it.gov.innovazione.ndc.harvester.pathprocessors;
 import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContext;
 import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContextUtils;
 import it.gov.innovazione.ndc.harvester.exception.SinglePathProcessingException;
+import it.gov.innovazione.ndc.harvester.model.HarvesterStatsHolder;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetModel;
+import it.gov.innovazione.ndc.harvester.model.SemanticAssetModelValidationContext;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
 import it.gov.innovazione.ndc.harvester.model.extractors.RightsHolderExtractor;
 import it.gov.innovazione.ndc.harvester.model.index.NodeSummary;
@@ -43,12 +45,25 @@ public abstract class BaseSemanticAssetPathProcessor<P extends SemanticAssetPath
         }
     }
 
-    protected void processWithModel(String repoUrl, P path, M model) {
+    protected HarvesterStatsHolder processWithModel(String repoUrl, P path, M model) {
         log.debug("Enriching model before persisting");
         enrichModelBeforePersisting(model, path);
-        indexMetadataForSearch(model);
+        SemanticAssetModelValidationContext.ValidationContextStats statsBefore = getStats(model);
+        SemanticAssetMetadata meta = indexMetadataForSearch(model);
+        SemanticAssetModelValidationContext.ValidationContextStats statsAfter = getStats(model);
         persistModelToTripleStore(repoUrl, path, model);
         collectRightsHolderInContext(repoUrl, model);
+        return HarvesterStatsHolder.builder()
+                .metadata(meta)
+                .validationContextStats(SemanticAssetModelValidationContext.difference(statsBefore, statsAfter))
+                .build();
+    }
+
+    private static <M extends SemanticAssetModel> SemanticAssetModelValidationContext.ValidationContextStats getStats(M model) {
+        return Optional.ofNullable(model)
+                .map(SemanticAssetModel::getValidationContext)
+                .map(SemanticAssetModelValidationContext.ValidationContextStats::of)
+                .orElse(SemanticAssetModelValidationContext.ValidationContextStats.empty());
     }
 
     private void collectRightsHolderInContext(String repoUrl, M model) {
@@ -79,7 +94,7 @@ public abstract class BaseSemanticAssetPathProcessor<P extends SemanticAssetPath
     }
 
     @Override
-    public void process(String repoUrl, P path) {
+    public HarvesterStatsHolder process(String repoUrl, P path) {
         try {
             log.info("Processing path {}", path);
 
@@ -90,8 +105,10 @@ public abstract class BaseSemanticAssetPathProcessor<P extends SemanticAssetPath
             Resource resource = model.getMainResource();
             log.info("Found resource {}", resource);
 
-            processWithModel(repoUrl, path, model);
+            HarvesterStatsHolder harvesterStatsHolder = processWithModel(repoUrl, path, model);
             log.info("Path {} processed", path);
+
+            return harvesterStatsHolder;
         } catch (Exception e) {
             log.error("Error processing {}", path, e);
             if (e instanceof SinglePathProcessingException singlePathProcessingException) {
@@ -113,7 +130,7 @@ public abstract class BaseSemanticAssetPathProcessor<P extends SemanticAssetPath
         }
     }
 
-    private void indexMetadataForSearch(M model) {
+    private SemanticAssetMetadata indexMetadataForSearch(M model) {
         log.debug("Indexing {} for search", model.getMainResource());
         SemanticAssetMetadata metadata = tryExtractMetadata(model);
         postProcessMetadata(metadata);
@@ -125,6 +142,7 @@ public abstract class BaseSemanticAssetPathProcessor<P extends SemanticAssetPath
                     .harvesterStatus(HarvesterRun.Status.RUNNING)
                     .additionalInfo("metadata", metadata)
                     .build());
+            return metadata;
         } catch (Exception e) {
             log.error("Error saving metadata for {}", model.getMainResource(), e);
             throw new SinglePathProcessingException("Cannot save metadata", e, true);

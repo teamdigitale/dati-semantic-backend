@@ -5,6 +5,7 @@ import it.gov.innovazione.ndc.harvester.AgencyRepositoryService;
 import it.gov.innovazione.ndc.harvester.model.CvPath;
 import it.gov.innovazione.ndc.harvester.model.Instance;
 import it.gov.innovazione.ndc.harvester.pathprocessors.ControlledVocabularyPathProcessor;
+import it.gov.innovazione.ndc.harvester.service.SemanticContentStatsService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -18,6 +19,7 @@ import java.util.List;
 import static it.gov.innovazione.ndc.harvester.service.RepositoryUtils.asRepo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -29,6 +31,8 @@ class ControlledVocabularyHarvesterTest {
     ControlledVocabularyPathProcessor pathProcessor;
     @Mock
     ConfigService configService;
+    @Mock
+    SemanticContentStatsService semanticContentStatsService;
     @InjectMocks
     ControlledVocabularyHarvester harvester;
 

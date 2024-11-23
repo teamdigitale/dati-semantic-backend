@@ -4,6 +4,7 @@ import it.gov.innovazione.ndc.harvester.model.SchemaModel;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetModelFactory;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
+import it.gov.innovazione.ndc.harvester.service.SemanticContentStatsService;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
 import it.gov.innovazione.ndc.repository.TripleStoreRepository;
 import org.apache.jena.rdf.model.ResourceFactory;
@@ -30,7 +31,8 @@ class SchemaPathProcessorTest {
     SemanticAssetMetadataRepository metadataRepository;
     @Mock
     TripleStoreRepository repository;
-
+    @Mock
+    SemanticContentStatsService semanticContentStatsService;
     @InjectMocks
     SchemaPathProcessor schemaPathProcessor;
 

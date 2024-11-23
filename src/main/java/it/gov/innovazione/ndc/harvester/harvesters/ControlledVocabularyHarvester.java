@@ -5,8 +5,10 @@ import it.gov.innovazione.ndc.eventhandler.event.ConfigService;
 import it.gov.innovazione.ndc.harvester.AgencyRepositoryService;
 import it.gov.innovazione.ndc.harvester.SemanticAssetType;
 import it.gov.innovazione.ndc.harvester.model.CvPath;
+import it.gov.innovazione.ndc.harvester.model.HarvesterStatsHolder;
 import it.gov.innovazione.ndc.harvester.model.Instance;
 import it.gov.innovazione.ndc.harvester.pathprocessors.ControlledVocabularyPathProcessor;
+import it.gov.innovazione.ndc.harvester.service.SemanticContentStatsService;
 import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
@@ -17,15 +19,20 @@ public class ControlledVocabularyHarvester extends BaseSemanticAssetHarvester<Cv
     private final AgencyRepositoryService agencyRepositoryService;
     private final ControlledVocabularyPathProcessor pathProcessor;
 
-    public ControlledVocabularyHarvester(AgencyRepositoryService agencyRepositoryService, ControlledVocabularyPathProcessor pathProcessor, NdcEventPublisher ndcEventPublisher, ConfigService configService) {
-        super(SemanticAssetType.CONTROLLED_VOCABULARY, ndcEventPublisher, configService);
+    public ControlledVocabularyHarvester(
+            AgencyRepositoryService agencyRepositoryService,
+            ControlledVocabularyPathProcessor pathProcessor,
+            NdcEventPublisher ndcEventPublisher,
+            ConfigService configService,
+            SemanticContentStatsService semanticContentStatsService) {
+        super(SemanticAssetType.CONTROLLED_VOCABULARY, ndcEventPublisher, configService, semanticContentStatsService);
         this.agencyRepositoryService = agencyRepositoryService;
         this.pathProcessor = pathProcessor;
     }
 
     @Override
-    protected void processPath(String repoUrl, CvPath path) {
-        pathProcessor.process(repoUrl, path);
+    protected HarvesterStatsHolder processPath(String repoUrl, CvPath path) {
+        return pathProcessor.process(repoUrl, path);
     }
 
     @Override

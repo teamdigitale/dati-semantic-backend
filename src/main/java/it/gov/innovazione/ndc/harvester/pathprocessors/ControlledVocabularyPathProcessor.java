@@ -4,6 +4,7 @@ import it.gov.innovazione.ndc.harvester.csv.CsvParser;
 import it.gov.innovazione.ndc.harvester.csv.CsvParser.CsvData;
 import it.gov.innovazione.ndc.harvester.model.ControlledVocabularyModel;
 import it.gov.innovazione.ndc.harvester.model.CvPath;
+import it.gov.innovazione.ndc.harvester.model.HarvesterStatsHolder;
 import it.gov.innovazione.ndc.harvester.model.Instance;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetModelFactory;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
@@ -44,8 +45,8 @@ public class ControlledVocabularyPathProcessor extends BaseSemanticAssetPathProc
     }
 
     @Override
-    protected void processWithModel(String repoUrl, CvPath path, ControlledVocabularyModel model) {
-        super.processWithModel(repoUrl, path, model);
+    protected HarvesterStatsHolder processWithModel(String repoUrl, CvPath path, ControlledVocabularyModel model) {
+        HarvesterStatsHolder harvesterStatsHolder = super.processWithModel(repoUrl, path, model);
 
         path.getCsvPath().ifPresent(p -> {
             String keyConcept = model.getKeyConcept();
@@ -64,6 +65,8 @@ public class ControlledVocabularyPathProcessor extends BaseSemanticAssetPathProc
 
             parseAndIndexCsv(vocabularyIdentifier, p);
         });
+
+        return harvesterStatsHolder;
     }
 
     @Override

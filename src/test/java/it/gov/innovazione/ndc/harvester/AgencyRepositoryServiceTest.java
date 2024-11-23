@@ -1,5 +1,6 @@
 package it.gov.innovazione.ndc.harvester;
 
+import it.gov.innovazione.ndc.eventhandler.NdcEventPublisher;
 import it.gov.innovazione.ndc.harvester.model.CvPath;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
 import it.gov.innovazione.ndc.harvester.scanners.ControlledVocabularyFolderScanner;
@@ -23,6 +24,7 @@ import static it.gov.innovazione.ndc.harvester.SemanticAssetType.ONTOLOGY;
 import static it.gov.innovazione.ndc.harvester.SemanticAssetType.SCHEMA;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -31,17 +33,20 @@ public class AgencyRepositoryServiceTest {
     FileUtils fileUtils;
     GitUtils gitUtils;
     AgencyRepositoryService agencyRepoService;
+    NdcEventPublisher eventPublisher;
 
     @BeforeEach
     public void setup() {
         fileUtils = mock(FileUtils.class);
+        eventPublisher = mock(NdcEventPublisher.class);
         when(fileUtils.getLowerCaseFileName(any())).thenCallRealMethod();
+        doNothing().when(eventPublisher).publishEvent(any(), any(), any(), any(), any());
         gitUtils = mock(GitUtils.class);
         OntologyFolderScanner ontologyScanner = new OntologyFolderScanner(fileUtils, OntologyFolderScannerProperties.forWords("aligns"));
         ControlledVocabularyFolderScanner cvScanner = new ControlledVocabularyFolderScanner(fileUtils, ControlledVocabularyFolderScannerProperties.forWords());
         SchemaFolderScanner schemaScanner = new SchemaFolderScanner(fileUtils);
         agencyRepoService = new AgencyRepositoryService(fileUtils, gitUtils, ontologyScanner,
-                cvScanner, schemaScanner, AgencyRepositoryServiceProperties.forWords("scriptR2RML"));
+                cvScanner, schemaScanner, AgencyRepositoryServiceProperties.forWords("scriptR2RML"), eventPublisher);
     }
 
     @Test
@@ -52,7 +57,7 @@ public class AgencyRepositoryServiceTest {
 
         assertThat(clonedTempDir).isEqualTo(Path.of("temp"));
         verify(fileUtils).createTempDirectory(TEMP_DIR_PREFIX);
-        verify(gitUtils).cloneRepo("someURI", new File("temp"), null);
+        verify(gitUtils).cloneRepoAndGetLastCommitDate("someURI", new File("temp"), null);
     }
 
     /**
