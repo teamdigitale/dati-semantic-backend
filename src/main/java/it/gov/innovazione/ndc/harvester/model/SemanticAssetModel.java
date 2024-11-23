@@ -10,4 +10,7 @@ public interface SemanticAssetModel {
     Model getRdfModel();
 
     SemanticAssetMetadata extractMetadata();
+
+    SemanticAssetModelValidationContext getValidationContext();
 }
+

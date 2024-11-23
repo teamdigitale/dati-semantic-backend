@@ -13,9 +13,12 @@ import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContext;
 import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContextUtils;
 import it.gov.innovazione.ndc.harvester.exception.SinglePathProcessingException;
 import it.gov.innovazione.ndc.harvester.harvesters.utils.PathUtils;
+import it.gov.innovazione.ndc.harvester.model.HarvesterStatsHolder;
 import it.gov.innovazione.ndc.harvester.model.Instance;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
+import it.gov.innovazione.ndc.harvester.service.SemanticContentStatsService;
 import it.gov.innovazione.ndc.model.harvester.Repository;
+import it.gov.innovazione.ndc.model.harvester.SemanticContentStats;
 import it.gov.innovazione.ndc.service.logging.HarvesterStage;
 import it.gov.innovazione.ndc.service.logging.LoggingContext;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +48,7 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
     private final SemanticAssetType type;
     private final NdcEventPublisher eventPublisher;
     private final ConfigService configService;
+    private final SemanticContentStatsService semanticContentStatsService;
 
     @Override
     public SemanticAssetType getType() {
@@ -70,7 +74,8 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
 
         for (P path : paths) {
             try {
-                processPath(repository.getUrl(), path);
+                HarvesterStatsHolder harvesterStatsHolder = processPath(repository.getUrl(), path);
+                semanticContentStatsService.updateStats(harvesterStatsHolder);
                 log.debug("Path {} processed correctly for {}", path, type);
             } catch (SinglePathProcessingException e) {
                 boolean isInfrastuctureError = checkInfrastructureError(e);
@@ -112,6 +117,7 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
                 }
             }
         }
+        semanticContentStatsService.saveStats();
     }
 
     private boolean checkInfrastructureError(SinglePathProcessingException e) {
@@ -190,7 +196,7 @@ public abstract class BaseSemanticAssetHarvester<P extends SemanticAssetPath> im
         // by default nothing specific
     }
 
-    protected abstract void processPath(String repoUrl, P path);
+    protected abstract HarvesterStatsHolder processPath(String repoUrl, P path);
 
     protected abstract List<P> scanForPaths(Path rootPath);
 }

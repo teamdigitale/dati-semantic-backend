@@ -175,6 +175,7 @@ jacocoTestCoverageVerification {
                     'it.gov.innovazione.ndc.eventhandler.*',
                     'it.gov.innovazione.ndc.harvester.service.RepositoryService',
                     'it.gov.innovazione.ndc.harvester.service.HarvesterRunService',
+                    'it.gov.innovazione.ndc.harvester.service.SemanticContentStatsService',
                     'it.gov.innovazione.ndc.harvester.SecurityUtils',
                     'it.gov.innovazione.ndc.*Exception',
                     'it.gov.innovazione.ndc.harvester.context.*',
@@ -195,7 +196,7 @@ jacocoTestCoverageVerification {
                     'it.gov.innovazione.ndc.repository.TripleStoreRepository',
                     'it.gov.innovazione.ndc.service.EventCleaner',
                     'it.gov.innovazione.ndc.service.TemplateService',
-                    'it.gov.innovazione.ndc.harvester.service.startupjob.TempEraserStartupJob',
+                    'it.gov.innovazione.ndc.harvester.service.startupjob.*',
                     'it.gov.innovazione.ndc.alerter.*'
             ]
         }

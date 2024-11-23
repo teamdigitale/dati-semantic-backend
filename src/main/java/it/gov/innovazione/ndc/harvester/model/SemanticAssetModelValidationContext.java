@@ -34,6 +34,13 @@ public class SemanticAssetModelValidationContext {
         return builder().build();
     }
 
+    public static ValidationContextStats difference(ValidationContextStats contextBefore, ValidationContextStats contextAfter) {
+        return ValidationContextStats.builder()
+                .errors(contextAfter.getErrors() - contextBefore.getErrors())
+                .warnings(contextAfter.getWarnings() - contextBefore.getWarnings())
+                .build();
+    }
+
     public SemanticAssetModelValidationContext withFieldName(String fieldName) {
         return toBuilder().fieldName(fieldName).build();
     }
@@ -106,5 +113,26 @@ public class SemanticAssetModelValidationContext {
 
     private enum ValidationContextType {
         ERROR, WARNING
+    }
+
+    @Data
+    @Builder
+    public static class ValidationContextStats {
+        private final int errors;
+        private final int warnings;
+
+        public static ValidationContextStats of(SemanticAssetModelValidationContext validationContext) {
+            return ValidationContextStats.builder()
+                    .errors(validationContext.getErrors().size())
+                    .warnings(validationContext.getWarnings().size())
+                    .build();
+        }
+
+        public static ValidationContextStats empty() {
+            return ValidationContextStats.builder()
+                    .errors(0)
+                    .warnings(0)
+                    .build();
+        }
     }
 }

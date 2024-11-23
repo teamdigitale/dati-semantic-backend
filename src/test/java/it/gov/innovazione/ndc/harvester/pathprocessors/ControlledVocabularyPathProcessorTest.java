@@ -8,6 +8,7 @@ import it.gov.innovazione.ndc.harvester.model.Instance;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetModelFactory;
 import it.gov.innovazione.ndc.harvester.model.index.RightsHolder;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
+import it.gov.innovazione.ndc.harvester.service.SemanticContentStatsService;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
 import it.gov.innovazione.ndc.repository.TripleStoreRepository;
 import it.gov.innovazione.ndc.service.VocabularyDataService;
@@ -44,6 +45,8 @@ class ControlledVocabularyPathProcessorTest {
     TripleStoreRepository tripleStoreRepository;
     @Mock
     SemanticAssetMetadataRepository metadataRepository;
+    @Mock
+    SemanticContentStatsService semanticContentStatsService;
     @Mock
     Model jenaModel;
 

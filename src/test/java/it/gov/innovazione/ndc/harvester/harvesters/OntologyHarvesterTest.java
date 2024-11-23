@@ -4,6 +4,7 @@ import it.gov.innovazione.ndc.eventhandler.event.ConfigService;
 import it.gov.innovazione.ndc.harvester.AgencyRepositoryService;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
 import it.gov.innovazione.ndc.harvester.pathprocessors.OntologyPathProcessor;
+import it.gov.innovazione.ndc.harvester.service.SemanticContentStatsService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -26,6 +27,8 @@ class OntologyHarvesterTest {
     OntologyPathProcessor pathProcessor;
     @Mock
     ConfigService configService;
+    @Mock
+    SemanticContentStatsService semanticContentStatsService;
     @InjectMocks
     OntologyHarvester harvester;
 

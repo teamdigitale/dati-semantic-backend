@@ -3,21 +3,17 @@ package it.gov.innovazione.ndc.harvester.service.startupjob;
 import it.gov.innovazione.ndc.harvester.service.HarvesterRunService;
 import it.gov.innovazione.ndc.harvester.util.GitUtils;
 import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
-import it.gov.innovazione.ndc.service.GithubService;
 import it.gov.innovazione.ndc.service.logging.LoggingContext;
 import it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger;
-import it.gov.innovazione.ndc.service.logging.NDCHarvesterLoggerUtils;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.Option;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
@@ -31,14 +27,12 @@ public class UpdateRevisionCommittedAt implements StartupJob {
 
     @Override
     public void run() {
-        NDCHarvesterLoggerUtils.setInitialContext(LoggingContext.builder()
-                .component("UpdateRevisionCommittedAt")
-                .build());
         List<HarvesterRun> harvesterRunsToUpdate = harvesterRunService.getAllRuns().stream()
                 .filter(harvesterRun -> isNull(harvesterRun.getRevisionCommittedAt()))
                 .toList();
         NDCHarvesterLogger.logApplicationInfo(
                 LoggingContext.builder()
+                        .component("UpdateRevisionCommittedAt")
                         .message(String.format("Found %d harvester runs to update", harvesterRunsToUpdate.size()))
                         .build());
         Map<Pair<String, String>, List<HarvesterRun>> byRepositoryAndRevision = harvesterRunsToUpdate.stream()
@@ -49,6 +43,16 @@ public class UpdateRevisionCommittedAt implements StartupJob {
                 .flatMap(List::stream)
                 .forEach(this::logAndUpdate);
 
+    }
+
+    @Scheduled(cron = "${ndc.harvester.update-revision-committed-at.cron}")
+    public void scheduledRun() {
+        NDCHarvesterLogger.logApplicationInfo(
+                LoggingContext.builder()
+                        .component("UpdateRevisionCommittedAt")
+                        .message("Scheduled run of UpdateRevisionCommittedAt")
+                        .build());
+        run();
     }
 
     private void logAndUpdate(HarvesterRun harvesterRun) {
