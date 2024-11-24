@@ -56,6 +56,35 @@ public class SemanticAssetsController implements SemanticAssetsApi {
 
     }
 
+    @Operation(tags = {"semantic-assets"},
+            summary = "Retrieves the statistics",
+            description = "Retrieves the statistics of the semantic assets.",
+            operationId = "getStats",
+            responses = {@ApiResponse(responseCode = "200", description = "OK", content = {
+                @Content(mediaType = "application/json", schema = @Schema(implementation = SemanticAssetStats.class))
+            })})
+    @GetMapping(value = "/semantic-assets/stats", produces = {"application/json"})
+    SemanticAssetStats getStats() {
+        return SemanticAssetStats.builder()
+                .totalStats(SemanticAssetStats.SemanticAssetTypeStats.builder()
+                        .current(118)
+                        .lastYear(115)
+                        .build())
+                .controlledVocabularyStats(SemanticAssetStats.SemanticAssetTypeStats.builder()
+                        .current(120)
+                        .lastYear(118)
+                        .build())
+                .ontologyStats(SemanticAssetStats.SemanticAssetTypeStats.builder()
+                        .current(100)
+                        .lastYear(98)
+                        .build())
+                .schemaStats(SemanticAssetStats.SemanticAssetTypeStats.builder()
+                        .current(80)
+                        .lastYear(80)
+                        .build())
+                .build();
+    }
+
     @Override
     public ResponseEntity<SearchResult> search(
             String q,

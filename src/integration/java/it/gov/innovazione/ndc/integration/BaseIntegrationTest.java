@@ -5,6 +5,7 @@ import it.gov.innovazione.ndc.harvester.AgencyRepositoryService;
 import it.gov.innovazione.ndc.harvester.HarvesterService;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.gov.innovazione.ndc.harvester.service.RepositoryService;
+import it.gov.innovazione.ndc.harvester.service.SemanticContentStatsService;
 import it.gov.innovazione.ndc.harvester.service.startupjob.StartupJobsRunner;
 import it.gov.innovazione.ndc.repository.TripleStoreProperties;
 import org.elasticsearch.client.RestClient;
@@ -66,6 +67,9 @@ public class BaseIntegrationTest {
     @SpyBean
     RepositoryService repositoryService;
 
+    @SpyBean
+    SemanticContentStatsService semanticContentStatsService;
+
     @Autowired
     TripleStoreProperties virtuosoProps;
 
@@ -96,6 +100,7 @@ public class BaseIntegrationTest {
         doReturn(cloneDir).when(agencyRepositoryService).cloneRepo(REPO_URL, null);
         doNothing().when(agencyRepositoryService).removeClonedRepo(cloneDir);
         doNothing().when(repositoryService).storeRightsHolders(any(), any());
+        doNothing().when(semanticContentStatsService).saveStats();
 
         harvesterService.harvest(asRepo(REPO_URL));
 

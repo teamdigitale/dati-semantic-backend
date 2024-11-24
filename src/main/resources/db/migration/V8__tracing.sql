@@ -1,0 +1,2 @@
+alter table HARVESTER_RUN
+    add REVISION_COMMITTED_AT TIMESTAMP null;
