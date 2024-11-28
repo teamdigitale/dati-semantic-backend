@@ -244,6 +244,8 @@ spotbugsTest {
 dependencyCheck {
     nvd {
         apiKey = System.getProperty("nvdApiKey")
+        System.out.print("NVD API is set: ")
+        System.out.println(null != apiKey)
         delay = 16000
     }
 //set up a quality gate for vulnerabilities with high severity level:
