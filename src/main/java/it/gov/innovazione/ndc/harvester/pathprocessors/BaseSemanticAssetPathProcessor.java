@@ -1,5 +1,12 @@
 package it.gov.innovazione.ndc.harvester.pathprocessors;
 
+import static it.gov.innovazione.ndc.harvester.model.SemanticAssetModelValidationContext.NO_VALIDATION;
+import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logInfrastructureError;
+import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticError;
+import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticInfo;
+import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticWarn;
+import static java.util.stream.Collectors.toList;
+
 import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContext;
 import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContextUtils;
 import it.gov.innovazione.ndc.harvester.exception.SinglePathProcessingException;
@@ -15,20 +22,12 @@ import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
 import it.gov.innovazione.ndc.repository.TripleStoreRepository;
 import it.gov.innovazione.ndc.service.logging.HarvesterStage;
 import it.gov.innovazione.ndc.service.logging.LoggingContext;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.jena.rdf.model.Resource;
-
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
-
-import static it.gov.innovazione.ndc.harvester.model.SemanticAssetModelValidationContext.NO_VALIDATION;
-import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logInfrastructureError;
-import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticError;
-import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticInfo;
-import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticWarn;
-import static java.util.stream.Collectors.toList;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.jena.rdf.model.Resource;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -51,7 +50,7 @@ public abstract class BaseSemanticAssetPathProcessor<P extends SemanticAssetPath
         SemanticAssetModelValidationContext.ValidationContextStats statsBefore = getStats(model);
         SemanticAssetMetadata meta = indexMetadataForSearch(model);
         SemanticAssetModelValidationContext.ValidationContextStats statsAfter = getStats(model);
-        persistModelToTripleStore(repoUrl, path, model);
+        persistModelToTripleStore(repoUrl, model);
         collectRightsHolderInContext(repoUrl, model);
         return HarvesterStatsHolder.builder()
                 .metadata(meta)
@@ -98,10 +97,9 @@ public abstract class BaseSemanticAssetPathProcessor<P extends SemanticAssetPath
         try {
             log.info("Processing path {}", path);
 
-            log.debug("Loading model");
+            log.debug("Loading model from {}", path);
             M model = loadModel(path.getTtlPath(), repoUrl);
 
-            log.debug("Extracting main resource");
             Resource resource = model.getMainResource();
             log.info("Found resource {}", resource);
 
@@ -152,15 +150,15 @@ public abstract class BaseSemanticAssetPathProcessor<P extends SemanticAssetPath
     protected void postProcessMetadata(SemanticAssetMetadata metadata) {
         if (Objects.nonNull(metadata)) {
             metadata.setKeyClassesLabels(
-                    Optional.ofNullable(metadata)
+                    Optional.of(metadata)
                             .map(SemanticAssetMetadata::getKeyClasses)
                             .orElse(Collections.emptyList()).stream()
                             .map(NodeSummary::getSummary)
-                            .collect(toList()));
+                            .toList());
         }
     }
 
-    private void persistModelToTripleStore(String repoUrl, P path, M model) {
+    private void persistModelToTripleStore(String repoUrl, M model) {
         log.debug("Storing RDF content for {} in Virtuoso", model.getMainResource());
         try {
             tripleStoreRepository.save(repoUrl, model.getRdfModel());

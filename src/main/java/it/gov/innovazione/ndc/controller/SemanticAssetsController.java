@@ -1,5 +1,7 @@
 package it.gov.innovazione.ndc.controller;
 
+import static it.gov.innovazione.ndc.gen.dto.Direction.ASC;
+
 import com.github.jsonldjava.shaded.com.google.common.base.CaseFormat;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -15,6 +17,12 @@ import it.gov.innovazione.ndc.gen.dto.Theme;
 import it.gov.innovazione.ndc.harvester.model.index.RightsHolder;
 import it.gov.innovazione.ndc.harvester.service.RepositoryService;
 import it.gov.innovazione.ndc.service.SemanticAssetSearchService;
+import java.net.URI;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -22,91 +30,38 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.net.URI;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import static it.gov.innovazione.ndc.gen.dto.Direction.ASC;
-
 @RequiredArgsConstructor
 @RestController
 public class SemanticAssetsController implements SemanticAssetsApi {
     private final SemanticAssetSearchService searchService;
     private final RepositoryService repositoryService;
 
-    /**
-     * GET /semantic-assets/rights-holders
-     * Retrieves the rights holders of the semantic assets.
-     *
-     * @return OK (status code 200)
-     */
-    @Operation(tags = {"semantic-assets"},
-            summary = "Retrieves the rights holders",
-            description = "Retrieves the rights holders of the semantic assets.",
-            operationId = "getRightsHolders",
-            responses = {@ApiResponse(responseCode = "200", description = "OK", content = {
-                @Content(mediaType = "application/json", schema = @Schema(implementation = RightsHolder.class))
-            })})
-    @GetMapping(value = "/semantic-assets/rights-holders", produces = {"application/json"})
-    List<RightsHolder> getRightsHolders() {
+  /**
+   * GET /semantic-assets/rights-holders Retrieves the rights holders of the semantic assets.
+   *
+   * @return OK (status code 200)
+   */
+  @Operation(
+      tags = {"semantic-assets"},
+      summary = "Retrieves the rights holders",
+      description = "Retrieves the rights holders of the semantic assets.",
+      operationId = "getRightsHolders",
+      responses = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "OK",
+            content = {
+              @Content(
+                  mediaType = "application/json",
+                  schema = @Schema(implementation = RightsHolder.class))
+            })
+      })
+  @GetMapping(
+      value = "/semantic-assets/rights-holders",
+      produces = {"application/json"})
+  List<RightsHolder> getRightsHolders() {
         return repositoryService.getRightsHolders();
 
-    }
-
-    @Operation(tags = {"semantic-assets"},
-            summary = "Retrieves the statistics",
-            description = "Retrieves the statistics of the semantic assets.",
-            operationId = "getStats",
-            responses = {@ApiResponse(responseCode = "200", description = "OK", content = {
-                @Content(mediaType = "application/json", schema = @Schema(implementation = SemanticAssetStats.class))
-            })})
-    @GetMapping(value = "/semantic-assets/stats", produces = {"application/json"})
-    SemanticAssetStats getStats() {
-        return SemanticAssetStats.builder()
-                .total(SemanticAssetStats.SemanticAssetTypeStats.builder()
-                        .current(118)
-                        .lastYear(115)
-                        .status(SemanticAssetStats.StatusStat.builder()
-                                .archived(0.1)
-                                .published(0.8)
-                                .closedAccess(0.1)
-                                .draft(0.0)
-                                .build())
-                        .build())
-                .controlledVocabulary(SemanticAssetStats.SemanticAssetTypeStats.builder()
-                        .current(120)
-                        .lastYear(118)
-                        .status(SemanticAssetStats.StatusStat.builder()
-                                .archived(0.1)
-                                .published(0.8)
-                                .closedAccess(0.1)
-                                .draft(0.0)
-                                .build())
-                        .build())
-                .ontology(SemanticAssetStats.SemanticAssetTypeStats.builder()
-                        .current(100)
-                        .lastYear(98)
-                        .status(SemanticAssetStats.StatusStat.builder()
-                                .archived(0.1)
-                                .published(0.8)
-                                .closedAccess(0.1)
-                                .draft(0.0)
-                                .build())
-                        .build())
-                .schema(SemanticAssetStats.SemanticAssetTypeStats.builder()
-                        .current(80)
-                        .lastYear(80)
-                        .status(SemanticAssetStats.StatusStat.builder()
-                                .archived(0.1)
-                                .published(0.8)
-                                .closedAccess(0.1)
-                                .draft(0.0)
-                                .build())
-                        .build())
-                .build();
     }
 
     @Override
