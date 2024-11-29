@@ -1,15 +1,14 @@
 package it.gov.innovazione.ndc.harvester.model;
 
 import it.gov.innovazione.ndc.validator.model.ValidationOutcome;
-import lombok.Builder;
-import lombok.Data;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.Builder;
+import lombok.Data;
 
 @Data
 @Builder(toBuilder = true)
@@ -74,7 +73,7 @@ public class SemanticAssetModelValidationContext {
                 .collect(Collectors.toList());
     }
 
-    public void addValidationException(RuntimeException invalidModelException) {
+    public synchronized void addValidationException(RuntimeException invalidModelException) {
         if (validationContextType == ValidationContextType.ERROR) {
             if (getNormalizedErrors().contains(invalidModelException.getMessage())) {
                 return;

@@ -4,7 +4,7 @@ plugins {
     id 'java'
     id 'checkstyle'
     id 'jacoco'
-    id 'org.owasp.dependencycheck' version '8.2.1'
+    id 'org.owasp.dependencycheck' version '11.1.0'
     id 'com.github.spotbugs' version '6.0.19'
     id 'org.openapi.generator' version '7.7.0'
     id 'idea'
@@ -242,6 +242,12 @@ spotbugsTest {
 }
 
 dependencyCheck {
+    nvd {
+        apiKey = System.getProperty("nvdApiKey")
+        System.out.print("NVD API is set: ")
+        System.out.println(null != apiKey)
+        delay = 16000
+    }
 //set up a quality gate for vulnerabilities with high severity level:
 //let's consider that a vulnerability has a high severity level if its CVSS score is higher than 7
 //the build is going to fail if vulnerabilities with high severity level found

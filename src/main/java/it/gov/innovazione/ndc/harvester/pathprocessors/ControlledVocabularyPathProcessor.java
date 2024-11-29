@@ -1,5 +1,8 @@
 package it.gov.innovazione.ndc.harvester.pathprocessors;
 
+import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticError;
+import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticInfo;
+
 import it.gov.innovazione.ndc.harvester.csv.CsvParser;
 import it.gov.innovazione.ndc.harvester.csv.CsvParser.CsvData;
 import it.gov.innovazione.ndc.harvester.model.ControlledVocabularyModel;
@@ -15,15 +18,11 @@ import it.gov.innovazione.ndc.service.VocabularyDataService;
 import it.gov.innovazione.ndc.service.VocabularyIdentifier;
 import it.gov.innovazione.ndc.service.logging.HarvesterStage;
 import it.gov.innovazione.ndc.service.logging.LoggingContext;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticError;
-import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticInfo;
 
 @Component
 @Slf4j
@@ -53,7 +52,7 @@ public class ControlledVocabularyPathProcessor extends BaseSemanticAssetPathProc
             String agencyId = model.getAgencyId().getIdentifier();
             VocabularyIdentifier vocabularyIdentifier = new VocabularyIdentifier(agencyId, keyConcept);
 
-            logSemanticError(LoggingContext.builder()
+            logSemanticInfo(LoggingContext.builder()
                     .stage(HarvesterStage.PROCESS_RESOURCE)
                     .harvesterStatus(HarvesterRun.Status.RUNNING)
                     .message("Indexing CSV for " + vocabularyIdentifier)

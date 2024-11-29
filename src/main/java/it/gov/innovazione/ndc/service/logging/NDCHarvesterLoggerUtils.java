@@ -1,14 +1,13 @@
 package it.gov.innovazione.ndc.service.logging;
 
-import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 @Slf4j
@@ -76,6 +75,4 @@ public class NDCHarvesterLoggerUtils {
                 .map(value -> setter.apply(builder, value))
                 .orElse(builder);
     }
-
-
 }

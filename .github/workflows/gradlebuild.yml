@@ -52,7 +52,7 @@ jobs:
       - name: checkout code
         uses: actions/checkout@v2
       - name: Dependency Check
-        run: ./gradlew dependencyCheckAnalyze
+        run: ./gradlew dependencyCheckAnalyze -DnvdApiKey="${{ secrets.NVD_API_KEY }}"
 
   publish:
     runs-on: ubuntu-latest
