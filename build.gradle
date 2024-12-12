@@ -4,7 +4,7 @@ plugins {
     id 'java'
     id 'checkstyle'
     id 'jacoco'
-    id 'org.owasp.dependencycheck' version '11.1.0'
+    id 'org.owasp.dependencycheck' version '11.1.1'
     id 'com.github.spotbugs' version '6.0.19'
     id 'org.openapi.generator' version '7.7.0'
     id 'idea'
