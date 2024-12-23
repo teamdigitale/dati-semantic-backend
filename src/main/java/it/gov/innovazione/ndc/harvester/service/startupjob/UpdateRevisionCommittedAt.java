@@ -1,22 +1,21 @@
 package it.gov.innovazione.ndc.harvester.service.startupjob;
 
+import static java.util.Objects.isNull;
+
 import it.gov.innovazione.ndc.harvester.service.HarvesterRunService;
 import it.gov.innovazione.ndc.harvester.util.GitUtils;
 import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import it.gov.innovazione.ndc.service.logging.LoggingContext;
 import it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger;
-import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static java.util.Objects.isNull;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -35,8 +34,14 @@ public class UpdateRevisionCommittedAt implements StartupJob {
                         .component("UpdateRevisionCommittedAt")
                         .message(String.format("Found %d harvester runs to update", harvesterRunsToUpdate.size()))
                         .build());
-        Map<Pair<String, String>, List<HarvesterRun>> byRepositoryAndRevision = harvesterRunsToUpdate.stream()
-                .collect(Collectors.groupingBy(harvesterRun -> Pair.of(harvesterRun.getRepositoryUrl(), harvesterRun.getRevision())));
+    Map<Pair<String, String>, List<HarvesterRun>> byRepositoryAndRevision =
+        harvesterRunsToUpdate.stream()
+            .filter(this::hasNoRevisionCommittedAt)
+            .filter(this::isSuccess)
+            .collect(
+                Collectors.groupingBy(
+                    harvesterRun ->
+                        Pair.of(harvesterRun.getRepositoryUrl(), harvesterRun.getRevision())));
 
         byRepositoryAndRevision.entrySet().stream()
                 .map(this::withUpdatedRevisionCommittedAt)
@@ -44,6 +49,14 @@ public class UpdateRevisionCommittedAt implements StartupJob {
                 .forEach(this::logAndUpdate);
 
     }
+
+    private boolean hasNoRevisionCommittedAt(HarvesterRun harvesterRun) {
+        return isNull(harvesterRun.getRevisionCommittedAt());
+    }
+
+    private boolean isSuccess(HarvesterRun harvesterRun) {
+    return harvesterRun.getStatus() == HarvesterRun.Status.SUCCESS;
+  }
 
     @Scheduled(cron = "${ndc.harvester.update-revision-committed-at.cron}")
     public void scheduledRun() {
