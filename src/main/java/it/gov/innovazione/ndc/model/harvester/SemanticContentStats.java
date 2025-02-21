@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Data
 @Builder
@@ -22,4 +24,25 @@ public class SemanticContentStats {
     private final boolean hasErrors;
     private final boolean hasWarnings;
     private final List<String> status;
+
+    public String getStatusType() {
+        Set<String> lowerCaseStatus = status.stream()
+                .map(String::toLowerCase)
+                .collect(Collectors.toSet());
+        if (lowerCaseStatus.contains("archived")) {
+            return "Archiviato";
+        } else if (lowerCaseStatus.contains("catalogued") && lowerCaseStatus.contains("published")) {
+            return "Stabile";
+        } else if (lowerCaseStatus.contains("closed access")) {
+            return "Accesso Ristretto";
+        } else if (lowerCaseStatus.contains("initial draft") ||
+                lowerCaseStatus.contains("draft") ||
+                lowerCaseStatus.contains("final draft") ||
+                lowerCaseStatus.contains("intermediate draft") ||
+                lowerCaseStatus.contains("submitted")) {
+            return "Bozza";
+        }
+        return "unknown";
+    }
+
 }

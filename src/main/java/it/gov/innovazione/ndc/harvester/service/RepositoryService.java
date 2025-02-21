@@ -22,6 +22,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticInfo;
@@ -39,20 +40,20 @@ public class RepositoryService {
 
     private static final String QUERY_GET_ALL =
             "SELECT "
-            + "ID, "
-            + "URL, "
-            + "NAME, "
-            + "DESCRIPTION, "
-            + "OWNER, "
-            + "ACTIVE, "
-            + "CREATED, "
-            + "CREATED_BY, "
-            + "UPDATED, "
-            + "UPDATED_BY, "
-            + "MAX_FILE_SIZE_BYTES, "
-            + "CONFIG, "
-            + "RIGHTS_HOLDER "
-            + "FROM REPOSITORY";
+                    + "ID, "
+                    + "URL, "
+                    + "NAME, "
+                    + "DESCRIPTION, "
+                    + "OWNER, "
+                    + "ACTIVE, "
+                    + "CREATED, "
+                    + "CREATED_BY, "
+                    + "UPDATED, "
+                    + "UPDATED_BY, "
+                    + "MAX_FILE_SIZE_BYTES, "
+                    + "CONFIG, "
+                    + "RIGHTS_HOLDER "
+                    + "FROM REPOSITORY";
 
     private final JdbcTemplate jdbcTemplate;
     private final ObjectMapper objectMapper;
@@ -127,17 +128,17 @@ public class RepositoryService {
     private void save(Repository repo) {
         log.info("Saving repository {}", repo);
         String query = "INSERT INTO REPOSITORY ("
-                       + "ID, "
-                       + "URL, "
-                       + "NAME, "
-                       + "DESCRIPTION, "
-                       + "OWNER, "
-                       + "ACTIVE, "
-                       + "CREATED, "
-                       + "CREATED_BY, "
-                       + "UPDATED, "
-                       + "UPDATED_BY, "
-                       + "MAX_FILE_SIZE_BYTES) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                + "ID, "
+                + "URL, "
+                + "NAME, "
+                + "DESCRIPTION, "
+                + "OWNER, "
+                + "ACTIVE, "
+                + "CREATED, "
+                + "CREATED_BY, "
+                + "UPDATED, "
+                + "UPDATED_BY, "
+                + "MAX_FILE_SIZE_BYTES) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(query,
                 repo.getId(),
                 repo.getUrl(),
@@ -180,7 +181,7 @@ public class RepositoryService {
                         startsWithIgnoreCase(
                                 repo.getUrl(),
                                 url)
-                        || startsWithIgnoreCase(
+                                || startsWithIgnoreCase(
                                 url,
                                 repo.getUrl()));
 
@@ -191,17 +192,17 @@ public class RepositoryService {
         log.info("Creating repository {}", url);
 
         String query = "INSERT INTO REPOSITORY ("
-                       + "ID, "
-                       + "URL, "
-                       + "NAME, "
-                       + "DESCRIPTION, "
-                       + "OWNER, "
-                       + "ACTIVE, "
-                       + "CREATED, "
-                       + "CREATED_BY, "
-                       + "UPDATED, "
-                       + "UPDATED_BY,"
-                       + "MAX_FILE_SIZE_BYTES) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                + "ID, "
+                + "URL, "
+                + "NAME, "
+                + "DESCRIPTION, "
+                + "OWNER, "
+                + "ACTIVE, "
+                + "CREATED, "
+                + "CREATED_BY, "
+                + "UPDATED, "
+                + "UPDATED_BY,"
+                + "MAX_FILE_SIZE_BYTES) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         jdbcTemplate.update(query,
                 RepositoryUtils.generateId(),
@@ -226,12 +227,12 @@ public class RepositoryService {
         log.info("Updating repository {} using name={}, description={}, maxFileSizeBytes={}",
                 id, loadedRepo.getName(), loadedRepo.getDescription(), loadedRepo.getMaxFileSizeBytes());
         String query = "UPDATE REPOSITORY SET "
-                       + "NAME = ?, "
-                       + "DESCRIPTION = ?, "
-                       + "UPDATED = ?, "
-                       + "UPDATED_BY = ?, "
-                       + "MAX_FILE_SIZE_BYTES = ? "
-                       + "WHERE ID = ?";
+                + "NAME = ?, "
+                + "DESCRIPTION = ?, "
+                + "UPDATED = ?, "
+                + "UPDATED_BY = ?, "
+                + "MAX_FILE_SIZE_BYTES = ? "
+                + "WHERE ID = ?";
         return jdbcTemplate.update(query,
                 loadedRepo.getName(),
                 loadedRepo.getDescription(),
@@ -244,10 +245,10 @@ public class RepositoryService {
     public int delete(String id, Principal principal) {
         log.info("Deleting repository {}", id);
         String query = "UPDATE REPOSITORY SET "
-                       + "ACTIVE = ?, "
-                       + "UPDATED = ?, "
-                       + "UPDATED_BY = ? "
-                       + "WHERE ID = ?";
+                + "ACTIVE = ?, "
+                + "UPDATED = ?, "
+                + "UPDATED_BY = ? "
+                + "WHERE ID = ?";
         return jdbcTemplate.update(query,
                 false,
                 java.sql.Timestamp.from(java.time.Instant.now()),
@@ -258,13 +259,13 @@ public class RepositoryService {
     public int reactivate(String url, String name, String description, Long maxFileSizeBytes, Principal principal) {
         log.info("Reactivating repository {}", url);
         String query = "UPDATE REPOSITORY SET "
-                       + "ACTIVE = ?, "
-                       + "NAME = ?, "
-                       + "DESCRIPTION = ?, "
-                       + "MAX_FILE_SIZE_BYTES = ?, "
-                       + "UPDATED = ?, "
-                       + "UPDATED_BY = ? "
-                       + "WHERE URL = ?";
+                + "ACTIVE = ?, "
+                + "NAME = ?, "
+                + "DESCRIPTION = ?, "
+                + "MAX_FILE_SIZE_BYTES = ?, "
+                + "UPDATED = ?, "
+                + "UPDATED_BY = ? "
+                + "WHERE URL = ?";
         return jdbcTemplate.update(query,
                 true,
                 name,
@@ -277,10 +278,10 @@ public class RepositoryService {
 
     @SneakyThrows
     public void storeRightsHolders(Repository repository, Map<String, Map<String, String>> rightsHolders) {
-        log.info("Storing {} rights holders for repository {}", rightsHolders.keySet().size(), repository);
+        log.info("Storing {} rights holders for repository {}", rightsHolders.size(), repository);
         String query = "UPDATE REPOSITORY SET "
-                       + "RIGHTS_HOLDER = ? "
-                       + "WHERE ID = ?";
+                + "RIGHTS_HOLDER = ? "
+                + "WHERE ID = ?";
         jdbcTemplate.update(query,
                 objectMapper.writeValueAsString(rightsHolders),
                 repository.getId());
@@ -309,11 +310,46 @@ public class RepositoryService {
                 .collect(Collectors.toList());
     }
 
+    public List<RightsHolder> getRightHoldersWithSingleName() {
+        return getActiveRepos().stream()
+                .map(Repository::getRightsHolders)
+                .map(Map::entrySet)
+                .flatMap(Collection::stream)
+                .collect(groupingBy(
+                        entry -> entry.getKey().toLowerCase(),
+                        mapping(
+                                Map.Entry::getValue,
+                                toList())))
+                .entrySet().stream()
+                .map(entry -> withOnlyDefaultLang(RightsHolder.builder()
+                        .identifier(entry.getKey())
+                        .name(entry.getValue().get(0))
+                        .build()))
+                .toList();
+    }
+
     private RightsHolder withDefaultLangIfNecessary(RightsHolder rightsHolder) {
-        if (containsSuitableLang(rightsHolder)) {
+        if (containsSuitableLang(rightsHolder, Set.of("it", "en"))) {
             return rightsHolder;
         }
 
+        return getRightsHolderWithDefaultName(rightsHolder);
+    }
+
+    private RightsHolder withOnlyDefaultLang(RightsHolder rightsHolder) {
+        for (String lang : List.of("it", "en")) {
+            if (containsSuitableLang(rightsHolder, Set.of(lang))) {
+                return RightsHolder.builder()
+                        .identifier(rightsHolder.getIdentifier())
+                        .name(Collections.singletonMap("DEFAULT", rightsHolder.getName().get(lang)))
+                        .build();
+            }
+        }
+
+        return getRightsHolderWithDefaultName(rightsHolder);
+    }
+
+    private RightsHolder getRightsHolderWithDefaultName(RightsHolder rightsHolder) {
         Map<String, String> names = rightsHolder.getName();
 
         String name = names
@@ -330,13 +366,13 @@ public class RepositoryService {
                 .build();
     }
 
-    private boolean containsSuitableLang(RightsHolder rightsHolder) {
+    private boolean containsSuitableLang(RightsHolder rightsHolder, Set<String> langs) {
         return Optional.ofNullable(rightsHolder.getName())
                 .map(Map::keySet)
                 .orElse(emptySet())
                 .stream()
                 .map(String::toLowerCase)
-                .anyMatch(lang -> lang.equals("en") || lang.equals("it"));
+                .anyMatch(langs::contains);
     }
 
 }
