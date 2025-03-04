@@ -53,19 +53,7 @@ public class SemanticContentStatsService {
                            SCS.MODIFIED_ON,
                            SCS.HAS_ERRORS,
                            SCS.HAS_WARNINGS,
-                           CASE
-                               WHEN JSON_CONTAINS(lower(SCS.STATUS), '\\"archived\\"') THEN 'Archiviato'
-                               WHEN JSON_CONTAINS(lower(SCS.STATUS), '\\"catalogued\\"') || JSON_CONTAINS(lower(SCS.STATUS), '\\"published\\"')
-                                   THEN 'Stabile'
-                               WHEN JSON_CONTAINS(lower(SCS.STATUS), '\\"closed access\\"') THEN 'Accesso Ristretto'
-                               WHEN JSON_CONTAINS(lower(SCS.STATUS), '\\"initial draft\\"') ||
-                                    JSON_CONTAINS(lower(SCS.STATUS), '\\"draft\\"') ||
-                                    JSON_CONTAINS(lower(SCS.STATUS), '\\"final draft\\"') ||
-                                    JSON_CONTAINS(lower(SCS.STATUS), '\\"intermediate draft\\"') ||
-                                    JSON_CONTAINS(lower(SCS.STATUS), '\\"submitted\\"')
-                                   THEN 'Bozza'
-                               ELSE 'unknown'
-                               END as STATUS_TYPE
+                           SCS.STATUS as STATUS_TYPE
                     from HARVESTER_RUN HR
                              left join SEMANTIC_CONTENT_STATS SCS on HR.ID = SCS.HARVESTER_RUN_ID
                     where HR.STATUS = 'SUCCESS'""";
