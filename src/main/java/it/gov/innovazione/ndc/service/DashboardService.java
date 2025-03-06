@@ -1,5 +1,6 @@
 package it.gov.innovazione.ndc.service;
 
+import it.gov.innovazione.ndc.controller.AggregateDashboardResponse;
 import it.gov.innovazione.ndc.controller.date.DateParameter;
 import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import it.gov.innovazione.ndc.model.harvester.Repository;
@@ -20,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Comparator.comparing;
 import static java.util.function.BinaryOperator.maxBy;
@@ -32,6 +34,20 @@ import static java.util.stream.Collectors.toMap;
 public class DashboardService {
 
     private final DashboardRepo dashboardRepo;
+
+    public static List<List<Object>> convertEntryToRow(Map.Entry<LocalDate, Map<List<String>, Long>> entry, Function<LocalDate, String> dateFormatter) {
+        List<List<Object>> result = new ArrayList<>();
+        for (Map.Entry<List<String>, Long> entries : entry.getValue().entrySet()) {
+            List<Object> row = new ArrayList<>();
+            row.add(dateFormatter.apply(entry.getKey()));
+            for (int i = 0; i < entries.getKey().size(); i++) {
+                row.add(entries.getKey().get(i));
+            }
+            row.add(entries.getValue());
+            result.add(row);
+        }
+        return result;
+    }
 
     public Map<List<String>, Long> disaggregate(
             List<DimensionalItem> dimensionalItems,
@@ -78,7 +94,7 @@ public class DashboardService {
                         maxBy(comparing(HarvesterRun::getStartedAt))));
     }
 
-    public Object getAggregateData(DateParameter dateParams, List<DimensionalItem> dimensionalItems, List<Filter> filters) {
+    public AggregateDashboardResponse getAggregateData(DateParameter dateParams, List<DimensionalItem> dimensionalItems, List<Filter> filters) {
         List<LocalDate> dates = dateParams.getDates();
 
         Map<LocalDate, List<SemanticContentStats>> statsByDate = getSnapshotAt(dates);
@@ -92,13 +108,26 @@ public class DashboardService {
                                         entry.getValue()))),
                 dates);
 
-        return byDate
+        List<List<Object>> data = byDate
                 .entrySet()
                 .stream()
                 .sorted(Map.Entry.comparingByKey())
                 .map(entry -> convertEntryToRow(entry, dateParams.getDateFormatter()))
                 .flatMap(List::stream)
                 .toList();
+
+        return AggregateDashboardResponse.builder()
+                .headers(
+                        Stream.of(
+                                        List.of("DATE"),
+                                        dimensionalItems.stream()
+                                                .map(DimensionalItem::name)
+                                                .toList(),
+                                        List.of("VAUE"))
+                                .flatMap(List::stream)
+                                .toList())
+                .rows(data)
+                .build();
     }
 
     private Map<LocalDate, Map<List<String>, Long>> withFilledGaps(Map<LocalDate, Map<List<String>, Long>> byDate, List<LocalDate> localDates) {
@@ -121,20 +150,6 @@ public class DashboardService {
             }
         }
         return withFilledGaps;
-    }
-
-    public static List<Object[]> convertEntryToRow(Map.Entry<LocalDate, Map<List<String>, Long>> entry, Function<LocalDate, String> dateFormatter) {
-        List<Object[]> result = new ArrayList<>();
-        for (Map.Entry<List<String>, Long> entries : entry.getValue().entrySet()) {
-            Object[] row = new Object[entries.getKey().size() + 2];
-            row[0] = dateFormatter.apply(entry.getKey());
-            for (int i = 0; i < entries.getKey().size(); i++) {
-                row[i + 1] = entries.getKey().get(i);
-            }
-            row[row.length - 1] = entries.getValue();
-            result.add(row);
-        }
-        return result;
     }
 
     @RequiredArgsConstructor

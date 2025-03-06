@@ -6,6 +6,7 @@ import it.gov.innovazione.ndc.eventhandler.event.HarvesterFinishedEvent;
 import it.gov.innovazione.ndc.eventhandler.event.HarvesterStartedEvent;
 import it.gov.innovazione.ndc.harvester.service.HarvesterRunService;
 import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
+import it.gov.innovazione.ndc.service.DashboardRepo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,11 +20,11 @@ import java.util.Optional;
 @Slf4j
 public class HarvesterRunUpdatingHandler implements NdcEventHandler {
 
-    private final HarvesterRunService harvesterRunService;
-
     private static final Collection<Class<?>> SUPPORTED_EVENTS = Arrays.asList(
             HarvesterStartedEvent.class,
             HarvesterFinishedEvent.class);
+    private final HarvesterRunService harvesterRunService;
+    private final DashboardRepo dashboardRepo;
 
     @Override
     public boolean canHandle(NdcEventWrapper<?> event) {
@@ -57,6 +58,8 @@ public class HarvesterRunUpdatingHandler implements NdcEventHandler {
         if (saved != 1) {
             log.error("*** HarvesterRun not updated: {}", harvesterRun);
         }
+        log.info("invalidating stats cache");
+        dashboardRepo.invalidateCache();
     }
 
     private void handleHarvesterStartedEvent(NdcEventWrapper<HarvesterStartedEvent> event) {

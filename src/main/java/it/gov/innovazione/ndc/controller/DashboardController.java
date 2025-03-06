@@ -24,7 +24,7 @@ public class DashboardController {
     private final DateParserService dateParser;
 
     @GetMapping("aggregate")
-    public Object aggregate(
+    public AggregateDashboardResponse aggregate(
             @RequestParam(required = false) String date,
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate,
