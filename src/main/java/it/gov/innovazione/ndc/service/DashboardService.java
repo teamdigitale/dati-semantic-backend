@@ -8,6 +8,8 @@ import it.gov.innovazione.ndc.model.harvester.SemanticContentStats;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -18,6 +20,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -150,6 +153,29 @@ public class DashboardService {
             }
         }
         return withFilledGaps;
+    }
+
+    public List<SemanticContentStats> getRawData(LocalDate startDate, LocalDate endDate, List<Filter> filters) {
+        List<String> runIdWithinDates = dashboardRepo.getAllRuns().stream()
+                .filter(run -> run.getStartedAt().isAfter(
+                        Optional.ofNullable(startDate)
+                                .orElse(LocalDate.of(1970, 1, 1))
+                                .atStartOfDay(ZoneId.systemDefault()).toInstant()))
+                .filter(run -> run.getStartedAt().isBefore(
+                        Optional.ofNullable(endDate)
+                                .orElse(LocalDate.now())
+                                .atStartOfDay(ZoneId.systemDefault()).toInstant()))
+                .map(HarvesterRun::getId)
+                .toList();
+        return dashboardRepo.getAllStats().stream()
+                .filter(stats -> runIdWithinDates.contains(stats.getHarvesterRunId()))
+                .filter(stats -> filters.stream().allMatch(filter -> filter.test(stats)))
+                .map(scs -> Pair.of(
+                        dashboardRepo.getRunById().get(scs.getHarvesterRunId()).getStartedAt(),
+                        scs))
+                .sorted(comparing(Pair::getLeft))
+                .map(Pair::getRight)
+                .toList();
     }
 
     @RequiredArgsConstructor

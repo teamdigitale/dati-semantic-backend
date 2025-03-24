@@ -35,11 +35,11 @@ public class SemanticContentStats {
             return "Stabile";
         } else if (lowerCaseStatus.contains("closed access")) {
             return "Accesso Ristretto";
-        } else if (lowerCaseStatus.contains("initial draft") ||
-                lowerCaseStatus.contains("draft") ||
-                lowerCaseStatus.contains("final draft") ||
-                lowerCaseStatus.contains("intermediate draft") ||
-                lowerCaseStatus.contains("submitted")) {
+        } else if (lowerCaseStatus.contains("initial draft")
+                || lowerCaseStatus.contains("draft")
+                || lowerCaseStatus.contains("final draft")
+                || lowerCaseStatus.contains("intermediate draft")
+                || lowerCaseStatus.contains("submitted")) {
             return "Bozza";
         }
         return "unknown";
