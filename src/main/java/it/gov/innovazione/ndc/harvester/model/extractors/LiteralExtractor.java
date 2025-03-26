@@ -44,7 +44,7 @@ public class LiteralExtractor {
         return extract(mainResource, title, NO_VALIDATION);
     }
 
-    public static String extract(Resource resource, Property property, SemanticAssetModelValidationContext validationContext) {
+    public static String  extract(Resource resource, Property property, SemanticAssetModelValidationContext validationContext) {
         List<Statement> properties = resource.listProperties(property).toList();
         Optional<String> stringOptional = properties.stream()
                 .filter(s -> s.getObject().isLiteral())

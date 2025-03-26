@@ -1,10 +1,10 @@
 plugins {
-    id 'org.springframework.boot' version '3.3.5'
-    id 'io.spring.dependency-management' version '1.1.6'
+    id 'org.springframework.boot' version '3.4.4'
+    id 'io.spring.dependency-management' version '1.1.7'
     id 'java'
     id 'checkstyle'
     id 'jacoco'
-    id 'org.owasp.dependencycheck' version '11.1.1'
+    id 'org.owasp.dependencycheck' version '12.1.0'
     id 'com.github.spotbugs' version '6.0.19'
     id 'org.openapi.generator' version '7.7.0'
     id 'idea'
@@ -36,8 +36,6 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
 
-    implementation 'org.springframework:spring-web:6.1.12'
-
     runtimeOnly("org.springframework.boot:spring-boot-properties-migrator")
 
     implementation 'org.mapstruct:mapstruct:1.5.5.Final'
@@ -64,6 +62,8 @@ dependencies {
     implementation 'io.swagger.core.v3:swagger-annotations:2.2.22'
     implementation 'org.mapstruct:mapstruct:1.4.2.Final'
 
+    implementation 'com.opencsv:opencsv:5.10'
+
     implementation 'org.eclipse.parsson:parsson:1.0.5'
 
     runtimeOnly 'com.mysql:mysql-connector-j:8.2.0'
@@ -76,8 +76,8 @@ dependencies {
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
 
     compileOnly "com.github.spotbugs:spotbugs-annotations:${spotbugs.toolVersion.get()}"
-	testCompileOnly "com.github.spotbugs:spotbugs-annotations:${spotbugs.toolVersion.get()}"
-	integrationCompileOnly "com.github.spotbugs:spotbugs-annotations:${spotbugs.toolVersion.get()}"
+    testCompileOnly "com.github.spotbugs:spotbugs-annotations:${spotbugs.toolVersion.get()}"
+    integrationCompileOnly "com.github.spotbugs:spotbugs-annotations:${spotbugs.toolVersion.get()}"
 
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.mockito', module: 'mockito-core'
@@ -197,7 +197,8 @@ jacocoTestCoverageVerification {
                     'it.gov.innovazione.ndc.service.EventCleaner',
                     'it.gov.innovazione.ndc.service.TemplateService',
                     'it.gov.innovazione.ndc.harvester.service.startupjob.*',
-                    'it.gov.innovazione.ndc.alerter.*'
+                    'it.gov.innovazione.ndc.alerter.*',
+                    "it.gov.innovazione.ndc.service.Dashboard*",
             ]
         }
     }
