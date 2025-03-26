@@ -1,12 +1,10 @@
 package it.gov.innovazione.ndc.controller;
 
 import it.gov.innovazione.ndc.controller.date.DateParameter.Granularity;
-import it.gov.innovazione.ndc.model.harvester.SemanticContentStats;
 import it.gov.innovazione.ndc.service.DashboardService;
 import it.gov.innovazione.ndc.service.DashboardService.Filter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -15,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.apache.commons.collections4.ListUtils.emptyIfNull;
@@ -48,8 +47,8 @@ public class DashboardController {
                 filters);
     }
 
-    @GetMapping("raw-data")
-    public PagedSemanticContentStats aggregate(
+    @GetMapping(value = "raw-data", produces = MediaType.APPLICATION_JSON_VALUE)
+    public PagedSemanticContentStats rawJson(
             @RequestParam(required = false) LocalDate startDate,
             @RequestParam(required = false) LocalDate endDate,
             @RequestParam(required = false) List<String> status,
@@ -59,6 +58,37 @@ public class DashboardController {
             @RequestParam(required = false) List<String> hasWarnings,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
+        return getPagedSemanticContentStats(startDate, endDate, status, resourceType, rightHolder, hasErrors, hasWarnings, page, size);
+    }
+
+    @GetMapping(value = "raw-data", produces = "text/csv")
+    public String rawCsv(
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate,
+            @RequestParam(required = false) List<String> status,
+            @RequestParam(required = false) List<String> resourceType,
+            @RequestParam(required = false) List<String> rightHolder,
+            @RequestParam(required = false) List<String> hasErrors,
+            @RequestParam(required = false) List<String> hasWarnings,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        PagedSemanticContentStats pagedSemanticContentStats = getPagedSemanticContentStats(startDate, endDate, status, resourceType, rightHolder, hasErrors, hasWarnings, page, size);
+        return CsvUtils.writeCsv(Stream.concat(
+                        Stream.of(pagedSemanticContentStats.getHeaders()),
+                        pagedSemanticContentStats.getContent().stream())
+                .toList());
+    }
+
+    private PagedSemanticContentStats getPagedSemanticContentStats(
+            LocalDate startDate,
+            LocalDate endDate,
+            List<String> status,
+            List<String> resourceType,
+            List<String> rightHolder,
+            List<String> hasErrors,
+            List<String> hasWarnings,
+            int page,
+            int size) {
         List<Filter> filters = getFilters(status, resourceType, rightHolder, hasErrors, hasWarnings);
         return PagedSemanticContentStats.of(dashboardService.getRawData(startDate, endDate, filters), page, size);
     }
@@ -76,4 +106,16 @@ public class DashboardController {
                 .toList();
     }
 
+    private static class CsvUtils {
+
+        public static String writeCsv(List<List<String>> csvContent) {
+            StringBuilder builder = new StringBuilder();
+            csvContent.forEach(
+                    row -> {
+                        builder.append(String.join(",", row))
+                                .append("\n");
+                    });
+            return builder.toString();
+        }
+    }
 }

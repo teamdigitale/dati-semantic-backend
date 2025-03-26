@@ -1,9 +1,11 @@
 package it.gov.innovazione.ndc.model.harvester;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.gov.innovazione.ndc.harvester.SemanticAssetType;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.With;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -24,6 +26,9 @@ public class SemanticContentStats {
     private final boolean hasErrors;
     private final boolean hasWarnings;
     private final List<String> status;
+    @With
+    @JsonIgnore
+    private final HarvesterRun harvesterRun;
 
     public String getStatusType() {
         Set<String> lowerCaseStatus = status.stream()

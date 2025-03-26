@@ -9,7 +9,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -175,7 +174,12 @@ public class DashboardService {
                         scs))
                 .sorted(comparing(Pair::getLeft))
                 .map(Pair::getRight)
+                .map(this::enrichWithRun)
                 .toList();
+    }
+
+    private SemanticContentStats enrichWithRun(SemanticContentStats semanticContentStats) {
+        return semanticContentStats.withHarvesterRun(dashboardRepo.getRunById().get(semanticContentStats.getHarvesterRunId()));
     }
 
     @RequiredArgsConstructor
