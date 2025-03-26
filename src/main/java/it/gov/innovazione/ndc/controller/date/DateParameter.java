@@ -33,7 +33,7 @@ public class DateParameter {
     public static DateParameter of(String date, String startDate, String endDate, Granularity granularity) {
         if (!StringUtils.isBlank(date)) {
             DateFormat dateFormat = DateFormat.from(date)
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid date format for date " + date + ". Supported formats are: " + DateFormat.supportedFormats));
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid date format for date " + date + ". Supported formats are: " + DateFormat.getSupportedFormats()));
             if (dateFormat.getUnsupportedGranularities().contains(granularity)) {
                 throw new IllegalArgumentException("Granularity " + granularity + " is not supported for date of format " + dateFormat.getFormat());
             }
@@ -48,12 +48,12 @@ public class DateParameter {
         LocalDate localEndDate = null;
         if (!StringUtils.isBlank(startDate)) {
             DateFormat dateFormat = DateFormat.from(startDate)
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid date format for startDate " + startDate + ". Supported formats are: " + DateFormat.supportedFormats));
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid date format for startDate " + startDate + ". Supported formats are: " + DateFormat.getSupportedFormats()));
             localStartDate = ofDate(startDate, dateFormat);
         }
         if (!StringUtils.isBlank(endDate)) {
             DateFormat dateFormat = DateFormat.from(endDate)
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid date format for endDate " + endDate + ". Supported formats are: " + DateFormat.supportedFormats));
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid date format for endDate " + endDate + ". Supported formats are: " + DateFormat.getSupportedFormats()));
             localEndDate = ofDate(endDate, dateFormat)
                     .with(dateFormat.getEquivalentGranularity().getEndDateAdjuster());
 
@@ -127,11 +127,6 @@ public class DateParameter {
                         Granularity.WEEKS_IN_YEAR),
                 Granularity.DAYS);
 
-        @Getter
-        private static final List<String> supportedFormats = Arrays.stream(DateFormat.values())
-                .map(DateFormat::getFormat)
-                .toList();
-
         private final String format;
         private final Pattern pattern;
         private final List<Granularity> unsupportedGranularities;
@@ -143,6 +138,11 @@ public class DateParameter {
                     .findFirst();
         }
 
+        public static List<String> getSupportedFormats() {
+            return Arrays.stream(DateFormat.values())
+                    .map(DateFormat::getFormat)
+                    .toList();
+        }
     }
 
     @RequiredArgsConstructor
