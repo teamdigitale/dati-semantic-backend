@@ -28,7 +28,7 @@ jobs:
           java-version: '17'
           distribution: 'adopt'
       - name: checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: caching
         uses: actions/cache@v1
         with:
@@ -50,7 +50,7 @@ jobs:
           java-version: '17'
           distribution: 'adopt'
       - name: checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Dependency Check
         run: ./gradlew dependencyCheckAnalyze -DnvdApiKey="${{ secrets.NVD_API_KEY }}"
 
@@ -70,7 +70,7 @@ jobs:
           java-version: '17'
           distribution: 'adopt'
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Log in to the Github Container registry
         uses: docker/login-action@v1
         with:
@@ -108,7 +108,7 @@ jobs:
           java-version: '17'
           distribution: 'adopt'
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: extract image
         id: extractImage
         run: |
