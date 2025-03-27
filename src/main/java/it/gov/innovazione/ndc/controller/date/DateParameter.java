@@ -28,6 +28,7 @@ public class DateParameter {
 
     private final LocalDate startDate;
     private final LocalDate endDate;
+    @Getter
     private final Granularity granularity;
 
     public static DateParameter of(String date, String startDate, String endDate, Granularity granularity) {

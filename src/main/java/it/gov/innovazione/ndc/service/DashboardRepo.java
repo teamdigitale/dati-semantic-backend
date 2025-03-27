@@ -52,7 +52,9 @@ public class DashboardRepo {
     public synchronized List<SemanticContentStats> getAllStats() {
         if (allStats == null) {
             log.info("Getting raw stats");
-            allStats = semanticContentStatsService.getRawStats();
+            allStats = semanticContentStatsService.getRawStats().stream()
+                    .map(s -> s.withHarvesterRun(getRunById().get(s.getHarvesterRunId())))
+                    .toList();
         }
         return allStats;
     }
