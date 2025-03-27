@@ -199,6 +199,7 @@ jacocoTestCoverageVerification {
                     'it.gov.innovazione.ndc.harvester.service.startupjob.*',
                     'it.gov.innovazione.ndc.alerter.*',
                     "it.gov.innovazione.ndc.service.Dashboard*",
+                    "it.gov.innovazione.ndc.service.DimensionalItem*"
             ]
         }
     }

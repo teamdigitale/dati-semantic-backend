@@ -77,6 +77,10 @@ public class DashboardService {
         return result;
     }
 
+    private static Instant fromLocalDate(LocalDate localDate) {
+        return localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
+    }
+
     public Map<List<String>, Long> disaggregate(
             List<DimensionalItem.CountDataDimensionalItem> countDataDimensionalItems,
             List<DimensionalItem.Filter<SemanticContentStats>> filters,
@@ -108,7 +112,6 @@ public class DashboardService {
                 .toList();
     }
 
-
     private List<String> toDimensions(HarvesterRun stats, List<DimensionalItem.TimeDataDimensionalItem> timeDataDimensionalItems) {
         return timeDataDimensionalItems.stream()
                 .map(countDataDimensionalItem -> countDataDimensionalItem.extract(stats))
@@ -116,10 +119,11 @@ public class DashboardService {
                 .toList();
     }
 
-    public Map<LocalDate, List<SemanticContentStats>> getSnapshotAt(List<LocalDate> localDate) {
+    public Map<LocalDate, List<SemanticContentStats>> getSnapshotAt(DateParameter dateParameter) {
         Map<LocalDate, List<SemanticContentStats>> statsByDate = new LinkedHashMap<>();
-        for (LocalDate date : localDate) {
-            Set<String> harvesterRunIds = getLatestRunsByRepoAt(date).values()
+        for (LocalDate date : dateParameter.getDates()) {
+            LocalDate nextDate = dateParameter.getDateIncrement().apply(date);
+            Set<String> harvesterRunIds = getLatestRunsByRepoAt(nextDate).values()
                     .stream()
                     .map(HarvesterRun::getId)
                     .collect(Collectors.toSet());
@@ -209,17 +213,14 @@ public class DashboardService {
         return statsByDate;
     }
 
-    private static Instant fromLocalDate(LocalDate localDate) {
-        return localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
-    }
-
     public AggregateDashboardResponse getAggregateCountData(
             DateParameter dateParams,
             List<DimensionalItem.CountDataDimensionalItem> countDataDimensionalItems,
             List<DimensionalItem.Filter<SemanticContentStats>> filters) {
-        List<LocalDate> dates = dateParams.getDates();
 
-        Map<LocalDate, List<SemanticContentStats>> statsByDate = getSnapshotAt(dates);
+        Map<LocalDate, List<SemanticContentStats>> statsByDate = getSnapshotAt(dateParams);
+
+        List<LocalDate> dates = dateParams.getDates();
 
         Map<LocalDate, Map<List<String>, Long>> byDate = withFilledGaps(statsByDate.entrySet()
                         .stream()

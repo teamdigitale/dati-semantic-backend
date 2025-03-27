@@ -39,10 +39,17 @@ public class DashboardController {
             @RequestParam(required = false) List<String> status,
             @RequestParam(required = false) List<String> resourceType,
             @RequestParam(required = false) List<String> rightHolder,
+            @RequestParam(required = false) List<String> repositoryUrl,
             @RequestParam(required = false) List<String> hasErrors,
             @RequestParam(required = false) List<String> hasWarnings) {
 
-        List<Filter<SemanticContentStats>> filters = getSemanticContentFilters(status, resourceType, rightHolder, hasErrors, hasWarnings);
+        List<Filter<SemanticContentStats>> filters = getSemanticContentFilters(
+                status,
+                resourceType,
+                rightHolder,
+                repositoryUrl,
+                hasErrors,
+                hasWarnings);
 
         return dashboardService.getAggregateCountData(
                 dateParser.parseDateParams(date, startDate, endDate, granularity),
@@ -74,11 +81,12 @@ public class DashboardController {
             @RequestParam(required = false) List<String> status,
             @RequestParam(required = false) List<String> resourceType,
             @RequestParam(required = false) List<String> rightHolder,
+            @RequestParam(required = false) List<String> repositoryUrl,
             @RequestParam(required = false) List<String> hasErrors,
             @RequestParam(required = false) List<String> hasWarnings,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return getPagedSemanticContentStats(startDate, endDate, status, resourceType, rightHolder, hasErrors, hasWarnings, page, size);
+        return getPagedSemanticContentStats(startDate, endDate, status, resourceType, rightHolder, repositoryUrl, hasErrors, hasWarnings, page, size);
     }
 
     @GetMapping(value = "raw-data", produces = "text/csv")
@@ -88,11 +96,12 @@ public class DashboardController {
             @RequestParam(required = false) List<String> status,
             @RequestParam(required = false) List<String> resourceType,
             @RequestParam(required = false) List<String> rightHolder,
+            @RequestParam(required = false) List<String> repositoryUrl,
             @RequestParam(required = false) List<String> hasErrors,
             @RequestParam(required = false) List<String> hasWarnings,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        PagedSemanticContentStats pagedSemanticContentStats = getPagedSemanticContentStats(startDate, endDate, status, resourceType, rightHolder, hasErrors, hasWarnings, page, size);
+        PagedSemanticContentStats pagedSemanticContentStats = getPagedSemanticContentStats(startDate, endDate, status, resourceType, rightHolder, repositoryUrl, hasErrors, hasWarnings, page, size);
         return CsvUtils.writeCsv(Stream.concat(
                         Stream.of(pagedSemanticContentStats.getHeaders()),
                         pagedSemanticContentStats.getContent().stream())
@@ -105,11 +114,12 @@ public class DashboardController {
             List<String> status,
             List<String> resourceType,
             List<String> rightHolder,
+            List<String> repositoryUrl,
             List<String> hasErrors,
             List<String> hasWarnings,
             int page,
             int size) {
-        List<Filter<SemanticContentStats>> filters = getSemanticContentFilters(status, resourceType, rightHolder, hasErrors, hasWarnings);
+        List<Filter<SemanticContentStats>> filters = getSemanticContentFilters(status, resourceType, rightHolder, repositoryUrl, hasErrors, hasWarnings);
         return PagedSemanticContentStats.of(dashboardService.getRawData(startDate, endDate, filters), page, size);
     }
 

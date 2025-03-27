@@ -50,6 +50,7 @@ public interface DimensionalItem<T> {
         RESOURCE_TYPE(SemanticContentStats::getResourceType, true),
         RIGHT_HOLDER(SemanticContentStats::getRightHolder, true),
         STATUS(SemanticContentStats::getStatusType, true),
+        REPOSITORY_URL(scs -> scs.getHarvesterRun().getRepositoryUrl(), true),
         HAS_ERRORS(SemanticContentStats::isHasErrors, false),
         HAS_WARNINGS(SemanticContentStats::isHasWarnings, false);
 
@@ -63,21 +64,18 @@ public interface DimensionalItem<T> {
         private final DimensionalItem<T> dimensionalItem;
         private final List<String> values;
 
-        public boolean test(T t) {
-            return values.stream()
-                    .anyMatch(value -> dimensionalItem.test(t, value, false));
-        }
-
         public static List<Filter<SemanticContentStats>> getSemanticContentFilters(
                 List<String> status,
                 List<String> resourceType,
                 List<String> rightHolder,
+                List<String> repositoryUrl,
                 List<String> hasErrors,
                 List<String> hasWarnings) {
             return makeFilters(Map.of(
                     STATUS, emptyIfNull(status),
                     RESOURCE_TYPE, emptyIfNull(resourceType),
                     RIGHT_HOLDER, emptyIfNull(rightHolder),
+                    CountDataDimensionalItem.REPOSITORY_URL, emptyIfNull(repositoryUrl),
                     HAS_ERRORS, emptyIfNull(hasErrors),
                     HAS_WARNINGS, emptyIfNull(hasWarnings)));
         }
@@ -94,6 +92,11 @@ public interface DimensionalItem<T> {
                     .filter(e -> isNotEmpty(e.getValue()))
                     .map(e -> Filter.of(e.getKey(), e.getValue()))
                     .toList();
+        }
+
+        public boolean test(T t) {
+            return values.stream()
+                    .anyMatch(value -> dimensionalItem.test(t, value, false));
         }
     }
 }
