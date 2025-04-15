@@ -149,7 +149,7 @@ public class DashboardService {
             List<DimensionalItem.Filter<HarvesterRun>> filters) {
         List<LocalDate> dates = dateParams.getDates();
 
-        Map<LocalDate, List<HarvesterRun>> statsByDate = getRunSnapshotAt(dates);
+        Map<LocalDate, List<HarvesterRun>> statsByDate = getRunSnapshotAt(dateParams);
 
         Map<LocalDate, Map<List<String>, LongSummaryStatistics>> byDate = withFilledGaps(statsByDate.entrySet()
                         .stream()
@@ -177,14 +177,15 @@ public class DashboardService {
                                 timeDataDimensionalItems.stream()
                                         .map(DimensionalItem.TimeDataDimensionalItem::name)
                                         .toList(),
-                                List.of("MIN", "MAX", "AVERAGE", "COUNT"))
+                                List.of("MIN(sec.)", "MAX(sec.)", "AVERAGE(sec.)", "COUNT"))
                         .flatMap(List::stream)
                         .toList())
                 .rows(data)
                 .build();
     }
 
-    private Map<LocalDate, List<HarvesterRun>> getRunSnapshotAt(List<LocalDate> dates) {
+    private Map<LocalDate, List<HarvesterRun>> getRunSnapshotAt(DateParameter dateParams) {
+        List<LocalDate> dates = dateParams.getDates();
         Map<LocalDate, List<HarvesterRun>> statsByDate = new LinkedHashMap<>();
         for (LocalDate date : dates) {
             statsByDate.put(date, new ArrayList<>());
@@ -194,14 +195,14 @@ public class DashboardService {
             Instant startedAt = run.getStartedAt();
             boolean added = false;
             for (int i = 0; i < dates.size(); i++) {
-                LocalDate upperDate = dates.get(i);
-                LocalDate lowerDate = i > 0 ? dates.get(i - 1) : LocalDate.MIN;
+                LocalDate upperBound = dateParams.getDateIncrement().apply(dates.get(i));
+                LocalDate lowerBound = dates.get(i);
 
-                Instant upper = fromLocalDate(upperDate);
-                Instant lower = fromLocalDate(lowerDate);
+                Instant upperBoundInstant = fromLocalDate(upperBound);
+                Instant lowerBoundInstant = fromLocalDate(lowerBound);
 
-                if (!startedAt.isBefore(lower) && startedAt.isBefore(upper)) {
-                    statsByDate.get(lowerDate).add(run);
+                if (!startedAt.isBefore(lowerBoundInstant) && startedAt.isBefore(upperBoundInstant)) {
+                    statsByDate.get(lowerBound).add(run);
                     added = true;
                     break;
                 }
