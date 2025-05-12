@@ -19,7 +19,7 @@ import static org.springframework.data.elasticsearch.annotations.FieldType.Date;
 import static org.springframework.data.elasticsearch.annotations.FieldType.Keyword;
 import static org.springframework.data.elasticsearch.annotations.FieldType.Text;
 
-@Document(indexName = "semantic-asset-metadata-4")
+@Document(indexName = "semantic-asset-metadata-5")
 @Setting(settingPath = "elasticsearch-settings.json")
 @Data
 @Builder(toBuilder = true)
@@ -102,6 +102,12 @@ public class SemanticAssetMetadata {
 
     @Field(type = Text, copyTo = "searchableText")
     private List<String> keyClassesLabels;
+
+    @Field(type = Text, copyTo = "searchableText")
+    private List<String> labels;
+
+    @Field(type = Text, copyTo = "searchableText")
+    private List<String> comments;
 
     //for the searchable content in multiple fields
     @JsonIgnore
