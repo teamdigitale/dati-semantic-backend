@@ -20,6 +20,7 @@ import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.VCARD4;
 import org.springframework.util.StringUtils;
 
@@ -35,6 +36,7 @@ import java.util.stream.Collectors;
 
 import static it.gov.innovazione.ndc.harvester.model.SemanticAssetModelValidationContext.NO_VALIDATION;
 import static it.gov.innovazione.ndc.harvester.model.extractors.LiteralExtractor.extract;
+import static it.gov.innovazione.ndc.harvester.model.extractors.LiteralExtractor.extractAll;
 import static it.gov.innovazione.ndc.harvester.model.extractors.LiteralExtractor.extractOptional;
 import static it.gov.innovazione.ndc.harvester.model.extractors.NodeExtractor.extractMaybeNodes;
 import static it.gov.innovazione.ndc.harvester.model.extractors.NodeExtractor.requireNode;
@@ -254,13 +256,15 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
                 .versionInfo(extractOptional(mainResource, versionInfo))
                 .issuedOn(parseDate(extractOptional(mainResource, issued)))
                 .languages(asIriList(extractMaybeNodes(mainResource, language)))
-                .keywords(LiteralExtractor.extractAll(mainResource, keyword))
+                .keywords(extractAll(mainResource, keyword))
                 .temporal(extractOptional(mainResource, temporal))
                 .conformsTo(maybeNodeSummaries(mainResource, conformsTo, FOAF.name))
                 .distributions(getDistributions())
-                .status(LiteralExtractor.extractAll(mainResource, Admsapit.status))
+                .status(extractAll(mainResource, Admsapit.status))
                 .agencyId(agencyId.getIdentifier())
                 .agencyLabel(new ArrayList<>(agencyId.getName().values()))
+                .labels(extractAll(mainResource, RDFS.label))
+                .comments(extractAll(mainResource, RDFS.comment))
                 .build();
     }
 
