@@ -86,7 +86,15 @@ public class LiteralExtractor {
     public static List<String> extractAll(Resource resource, Property property) {
         return resource.listProperties(property).toList().stream()
                 .map(Statement::getString)
+                .distinct()
                 .collect(toList());
+    }
+
+    public static List<String> extractAll(List<Resource> resources, Property property) {
+        return resources.stream()
+                .flatMap(resource -> extractAll(resource, property).stream())
+                .distinct()
+                .toList();
     }
 
     private static Predicate<Statement> filterItalianOrEnglishOrDefault() {

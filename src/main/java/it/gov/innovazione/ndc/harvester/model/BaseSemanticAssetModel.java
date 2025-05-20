@@ -2,7 +2,6 @@ package it.gov.innovazione.ndc.harvester.model;
 
 import com.github.jsonldjava.shaded.com.google.common.collect.ImmutableList;
 import it.gov.innovazione.ndc.harvester.model.exception.InvalidModelException;
-import it.gov.innovazione.ndc.harvester.model.extractors.LiteralExtractor;
 import it.gov.innovazione.ndc.harvester.model.extractors.NodeExtractor;
 import it.gov.innovazione.ndc.harvester.model.index.Distribution;
 import it.gov.innovazione.ndc.harvester.model.index.NodeSummary;
@@ -19,6 +18,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.DCTerms;
+import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.VCARD4;
@@ -238,6 +238,10 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
 
     public SemanticAssetMetadata extractMetadata() {
         Resource mainResource = getMainResource();
+        List<Resource> owlClasses = rdfModel.listResourcesWithProperty(RDF.type)
+                .toList().stream()
+                .filter(BaseSemanticAssetModel::isOwlClass)
+                .toList();
         RightsHolder agencyId = getAgencyId(mainResource, validationContext);
         return SemanticAssetMetadata.builder()
                 .instance(instance.name())
@@ -263,9 +267,13 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
                 .status(extractAll(mainResource, Admsapit.status))
                 .agencyId(agencyId.getIdentifier())
                 .agencyLabel(new ArrayList<>(agencyId.getName().values()))
-                .labels(extractAll(mainResource, RDFS.label))
-                .comments(extractAll(mainResource, RDFS.comment))
+                .labels(extractAll(owlClasses, RDFS.label))
+                .comments(extractAll(owlClasses, RDFS.comment))
                 .build();
+    }
+
+    private static boolean isOwlClass(Resource resource) {
+        return resource.hasProperty(RDF.type, OWL.Class);
     }
 
     public SemanticAssetModelValidationContext validateMetadata() {
