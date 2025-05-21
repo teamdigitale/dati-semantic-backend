@@ -35,6 +35,10 @@ public class HarvesterRun {
         return context.getRunId();
     }
 
+    public boolean hasDatesSet() {
+        return startedAt != null && endedAt != null;
+    }
+
     public enum Status {
         SUCCESS, UNCHANGED, ALREADY_RUNNING, RUNNING, NDC_ISSUES_PRESENT, FAILURE
     }
