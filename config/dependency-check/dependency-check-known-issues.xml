@@ -22,4 +22,8 @@
     <suppress>
         <cve>CVE-2022-4245</cve>
     </suppress>
+    <suppress>
+        <!-- excluded since it's not applicable to the project-->
+        <cve>CVE-2025-41232</cve>
+    </suppress>
 </suppressions>
