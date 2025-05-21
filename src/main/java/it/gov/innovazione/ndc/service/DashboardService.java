@@ -1,6 +1,7 @@
 package it.gov.innovazione.ndc.service;
 
 import it.gov.innovazione.ndc.controller.AggregateDashboardResponse;
+import it.gov.innovazione.ndc.controller.PercentileStats;
 import it.gov.innovazione.ndc.controller.date.DateParameter;
 import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import it.gov.innovazione.ndc.model.harvester.Repository;
@@ -18,7 +19,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.LongSummaryStatistics;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -28,10 +28,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static it.gov.innovazione.ndc.controller.PercentileStats.summarizingPercentiles;
 import static java.util.Comparator.comparing;
 import static java.util.function.BinaryOperator.maxBy;
 import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.summarizingLong;
 import static java.util.stream.Collectors.toMap;
 
 @Service
@@ -45,12 +45,15 @@ public class DashboardService {
         return convertEntryToRow(entry, dateFormatter, List::add);
     }
 
-    public static List<List<Object>> convertTimeEntryToRow(Map.Entry<LocalDate, Map<List<String>, LongSummaryStatistics>> entry, Function<LocalDate, String> dateFormatter) {
+    public static List<List<Object>> convertTimeEntryToRow(Map.Entry<LocalDate, Map<List<String>, PercentileStats>> entry, Function<LocalDate, String> dateFormatter) {
         return convertEntryToRow(
                 entry, dateFormatter,
                 (row, stats) -> {
                     if (Objects.nonNull(stats)) {
                         row.add(stats.getMin());
+                        row.add(stats.getP25());
+                        row.add(stats.getMedian());
+                        row.add(stats.getP75());
                         row.add(stats.getMax());
                         row.add(stats.getAverage());
                         row.add(stats.getCount());
@@ -92,16 +95,17 @@ public class DashboardService {
                         Collectors.counting()));
     }
 
-    public Map<List<String>, LongSummaryStatistics> disaggregateTimes(
+    public Map<List<String>, PercentileStats> disaggregateTimes(
             List<DimensionalItem.TimeDataDimensionalItem> countDataDimensionalItems,
             List<DimensionalItem.Filter<HarvesterRun>> filters,
             List<HarvesterRun> rawRecords) {
         return rawRecords.stream()
                 .filter(stats -> filters.stream().allMatch(filter -> filter.test(stats)))
+                .filter(HarvesterRun::hasDatesSet)
                 .collect(groupingBy(
                         stats -> toDimensions(stats, countDataDimensionalItems),
                         Collectors.collectingAndThen(
-                                summarizingLong(value -> Duration.between(value.getStartedAt(), value.getEndedAt()).getSeconds()),
+                                summarizingPercentiles(value -> Duration.between(value.getStartedAt(), value.getEndedAt()).getSeconds()),
                                 stats -> stats)));
     }
 
@@ -151,7 +155,7 @@ public class DashboardService {
 
         Map<LocalDate, List<HarvesterRun>> statsByDate = getRunSnapshotAt(dateParams);
 
-        Map<LocalDate, Map<List<String>, LongSummaryStatistics>> byDate = withFilledGaps(statsByDate.entrySet()
+        Map<LocalDate, Map<List<String>, PercentileStats>> byDate = withFilledGaps(statsByDate.entrySet()
                         .stream()
                         .collect(toMap(
                                 Map.Entry::getKey,
@@ -177,7 +181,7 @@ public class DashboardService {
                                 timeDataDimensionalItems.stream()
                                         .map(DimensionalItem.TimeDataDimensionalItem::name)
                                         .toList(),
-                                List.of("MIN(sec.)", "MAX(sec.)", "AVERAGE(sec.)", "COUNT"))
+                                List.of("MIN(sec.)", "P25(sec.)", "MEDIAN(sec.)", "P75(sec.)", "MAX(sec.)", "AVERAGE(sec.)", "COUNT"))
                         .flatMap(List::stream)
                         .toList())
                 .rows(data)
