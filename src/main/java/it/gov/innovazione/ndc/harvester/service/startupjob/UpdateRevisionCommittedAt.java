@@ -1,21 +1,22 @@
 package it.gov.innovazione.ndc.harvester.service.startupjob;
 
-import static java.util.Objects.isNull;
-
 import it.gov.innovazione.ndc.harvester.service.HarvesterRunService;
 import it.gov.innovazione.ndc.harvester.util.GitUtils;
 import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import it.gov.innovazione.ndc.service.logging.LoggingContext;
 import it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
+
+import static java.util.Objects.isNull;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +28,8 @@ public class UpdateRevisionCommittedAt implements StartupJob {
     @Override
     public void run() {
         List<HarvesterRun> harvesterRunsToUpdate = harvesterRunService.getAllRuns().stream()
-                .filter(harvesterRun -> isNull(harvesterRun.getRevisionCommittedAt()))
+                .filter(this::hasNoRevisionCommittedAt)
+                .filter(this::isSuccess)
                 .toList();
         NDCHarvesterLogger.logApplicationInfo(
                 LoggingContext.builder()

@@ -19,10 +19,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
 
@@ -41,9 +41,9 @@ public class RestApiIntegrationTests extends BaseIntegrationTest {
     public static final String AGENCY_ID = "agid";
     public static final String KEY_CONCEPT = "licences";
 
-    @MockBean
+    @MockitoBean
     private GithubService githubService;
-    @MockBean
+    @MockitoBean
     private NdcEventPublisher ndcEventPublisher;
     @Autowired
     private InstanceManager instanceManager;

@@ -15,7 +15,6 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,6 +23,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
@@ -55,19 +55,19 @@ public class BaseIntegrationTest {
     @LocalServerPort
     int port;
 
-    @SpyBean
+    @MockitoSpyBean
     ElasticsearchOperations elasticsearchOperations;
 
     @Autowired
     HarvesterService harvesterService;
 
-    @SpyBean
+    @MockitoSpyBean
     AgencyRepositoryService agencyRepositoryService;
 
-    @SpyBean
+    @MockitoSpyBean
     RepositoryService repositoryService;
 
-    @SpyBean
+    @MockitoSpyBean
     SemanticContentStatsService semanticContentStatsService;
 
     @Autowired

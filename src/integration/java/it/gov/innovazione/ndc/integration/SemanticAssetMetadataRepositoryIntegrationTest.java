@@ -1,6 +1,7 @@
 package it.gov.innovazione.ndc.integration;
 
 import it.gov.innovazione.ndc.config.ElasticConfigurator;
+import it.gov.innovazione.ndc.config.SynonymsElasticsearchIndexInitializer;
 import it.gov.innovazione.ndc.harvester.SemanticAssetType;
 import it.gov.innovazione.ndc.harvester.model.Instance;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
@@ -58,8 +59,8 @@ public class SemanticAssetMetadataRepositoryIntegrationTest {
     }
 
     @Test
-    void shouldIndexAndSearch() {
-        elasticsearchOperations.indexOps(SemanticAssetMetadata.class).createWithMapping();
+    void shouldIndexAndSearch() throws Exception {
+        createIndexIfNotExists();
 
         List<SemanticAssetMetadata> entries = new ArrayList<>();
 
@@ -85,5 +86,10 @@ public class SemanticAssetMetadataRepositoryIntegrationTest {
 
         List<SemanticAssetMetadata> vocabs = repository.findVocabulariesForRepoUrl("http://repo1", Instance.PRIMARY);
         assertThat(vocabs).hasSize(ASSET_COUNT);
+    }
+
+    private void createIndexIfNotExists() throws Exception {
+        new SynonymsElasticsearchIndexInitializer(elasticsearchOperations)
+                .createIndexWithSynonyms();
     }
 }

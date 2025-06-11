@@ -41,6 +41,11 @@
       "italian_stemmer": {
         "type": "stemmer",
         "language": "light_italian"
+      },
+      "italian_synonyms": {
+        "type": "synonym",
+        "synonyms": [
+        ]
       }
     },
     "analyzer": {
@@ -51,7 +56,8 @@
           "lowercase",
           "italian_stop",
           "italian_keywords",
-          "italian_stemmer"
+          "italian_stemmer",
+          "italian_synonyms"
         ]
       }
     },
