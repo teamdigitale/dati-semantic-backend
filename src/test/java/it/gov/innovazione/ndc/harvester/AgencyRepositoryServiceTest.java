@@ -61,7 +61,7 @@ public class AgencyRepositoryServiceTest {
     }
 
     /**
-     * folder structure:
+     * folder structure.
      * - VocabolariControllati
      * -- group1
      * --- cv1
