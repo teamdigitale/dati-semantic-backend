@@ -11,6 +11,7 @@ import org.apache.jena.rdf.model.Statement;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -85,7 +86,8 @@ public class LiteralExtractor {
 
     public static List<String> extractAll(Resource resource, Property property) {
         return resource.listProperties(property).toList().stream()
-                .map(Statement::getString)
+                .map(LiteralExtractor::extractStringIfPossible)
+                .filter(Objects::nonNull)
                 .distinct()
                 .collect(toList());
     }
@@ -95,6 +97,15 @@ public class LiteralExtractor {
                 .flatMap(resource -> extractAll(resource, property).stream())
                 .distinct()
                 .toList();
+    }
+
+    private static String extractStringIfPossible(Statement statement) {
+        try {
+            return statement.getObject().asLiteral().getString();
+        } catch (Exception e) {
+            log.warn("Cannot extract string from statement: {}", statement, e);
+            return null;
+        }
     }
 
     private static Predicate<Statement> filterItalianOrEnglishOrDefault() {
