@@ -10,17 +10,16 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
-import org.springframework.data.elasticsearch.annotations.Setting;
 
 import java.time.LocalDate;
 import java.util.List;
 
+import static it.gov.innovazione.ndc.config.SynonymsElasticsearchIndexInitializer.INDEX_NAME;
 import static org.springframework.data.elasticsearch.annotations.FieldType.Date;
 import static org.springframework.data.elasticsearch.annotations.FieldType.Keyword;
 import static org.springframework.data.elasticsearch.annotations.FieldType.Text;
 
-@Document(indexName = "semantic-asset-metadata-5")
-@Setting(settingPath = "elasticsearch-settings.json")
+@Document(indexName = INDEX_NAME, createIndex = false)
 @Data
 @Builder(toBuilder = true)
 @FieldNameConstants

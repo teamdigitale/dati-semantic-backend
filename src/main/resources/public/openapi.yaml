@@ -444,6 +444,14 @@ components:
           maxItems: *max-array-size-default
         rightsHolder:
           $ref: "#/components/schemas/NodeSummary"
+        labels:
+          type: array
+          items:
+            type: string
+        comments:
+          type: array
+          items:
+            type: string
         status:
           type: array
           uniqueItems: true

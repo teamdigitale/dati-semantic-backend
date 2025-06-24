@@ -7,8 +7,8 @@ import it.gov.innovazione.ndc.service.GithubService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
 
@@ -20,16 +20,16 @@ class NoDeepestLevelExtractorIntTest {
     @Autowired
     private List<HeadersToIdNameExtractor> extractors;
 
-    @MockBean
+    @MockitoBean
     private MarkerElasticSearchRepository elasticSearchRepository;
 
-    @MockBean
+    @MockitoBean
     private VirtuosoClient virtuosoClient;
 
-    @MockBean
+    @MockitoBean
     private GithubService githubService;
 
-    @MockBean
+    @MockitoBean
     private NdcEventPublisher eventPublisher;
 
     @Test

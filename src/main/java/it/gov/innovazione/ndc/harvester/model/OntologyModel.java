@@ -6,6 +6,7 @@ import it.gov.innovazione.ndc.harvester.model.extractors.NodeSummaryExtractor;
 import it.gov.innovazione.ndc.harvester.model.index.Distribution;
 import it.gov.innovazione.ndc.harvester.model.index.NodeSummary;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
+import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata.Fields;
 import it.gov.innovazione.ndc.model.profiles.Admsapit;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
@@ -65,11 +66,11 @@ public class OntologyModel extends BaseSemanticAssetModel {
         SemanticAssetModelValidationContext superContext = super.validateMetadata();
 
         SemanticAssetModelValidationContext context = new ImmutableList.Builder<Consumer<SemanticAssetModelValidationContext>>()
-                .add(v -> getDistributions(v.withFieldName(SemanticAssetMetadata.Fields.distributions)))
-                .add(v -> getKeyClasses(getMainResource(), v.withWarningValidationType().withFieldName(SemanticAssetMetadata.Fields.keyClasses)))
-                .add(v -> extractOptional(getMainResource(), Admsapit.prefix, validationContext.withWarningValidationType().withFieldName(SemanticAssetMetadata.Fields.prefix)))
+                .add(v -> getDistributions(v.error().field(Fields.distributions)))
+                .add(v -> getKeyClasses(getMainResource(), v.warning().field(Fields.keyClasses)))
+                .add(v -> extractOptional(getMainResource(), Admsapit.prefix, v.warning().field(Fields.prefix)))
                 .add(v -> maybeNodeSummaries(getMainResource(), Admsapit.semanticAssetInUse,
-                        createProperty("https://w3id.org/italia/onto/l0/name"), v.withWarningValidationType().withFieldName(SemanticAssetMetadata.Fields.projects)))
+                        createProperty("https://w3id.org/italia/onto/l0/name"), v.warning().field(Fields.projects)))
                 .build()
                 .stream()
                 .map(consumer -> returningValidationContext(this.validationContext, consumer))

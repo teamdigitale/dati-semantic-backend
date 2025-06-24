@@ -148,9 +148,9 @@ public class ControlledVocabularyModel extends BaseSemanticAssetModel {
         SemanticAssetModelValidationContext superContext = super.validateMetadata();
 
         SemanticAssetModelValidationContext context = new ImmutableList.Builder<Consumer<SemanticAssetModelValidationContext>>()
-                .add(v -> getDistributions(v.withFieldName(SemanticAssetMetadata.Fields.distributions)))
-                .add(v -> getKeyConcept(getMainResource(), v.withWarningValidationType().withFieldName(SemanticAssetMetadata.Fields.keyConcept)))
-                .add(v -> RightsHolderExtractor.getAgencyId(getMainResource(), v.withWarningValidationType().withFieldName(SemanticAssetMetadata.Fields.agencyId)))
+                .add(v -> getDistributions(v.error().field(SemanticAssetMetadata.Fields.distributions)))
+                .add(v -> getKeyConcept(getMainResource(), v.warning().field(SemanticAssetMetadata.Fields.keyConcept)))
+                .add(v -> RightsHolderExtractor.getAgencyId(getMainResource(), v.warning().field(SemanticAssetMetadata.Fields.agencyId)))
                 .build()
                 .stream()
                 .map(consumer -> returningValidationContext(this.validationContext, consumer))
