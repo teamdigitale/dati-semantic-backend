@@ -40,7 +40,7 @@ public class SemanticAssetModelValidationContext {
                 .build();
     }
 
-    public SemanticAssetModelValidationContext withFieldName(String fieldName) {
+    public SemanticAssetModelValidationContext field(String fieldName) {
         return toBuilder().fieldName(fieldName).build();
     }
 
@@ -101,13 +101,22 @@ public class SemanticAssetModelValidationContext {
                 .collect(Collectors.toSet());
     }
 
-    public SemanticAssetModelValidationContext withWarningValidationType() {
+    public SemanticAssetModelValidationContext warning() {
         setWarningValidationType();
+        return this;
+    }
+
+    public SemanticAssetModelValidationContext error() {
+        setErrorValidationType();
         return this;
     }
 
     public void setWarningValidationType() {
         setValidationContextType(ValidationContextType.WARNING);
+    }
+
+    public void setErrorValidationType() {
+        setValidationContextType(ValidationContextType.ERROR);
     }
 
     private enum ValidationContextType {

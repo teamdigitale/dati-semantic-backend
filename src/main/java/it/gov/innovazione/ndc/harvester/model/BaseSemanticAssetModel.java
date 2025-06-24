@@ -7,6 +7,7 @@ import it.gov.innovazione.ndc.harvester.model.index.Distribution;
 import it.gov.innovazione.ndc.harvester.model.index.NodeSummary;
 import it.gov.innovazione.ndc.harvester.model.index.RightsHolder;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
+import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata.Fields;
 import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import it.gov.innovazione.ndc.model.profiles.Admsapit;
 import it.gov.innovazione.ndc.service.logging.HarvesterStage;
@@ -278,24 +279,24 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
 
     public SemanticAssetModelValidationContext validateMetadata() {
         return new ImmutableList.Builder<Consumer<SemanticAssetModelValidationContext>>()
-                .add(v -> extractRequiredNodeSummary(getMainResource(), rightsHolder, FOAF.name, v.withFieldName(
-                        SemanticAssetMetadata.Fields.rightsHolder)))
-                .add(v -> extract(getMainResource(), title, v.withFieldName(SemanticAssetMetadata.Fields.title)))
-                .add(v -> extract(getMainResource(), description, v.withFieldName(SemanticAssetMetadata.Fields.description)))
-                .add(v -> extract(getMainResource(), modified, v.withFieldName(SemanticAssetMetadata.Fields.modifiedOn)))
-                .add(v -> requireNodes(getMainResource(), theme, v.withFieldName(SemanticAssetMetadata.Fields.themes)))
-                .add(v -> requireNode(getMainResource(), accrualPeriodicity, v.withFieldName(SemanticAssetMetadata.Fields.accrualPeriodicity)))
-                .add(v -> extractMaybeNodes(getMainResource(), subject, v.withWarningValidationType().withFieldName(SemanticAssetMetadata.Fields.subjects)))
-                .add(v -> getContactPoint(getMainResource(), v.withWarningValidationType().withFieldName(SemanticAssetMetadata.Fields.contactPoint)))
-                .add(v -> maybeNodeSummaries(getMainResource(), publisher, FOAF.name, v.withWarningValidationType().withFieldName(SemanticAssetMetadata.Fields.publishers)))
-                .add(v -> maybeNodeSummaries(getMainResource(), creator, FOAF.name, v.withWarningValidationType().withFieldName(SemanticAssetMetadata.Fields.creators)))
-                .add(v -> extractOptional(getMainResource(), versionInfo, v.withWarningValidationType().withFieldName(SemanticAssetMetadata.Fields.versionInfo)))
-                .add(v -> extractOptional(getMainResource(), issued, v.withWarningValidationType().withFieldName(SemanticAssetMetadata.Fields.issuedOn)))
-                .add(v -> extractMaybeNodes(getMainResource(), language, v.withWarningValidationType().withFieldName(SemanticAssetMetadata.Fields.languages)))
-                .add(v -> extractOptional(getMainResource(), temporal, v.withWarningValidationType().withFieldName(SemanticAssetMetadata.Fields.temporal)))
-                .add(v -> maybeNodeSummaries(getMainResource(), conformsTo, FOAF.name, v.withWarningValidationType().withFieldName(SemanticAssetMetadata.Fields.conformsTo)))
-                .add(v -> getDistributions(v.withFieldName(SemanticAssetMetadata.Fields.distributions)))
-                .add(v -> getAgencyId(getMainResource(), v.withFieldName(SemanticAssetMetadata.Fields.agencyId)))
+                .add(v -> extractRequiredNodeSummary(getMainResource(), rightsHolder, FOAF.name, v.field(
+                        Fields.rightsHolder)))
+                .add(v -> extract(getMainResource(), title, v.error().field(Fields.title)))
+                .add(v -> extract(getMainResource(), description, v.error().field(Fields.description)))
+                .add(v -> extract(getMainResource(), modified, v.error().field(Fields.modifiedOn)))
+                .add(v -> requireNodes(getMainResource(), theme, v.error().field(Fields.themes)))
+                .add(v -> requireNode(getMainResource(), accrualPeriodicity, v.error().field(Fields.accrualPeriodicity)))
+                .add(v -> extractMaybeNodes(getMainResource(), subject, v.warning().field(Fields.subjects)))
+                .add(v -> getContactPoint(getMainResource(), v.warning().field(Fields.contactPoint)))
+                .add(v -> maybeNodeSummaries(getMainResource(), publisher, FOAF.name, v.warning().field(Fields.publishers)))
+                .add(v -> maybeNodeSummaries(getMainResource(), creator, FOAF.name, v.warning().field(Fields.creators)))
+                .add(v -> extractOptional(getMainResource(), versionInfo, v.warning().field(Fields.versionInfo)))
+                .add(v -> extractOptional(getMainResource(), issued, v.warning().field(Fields.issuedOn)))
+                .add(v -> extractMaybeNodes(getMainResource(), language, v.warning().field(Fields.languages)))
+                .add(v -> extractOptional(getMainResource(), temporal, v.warning().field(Fields.temporal)))
+                .add(v -> maybeNodeSummaries(getMainResource(), conformsTo, FOAF.name, v.warning().field(Fields.conformsTo)))
+                .add(v -> getDistributions(v.error().field(Fields.distributions)))
+                .add(v -> getAgencyId(getMainResource(), v.error().field(Fields.agencyId)))
                 .build()
                 .stream()
                 .map(consumer -> returningValidationContext(this.validationContext, consumer))

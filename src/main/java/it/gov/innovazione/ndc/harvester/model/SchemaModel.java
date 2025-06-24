@@ -9,6 +9,7 @@ import it.gov.innovazione.ndc.harvester.model.index.Distribution;
 import it.gov.innovazione.ndc.harvester.model.index.NodeSummary;
 import it.gov.innovazione.ndc.harvester.model.index.RightsHolder;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
+import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata.Fields;
 import it.gov.innovazione.ndc.model.profiles.Admsapit;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
@@ -26,6 +27,7 @@ import static it.gov.innovazione.ndc.harvester.model.extractors.LiteralExtractor
 import static it.gov.innovazione.ndc.harvester.model.extractors.NodeExtractor.requireNodes;
 import static it.gov.innovazione.ndc.harvester.model.extractors.NodeSummaryExtractor.extractRequiredNodeSummary;
 import static it.gov.innovazione.ndc.harvester.model.extractors.NodeSummaryExtractor.maybeNodeSummaries;
+import static it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata.Fields.keyClasses;
 import static it.gov.innovazione.ndc.model.profiles.EuropePublicationVocabulary.FILE_TYPE_JSON;
 import static org.apache.jena.vocabulary.DCAT.distribution;
 import static org.apache.jena.vocabulary.DCAT.keyword;
@@ -86,16 +88,16 @@ public class SchemaModel extends BaseSemanticAssetModel {
     @Override
     public SemanticAssetModelValidationContext validateMetadata() {
         return new ImmutableList.Builder<Consumer<SemanticAssetModelValidationContext>>()
-                .add(v -> extract(getMainResource(), title, v.withFieldName(SemanticAssetMetadata.Fields.title)))
-                .add(v -> extract(getMainResource(), description, v.withFieldName(SemanticAssetMetadata.Fields.description)))
-                .add(v -> getDistributions(v.withFieldName(SemanticAssetMetadata.Fields.distributions)))
-                .add(v -> extractRequiredNodeSummary(getMainResource(), rightsHolder, FOAF.name, v.withFieldName(SemanticAssetMetadata.Fields.rightsHolder)))
-                .add(v -> extractOptional(getMainResource(), modified, v.withWarningValidationType().withFieldName(SemanticAssetMetadata.Fields.modifiedOn)))
-                .add(v -> requireNodes(getMainResource(), theme, v.withFieldName(SemanticAssetMetadata.Fields.themes)))
-                .add(v -> extractOptional(getMainResource(), issued, v.withWarningValidationType().withFieldName(SemanticAssetMetadata.Fields.issuedOn)))
-                .add(v -> extract(getMainResource(), versionInfo, v.withFieldName(SemanticAssetMetadata.Fields.versionInfo)))
-                .add(v -> maybeNodeSummaries(getMainResource(), conformsTo, FOAF.name, v.withWarningValidationType().withFieldName(SemanticAssetMetadata.Fields.conformsTo)))
-                .add(v -> getKeyClasses(getMainResource(), v.withWarningValidationType().withFieldName(SemanticAssetMetadata.Fields.keyClasses)))
+                .add(v -> extract(getMainResource(), title, v.error().field(Fields.title)))
+                .add(v -> extract(getMainResource(), description, v.error().field(Fields.description)))
+                .add(v -> getDistributions(v.error().field(Fields.distributions)))
+                .add(v -> extractRequiredNodeSummary(getMainResource(), rightsHolder, FOAF.name, v.error().field(Fields.rightsHolder)))
+                .add(v -> extractOptional(getMainResource(), modified, v.warning().field(Fields.modifiedOn)))
+                .add(v -> requireNodes(getMainResource(), theme, v.error().field(Fields.themes)))
+                .add(v -> extractOptional(getMainResource(), issued, v.warning().field(Fields.issuedOn)))
+                .add(v -> extract(getMainResource(), versionInfo, v.error().field(Fields.versionInfo)))
+                .add(v -> maybeNodeSummaries(getMainResource(), conformsTo, FOAF.name, v.warning().field(Fields.conformsTo)))
+                .add(v -> getKeyClasses(getMainResource(), v.warning().field(keyClasses)))
                 .build()
                 .stream()
                 .map(consumer -> returningValidationContext(this.validationContext, consumer))
