@@ -110,6 +110,7 @@ public class SemanticAssetMetadata {
 
     //for the searchable content in multiple fields
     @JsonIgnore
+    @Field(type = FieldType.Text, analyzer = "it_ngram", searchAnalyzer = "it_search")
     private String searchableText;
 
     @Id
