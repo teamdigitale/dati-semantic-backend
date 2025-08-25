@@ -1,10 +1,11 @@
 package it.gov.innovazione.ndc.repository;
 
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
-import co.elastic.clients.elasticsearch._types.query_dsl.MatchQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.MultiMatchQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.QueryVariant;
 import co.elastic.clients.elasticsearch._types.query_dsl.TermsQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType;
 import it.gov.innovazione.ndc.harvester.model.Instance;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.gov.innovazione.ndc.service.InstanceManager;
@@ -46,7 +47,14 @@ public class SemanticAssetMetadataRepository {
         List<Query> queries = new ArrayList<>();
 
         if (StringUtils.isNotEmpty(queryPattern)) {
-            queries.add(MatchQuery.of(mq -> mq.field("searchableText").query(queryPattern))._toQuery());
+            queries.add(
+                    MultiMatchQuery.of(mm -> mm
+                            .fields("rawTitle^5", "description^1", "searchableText")
+                            .query(queryPattern)
+                            .type(TextQueryType.MostFields)
+                            .fuzziness("AUTO")
+                            .prefixLength(1)
+                    )._toQuery());
         }
 
         getQueriesForParams(types, themes, rightsHolder).stream()

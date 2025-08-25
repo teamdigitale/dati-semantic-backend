@@ -26,17 +26,11 @@
           "v",
           "d"
         ],
-        "articles_case": true
+        "articles_case": false
       },
       "italian_stop": {
         "type": "stop",
         "stopwords": "_italian_"
-      },
-      "italian_keywords": {
-        "type": "keyword_marker",
-        "keywords": [
-          "esempio"
-        ]
       },
       "italian_stemmer": {
         "type": "stemmer",
@@ -46,6 +40,15 @@
         "type": "synonym",
         "synonyms": [
         ]
+      },
+      "ascii_folding": {
+        "type": "asciifolding",
+        "preserve_original": true
+      },
+      "ngram_filter": {
+        "type": "ngram",
+        "min_gram": 3,
+        "max_gram": 10
       }
     },
     "analyzer": {
@@ -54,16 +57,40 @@
         "filter": [
           "italian_elision",
           "lowercase",
+          "ascii_folding",
           "italian_stop",
-          "italian_keywords",
+          "italian_synonyms",
+          "italian_stemmer"
+        ]
+      },
+      "it_ngram": {
+        "tokenizer": "standard",
+        "filter": [
+          "italian_elision",
+          "lowercase",
+          "ascii_folding",
+          "italian_stop",
+          "italian_synonyms",
           "italian_stemmer",
-          "italian_synonyms"
+          "ngram_filter"
+        ]
+      },
+      "it_search": {
+        "tokenizer": "standard",
+        "filter": [
+          "italian_elision",
+          "lowercase",
+          "ascii_folding",
+          "italian_stop",
+          "italian_synonyms",
+          "italian_stemmer"
         ]
       }
     },
     "normalizer": {
       "lowercase_normalizer": {
         "type": "custom",
+        "char_filter": [],
         "filter": [
           "lowercase"
         ]

@@ -27,37 +27,50 @@ import static java.nio.charset.Charset.defaultCharset;
 @Profile("!int-test") // Only run this initializer in non-test profiles
 public class SynonymsElasticsearchIndexInitializer {
 
-    public static final String INDEX_NAME = "semantic-asset-metadata-8";
+    public static final String INDEX_NAME = "semantic-asset-metadata-9";
+    public static final String ELASTICSEARCH_SETTINGS_JSON = "elasticsearch-settings.json";
+    public static final String SYNONYMS_TXT = "synonyms.txt";
     private final ElasticsearchOperations elasticsearchOperations;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @PostConstruct
+    @SuppressWarnings("unchecked")
     public void createIndexWithSynonyms() throws Exception {
 
         IndexOperations indexOps = elasticsearchOperations.indexOps(SemanticAssetMetadata.class);
 
         if (indexOps.exists()) {
+            log.info("Index {} already exists, skipping creation.", INDEX_NAME);
             return;
         }
 
-        List<String> synonyms = loadSynonymsFromClasspath("synonyms.txt")
+        List<String> synonyms = loadSynonymsFromClasspath()
                 .orElse(Collections.emptyList());
 
-        Map<String, Object> settings = loadSettingsJson("elasticsearch-settings.json");
+        Map<String, Object> settings = loadSettingsJson();
+
+        if (settings == null) {
+            throw new IllegalStateException("Unable to load elasticsearch-settings.json from classpath");
+        }
 
         Map<String, Object> analysis = (Map<String, Object>) settings.get("analysis");
         Map<String, Object> filter = (Map<String, Object>) analysis.get("filter");
-        Map<String, Object> sinonimiFilter = (Map<String, Object>) filter.get("italian_synonyms");
+        Map<String, Object> synonymFilter = (Map<String, Object>) filter.get("italian_synonyms");
 
-        sinonimiFilter.put("synonyms", synonyms);
+        synonymFilter.put("synonyms", synonyms);
 
-        indexOps.create(settings);
+        Map<String, Object> indexSettings = Map.of(
+                "index", Map.of(
+                        "max_ngram_diff", 12,
+                        "analysis", analysis));
+
+        indexOps.create(indexSettings);
         indexOps.putMapping(indexOps.createMapping());
     }
 
-    private Optional<List<String>> loadSynonymsFromClasspath(String fileName) {
+    private Optional<List<String>> loadSynonymsFromClasspath() {
         try {
-            ClassPathResource resource = new ClassPathResource(fileName);
+            ClassPathResource resource = new ClassPathResource(SYNONYMS_TXT);
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource.getInputStream(), defaultCharset()))) {
                 return Optional.of(reader.lines().collect(Collectors.toList()));
             }
@@ -67,8 +80,9 @@ public class SynonymsElasticsearchIndexInitializer {
         return Optional.empty();
     }
 
-    private Map<String, Object> loadSettingsJson(String fileName) throws Exception {
-        return objectMapper.readValue(new ClassPathResource(fileName).getInputStream(), Map.class);
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> loadSettingsJson() throws Exception {
+        return objectMapper.readValue(new ClassPathResource(ELASTICSEARCH_SETTINGS_JSON).getInputStream(), Map.class);
     }
 
 
