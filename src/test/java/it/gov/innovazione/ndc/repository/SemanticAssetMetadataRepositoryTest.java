@@ -140,7 +140,7 @@ class SemanticAssetMetadataRepositoryTest {
         assertThat(must).hasSize(3);
 
         Stream.of(
-                "Query: {\"match\":{\"searchableText\":{\"query\":\"query\"}}}",
+                "Query: {\"multi_match\":{\"fields\":[\"rawTitle^5\",\"description^1\",\"searchableText\"],\"fuzziness\":\"AUTO\",\"prefix_length\":1,\"query\":\"query\",\"type\":\"most_fields\"}}",
                 "Query: {\"terms\":{\"type\":[\"TYPE1\"]}}",
                 "Query: {\"terms\":{\"themes\":[\"THEME1\"]}}")
                 .forEach(qs -> assertTrue(must.stream().map(Object::toString).anyMatch(qs::equals)));
