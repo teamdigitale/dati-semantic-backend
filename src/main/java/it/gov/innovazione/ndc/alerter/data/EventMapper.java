@@ -2,14 +2,14 @@ package it.gov.innovazione.ndc.alerter.data;
 
 import it.gov.innovazione.ndc.alerter.dto.EventDto;
 import it.gov.innovazione.ndc.alerter.entities.Event;
-import lombok.Setter;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Mapper(componentModel = "spring")
 public abstract class EventMapper implements EntityMapper<Event, EventDto> {
 
-    @Setter
+    @Autowired
     protected ContextUtils contextUtils;
 
     @Override

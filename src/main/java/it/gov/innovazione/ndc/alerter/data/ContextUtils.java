@@ -27,6 +27,9 @@ public class ContextUtils {
     }
 
     public Map<String, Object> toContext(String context) {
+        if (context == null || context.isBlank()) {
+            return Map.of();
+        }
         try {
             return objectMapper.readValue(defaultContextIfNull(context), TYPE_REF);
         } catch (JsonProcessingException e) {
