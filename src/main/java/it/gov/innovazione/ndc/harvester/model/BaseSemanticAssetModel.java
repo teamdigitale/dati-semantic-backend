@@ -25,7 +25,6 @@ import org.apache.jena.vocabulary.VCARD4;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -218,11 +217,7 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
     }
 
     public LocalDate parseDate(String date) {
-        if (Objects.isNull(date)) {
-            return null;
-        }
-        return DatatypeConverter.parseDate(date).toInstant().atZone(ZoneId.systemDefault())
-                .toLocalDate();
+        return PermissiveDateParser.parseToLocalDate(date);
     }
 
     protected static List<Distribution> extractDistributionsFilteredByFormat(
