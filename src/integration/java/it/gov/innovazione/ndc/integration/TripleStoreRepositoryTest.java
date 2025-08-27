@@ -7,14 +7,13 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdfconnection.RDFConnection;
-import org.apache.jena.rdfconnection.RDFConnectionFactory;
+import org.apache.jena.rdfconnection.RDFConnectionRemote;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.update.UpdateExecutionFactory;
 import org.apache.jena.update.UpdateRequest;
@@ -78,16 +77,21 @@ public class TripleStoreRepositoryTest {
             )
                 .from(oldGraphName)
             .build();
-        QueryExecution queryExecution =
-            QueryExecutionFactory.sparqlService(sparqlUrl, findPeriodicity);
-        ResultSet resultSet = queryExecution.execSelect();
 
-        assertThat(resultSet.hasNext()).isTrue();
-        QuerySolution querySolution = resultSet.next();
-        queryExecution.close();
-        assertThat(querySolution).as("Check a valid result row").isNotNull();
-        assertThat(querySolution.get("o").toString()).as("Check variable bound value")
-            .isEqualTo("http://publications.europa.eu/resource/authority/frequency/IRREG");
+        try (RDFConnection conn = RDFConnectionRemote.create()
+                .destination(sparqlUrl)
+                .build();
+             QueryExecution qExec = conn.query(findPeriodicity)) {
+
+            ResultSet resultSet = qExec.execSelect();
+            assertThat(resultSet.hasNext()).isTrue();
+
+            QuerySolution querySolution = resultSet.next();
+            assertThat(querySolution).as("Check a valid result row").isNotNull();
+            assertThat(querySolution.get("o").toString())
+                    .as("Check variable bound value")
+                    .isEqualTo("http://publications.europa.eu/resource/authority/frequency/IRREG");
+        }
     }
 
     @Test
@@ -108,24 +112,26 @@ public class TripleStoreRepositoryTest {
             )
                 .from(oldGraphName)
             .build();
-        QueryExecution queryExecution =
-            QueryExecutionFactory.sparqlService(sparqlUrl, keywordQuery);
-        ResultSet resultSet =
-            queryExecution.execSelect();
 
-        assertThat(resultSet.hasNext()).isTrue();
+        try (RDFConnection conn = RDFConnectionRemote.create()
+                .destination(sparqlUrl)
+                .build();
+             QueryExecution qExec = conn.query(keywordQuery)) {
 
-        QuerySolution querySolution = resultSet.next();
-        assertThat(querySolution).as("Check a valid result row").isNotNull();
+            ResultSet resultSet = qExec.execSelect();
+            assertThat(resultSet.hasNext()).isTrue();
 
-        RDFNode keywordNode = querySolution.get("k");
-        assertThat(keywordNode).isNotNull();
+            QuerySolution querySolution = resultSet.next();
+            assertThat(querySolution).as("Check a valid result row").isNotNull();
 
-        assertThat(keywordNode.isLiteral()).isTrue();
-        Literal keyword = (Literal) keywordNode;
-        assertThat(keyword.getLanguage()).isEqualTo("it");
-        assertThat(keyword.getString()).isEqualTo("Beni culturali");
-        queryExecution.close();
+            RDFNode keywordNode = querySolution.get("k");
+            assertThat(keywordNode).isNotNull();
+            assertThat(keywordNode.isLiteral()).isTrue();
+
+            Literal keyword = (Literal) keywordNode;
+            assertThat(keyword.getLanguage()).isEqualTo("it");
+            assertThat(keyword.getString()).isEqualTo("Beni culturali");
+        }
     }
 
     @Test
@@ -164,14 +170,17 @@ public class TripleStoreRepositoryTest {
         queryExecution1.close();
     }
 
-    private void deleteAllTriplesFromGraph(String graphName, String sparqlUrl,
-                                           String sparqlGraphlUrl) {
-        RDFConnection connect =
-            RDFConnectionFactory.connect(sparqlUrl, sparqlGraphlUrl, sparqlGraphlUrl);
-        boolean graphExists =
-            connect.queryAsk("ASK WHERE { GRAPH <" + graphName + "> { ?s ?p ?o } }");
-        if (graphExists) {
-            connect.delete(graphName);
+    private void deleteAllTriplesFromGraph(String graphName, String sparqlUrl, String sparqlGraphUrl) {
+        try (RDFConnection conn = RDFConnectionRemote.create()
+                .queryEndpoint(sparqlUrl)   // SPARQL query (e update, se è lo stesso)
+                .updateEndpoint(sparqlUrl)  // SPARQL update (spesso è lo stesso endpoint di query)
+                .gspEndpoint(sparqlGraphUrl) // Graph Store Protocol endpoint
+                .build()) {
+
+            boolean graphExists = conn.queryAsk("ASK WHERE { GRAPH <" + graphName + "> { ?s ?p ?o } }");
+            if (graphExists) {
+                conn.delete(graphName); // cancella l'intero named graph via GSP
+            }
         }
     }
 

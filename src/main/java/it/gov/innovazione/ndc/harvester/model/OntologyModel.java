@@ -1,6 +1,5 @@
 package it.gov.innovazione.ndc.harvester.model;
 
-import com.github.jsonldjava.shaded.com.google.common.collect.ImmutableList;
 import it.gov.innovazione.ndc.harvester.SemanticAssetType;
 import it.gov.innovazione.ndc.harvester.model.extractors.NodeSummaryExtractor;
 import it.gov.innovazione.ndc.harvester.model.index.Distribution;
@@ -14,6 +13,7 @@ import org.apache.jena.vocabulary.RDFS;
 
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import static it.gov.innovazione.ndc.harvester.model.SemanticAssetModelValidationContext.NO_VALIDATION;
 import static it.gov.innovazione.ndc.harvester.model.extractors.LiteralExtractor.extractOptional;
@@ -65,14 +65,17 @@ public class OntologyModel extends BaseSemanticAssetModel {
     public SemanticAssetModelValidationContext validateMetadata() {
         SemanticAssetModelValidationContext superContext = super.validateMetadata();
 
-        SemanticAssetModelValidationContext context = new ImmutableList.Builder<Consumer<SemanticAssetModelValidationContext>>()
-                .add(v -> getDistributions(v.error().field(Fields.distributions)))
-                .add(v -> getKeyClasses(getMainResource(), v.warning().field(Fields.keyClasses)))
-                .add(v -> extractOptional(getMainResource(), Admsapit.prefix, v.warning().field(Fields.prefix)))
-                .add(v -> maybeNodeSummaries(getMainResource(), Admsapit.semanticAssetInUse,
-                        createProperty("https://w3id.org/italia/onto/l0/name"), v.warning().field(Fields.projects)))
-                .build()
-                .stream()
+        SemanticAssetModelValidationContext context = Stream.<Consumer<SemanticAssetModelValidationContext>>of(
+                        v -> getDistributions(v.error().field(Fields.distributions)),
+                        v -> getKeyClasses(getMainResource(), v.warning().field(Fields.keyClasses)),
+                        v -> extractOptional(getMainResource(), Admsapit.prefix, v.warning().field(Fields.prefix)),
+                        v -> maybeNodeSummaries(
+                                getMainResource(),
+                                Admsapit.semanticAssetInUse,
+                                createProperty("https://w3id.org/italia/onto/l0/name"),
+                                v.warning().field(Fields.projects)
+                        )
+                )
                 .map(consumer -> returningValidationContext(this.validationContext, consumer))
                 .reduce(SemanticAssetModelValidationContext::merge)
                 .orElse(superContext);

@@ -14,7 +14,7 @@ import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdfconnection.RDFConnection;
-import org.apache.jena.rdfconnection.RDFConnectionFactory;
+import org.apache.jena.rdfconnection.RDFConnectionRemote;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,6 +34,7 @@ import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -124,8 +125,10 @@ public class RestApiIntegrationTests extends BaseIntegrationTest {
                 .body("assetIri", equalTo(assetIri))
                 .body("type", equalTo(ONTOLOGY.name()))
                 .body("modifiedOn", equalTo("2018-07-31"))
-                .body("keyClasses[0].iri",
-                        equalTo("https://w3id.org/italia/onto/ACCO/AccommodationTypology"));
+                .body("keyClasses.iri", hasItems(
+                        "https://w3id.org/italia/onto/ACCO/Accommodation",
+                        "https://w3id.org/italia/onto/ACCO/AccommodationTypology",
+                        "https://w3id.org/italia/onto/ACCO/AccommodationRoom"));
 
         try (RDFConnection connection = getVirtuosoConnection()) {
             String query = format("SELECT ?o WHERE { <%s> <%s> ?o }", assetIri, title);
@@ -135,7 +138,7 @@ public class RestApiIntegrationTests extends BaseIntegrationTest {
             QuerySolution querySolution = resultSet.next();
             assertThat(querySolution).isNotNull();
             assertThat(querySolution.get("o").toString())
-                    .isEqualTo("Accommodation Facilities Ontology - Italian Application Profile@en");
+                    .isEqualTo("\"Accommodation Facilities Ontology - Italian Application Profile\"@en");
         }
     }
 
@@ -378,7 +381,13 @@ public class RestApiIntegrationTests extends BaseIntegrationTest {
     private RDFConnection getVirtuosoConnection() {
         String sparql = virtuosoProps.getSparql();
         String graphProtocolUrl = virtuosoProps.getSparqlGraphStore();
-        RDFConnection connection = RDFConnectionFactory.connect(sparql, sparql, graphProtocolUrl);
+
+        RDFConnection connection = RDFConnectionRemote.create()
+                .queryEndpoint(sparql)
+                .updateEndpoint(sparql)
+                .gspEndpoint(graphProtocolUrl)
+                .build();
+
         if (connection == null) {
             throw new AssertionFailedError("Could not connect to Virtuoso");
         }

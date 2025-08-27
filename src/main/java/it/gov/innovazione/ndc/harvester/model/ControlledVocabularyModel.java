@@ -1,6 +1,5 @@
 package it.gov.innovazione.ndc.harvester.model;
 
-import com.github.jsonldjava.shaded.com.google.common.collect.ImmutableList;
 import it.gov.innovazione.ndc.harvester.model.exception.InvalidModelException;
 import it.gov.innovazione.ndc.harvester.model.extractors.RightsHolderExtractor;
 import it.gov.innovazione.ndc.harvester.model.index.Distribution;
@@ -10,6 +9,7 @@ import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import it.gov.innovazione.ndc.model.profiles.NDC;
 import it.gov.innovazione.ndc.service.logging.HarvesterStage;
 import it.gov.innovazione.ndc.service.logging.LoggingContext;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
@@ -19,6 +19,7 @@ import org.apache.jena.vocabulary.RDF;
 
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import static it.gov.innovazione.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
 import static it.gov.innovazione.ndc.harvester.model.SemanticAssetModelValidationContext.NO_VALIDATION;
@@ -32,6 +33,7 @@ public class ControlledVocabularyModel extends BaseSemanticAssetModel {
     public static final String NDC_ENDPOINT_URL_TEMPLATE = "%s/vocabularies/%s/%s";
     public static final String KEY_CONCEPT_VALIDATION_PATTERN = "^\\w(:?[\\w-]+\\w)*$";
 
+    @Getter
     private String endpointUrl = "";
 
     public ControlledVocabularyModel(Model coreModel, String source, String repoUrl, Instance instance) {
@@ -120,10 +122,6 @@ public class ControlledVocabularyModel extends BaseSemanticAssetModel {
         return format("https://w3id.org/italia/data/data-service/%s-%s", getAgencyId().getIdentifier(), getKeyConcept());
     }
 
-    public String getEndpointUrl() {
-        return endpointUrl;
-    }
-
     private String buildEndpointUrl(String baseUrl) {
         return format(NDC_ENDPOINT_URL_TEMPLATE, baseUrl, getAgencyId().getIdentifier(), getKeyConcept());
     }
@@ -147,12 +145,11 @@ public class ControlledVocabularyModel extends BaseSemanticAssetModel {
     public SemanticAssetModelValidationContext validateMetadata() {
         SemanticAssetModelValidationContext superContext = super.validateMetadata();
 
-        SemanticAssetModelValidationContext context = new ImmutableList.Builder<Consumer<SemanticAssetModelValidationContext>>()
-                .add(v -> getDistributions(v.error().field(SemanticAssetMetadata.Fields.distributions)))
-                .add(v -> getKeyConcept(getMainResource(), v.warning().field(SemanticAssetMetadata.Fields.keyConcept)))
-                .add(v -> RightsHolderExtractor.getAgencyId(getMainResource(), v.warning().field(SemanticAssetMetadata.Fields.agencyId)))
-                .build()
-                .stream()
+        SemanticAssetModelValidationContext context = Stream.<Consumer<SemanticAssetModelValidationContext>>of(
+                        v -> getDistributions(v.error().field(SemanticAssetMetadata.Fields.distributions)),
+                        v -> getKeyConcept(getMainResource(), v.warning().field(SemanticAssetMetadata.Fields.keyConcept)),
+                        v -> RightsHolderExtractor.getAgencyId(getMainResource(), v.warning().field(SemanticAssetMetadata.Fields.agencyId))
+                )
                 .map(consumer -> returningValidationContext(this.validationContext, consumer))
                 .reduce(SemanticAssetModelValidationContext::merge)
                 .orElse(superContext);
