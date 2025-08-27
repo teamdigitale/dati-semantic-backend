@@ -6,6 +6,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 
@@ -101,7 +102,12 @@ public class LiteralExtractor {
 
     private static String extractStringIfPossible(Statement statement) {
         try {
-            return statement.getObject().asLiteral().getString();
+            RDFNode object = statement.getObject();
+            if (object.isLiteral()) {
+                return statement.getLiteral().getString();
+            }
+            log.warn("Statement object is not a literal: {}", statement);
+            return statement.getObject().toString();
         } catch (Exception e) {
             log.warn("Cannot extract string from statement: {}", statement, e);
             return null;

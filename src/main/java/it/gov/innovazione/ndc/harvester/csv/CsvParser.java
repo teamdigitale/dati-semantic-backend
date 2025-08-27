@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -23,6 +24,7 @@ import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSeman
 import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticInfo;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.stream.Collectors.toMap;
 
 @Component
 @RequiredArgsConstructor
@@ -87,7 +89,23 @@ public class CsvParser {
     private List<Map<String, String>> readRecords(CSVParser parser) {
         return parser.stream()
                 .map(CSVRecord::toMap)
+                .map(this::withSanitizedKeys)
                 .collect(Collectors.toList());
+    }
+
+    private Map<String, String> withSanitizedKeys(Map<String, String> map) {
+        if (map == null || map.isEmpty()) {
+            return map;
+        }
+        return map.entrySet().stream()
+                .collect(toMap(
+                        e -> {
+                            String k = e.getKey();
+                            return k == null ? null : k.replace('.', '_').trim();
+                        },
+                        Map.Entry::getValue,
+                        (v1, v2) -> v1,
+                        LinkedHashMap::new));
     }
 
     private String getIdName(CSVParser parser, String csvFile) {
