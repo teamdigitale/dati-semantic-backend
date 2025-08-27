@@ -60,5 +60,5 @@ Please review our [Code of Conduct](CODE_OF_CONDUCT.md) to ensure a great collab
 # License
 
 This work is licensed under the GNU Affero General Public License (AGPL), version 3 or later. You can find a copy of 
-the license in the [LICENSE](https://github.com/teamdigitale/dati-semantic-backend/blob/main/LICENSE) file
+the license in the  [LICENSE](https://github.com/teamdigitale/dati-semantic-backend/blob/main/LICENSE) file
 

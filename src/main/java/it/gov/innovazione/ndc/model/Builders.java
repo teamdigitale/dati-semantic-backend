@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.github.jsonldjava.shaded.com.google.common.base.CaseFormat.LOWER_CAMEL;
-import static com.github.jsonldjava.shaded.com.google.common.base.CaseFormat.UPPER_UNDERSCORE;
+import static com.google.common.base.CaseFormat.LOWER_CAMEL;
+import static com.google.common.base.CaseFormat.UPPER_UNDERSCORE;
 
 public class Builders {
     private Builders() {

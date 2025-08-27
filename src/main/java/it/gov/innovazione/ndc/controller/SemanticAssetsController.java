@@ -1,8 +1,6 @@
 package it.gov.innovazione.ndc.controller;
 
-import static it.gov.innovazione.ndc.gen.dto.Direction.ASC;
-
-import com.github.jsonldjava.shaded.com.google.common.base.CaseFormat;
+import com.google.common.base.CaseFormat;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -17,18 +15,21 @@ import it.gov.innovazione.ndc.gen.dto.Theme;
 import it.gov.innovazione.ndc.harvester.model.index.RightsHolder;
 import it.gov.innovazione.ndc.harvester.service.RepositoryService;
 import it.gov.innovazione.ndc.service.SemanticAssetSearchService;
-import java.net.URI;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.net.URI;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static it.gov.innovazione.ndc.gen.dto.Direction.ASC;
 
 @RequiredArgsConstructor
 @RestController

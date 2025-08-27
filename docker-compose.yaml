@@ -32,33 +32,33 @@ services:
       MYSQL_ROOT_PASSWORD: example
       MYSQL_DATABASE: dev_ndc_harvest
 
-  backend:
-    image: gcr.io/distroless/java:11-debug-nonroot
-    restart: no
-    depends_on:
-      - virtuoso
-      - mysql
-      - elasticsearch
-    volumes:
-      - ${PWD}/build/libs/:/jar
-    command: [ "/jar/dati-semantic-backend-0.0.1-SNAPSHOT.jar" ]
-    ports:
-      - 8080:8080
-      - 8081:8081
-    environment:
-      # Datasources
-      - SPRING_ELASTICSEARCH_REST_URIS=http://elasticsearch:9200
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=example
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/dev_ndc_harvest
-      - VIRTUOSO_SPARQL=http://virtuoso:8890/sparql
-      - VIRTUOSO_SPARQL_GRAPH_STORE=http://virtuoso:8890/sparql-graph-crud
-      - VIRTUOSO_USERNAME=dba
-      - VIRTUOSO_PASSWORD=dba
-      # Configuration.
-      - HARVESTER_FOLDER_SKIP-WORDS=scriptR2RML,sparql,deprecated
-      - HARVESTER_ONTOLOGY_SCANNER_SKIP-WORDS=example,aligns,DBGT,r2rml
-      - HARVESTER_CONTROLLED-VOCABULARY_SCANNER_SKIP-WORDS=transparency-obligation-organization,transparency-obligation-administration
-      # Repositories.
-      - HARVESTER_REPOSITORIES=https://github.com/ronytw/sample-ontology-repo
-      - HARVESTER_ENDPOINT_ENABLED=true
+#  backend:
+#    image: gcr.io/distroless/java:11-debug-nonroot
+#    restart: no
+#    depends_on:
+#      - virtuoso
+#      - mysql
+#      - elasticsearch
+#    volumes:
+#      - ${PWD}/build/libs/:/jar
+#    command: [ "/jar/dati-semantic-backend-0.0.1-SNAPSHOT.jar" ]
+#    ports:
+#      - 8080:8080
+#      - 8081:8081
+#    environment:
+#      # Datasources
+#      - SPRING_ELASTICSEARCH_REST_URIS=http://elasticsearch:9200
+#      - SPRING_DATASOURCE_USERNAME=root
+#      - SPRING_DATASOURCE_PASSWORD=example
+#      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/dev_ndc_harvest
+#      - VIRTUOSO_SPARQL=http://virtuoso:8890/sparql
+#      - VIRTUOSO_SPARQL_GRAPH_STORE=http://virtuoso:8890/sparql-graph-crud
+#      - VIRTUOSO_USERNAME=dba
+#      - VIRTUOSO_PASSWORD=dba
+#      # Configuration.
+#      - HARVESTER_FOLDER_SKIP-WORDS=scriptR2RML,sparql,deprecated
+#      - HARVESTER_ONTOLOGY_SCANNER_SKIP-WORDS=example,aligns,DBGT,r2rml
+#      - HARVESTER_CONTROLLED-VOCABULARY_SCANNER_SKIP-WORDS=transparency-obligation-organization,transparency-obligation-administration
+#      # Repositories.
+#      - HARVESTER_REPOSITORIES=https://github.com/ronytw/sample-ontology-repo
+#      - HARVESTER_ENDPOINT_ENABLED=true

@@ -2,7 +2,6 @@ package it.gov.innovazione.ndc.service;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.SimpleSelector;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.riot.RDFDataMgr;
@@ -33,8 +32,7 @@ public class JenaLoadTest {
     }
 
     private Statement searchForDatasetStatement(Model model, Resource dataset) {
-        SimpleSelector selector = new SimpleSelector(null, RDF.type, dataset);
-        StmtIterator i = model.listStatements(selector);
+        StmtIterator i = model.listStatements(null, RDF.type, dataset);
         try {
             return requireSingle(i);
         } finally {

@@ -1,6 +1,5 @@
 package it.gov.innovazione.ndc.harvester.model;
 
-import com.github.jsonldjava.shaded.com.google.common.collect.ImmutableList;
 import it.gov.innovazione.ndc.harvester.model.extractors.LiteralExtractor;
 import it.gov.innovazione.ndc.harvester.model.extractors.NodeExtractor;
 import it.gov.innovazione.ndc.harvester.model.extractors.NodeSummaryExtractor;
@@ -19,6 +18,7 @@ import org.apache.jena.vocabulary.RDFS;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import static it.gov.innovazione.ndc.harvester.SemanticAssetType.SCHEMA;
 import static it.gov.innovazione.ndc.harvester.model.SemanticAssetModelValidationContext.NO_VALIDATION;
@@ -87,19 +87,18 @@ public class SchemaModel extends BaseSemanticAssetModel {
 
     @Override
     public SemanticAssetModelValidationContext validateMetadata() {
-        return new ImmutableList.Builder<Consumer<SemanticAssetModelValidationContext>>()
-                .add(v -> extract(getMainResource(), title, v.error().field(Fields.title)))
-                .add(v -> extract(getMainResource(), description, v.error().field(Fields.description)))
-                .add(v -> getDistributions(v.error().field(Fields.distributions)))
-                .add(v -> extractRequiredNodeSummary(getMainResource(), rightsHolder, FOAF.name, v.error().field(Fields.rightsHolder)))
-                .add(v -> extractOptional(getMainResource(), modified, v.warning().field(Fields.modifiedOn)))
-                .add(v -> requireNodes(getMainResource(), theme, v.error().field(Fields.themes)))
-                .add(v -> extractOptional(getMainResource(), issued, v.warning().field(Fields.issuedOn)))
-                .add(v -> extract(getMainResource(), versionInfo, v.error().field(Fields.versionInfo)))
-                .add(v -> maybeNodeSummaries(getMainResource(), conformsTo, FOAF.name, v.warning().field(Fields.conformsTo)))
-                .add(v -> getKeyClasses(getMainResource(), v.warning().field(keyClasses)))
-                .build()
-                .stream()
+        return Stream.<Consumer<SemanticAssetModelValidationContext>>of(
+                        v -> extract(getMainResource(), title, v.error().field(Fields.title)),
+                        v -> extract(getMainResource(), description, v.error().field(Fields.description)),
+                        v -> getDistributions(v.error().field(Fields.distributions)),
+                        v -> extractRequiredNodeSummary(getMainResource(), rightsHolder, FOAF.name, v.error().field(Fields.rightsHolder)),
+                        v -> extractOptional(getMainResource(), modified, v.warning().field(Fields.modifiedOn)),
+                        v -> requireNodes(getMainResource(), theme, v.error().field(Fields.themes)),
+                        v -> extractOptional(getMainResource(), issued, v.warning().field(Fields.issuedOn)),
+                        v -> extract(getMainResource(), versionInfo, v.error().field(Fields.versionInfo)),
+                        v -> maybeNodeSummaries(getMainResource(), conformsTo, FOAF.name, v.warning().field(Fields.conformsTo)),
+                        v -> getKeyClasses(getMainResource(), v.warning().field(keyClasses))
+                )
                 .map(consumer -> returningValidationContext(this.validationContext, consumer))
                 .reduce(SemanticAssetModelValidationContext::merge)
                 .orElse(this.validationContext);
