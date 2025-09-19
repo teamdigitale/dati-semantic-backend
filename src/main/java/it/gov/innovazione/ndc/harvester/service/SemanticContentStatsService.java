@@ -186,20 +186,28 @@ public class SemanticContentStatsService {
     }
 
     public List<SemanticContentStats> getRawStats() {
-        return jdbcTemplate.query(GET_ALL_STATS_QUERY, (rs, rowNum) ->
-                SemanticContentStats.builder()
-                        .id(rs.getString("ID"))
-                        .harvesterRunId(rs.getString("HARVESTER_RUN_ID"))
-                        .resourceUri(rs.getString("RESOURCE_URI"))
-                        .resourceType(SemanticAssetType.valueOf(rs.getString("RESOURCE_TYPE")))
-                        .rightHolder(rs.getString("RIGHT_HOLDER"))
-                        .issuedOn(getOrNull(rs, "ISSUED_ON", java.sql.Date.class, Date::toLocalDate))
-                        .modifiedOn(getOrNull(rs, "MODIFIED_ON", java.sql.Date.class, Date::toLocalDate))
-                        .hasErrors(rs.getBoolean("HAS_ERRORS"))
-                        .hasWarnings(rs.getBoolean("HAS_WARNINGS"))
-                        .status(fromJsonString(rs.getString("STATUS_TYPE")))
-                        .build()
-        );
+        return jdbcTemplate.query(GET_ALL_STATS_QUERY, (rs, rowNum) -> {
+                    try {
+                        return SemanticContentStats.builder()
+                                .id(rs.getString("ID"))
+                                .harvesterRunId(rs.getString("HARVESTER_RUN_ID"))
+                                .resourceUri(rs.getString("RESOURCE_URI"))
+                                .resourceType(SemanticAssetType.valueOf(rs.getString("RESOURCE_TYPE")))
+                                .rightHolder(rs.getString("RIGHT_HOLDER"))
+                                .issuedOn(getOrNull(rs, "ISSUED_ON", java.sql.Date.class, Date::toLocalDate))
+                                .modifiedOn(getOrNull(rs, "MODIFIED_ON", java.sql.Date.class, Date::toLocalDate))
+                                .hasErrors(rs.getBoolean("HAS_ERRORS"))
+                                .hasWarnings(rs.getBoolean("HAS_WARNINGS"))
+                                .status(fromJsonString(rs.getString("STATUS_TYPE")))
+                                .build();
+                    } catch (Exception e) {
+                        log.error("Skipping row " + rowNum + " due to error:", e.getMessage());
+                        return null;
+                    }
+                })
+                .stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     private <T, R> R getOrNull(ResultSet rs, String column, Class<T> originalClazz, Function<T, R> mapper) {
