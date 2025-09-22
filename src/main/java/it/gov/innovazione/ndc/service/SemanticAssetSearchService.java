@@ -1,5 +1,6 @@
 package it.gov.innovazione.ndc.service;
 
+import it.gov.innovazione.ndc.controller.MltRequest;
 import it.gov.innovazione.ndc.controller.exception.SemanticAssetNotFoundException;
 import it.gov.innovazione.ndc.gen.dto.AssetType;
 import it.gov.innovazione.ndc.gen.dto.SearchResult;
@@ -10,6 +11,7 @@ import it.gov.innovazione.ndc.model.SemanticAssetsMetadataMapper;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.core.SearchPage;
 import org.springframework.stereotype.Service;
 
@@ -42,5 +44,27 @@ public class SemanticAssetSearchService {
                 Set.of(AssetType.CONTROLLED_VOCABULARY.getValue()),
                 Collections.emptySet(), Collections.emptySet(), pageable);
         return mapper.vocabResultToDto(results);
+    }
+
+    public SearchResult moreLikeThis(MltRequest req) {
+
+        // in SemanticAssetSearchService.moreLikeThis
+        SemanticAssetMetadata semanticAssetMetadata = metadataRepository.findByIri(req.assetIri())
+                .orElseThrow(() -> new SemanticAssetNotFoundException(req.assetIri()));
+
+        Pageable pageable = it.gov.innovazione.ndc.controller.OffsetBasedPageRequest.of(
+                req.offset(), req.limit(), Sort.unsorted());
+
+        var page = metadataRepository.moreLikeThis(
+                semanticAssetMetadata.getElasticsearchId(),
+                req.assetIri(),
+                req.minTermFreq(),
+                req.minDocFreq(),
+                req.maxQueryTerms(),
+                req.minimumShouldMatch(),
+                pageable
+        );
+
+        return mapper.searchResultToDto(page);
     }
 }

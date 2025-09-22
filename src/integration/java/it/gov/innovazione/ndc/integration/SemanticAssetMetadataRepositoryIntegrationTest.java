@@ -7,6 +7,7 @@ import it.gov.innovazione.ndc.harvester.model.Instance;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataDeleter;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
+import it.gov.innovazione.ndc.search.MltProperties;
 import org.elasticsearch.client.RestClient;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterAll;
@@ -39,7 +40,7 @@ public class SemanticAssetMetadataRepositoryIntegrationTest {
         InMemoryInstanceManager instanceManager = new InMemoryInstanceManager();
         instanceManager.setAllInstances(Instance.PRIMARY);
         deleter = new SemanticAssetMetadataDeleter(elasticsearchOperations);
-        repository = new SemanticAssetMetadataRepository(elasticsearchOperations, deleter, instanceManager);
+        repository = new SemanticAssetMetadataRepository(elasticsearchOperations, deleter, instanceManager, new MltProperties());
     }
 
     @NotNull

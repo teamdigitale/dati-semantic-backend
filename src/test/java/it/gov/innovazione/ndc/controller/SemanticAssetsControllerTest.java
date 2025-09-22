@@ -7,6 +7,7 @@ import it.gov.innovazione.ndc.gen.dto.SortBy;
 import it.gov.innovazione.ndc.gen.dto.Theme;
 import it.gov.innovazione.ndc.harvester.service.RepositoryService;
 import it.gov.innovazione.ndc.model.Builders;
+import it.gov.innovazione.ndc.search.MltProperties;
 import it.gov.innovazione.ndc.service.SemanticAssetSearchService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,7 +35,7 @@ public class SemanticAssetsControllerTest {
 
     @Test
     void shouldFetchResultsFromRepositoryForGivenKeyword() {
-        SemanticAssetsController controller = new SemanticAssetsController(service, repositoryService);
+        SemanticAssetsController controller = new SemanticAssetsController(service, repositoryService, new MltProperties());
         SearchResult expectedResult = Builders.searchResult().build();
         when(service.search(any(), any(), any(), any(), any())).thenReturn(expectedResult);
 
@@ -55,7 +56,7 @@ public class SemanticAssetsControllerTest {
 
     @Test
     void shouldGetDetailsOfTheAssetByIri() throws URISyntaxException {
-        SemanticAssetsController controller = new SemanticAssetsController(service, repositoryService);
+        SemanticAssetsController controller = new SemanticAssetsController(service, repositoryService, new MltProperties());
         SemanticAssetDetails expected = new SemanticAssetDetails();
         when(service.findByIri(any())).thenReturn(expected);
 
