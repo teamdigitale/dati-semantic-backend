@@ -1,5 +1,5 @@
 plugins {
-    id 'org.springframework.boot' version '3.5.5'
+    id 'org.springframework.boot' version '3.5.6'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'java'
     id 'checkstyle'
@@ -246,6 +246,7 @@ spotbugsTest {
 
 dependencyCheck {
     nvd {
+        scanConfigurations = ['runtimeClasspath']
         apiKey = System.getProperty("nvdApiKey")
         datafeedUrl = "https://dependency-check.github.io/DependencyCheck_Builder/nvd_cache"
         System.out.print("NVD API is set: ")
