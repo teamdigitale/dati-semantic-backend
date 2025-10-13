@@ -14,17 +14,22 @@ import it.gov.innovazione.ndc.gen.dto.SortBy;
 import it.gov.innovazione.ndc.gen.dto.Theme;
 import it.gov.innovazione.ndc.harvester.model.index.RightsHolder;
 import it.gov.innovazione.ndc.harvester.service.RepositoryService;
+import it.gov.innovazione.ndc.search.MltProperties;
 import it.gov.innovazione.ndc.service.SemanticAssetSearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -36,6 +41,7 @@ import static it.gov.innovazione.ndc.gen.dto.Direction.ASC;
 public class SemanticAssetsController implements SemanticAssetsApi {
     private final SemanticAssetSearchService searchService;
     private final RepositoryService repositoryService;
+    private final MltProperties mltProperties;
 
   /**
    * GET /semantic-assets/rights-holders Retrieves the rights holders of the semantic assets.
@@ -63,6 +69,28 @@ public class SemanticAssetsController implements SemanticAssetsApi {
   List<RightsHolder> getRightsHolders() {
         return repositoryService.getRightsHolders();
 
+    }
+
+    @GetMapping("/semantic-assets/mlt")
+    public ResponseEntity<SearchResult> moreLikeThis(
+            @RequestParam String assetIri,
+            @RequestParam(required = false) Optional<Integer> offset,
+            @RequestParam(required = false) Optional<Integer> limit,
+            @RequestParam(required = false) Optional<Integer> minDocFreq,
+            @RequestParam(required = false) Optional<Integer> minTermFreq,
+            @RequestParam(required = false) Optional<Integer> maxQueryTerms,
+            @RequestParam(required = false) Optional<String> minimumShouldMatch
+    ) {
+        var req = new MltRequest(
+                assetIri,
+                minDocFreq.orElse(mltProperties.getMinDocFreq()),
+                minTermFreq.orElse(mltProperties.getMinTermFreq()),
+                maxQueryTerms.orElse(mltProperties.getMaxQueryTerms()),
+                minimumShouldMatch.orElse(mltProperties.getMinimumShouldMatch()),
+                offset.orElse(0),
+                limit.orElse(mltProperties.getSizeMax()));
+
+        return ResponseEntity.ok(searchService.moreLikeThis(req));
     }
 
     @Override

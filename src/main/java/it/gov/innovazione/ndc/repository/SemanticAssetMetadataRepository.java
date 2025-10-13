@@ -1,6 +1,7 @@
 package it.gov.innovazione.ndc.repository;
 
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.MoreLikeThisQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.MultiMatchQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.QueryVariant;
@@ -8,6 +9,7 @@ import co.elastic.clients.elasticsearch._types.query_dsl.TermsQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType;
 import it.gov.innovazione.ndc.harvester.model.Instance;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
+import it.gov.innovazione.ndc.search.MltProperties;
 import it.gov.innovazione.ndc.service.InstanceManager;
 import it.gov.innovazione.ndc.service.InstanceManager.RepositoryInstance;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.SearchPage;
 import org.springframework.stereotype.Repository;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +31,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static it.gov.innovazione.ndc.config.SynonymsElasticsearchIndexInitializer.INDEX_NAME;
 import static it.gov.innovazione.ndc.harvester.SemanticAssetType.CONTROLLED_VOCABULARY;
 import static java.util.Objects.nonNull;
 import static org.springframework.data.elasticsearch.client.elc.Queries.termQuery;
@@ -40,6 +44,7 @@ public class SemanticAssetMetadataRepository {
     private final ElasticsearchOperations esOps;
     private final SemanticAssetMetadataDeleter semanticAssetMetadataDeleter;
     private final InstanceManager instanceManager;
+    private final MltProperties mltProperties;
 
     public SearchPage<SemanticAssetMetadata> search(String queryPattern, Set<String> types,
                                                     Set<String> themes, Set<String> rightsHolder,
@@ -140,4 +145,47 @@ public class SemanticAssetMetadataRepository {
         SearchHits<SemanticAssetMetadata> hits = esOps.search(query, SemanticAssetMetadata.class);
         return hits.get().map(SearchHit::getContent).collect(Collectors.toList());
     }
+
+    public SearchPage<SemanticAssetMetadata> moreLikeThis(
+            String documentId,
+            String assetIri,
+            int minTermFreq,
+            int minDocFreq,
+            int maxQueryTerms,
+            String minimumShouldMatch,
+            Pageable pageable
+    ) {
+
+        Query mlt = MoreLikeThisQuery.of(m -> m
+                .fields(mltProperties.getDefaultFields())
+                .like(l -> l.document(d -> d.index(INDEX_NAME).id(documentId)))
+                .minTermFreq(minTermFreq)
+                .minDocFreq(minDocFreq)
+                .maxQueryTerms(maxQueryTerms)
+                .minimumShouldMatch(minimumShouldMatch)
+        )._toQuery();
+
+        Optional<BoolQuery> instances = getConditionForInstances();
+
+        Query excludeSelf = termQuery("iri", assetIri)._toQuery();
+
+        List<Query> mustQueries = new ArrayList<>();
+        mustQueries.add(mlt);
+        instances.map(QueryVariant::_toQuery).ifPresent(mustQueries::add);
+
+        BoolQuery bool = BoolQuery.of(b -> b
+                .must(mustQueries)
+                .mustNot(excludeSelf)
+        );
+
+        NativeQuery query = NativeQuery.builder()
+                .withQuery(bool._toQuery())
+                .withPageable(pageable)
+                .withTimeout(Duration.ofMillis(mltProperties.getTimeoutMs()))
+                .build();
+
+        SearchHits<SemanticAssetMetadata> hits = esOps.search(query, SemanticAssetMetadata.class);
+        return searchPageFor(hits, pageable);
+    }
+
 }
