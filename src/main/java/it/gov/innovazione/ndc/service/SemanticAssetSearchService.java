@@ -48,7 +48,6 @@ public class SemanticAssetSearchService {
 
     public SearchResult moreLikeThis(MltRequest req) {
 
-        // in SemanticAssetSearchService.moreLikeThis
         SemanticAssetMetadata semanticAssetMetadata = metadataRepository.findByIri(req.assetIri())
                 .orElseThrow(() -> new SemanticAssetNotFoundException(req.assetIri()));
 

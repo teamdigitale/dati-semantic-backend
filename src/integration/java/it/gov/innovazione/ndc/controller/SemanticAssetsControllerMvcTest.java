@@ -5,6 +5,7 @@ import it.gov.innovazione.ndc.gen.dto.SearchResultItem;
 import it.gov.innovazione.ndc.gen.dto.SemanticAssetDetails;
 import it.gov.innovazione.ndc.harvester.service.RepositoryService;
 import it.gov.innovazione.ndc.model.Builders;
+import it.gov.innovazione.ndc.search.MltProperties;
 import it.gov.innovazione.ndc.service.SemanticAssetSearchService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,8 @@ public class SemanticAssetsControllerMvcTest {
     private SemanticAssetSearchService searchService;
     @MockitoBean
     private RepositoryService repositoryService;
+    @MockitoBean
+    private MltProperties mltProperties;
 
     @Test
     void shouldFindByIri() throws Exception {
