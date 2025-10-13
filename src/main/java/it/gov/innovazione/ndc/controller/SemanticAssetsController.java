@@ -76,12 +76,7 @@ public class SemanticAssetsController implements SemanticAssetsApi {
             Set<Theme> theme,
             Set<String> rightsHolder) {
 
-        String property = CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, sortBy.getValue());
-
-        Pageable pageable = OffsetBasedPageRequest.of(offset, limit,
-                Sort.by(direction == ASC
-                        ? Sort.Order.asc(property)
-                        : Sort.Order.desc(property)));
+        Pageable pageable = getPageable(offset, limit, direction, sortBy);
 
         return AppJsonResponse.ok(
                 searchService.search(q,
@@ -91,6 +86,17 @@ public class SemanticAssetsController implements SemanticAssetsApi {
                         pageable
                 )
         );
+    }
+
+    private static OffsetBasedPageRequest getPageable(Integer offset, Integer limit, Direction direction, SortBy sortBy) {
+        if (sortBy == SortBy.SCORE) {
+            return OffsetBasedPageRequest.of(offset, limit);
+        }
+        String property = CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, sortBy.getValue());
+        return OffsetBasedPageRequest.of(offset, limit,
+                Sort.by(direction == ASC
+                        ? Sort.Order.asc(property)
+                        : Sort.Order.desc(property)));
     }
 
     private <T> Set<String> toEnumStrings(Set<T> parameter, Function<T, String> valueMapper) {

@@ -121,7 +121,7 @@ public class SemanticAssetsControllerMvcTest {
     @Test
     void shouldReturnMatchingAssetsUsingProvidedPageParams() throws Exception {
         SearchResultItem dto = new SearchResultItem();
-        PageRequest pageable = OffsetBasedPageRequest.of(100, 20, Sort.by(Sort.Order.asc("title")));
+        PageRequest pageable = OffsetBasedPageRequest.of(100, 20, Sort.unsorted());
         when(searchService.search(any(), any(), any(), any(), any())
         ).thenReturn(Builders.searchResult()
                 .limit(20)
@@ -155,7 +155,7 @@ public class SemanticAssetsControllerMvcTest {
                 .andExpect(status().isOk());
 
         verify(searchService).search("", Set.of(), Set.of(), Set.of(), OffsetBasedPageRequest.of(0, 10,
-                Sort.by(Sort.Order.asc("title"))));
+                Sort.unsorted()));
     }
 
     @Test
