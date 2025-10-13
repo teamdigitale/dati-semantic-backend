@@ -286,7 +286,8 @@ components:
         - TITLE
         - MODIFIED_ON
         - ISSUED_ON
-      default: "TITLE"
+        - SCORE
+      default: "SCORE"
     Direction:
       type: string
       enum:
