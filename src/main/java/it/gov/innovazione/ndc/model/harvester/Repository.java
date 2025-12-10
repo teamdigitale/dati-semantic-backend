@@ -19,6 +19,7 @@ public class Repository {
     private String id;
     @With
     private String url;
+    private String branch;
     private String name;
     private String description;
     private String owner;

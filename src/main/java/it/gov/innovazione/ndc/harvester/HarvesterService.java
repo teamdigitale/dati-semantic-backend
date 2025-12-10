@@ -86,7 +86,7 @@ public class HarvesterService {
         String repoUrl = normalisedRepo.getUrl();
         log.debug("Normalised repo url {}", repoUrl);
         try {
-            Path path = cloneRepoToTempPath(repoUrl, revision);
+            Path path = cloneRepoToTempPath(repoUrl, repository.getBranch(), revision);
 
             NDCHarvesterLoggerUtils.overrideContext(LoggingContext.builder()
                     .stage(CLONE_REPO)
@@ -196,8 +196,8 @@ public class HarvesterService {
         });
     }
 
-    private Path cloneRepoToTempPath(String repoUrl, String revision) throws IOException {
-        Path path = agencyRepositoryService.cloneRepo(repoUrl, revision);
+    private Path cloneRepoToTempPath(String repoUrl, String branch, String revision) throws IOException {
+        Path path = agencyRepositoryService.cloneRepo(repoUrl, branch, revision);
         log.debug("Repo {} cloned to temp folder {}", repoUrl, path);
         return path;
     }

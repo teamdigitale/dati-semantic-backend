@@ -65,6 +65,7 @@ public class RepositoryController {
         assertValidUrl(repository);
         repositoryService.createRepo(
                 repository.getUrl(),
+                repository.getBranch(),
                 repository.getName(),
                 repository.getDescription(),
                 repository.getMaxFileSizeBytes(),
@@ -184,6 +185,7 @@ public class RepositoryController {
     @Data
     public static class CreateRepository {
         private String url;
+        private String branch;
         private String name;
         private String description;
         private Long maxFileSizeBytes;

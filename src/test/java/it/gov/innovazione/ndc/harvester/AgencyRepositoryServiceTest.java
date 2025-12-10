@@ -57,7 +57,7 @@ public class AgencyRepositoryServiceTest {
 
         assertThat(clonedTempDir).isEqualTo(Path.of("temp"));
         verify(fileUtils).createTempDirectory(TEMP_DIR_PREFIX);
-        verify(gitUtils).cloneRepoAndGetLastCommitDate("someURI", new File("temp"), null);
+        verify(gitUtils).cloneRepoAndGetLastCommitDate("someURI", new File("temp"), null, null);
     }
 
     /**

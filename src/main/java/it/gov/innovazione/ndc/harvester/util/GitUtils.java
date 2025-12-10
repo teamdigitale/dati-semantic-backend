@@ -4,6 +4,7 @@ import it.gov.innovazione.ndc.service.logging.LoggingContext;
 import it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.AnyObjectId;
@@ -27,16 +28,21 @@ public class GitUtils {
 
     private final FileUtils fileUtils;
 
-    public void cloneRepo(String repoUrl, File destination, String revision) {
-        cloneRepoAndGetLastCommitDate(repoUrl, destination, revision);
+    public void cloneRepo(String repoUrl, File destination, String branch, String revision) {
+        cloneRepoAndGetLastCommitDate(repoUrl, destination, branch, revision);
     }
 
-    public Instant cloneRepoAndGetLastCommitDate(String repoUrl, File destination, String revision) {
+    public Instant cloneRepoAndGetLastCommitDate(String repoUrl, File destination, String branch, String revision) {
         try {
-            Git call = Git.cloneRepository()
+            CloneCommand cloneCommand = Git.cloneRepository()
                     .setURI(repoUrl)
-                    .setDirectory(destination)
-                    .call();
+                    .setDirectory(destination);
+
+            if (StringUtils.isNotBlank(branch)) {
+                cloneCommand.setBranch(branch);
+            }
+
+            Git call = cloneCommand.call();
 
             if (StringUtils.isNotBlank(revision)) {
                 call.checkout().setName(revision).call();
@@ -67,13 +73,13 @@ public class GitUtils {
         }
     }
 
-    public Optional<Instant> getCommitDate(String repositoryUrl, String revision) {
+    public Optional<Instant> getCommitDate(String repositoryUrl, String branch, String revision) {
         Optional<Path> tempDirectory = safelyGetTempDirectory(repositoryUrl, revision);
         if (tempDirectory.isEmpty()) {
             return Optional.empty();
         }
 
-        Optional<Git> gitOpt = cloneSafely(repositoryUrl, tempDirectory.get(), revision);
+        Optional<Git> gitOpt = cloneSafely(repositoryUrl, tempDirectory.get(), branch, revision);
 
         if (gitOpt.isEmpty()) {
             return Optional.empty();
@@ -125,13 +131,21 @@ public class GitUtils {
         }
     }
 
-    private Optional<Git> cloneSafely(String repositoryUrl, Path tempDirectory, String revision) {
+    private Optional<Git> cloneSafely(String repositoryUrl, Path tempDirectory, String branch, String revision) {
         try {
-            Git git = Git.cloneRepository()
+            CloneCommand cloneCommand = Git.cloneRepository()
                     .setURI(repositoryUrl)
-                    .setDirectory(tempDirectory.toFile())
-                    .call();
-            git.checkout().setName(revision).call();
+                    .setDirectory(tempDirectory.toFile());
+
+            if (StringUtils.isNotBlank(branch)) {
+                cloneCommand.setBranch(branch);
+            }
+
+            Git git = cloneCommand.call();
+
+            if (StringUtils.isNotBlank(revision)) {
+                git.checkout().setName(revision).call();
+            }
 
             return Optional.of(git);
         } catch (GitAPIException e) {
