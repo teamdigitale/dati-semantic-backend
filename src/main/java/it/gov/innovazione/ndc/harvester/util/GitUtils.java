@@ -58,19 +58,30 @@ public class GitUtils {
     }
 
     public String getHeadRemoteRevision(String url) {
+        return getHeadRemoteRevision(url, null);
+    }
+
+    public String getHeadRemoteRevision(String url, String branch) {
         try {
             return Git.lsRemoteRepository()
                     .setRemote(url)
                     .call()
                     .stream()
-                    .filter(this::isHead)
+                    .filter(ref -> isTargetRef(ref, branch))
                     .map(Ref::getObjectId)
                     .map(AnyObjectId::getName)
                     .findFirst()
-                    .orElseThrow(() -> new IllegalStateException("Unable to get HEAD revision"));
+                    .orElseThrow(() -> new IllegalStateException("Unable to get HEAD revision for branch: " + branch));
         } catch (Exception e) {
-            throw new GitRepoCloneException(String.format("Cannot get latest revision from repo '%s'", url), e);
+            throw new GitRepoCloneException(String.format("Cannot get latest revision from repo '%s' branch '%s'", url, branch), e);
         }
+    }
+
+    private boolean isTargetRef(Ref ref, String branch) {
+        if (StringUtils.isBlank(branch)) {
+            return isHead(ref);
+        }
+        return StringUtils.equals(ref.getName(), "refs/heads/" + branch);
     }
 
     public Optional<Instant> getCommitDate(String repositoryUrl, String branch, String revision) {
