@@ -76,7 +76,7 @@ public class HarvesterJob {
 
         revision = Optional.ofNullable(revision)
                 .filter(StringUtils::isNotBlank)
-                .orElseGet(() -> gitUtils.getHeadRemoteRevision(repository.getUrl()));
+                .orElseGet(() -> gitUtils.getHeadRemoteRevision(repository.getUrl(), repository.getBranch()));
 
         simpleHarvestRepositoryProcessor.execute(runId, repository, correlationId, revision, force, SecurityUtils.getCurrentUserLogin());
 
