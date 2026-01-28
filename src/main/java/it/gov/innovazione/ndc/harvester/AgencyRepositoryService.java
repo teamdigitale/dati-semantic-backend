@@ -63,13 +63,17 @@ public class AgencyRepositoryService {
     }
 
     public Path cloneRepo(String repoUrl) throws IOException {
-        return cloneRepo(repoUrl, null);
+        return cloneRepo(repoUrl, null, null);
     }
 
     public Path cloneRepo(String repoUrl, String revision) throws IOException {
+        return cloneRepo(repoUrl, null, revision);
+    }
+
+    public Path cloneRepo(String repoUrl, String branch, String revision) throws IOException {
         Path cloneDir = fileUtils.createTempDirectory(TEMP_DIR_PREFIX);
-        log.info("Cloning repo {} @ revision {}, at location {}", repoUrl, revision, cloneDir);
-        Instant instant = gitUtils.cloneRepoAndGetLastCommitDate(repoUrl, cloneDir.toFile(), revision);
+        log.info("Cloning repo {} @ branch {}, revision {}, at location {}", repoUrl, branch, revision, cloneDir);
+        Instant instant = gitUtils.cloneRepoAndGetLastCommitDate(repoUrl, cloneDir.toFile(), branch, revision);
         eventPublisher.publishEvent("harvester", "harvester.get.commit.date", null, "harvester",
                 HarvesterUpdateCommitDateEvent.builder()
                         .runId(HarvesterRun.getCurrentRunId())

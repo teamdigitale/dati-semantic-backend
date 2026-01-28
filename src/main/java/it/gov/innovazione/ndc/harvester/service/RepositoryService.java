@@ -42,6 +42,7 @@ public class RepositoryService {
             "SELECT "
                     + "ID, "
                     + "URL, "
+                    + "BRANCH, "
                     + "NAME, "
                     + "DESCRIPTION, "
                     + "OWNER, "
@@ -76,6 +77,7 @@ public class RepositoryService {
                         Repository.builder()
                                 .id(rs.getString("ID"))
                                 .url(rs.getString("URL"))
+                                .branch(rs.getString("BRANCH"))
                                 .name(rs.getString("NAME"))
                                 .description(rs.getString("DESCRIPTION"))
                                 .owner(rs.getString("OWNER"))
@@ -130,6 +132,7 @@ public class RepositoryService {
         String query = "INSERT INTO REPOSITORY ("
                 + "ID, "
                 + "URL, "
+                + "BRANCH, "
                 + "NAME, "
                 + "DESCRIPTION, "
                 + "OWNER, "
@@ -138,10 +141,11 @@ public class RepositoryService {
                 + "CREATED_BY, "
                 + "UPDATED, "
                 + "UPDATED_BY, "
-                + "MAX_FILE_SIZE_BYTES) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                + "MAX_FILE_SIZE_BYTES) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(query,
                 repo.getId(),
                 repo.getUrl(),
+                repo.getBranch(),
                 repo.getName(),
                 repo.getDescription(),
                 repo.getOwner(),
@@ -167,10 +171,10 @@ public class RepositoryService {
     }
 
     @SneakyThrows
-    public void createRepo(String url, String name, String description, Long maxFileSizeBytes, Principal principal) {
+    public void createRepo(String url, String branch, String name, String description, Long maxFileSizeBytes, Principal principal) {
         if (repoAlreadyExists(url)) {
             log.info("Repository {} already exists, reactivating", url);
-            reactivate(url, name, description, maxFileSizeBytes, principal);
+            reactivate(url, branch, name, description, maxFileSizeBytes, principal);
             return;
         }
 
@@ -194,6 +198,7 @@ public class RepositoryService {
         String query = "INSERT INTO REPOSITORY ("
                 + "ID, "
                 + "URL, "
+                + "BRANCH, "
                 + "NAME, "
                 + "DESCRIPTION, "
                 + "OWNER, "
@@ -202,11 +207,12 @@ public class RepositoryService {
                 + "CREATED_BY, "
                 + "UPDATED, "
                 + "UPDATED_BY,"
-                + "MAX_FILE_SIZE_BYTES) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                + "MAX_FILE_SIZE_BYTES) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         jdbcTemplate.update(query,
                 RepositoryUtils.generateId(),
                 url,
+                branch,
                 name,
                 description,
                 principal.getName(),
@@ -256,10 +262,11 @@ public class RepositoryService {
                 id);
     }
 
-    public int reactivate(String url, String name, String description, Long maxFileSizeBytes, Principal principal) {
+    public int reactivate(String url, String branch, String name, String description, Long maxFileSizeBytes, Principal principal) {
         log.info("Reactivating repository {}", url);
         String query = "UPDATE REPOSITORY SET "
                 + "ACTIVE = ?, "
+                + "BRANCH = ?, "
                 + "NAME = ?, "
                 + "DESCRIPTION = ?, "
                 + "MAX_FILE_SIZE_BYTES = ?, "
@@ -268,6 +275,7 @@ public class RepositoryService {
                 + "WHERE URL = ?";
         return jdbcTemplate.update(query,
                 true,
+                branch,
                 name,
                 description,
                 maxFileSizeBytes,

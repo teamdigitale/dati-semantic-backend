@@ -97,7 +97,7 @@ public class BaseIntegrationTest {
     private void dataIsHarvested() throws IOException {
         String dir = "src/test/resources/testdata";
         Path cloneDir = Path.of(dir);
-        doReturn(cloneDir).when(agencyRepositoryService).cloneRepo(REPO_URL, null);
+        doReturn(cloneDir).when(agencyRepositoryService).cloneRepo(REPO_URL, null, null);
         doNothing().when(agencyRepositoryService).removeClonedRepo(cloneDir);
         doNothing().when(repositoryService).storeRightsHolders(any(), any());
         doNothing().when(semanticContentStatsService).saveStats();

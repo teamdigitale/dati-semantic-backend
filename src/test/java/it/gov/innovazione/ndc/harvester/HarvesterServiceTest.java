@@ -59,11 +59,11 @@ class HarvesterServiceTest {
     void shouldHarvestAssets() throws IOException {
         String repoUrl = "someRepoUri.git";
         String sanitizedRepoUrl = repoUrl.replace(".git", "");
-        when(agencyRepoService.cloneRepo(sanitizedRepoUrl, null)).thenReturn(clonedRepoPath);
+        when(agencyRepoService.cloneRepo(sanitizedRepoUrl, null, null)).thenReturn(clonedRepoPath);
 
         harvesterService.harvest(asRepo(repoUrl));
 
-        verify(agencyRepoService).cloneRepo("someRepoUri", null);
+        verify(agencyRepoService).cloneRepo("someRepoUri", null, null);
 
         ArgumentCaptor<Repository> repoCaptor = ArgumentCaptor.forClass(Repository.class);
         verify(harvester).harvest(repoCaptor.capture(), any());
@@ -75,7 +75,7 @@ class HarvesterServiceTest {
         String repoUrl = "someRepoUri";
         Repository repo = asRepo(repoUrl);
 
-        when(agencyRepoService.cloneRepo(repoUrl, null)).thenReturn(clonedRepoPath);
+        when(agencyRepoService.cloneRepo(repoUrl, null, null)).thenReturn(clonedRepoPath);
         doThrow(new RuntimeException("Something else went wrong")).when(
                 harvester).harvest(repo, clonedRepoPath);
 
@@ -90,7 +90,7 @@ class HarvesterServiceTest {
     void shouldCleanUpTemporaryFolderWithRepoAfterProcessing() throws IOException {
         String repoUrl = "someRepoUri";
 
-        when(agencyRepoService.cloneRepo(repoUrl, null)).thenReturn(clonedRepoPath);
+        when(agencyRepoService.cloneRepo(repoUrl, null, null)).thenReturn(clonedRepoPath);
 
         harvesterService.harvest(asRepo(repoUrl));
 
@@ -102,7 +102,7 @@ class HarvesterServiceTest {
         String repoUrl = "someRepoUri";
         Repository repo = asRepo(repoUrl);
 
-        when(agencyRepoService.cloneRepo(repoUrl, null)).thenReturn(clonedRepoPath);
+        when(agencyRepoService.cloneRepo(repoUrl, null, null)).thenReturn(clonedRepoPath);
         doThrow(new RuntimeException("network disaster")).when(harvester)
                 .harvest(repo, clonedRepoPath);
 

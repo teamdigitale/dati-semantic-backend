@@ -85,7 +85,7 @@ public class UpdateRevisionCommittedAt implements StartupJob {
 
     private List<HarvesterRun> withUpdatedRevisionCommittedAt(Map.Entry<Pair<String, String>, List<HarvesterRun>> byRepositoryAndRevision) {
         Pair<String, String> repositoryAndRevision = byRepositoryAndRevision.getKey();
-        Optional<Instant> commitDate = gitUtils.getCommitDate(repositoryAndRevision.getLeft(), repositoryAndRevision.getRight());
+        Optional<Instant> commitDate = gitUtils.getCommitDate(repositoryAndRevision.getLeft(), null, repositoryAndRevision.getRight());
         return commitDate.map(instant -> byRepositoryAndRevision.getValue().stream()
                 .map(harvesterRun -> harvesterRun.withRevisionCommittedAt(instant))
                 .toList()).orElseGet(byRepositoryAndRevision::getValue);
