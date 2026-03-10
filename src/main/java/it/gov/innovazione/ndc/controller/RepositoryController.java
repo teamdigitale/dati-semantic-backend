@@ -6,7 +6,9 @@ import it.gov.innovazione.ndc.alerter.entities.Severity;
 import it.gov.innovazione.ndc.alerter.event.DefaultAlertableEvent;
 import it.gov.innovazione.ndc.eventhandler.NdcEventPublisher;
 import it.gov.innovazione.ndc.harvester.HarvesterService;
+import it.gov.innovazione.ndc.harvester.service.HarvesterRunService;
 import it.gov.innovazione.ndc.harvester.service.RepositoryService;
+import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import it.gov.innovazione.ndc.model.harvester.Repository;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URL;
 import java.security.Principal;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -41,6 +44,7 @@ public class RepositoryController {
 
     private final RepositoryService repositoryService;
     private final HarvesterService harvesterService;
+    private final HarvesterRunService harvesterRunService;
     private final NdcEventPublisher eventPublisher;
 
     @GetMapping
@@ -180,6 +184,25 @@ public class RepositoryController {
                         .build());
         log.info("Repository {} deleted", repository);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/conformance")
+    @Operation(
+            operationId = "getConformanceReport",
+            description = "Get the latest conformance report for a repository",
+            summary = "Get the latest conformance report for a repository")
+    public ResponseEntity<String> getConformanceReport(@PathVariable String id) {
+        Optional<String> report = harvesterRunService.getAllRuns().stream()
+                .filter(run -> run.getRepositoryId().equals(id))
+                .filter(run -> run.getConformanceReport() != null)
+                .max(Comparator.comparing(HarvesterRun::getStartedAt))
+                .map(HarvesterRun::getConformanceReport);
+
+        return report
+                .map(json -> ResponseEntity.ok()
+                        .header("Content-Type", "application/json")
+                        .body(json))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @Data

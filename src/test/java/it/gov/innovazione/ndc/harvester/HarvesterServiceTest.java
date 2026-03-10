@@ -1,7 +1,9 @@
 package it.gov.innovazione.ndc.harvester;
 
 import it.gov.innovazione.ndc.harvester.model.Instance;
+import it.gov.innovazione.ndc.harvester.service.HarvesterRunService;
 import it.gov.innovazione.ndc.harvester.service.RepositoryService;
+import it.gov.innovazione.ndc.harvester.service.RepositoryStructureValidator;
 import it.gov.innovazione.ndc.harvester.util.FileUtils;
 import it.gov.innovazione.ndc.model.harvester.Repository;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
@@ -41,6 +43,10 @@ class HarvesterServiceTest {
     private RepositoryService repositoryService;
     @Mock
     private FileUtils fileUtils;
+    @Mock
+    private RepositoryStructureValidator repositoryStructureValidator;
+    @Mock
+    private HarvesterRunService harvesterRunService;
 
     private HarvesterService harvesterService;
 
@@ -52,7 +58,9 @@ class HarvesterServiceTest {
                 tripleStoreRepository,
                 metadataRepository,
                 repositoryService,
-                fileUtils);
+                fileUtils,
+                repositoryStructureValidator,
+                harvesterRunService);
     }
 
     @Test

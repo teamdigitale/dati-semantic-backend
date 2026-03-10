@@ -200,7 +200,8 @@ jacocoTestCoverageVerification {
                     'it.gov.innovazione.ndc.alerter.*',
                     "it.gov.innovazione.ndc.service.Dashboard*",
                     "it.gov.innovazione.ndc.service.DimensionalItem*",
-                    "it.gov.innovazione.ndc.service.SemanticAssetSearchService"
+                    "it.gov.innovazione.ndc.service.SemanticAssetSearchService",
+                    'it.gov.innovazione.ndc.harvester.service.CookiecutterReferenceService'
 
             ]
         }
