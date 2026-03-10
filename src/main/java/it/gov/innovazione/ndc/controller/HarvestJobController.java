@@ -9,7 +9,7 @@ import it.gov.innovazione.ndc.harvester.HarvesterJob;
 import it.gov.innovazione.ndc.harvester.HarvesterService;
 import it.gov.innovazione.ndc.harvester.JobExecutionResponse;
 import it.gov.innovazione.ndc.harvester.service.HarvesterRunService;
-import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
+import it.gov.innovazione.ndc.model.harvester.HarvesterRunResult;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -60,10 +60,12 @@ public class HarvestJobController {
     @GetMapping("jobs/harvest/run")
     @Operation(
             operationId = "getHarvestRuns",
-            description = "Get all harvest runs",
-            summary = "Get all harvest runs")
-    public List<HarvesterRun> getAllRuns() {
-        return harvesterRunService.getAllRuns();
+            description = "Get harvest runs with pagination",
+            summary = "Get harvest runs with pagination")
+    public HarvesterRunResult getAllRuns(
+            @RequestParam(required = false, defaultValue = "0") Integer offset,
+            @RequestParam(required = false, defaultValue = "20") Integer limit) {
+        return harvesterRunService.getRunsPaginated(offset, limit);
     }
 
     @GetMapping("jobs/harvest/running")
