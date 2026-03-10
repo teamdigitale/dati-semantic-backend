@@ -6,6 +6,8 @@ import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
 import it.gov.innovazione.ndc.harvester.model.exception.InvalidModelException;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.gov.innovazione.ndc.harvester.service.SemanticContentStatsService;
+import it.gov.innovazione.ndc.harvester.validation.RdfSyntaxValidationResult;
+import it.gov.innovazione.ndc.harvester.validation.RdfSyntaxValidator;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
 import it.gov.innovazione.ndc.repository.TripleStoreRepository;
 import it.gov.innovazione.ndc.repository.TripleStoreRepositoryException;
@@ -18,9 +20,11 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -33,8 +37,9 @@ class SemanticAssetPathProcessorTest {
     private class TestSemanticAssetPathProcessor
         extends BaseSemanticAssetPathProcessor<SemanticAssetPath, OntologyModel> {
         public TestSemanticAssetPathProcessor(TripleStoreRepository tripleStoreRepository,
-                                              SemanticAssetMetadataRepository metadataRepository) {
-            super(tripleStoreRepository, metadataRepository);
+                                              SemanticAssetMetadataRepository metadataRepository,
+                                              RdfSyntaxValidator rdfSyntaxValidator) {
+            super(tripleStoreRepository, metadataRepository, rdfSyntaxValidator);
         }
 
         @Override
@@ -55,20 +60,26 @@ class SemanticAssetPathProcessorTest {
     @Mock
     private SemanticAssetMetadataRepository metadataRepository;
     @Mock
+    private RdfSyntaxValidator rdfSyntaxValidator;
+    @Mock
     private Model model;
     @Mock
     SemanticContentStatsService semanticContentStatsService;
     @Mock
     private Consumer<OntologyModel> modelEnricher;
 
+    private static final RdfSyntaxValidationResult VALID_RESULT =
+            RdfSyntaxValidationResult.builder().build();
+
     @Test
     void processingGoesThroughTwoCommonSteps() {
         final String repoUrl = "https://github.com/italia/daf-ontologie-vocabolari-controllati";
         String ttlFile = "somefile.ttl";
         TestSemanticAssetPathProcessor processor =
-            new TestSemanticAssetPathProcessor(tripleStoreRepository, metadataRepository);
+            new TestSemanticAssetPathProcessor(tripleStoreRepository, metadataRepository, rdfSyntaxValidator);
         SemanticAssetPath path = SemanticAssetPath.of(ttlFile);
         SemanticAssetMetadata metadata = SemanticAssetMetadata.builder().build();
+        when(rdfSyntaxValidator.validateTurtle(anyString())).thenReturn(VALID_RESULT);
         when(modelDecorator.getRdfModel()).thenReturn(model);
         when(modelDecorator.extractMetadata()).thenReturn(metadata);
 
@@ -87,9 +98,10 @@ class SemanticAssetPathProcessorTest {
         final String repoUrl = "https://github.com/italia/daf-ontologie-vocabolari-controllati";
         String ttlFile = "somefile.ttl";
         TestSemanticAssetPathProcessor processor =
-            new TestSemanticAssetPathProcessor(tripleStoreRepository, metadataRepository);
+            new TestSemanticAssetPathProcessor(tripleStoreRepository, metadataRepository, rdfSyntaxValidator);
         SemanticAssetPath path = SemanticAssetPath.of(ttlFile);
         SemanticAssetMetadata metadata = SemanticAssetMetadata.builder().build();
+        when(rdfSyntaxValidator.validateTurtle(anyString())).thenReturn(VALID_RESULT);
         when(modelDecorator.getRdfModel()).thenReturn(model);
         TripleStoreRepositoryException repositoryException =
             new TripleStoreRepositoryException("Oops!");
@@ -109,8 +121,9 @@ class SemanticAssetPathProcessorTest {
         final String repoUrl = "https://github.com/italia/daf-ontologie-vocabolari-controllati";
         String ttlFile = "somefile.ttl";
         TestSemanticAssetPathProcessor processor =
-            spy(new TestSemanticAssetPathProcessor(tripleStoreRepository, metadataRepository));
+            spy(new TestSemanticAssetPathProcessor(tripleStoreRepository, metadataRepository, rdfSyntaxValidator));
         SemanticAssetPath path = SemanticAssetPath.of(ttlFile);
+        when(rdfSyntaxValidator.validateTurtle(anyString())).thenReturn(VALID_RESULT);
         InvalidModelException invalidModelException =
             new InvalidModelException("Cannot load model", new RuntimeException("Malformed TTL"));
         when(processor.loadModel(ttlFile, repoUrl)).thenThrow(invalidModelException);
@@ -128,8 +141,9 @@ class SemanticAssetPathProcessorTest {
         final String repoUrl = "https://github.com/italia/daf-ontologie-vocabolari-controllati";
         String ttlFile = "somefile.ttl";
         TestSemanticAssetPathProcessor processor =
-            new TestSemanticAssetPathProcessor(tripleStoreRepository, metadataRepository);
+            new TestSemanticAssetPathProcessor(tripleStoreRepository, metadataRepository, rdfSyntaxValidator);
         SemanticAssetPath path = SemanticAssetPath.of(ttlFile);
+        when(rdfSyntaxValidator.validateTurtle(anyString())).thenReturn(VALID_RESULT);
         InvalidModelException invalidModelException =
             new InvalidModelException("Cannot find main resource");
         when(modelDecorator.getMainResource()).thenThrow(invalidModelException);
@@ -147,8 +161,9 @@ class SemanticAssetPathProcessorTest {
         final String repoUrl = "https://github.com/italia/daf-ontologie-vocabolari-controllati";
         String ttlFile = "somefile.ttl";
         TestSemanticAssetPathProcessor processor =
-            new TestSemanticAssetPathProcessor(tripleStoreRepository, metadataRepository);
+            new TestSemanticAssetPathProcessor(tripleStoreRepository, metadataRepository, rdfSyntaxValidator);
         SemanticAssetPath path = SemanticAssetPath.of(ttlFile);
+        when(rdfSyntaxValidator.validateTurtle(anyString())).thenReturn(VALID_RESULT);
         RuntimeException enrichmentException =
             new RuntimeException("Something went wrong calculating enrichments");
         doThrow(enrichmentException).when(modelEnricher).accept(modelDecorator);
@@ -159,5 +174,58 @@ class SemanticAssetPathProcessorTest {
 
         verifyNoInteractions(tripleStoreRepository);
         verifyNoInteractions(metadataRepository);
+    }
+
+    @Test
+    void ifSyntaxValidationFailsShouldStopProcessingAndPropagate() {
+        final String repoUrl = "https://github.com/italia/daf-ontologie-vocabolari-controllati";
+        String ttlFile = "somefile.ttl";
+        TestSemanticAssetPathProcessor processor =
+            new TestSemanticAssetPathProcessor(tripleStoreRepository, metadataRepository, rdfSyntaxValidator);
+        SemanticAssetPath path = SemanticAssetPath.of(ttlFile);
+
+        RdfSyntaxValidationResult failedResult = RdfSyntaxValidationResult.builder()
+                .error(RdfSyntaxValidationResult.Issue.builder()
+                        .line(5).col(10)
+                        .message("Expected '.' or '}', got KEYWORD")
+                        .build())
+                .build();
+        when(rdfSyntaxValidator.validateTurtle(ttlFile)).thenReturn(failedResult);
+
+        assertThatThrownBy(() -> processor.process(repoUrl, path))
+            .isInstanceOf(SinglePathProcessingException.class)
+            .has(new Condition<>(e -> !((SinglePathProcessingException) e).isFatal(), "is not fatal"))
+            .cause()
+            .isInstanceOf(SinglePathProcessingException.class)
+            .hasMessageContaining("Turtle syntax validation failed")
+            .hasMessageContaining("Expected '.' or '}', got KEYWORD");
+
+        verifyNoInteractions(tripleStoreRepository);
+        verifyNoInteractions(metadataRepository);
+    }
+
+    @Test
+    void ifSyntaxValidationPassesWithWarningsProcessingShouldContinue() {
+        final String repoUrl = "https://github.com/italia/daf-ontologie-vocabolari-controllati";
+        String ttlFile = "somefile.ttl";
+        TestSemanticAssetPathProcessor processor =
+            new TestSemanticAssetPathProcessor(tripleStoreRepository, metadataRepository, rdfSyntaxValidator);
+        SemanticAssetPath path = SemanticAssetPath.of(ttlFile);
+        SemanticAssetMetadata metadata = SemanticAssetMetadata.builder().build();
+
+        RdfSyntaxValidationResult warningResult = RdfSyntaxValidationResult.builder()
+                .warning(RdfSyntaxValidationResult.Issue.builder()
+                        .line(3).col(1)
+                        .message("Prefix 'ex' is unused")
+                        .build())
+                .build();
+        when(rdfSyntaxValidator.validateTurtle(ttlFile)).thenReturn(warningResult);
+        when(modelDecorator.getRdfModel()).thenReturn(model);
+        when(modelDecorator.extractMetadata()).thenReturn(metadata);
+
+        processor.process(repoUrl, path);
+
+        verify(metadataRepository).save(metadata);
+        verify(tripleStoreRepository).save(repoUrl, model);
     }
 }

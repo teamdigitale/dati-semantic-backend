@@ -17,6 +17,8 @@ import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
 import it.gov.innovazione.ndc.harvester.model.extractors.RightsHolderExtractor;
 import it.gov.innovazione.ndc.harvester.model.index.NodeSummary;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
+import it.gov.innovazione.ndc.harvester.validation.RdfSyntaxValidationResult;
+import it.gov.innovazione.ndc.harvester.validation.RdfSyntaxValidator;
 import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
 import it.gov.innovazione.ndc.repository.TripleStoreRepository;
@@ -34,6 +36,7 @@ import org.apache.jena.rdf.model.Resource;
 public abstract class BaseSemanticAssetPathProcessor<P extends SemanticAssetPath, M extends SemanticAssetModel> implements SemanticAssetPathProcessor<P> {
     private final TripleStoreRepository tripleStoreRepository;
     protected final SemanticAssetMetadataRepository metadataRepository;
+    private final RdfSyntaxValidator rdfSyntaxValidator;
 
     private static <M extends SemanticAssetModel> SemanticAssetMetadata tryExtractMetadata(M model) {
         try {
@@ -92,10 +95,43 @@ public abstract class BaseSemanticAssetPathProcessor<P extends SemanticAssetPath
         // maybe call super() in there, anyways.
     }
 
+    private void validateTurtleSyntax(P path) {
+        RdfSyntaxValidationResult result = rdfSyntaxValidator.validateTurtle(path.getTtlPath());
+
+        if (result.hasWarnings()) {
+            logSemanticWarn(LoggingContext.builder()
+                    .message("Turtle syntax warnings for " + path)
+                    .details(result.getWarningsSummary())
+                    .stage(HarvesterStage.SYNTAX_VALIDATION)
+                    .harvesterStatus(HarvesterRun.Status.RUNNING)
+                    .build());
+        }
+
+        if (result.hasErrors()) {
+            logSemanticError(LoggingContext.builder()
+                    .message("Turtle syntax validation failed for " + path)
+                    .details(result.getErrorsSummary())
+                    .stage(HarvesterStage.SYNTAX_VALIDATION)
+                    .harvesterStatus(HarvesterRun.Status.RUNNING)
+                    .build());
+            throw new SinglePathProcessingException(
+                    String.format("Turtle syntax validation failed for '%s': %s", path, result.getErrorsSummary()),
+                    false);
+        }
+
+        logSemanticInfo(LoggingContext.builder()
+                .message("Turtle syntax validation passed for " + path)
+                .stage(HarvesterStage.SYNTAX_VALIDATION)
+                .harvesterStatus(HarvesterRun.Status.RUNNING)
+                .build());
+    }
+
     @Override
     public HarvesterStatsHolder process(String repoUrl, P path) {
         try {
             log.info("Processing path {}", path);
+
+            validateTurtleSyntax(path);
 
             log.debug("Loading model from {}", path);
             M model = loadModel(path.getTtlPath(), repoUrl);

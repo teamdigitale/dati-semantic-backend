@@ -1,6 +1,7 @@
 package it.gov.innovazione.ndc.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import it.gov.innovazione.ndc.harvester.validation.RdfSyntaxValidationResult;
 import it.gov.innovazione.ndc.service.ValidationService;
 import it.gov.innovazione.ndc.validator.ValidationResultDto;
 import lombok.RequiredArgsConstructor;
@@ -26,5 +27,14 @@ public class ValidationController {
     public ResponseEntity<ValidationResultDto> validateFile(@RequestParam(value = "type") String assetType,
                                                             @RequestParam(value = "file") MultipartFile file) {
         return AppJsonResponse.ok(validationService.validate(file, assetType));
+    }
+
+    @PostMapping("/syntax")
+    @Operation(
+            operationId = "validateSyntax",
+            description = "Validate only the Turtle syntax of a .ttl file, without requiring a specific asset type",
+            summary = "Validate Turtle syntax")
+    public ResponseEntity<RdfSyntaxValidationResult> validateSyntax(@RequestParam(value = "file") MultipartFile file) {
+        return AppJsonResponse.ok(validationService.validateSyntax(file));
     }
 }

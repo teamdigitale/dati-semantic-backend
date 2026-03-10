@@ -7,5 +7,6 @@ public enum HarvesterStage {
     CLEANING_VIRTUOSO,
     CLEANING_METADATA,
     PATH_SCANNING,
+    SYNTAX_VALIDATION,
     PROCESS_RESOURCE
 }

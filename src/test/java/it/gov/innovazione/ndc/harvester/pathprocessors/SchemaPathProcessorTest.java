@@ -5,6 +5,8 @@ import it.gov.innovazione.ndc.harvester.model.SemanticAssetModelFactory;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.gov.innovazione.ndc.harvester.service.SemanticContentStatsService;
+import it.gov.innovazione.ndc.harvester.validation.RdfSyntaxValidationResult;
+import it.gov.innovazione.ndc.harvester.validation.RdfSyntaxValidator;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
 import it.gov.innovazione.ndc.repository.TripleStoreRepository;
 import org.apache.jena.rdf.model.ResourceFactory;
@@ -33,6 +35,8 @@ class SchemaPathProcessorTest {
     TripleStoreRepository repository;
     @Mock
     SemanticContentStatsService semanticContentStatsService;
+    @Mock
+    RdfSyntaxValidator rdfSyntaxValidator;
     @InjectMocks
     SchemaPathProcessor schemaPathProcessor;
 
@@ -52,6 +56,7 @@ class SchemaPathProcessorTest {
         String ttlFile = "index.ttl";
         SemanticAssetPath path = SemanticAssetPath.of(ttlFile);
 
+        when(rdfSyntaxValidator.validateTurtle(anyString())).thenReturn(RdfSyntaxValidationResult.builder().build());
         when(modelFactory.createSchema(ttlFile, "some-repo")).thenReturn(schemaModel);
         when(schemaModel.getMainResource()).thenReturn(
             ResourceFactory.createResource("http://example.com/schema"));
