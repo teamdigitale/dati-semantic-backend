@@ -28,6 +28,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -68,6 +69,14 @@ import static org.apache.jena.vocabulary.DCTerms.title;
 import static org.apache.jena.vocabulary.OWL.versionInfo;
 
 public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
+
+    private static final Set<String> VALID_ADMS_STATUSES = Set.of(
+            "http://purl.org/adms/status/Completed",
+            "http://purl.org/adms/status/Deprecated",
+            "http://purl.org/adms/status/UnderDevelopment",
+            "http://purl.org/adms/status/Withdrawn"
+    );
+
     protected final Model rdfModel;
     protected final String source;
     private Resource mainResource;
@@ -198,7 +207,8 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
                     distNode.getURI(), downloadURL));
         }
         String accessUrl = extractMaybePropertyValue(distNode, accessURL);
-        return Distribution.builder().accessUrl(accessUrl).downloadUrl(downloadUrl).build();
+        String license = extractMaybePropertyValue(distNode, DCTerms.license);
+        return Distribution.builder().accessUrl(accessUrl).downloadUrl(downloadUrl).license(license).build();
     }
 
     private static String extractMaybePropertyValue(Resource distNode, Property property) {
@@ -289,11 +299,55 @@ public abstract class BaseSemanticAssetModel implements SemanticAssetModel {
                         v -> extractOptional(getMainResource(), temporal, v.warning().field(Fields.temporal)),
                         v -> maybeNodeSummaries(getMainResource(), conformsTo, FOAF.name, v.warning().field(Fields.conformsTo)),
                         v -> getDistributions(v.error().field(Fields.distributions)),
-                        v -> getAgencyId(getMainResource(), v.error().field(Fields.agencyId))
+                        v -> getAgencyId(getMainResource(), v.error().field(Fields.agencyId)),
+                        v -> validateDistributionLicenses(v.error().field(Fields.distributions)),
+                        v -> validateStatus(v.warning().field(Fields.status))
                 )
                 .map(consumer -> returningValidationContext(this.validationContext, consumer))
                 .reduce(SemanticAssetModelValidationContext::merge)
                 .orElse(this.validationContext);
+    }
+
+    private void validateDistributionLicenses(SemanticAssetModelValidationContext validationContext) {
+        List<Distribution> distributions;
+        try {
+            distributions = getDistributions(NO_VALIDATION);
+        } catch (Exception e) {
+            return;
+        }
+        if (distributions.isEmpty()) {
+            return;
+        }
+        List<Distribution> withoutLicense = distributions.stream()
+                .filter(d -> !StringUtils.hasText(d.getLicense()))
+                .toList();
+        if (!withoutLicense.isEmpty()) {
+            maybeThrowInvalidModelException(validationContext,
+                    () -> new InvalidModelException(
+                            format("Distribution(s) missing mandatory dct:license property: %s",
+                                    withoutLicense.stream()
+                                            .map(d -> Objects.toString(d.getDownloadUrl(), d.getAccessUrl()))
+                                            .collect(Collectors.joining(", ")))),
+                    false);
+        }
+    }
+
+    private void validateStatus(SemanticAssetModelValidationContext validationContext) {
+        List<String> statusValues = extractAll(getMainResource(), Admsapit.status);
+        if (statusValues.isEmpty()) {
+            return;
+        }
+        List<String> invalidStatuses = statusValues.stream()
+                .filter(s -> !VALID_ADMS_STATUSES.contains(s))
+                .toList();
+        if (!invalidStatuses.isEmpty()) {
+            maybeThrowInvalidModelException(validationContext,
+                    () -> new InvalidModelException(
+                            format("Invalid adms:status value(s): %s. Expected one of: %s",
+                                    String.join(", ", invalidStatuses),
+                                    String.join(", ", VALID_ADMS_STATUSES))),
+                    false);
+        }
     }
 
     protected SemanticAssetModelValidationContext returningValidationContext(

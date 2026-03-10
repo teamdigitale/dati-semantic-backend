@@ -38,6 +38,7 @@ import static org.apache.jena.vocabulary.DCTerms.format;
 import static org.apache.jena.vocabulary.DCTerms.identifier;
 import static org.apache.jena.vocabulary.DCTerms.issued;
 import static org.apache.jena.vocabulary.DCTerms.language;
+import static org.apache.jena.vocabulary.DCTerms.license;
 import static org.apache.jena.vocabulary.DCTerms.modified;
 import static org.apache.jena.vocabulary.DCTerms.publisher;
 import static org.apache.jena.vocabulary.DCTerms.rightsHolder;
@@ -98,11 +99,13 @@ class BaseSemanticAssetModelTest {
                 .addProperty(format, EuropePublicationVocabulary.FILE_TYPE_RDF_TURTLE)
                 .addProperty(accessURL, jenaModel.createResource(CV_IRI + "/dist/ttl"))
                 .addProperty(downloadURL, jenaModel.createResource(CV_IRI + "/dist/ttl/test.ttl"))
+                .addProperty(license, createResource("http://publications.europa.eu/resource/authority/licence/CC_BY_4_0"))
             )
             .addProperty(distribution, jenaModel.createResource(CV_IRI + "-json")
                 .addProperty(format, EuropePublicationVocabulary.FILE_TYPE_JSON)
                 .addProperty(accessURL, jenaModel.createResource(CV_IRI + "/dist/json"))
                 .addProperty(downloadURL, jenaModel.createResource(CV_IRI + "/dist/json/test.json"))
+                .addProperty(license, createResource("http://publications.europa.eu/resource/authority/licence/CC_BY_4_0"))
             ) 
             .addProperty(Admsapit.status, "catalogued")
             .addProperty(Admsapit.status, "published");

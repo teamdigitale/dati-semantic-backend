@@ -26,6 +26,7 @@ import static org.apache.jena.vocabulary.DCTerms.accrualPeriodicity;
 import static org.apache.jena.vocabulary.DCTerms.description;
 import static org.apache.jena.vocabulary.DCTerms.format;
 import static org.apache.jena.vocabulary.DCTerms.identifier;
+import static org.apache.jena.vocabulary.DCTerms.license;
 import static org.apache.jena.vocabulary.DCTerms.modified;
 import static org.apache.jena.vocabulary.DCTerms.rightsHolder;
 import static org.apache.jena.vocabulary.DCTerms.title;
@@ -64,6 +65,7 @@ class OntologyModelTest {
                     .addProperty(format, EuropePublicationVocabulary.FILE_TYPE_RDF_TURTLE)
                     .addProperty(accessURL, createResource("http://repo/test/dist/turtle"))
                     .addProperty(downloadURL, createResource("http://repo/test/dist/turtle/test.ttl"))
+                    .addProperty(license, createResource("http://publications.europa.eu/resource/authority/licence/CC_BY_4_0"))
             )
             .addProperty(Admsapit.hasSemanticAssetDistribution,
                 jenaModel.createResource("http://repo/test/dist/json")
@@ -193,5 +195,49 @@ class OntologyModelTest {
         SemanticAssetMetadata metadata = ontologyModel.extractMetadata();
 
         assertThat(metadata.getProjects()).isEmpty();
+    }
+
+    @Test
+    void shouldExtractLicenseFromDistribution() {
+        OntologyModel ontologyModel = new OntologyModel(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
+
+        SemanticAssetMetadata metadata = ontologyModel.extractMetadata();
+
+        assertThat(metadata.getDistributions()).hasSize(1);
+        assertThat(metadata.getDistributions().get(0).getLicense())
+                .isEqualTo("http://publications.europa.eu/resource/authority/licence/CC_BY_4_0");
+    }
+
+    @Test
+    void shouldReportWarningForMissingLicense() {
+        jenaModel.getResource("http://repo/test/dist/turtle").removeAll(license);
+        OntologyModel model = OntologyModel.forValidation(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
+
+        SemanticAssetModelValidationContext context = model.validateMetadata();
+
+        assertThat(context.getErrors()).anyMatch(e ->
+                e.getMessage().contains("missing mandatory dct:license"));
+    }
+
+    @Test
+    void shouldReportWarningForInvalidStatus() {
+        jenaModel.getResource(ONTOLOGY_IRI).addProperty(Admsapit.status, "http://invalid/status");
+        OntologyModel model = OntologyModel.forValidation(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
+
+        SemanticAssetModelValidationContext context = model.validateMetadata();
+
+        assertThat(context.getWarnings()).anyMatch(w ->
+                w.getMessage().contains("Invalid adms:status"));
+    }
+
+    @Test
+    void shouldNotReportWarningForValidStatus() {
+        jenaModel.getResource(ONTOLOGY_IRI).addProperty(Admsapit.status, "http://purl.org/adms/status/Completed");
+        OntologyModel model = OntologyModel.forValidation(jenaModel, TTL_FILE, REPO_URL, PRIMARY);
+
+        SemanticAssetModelValidationContext context = model.validateMetadata();
+
+        assertThat(context.getWarnings()).noneMatch(w ->
+                w.getMessage().contains("Invalid adms:status"));
     }
 }
