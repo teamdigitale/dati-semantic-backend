@@ -26,6 +26,7 @@ public class HarvesterRun {
     private final Instant revisionCommittedAt;
     private final Status status;
     private final String reason;
+    private final String conformanceReport;
 
     public static String getCurrentRunId() {
         HarvestExecutionContext context = HarvestExecutionContextUtils.getContext();

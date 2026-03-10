@@ -1,10 +1,16 @@
 package it.gov.innovazione.ndc.harvester;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContext;
 import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContextUtils;
 import it.gov.innovazione.ndc.harvester.model.Instance;
+import it.gov.innovazione.ndc.harvester.model.conformance.ConformanceReport;
 import it.gov.innovazione.ndc.harvester.model.index.RightsHolder;
+import it.gov.innovazione.ndc.harvester.service.HarvesterRunService;
 import it.gov.innovazione.ndc.harvester.service.RepositoryService;
+import it.gov.innovazione.ndc.harvester.service.RepositoryStructureValidator;
 import it.gov.innovazione.ndc.harvester.util.FileUtils;
 import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import it.gov.innovazione.ndc.model.harvester.Repository;
@@ -46,6 +52,11 @@ public class HarvesterService {
     private final SemanticAssetMetadataRepository semanticAssetMetadataRepository;
     private final RepositoryService repositoryService;
     private final FileUtils fileUtils;
+    private final RepositoryStructureValidator repositoryStructureValidator;
+    private final HarvesterRunService harvesterRunService;
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
+            .registerModule(new JavaTimeModule());
 
     private static void updateContextWithMaintainers(List<Repository.Maintainer> maintainers) {
         HarvestExecutionContext context = HarvestExecutionContextUtils.getContext();
@@ -99,6 +110,7 @@ public class HarvesterService {
 
             try {
                 updateContext(path, instance);
+                runConformanceCheck(path);
                 harvestClonedRepo(normalisedRepo, path);
             } finally {
                 log.info("Cleaning up pending data for {}", path);
@@ -142,6 +154,28 @@ public class HarvesterService {
 
     private String normaliseRepoUrl(String repoUrl) {
         return repoUrl.replace(".git", "");
+    }
+
+    private void runConformanceCheck(Path repoPath) {
+        try {
+            String runId = HarvesterRun.getCurrentRunId();
+            if (runId == null) {
+                log.debug("No run ID in context, skipping conformance check");
+                return;
+            }
+            repositoryStructureValidator.validate(repoPath).ifPresent(report -> {
+                try {
+                    String json = OBJECT_MAPPER.writeValueAsString(report);
+                    harvesterRunService.updateConformanceReport(runId, json);
+                    log.info("Conformance report saved for run {}: {} checks",
+                            runId, report.getChecks().size());
+                } catch (JsonProcessingException e) {
+                    log.error("Failed to serialize conformance report", e);
+                }
+            });
+        } catch (Exception e) {
+            log.error("Conformance check failed, continuing with harvest", e);
+        }
     }
 
     private void harvestClonedRepo(Repository repository, Path path) {
