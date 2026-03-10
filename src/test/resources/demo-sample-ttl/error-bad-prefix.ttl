@@ -1,0 +1,6 @@
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix dct   <http://purl.org/dc/terms/> .
+
+<https://w3id.org/italia/onto/BadPrefix>
+    a owl:Ontology ;
+    dct:title "Prefisso malformato - mancano i due punti"@it .

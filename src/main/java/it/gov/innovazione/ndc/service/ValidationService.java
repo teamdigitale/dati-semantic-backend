@@ -4,6 +4,8 @@ import it.gov.innovazione.ndc.controller.exception.InvalidFileException;
 import it.gov.innovazione.ndc.controller.exception.InvalidSemanticAssetException;
 import it.gov.innovazione.ndc.controller.exception.SemanticAssetGenericErrorException;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetModelValidationContext;
+import it.gov.innovazione.ndc.harvester.validation.RdfSyntaxValidationResult;
+import it.gov.innovazione.ndc.harvester.validation.RdfSyntaxValidator;
 import it.gov.innovazione.ndc.validator.SemanticAssetValidator;
 import it.gov.innovazione.ndc.validator.ValidationResultDto;
 import it.gov.innovazione.ndc.validator.model.ValidationOutcome;
@@ -20,6 +22,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,6 +35,7 @@ public class ValidationService {
     private static final String FILE_CONTENT_TYPE = "text/turtle";
 
     private final List<SemanticAssetValidator> semanticAssetValidators;
+    private final RdfSyntaxValidator rdfSyntaxValidator;
 
     public ValidationResultDto validate(MultipartFile file, String assetType) {
 
@@ -55,6 +60,22 @@ public class ValidationService {
                     SemanticAssetModelValidationContext.builder()
                             .errors(List.of(new ValidationOutcome(null, e.getMessage(), e)))
                             .build());
+        }
+    }
+
+    public RdfSyntaxValidationResult validateSyntax(MultipartFile file) {
+        assertContentType(file);
+        try {
+            Path tempFile = Files.createTempFile("syntax-check-", ".ttl");
+            try {
+                file.transferTo(tempFile);
+                return rdfSyntaxValidator.validateTurtle(tempFile.toString());
+            } finally {
+                Files.deleteIfExists(tempFile);
+            }
+        } catch (IOException e) {
+            log.error("Error during syntax validation", e);
+            throw new SemanticAssetGenericErrorException();
         }
     }
 

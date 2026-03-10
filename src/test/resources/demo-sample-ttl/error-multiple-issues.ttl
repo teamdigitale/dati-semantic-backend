@@ -1,0 +1,12 @@
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+
+<https://w3id.org/italia/onto/MultiError>
+    a owl:Ontology ;
+    dct:title "Primo errore: virgola mancante"@it
+    dct:description "Secondo errore segue"@it ;
+    dct:rightsHolder [
+        a foaf:Agent
+        foaf:name "Agenzia"@it
+    ] .

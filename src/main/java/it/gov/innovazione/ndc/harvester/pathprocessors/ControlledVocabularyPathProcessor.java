@@ -11,6 +11,7 @@ import it.gov.innovazione.ndc.harvester.model.HarvesterStatsHolder;
 import it.gov.innovazione.ndc.harvester.model.Instance;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetModelFactory;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
+import it.gov.innovazione.ndc.harvester.validation.RdfSyntaxValidator;
 import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
 import it.gov.innovazione.ndc.repository.TripleStoreRepository;
@@ -35,8 +36,9 @@ public class ControlledVocabularyPathProcessor extends BaseSemanticAssetPathProc
     public ControlledVocabularyPathProcessor(TripleStoreRepository tripleStoreRepository, SemanticAssetModelFactory modelFactory,
                                              CsvParser csvParser, VocabularyDataService vocabularyDataService,
                                              SemanticAssetMetadataRepository metadataRepository,
+                                             RdfSyntaxValidator rdfSyntaxValidator,
                                              @Value("${ndc.baseUrl}") String baseUrl) {
-        super(tripleStoreRepository, metadataRepository);
+        super(tripleStoreRepository, metadataRepository, rdfSyntaxValidator);
         this.modelFactory = modelFactory;
         this.csvParser = csvParser;
         this.vocabularyDataService = vocabularyDataService;

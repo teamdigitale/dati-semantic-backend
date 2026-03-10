@@ -9,6 +9,8 @@ import it.gov.innovazione.ndc.harvester.model.SemanticAssetModelFactory;
 import it.gov.innovazione.ndc.harvester.model.index.RightsHolder;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.gov.innovazione.ndc.harvester.service.SemanticContentStatsService;
+import it.gov.innovazione.ndc.harvester.validation.RdfSyntaxValidationResult;
+import it.gov.innovazione.ndc.harvester.validation.RdfSyntaxValidator;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
 import it.gov.innovazione.ndc.repository.TripleStoreRepository;
 import it.gov.innovazione.ndc.service.VocabularyDataService;
@@ -24,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -48,6 +51,8 @@ class ControlledVocabularyPathProcessorTest {
     @Mock
     SemanticContentStatsService semanticContentStatsService;
     @Mock
+    RdfSyntaxValidator rdfSyntaxValidator;
+    @Mock
     Model jenaModel;
 
     String baseUrl = "http://ndc";
@@ -57,7 +62,7 @@ class ControlledVocabularyPathProcessorTest {
     @BeforeEach
     void setup() {
         pathProcessor = new ControlledVocabularyPathProcessor(tripleStoreRepository, semanticAssetModelFactory,
-                csvParser, vocabularyDataService, metadataRepository, baseUrl);
+                csvParser, vocabularyDataService, metadataRepository, rdfSyntaxValidator, baseUrl);
     }
 
     @Test
@@ -66,6 +71,7 @@ class ControlledVocabularyPathProcessorTest {
         String csvFile = "cities.csv";
         CvPath path = CvPath.of(ttlFile, csvFile);
 
+        when(rdfSyntaxValidator.validateTurtle(anyString())).thenReturn(RdfSyntaxValidationResult.builder().build());
         when(semanticAssetModelFactory.createControlledVocabulary(ttlFile, "some-repo")).thenReturn(cvModel);
         when(cvModel.getRdfModel()).thenReturn(jenaModel);
         when(cvModel.getKeyConcept()).thenReturn("keyConcept");
@@ -91,6 +97,7 @@ class ControlledVocabularyPathProcessorTest {
         String ttlFile = "cities.ttl";
         CvPath path = CvPath.of(ttlFile, null);
 
+        when(rdfSyntaxValidator.validateTurtle(anyString())).thenReturn(RdfSyntaxValidationResult.builder().build());
         when(semanticAssetModelFactory.createControlledVocabulary(ttlFile, "some-repo")).thenReturn(cvModel);
         when(cvModel.getRdfModel()).thenReturn(jenaModel);
         SemanticAssetMetadata metadata = SemanticAssetMetadata.builder().build();

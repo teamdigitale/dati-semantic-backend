@@ -5,6 +5,8 @@ import it.gov.innovazione.ndc.harvester.model.SemanticAssetModelFactory;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.gov.innovazione.ndc.harvester.service.SemanticContentStatsService;
+import it.gov.innovazione.ndc.harvester.validation.RdfSyntaxValidationResult;
+import it.gov.innovazione.ndc.harvester.validation.RdfSyntaxValidator;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
 import it.gov.innovazione.ndc.repository.TripleStoreRepository;
 import org.apache.jena.rdf.model.Resource;
@@ -14,6 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -32,6 +35,8 @@ class OntologyPathProcessorTest {
     SemanticContentStatsService semanticContentStatsService;
     @Mock
     SemanticAssetMetadataRepository metadataRepository;
+    @Mock
+    RdfSyntaxValidator rdfSyntaxValidator;
 
     @InjectMocks
     OntologyPathProcessor pathProcessor;
@@ -41,6 +46,7 @@ class OntologyPathProcessorTest {
         String ttlFile = "cities.ttl";
         SemanticAssetPath path = SemanticAssetPath.of(ttlFile);
 
+        when(rdfSyntaxValidator.validateTurtle(anyString())).thenReturn(RdfSyntaxValidationResult.builder().build());
         when(modelFactory.createOntology(ttlFile, "some-repo")).thenReturn(ontologyModel);
         when(ontologyModel.getMainResource()).thenReturn(ontology);
         SemanticAssetMetadata metadata = SemanticAssetMetadata.builder().build();
