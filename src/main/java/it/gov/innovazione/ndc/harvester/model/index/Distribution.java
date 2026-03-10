@@ -13,4 +13,6 @@ public class Distribution {
     private String accessUrl;
     @Field(index = false, type = Keyword)
     private String downloadUrl;
+    @Field(index = false, type = Keyword)
+    private String license;
 }

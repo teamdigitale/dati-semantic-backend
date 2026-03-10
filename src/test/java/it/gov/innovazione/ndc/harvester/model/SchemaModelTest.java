@@ -62,11 +62,13 @@ public class SchemaModelTest {
         Resource jsonDistribution = jenaModel.createResource(SCHEMA_IRI + "/dist/json")
                 .addProperty(format, EuropePublicationVocabulary.FILE_TYPE_JSON)
                 .addProperty(accessURL, jenaModel.createResource(SCHEMA_IRI + "/dist/json/index.html"))
-                .addProperty(downloadURL, jenaModel.createResource(SCHEMA_IRI + "/dist/json/test.json"));
+                .addProperty(downloadURL, jenaModel.createResource(SCHEMA_IRI + "/dist/json/test.json"))
+                .addProperty(DCTerms.license, createResource("http://publications.europa.eu/resource/authority/licence/CC_BY_4_0"));
         Resource turtleDistribution = jenaModel.createResource(SCHEMA_IRI + "/dist/rdf")
                 .addProperty(format, EuropePublicationVocabulary.FILE_TYPE_RDF_TURTLE)
                 .addProperty(accessURL, jenaModel.createResource(SCHEMA_IRI + "/dist/rdf/index.html"))
-                .addProperty(downloadURL, jenaModel.createResource(SCHEMA_IRI + "/dist/rdf/test.ttl"));
+                .addProperty(downloadURL, jenaModel.createResource(SCHEMA_IRI + "/dist/rdf/test.ttl"))
+                .addProperty(DCTerms.license, createResource("http://publications.europa.eu/resource/authority/licence/CC_BY_4_0"));
         jenaModel
             .createResource(SCHEMA_IRI)
             .addProperty(title, createLangLiteral("title", "en"))

@@ -33,6 +33,7 @@ import static org.apache.jena.vocabulary.DCTerms.accrualPeriodicity;
 import static org.apache.jena.vocabulary.DCTerms.description;
 import static org.apache.jena.vocabulary.DCTerms.format;
 import static org.apache.jena.vocabulary.DCTerms.identifier;
+import static org.apache.jena.vocabulary.DCTerms.license;
 import static org.apache.jena.vocabulary.DCTerms.modified;
 import static org.apache.jena.vocabulary.DCTerms.rightsHolder;
 import static org.apache.jena.vocabulary.DCTerms.title;
@@ -72,11 +73,13 @@ class ControlledVocabularyModelTest {
                 .addProperty(accessURL, createResource("http://repo/cv/dist/ttl"))
                 .addProperty(downloadURL, createResource("http://repo/cv/dist/ttl/file.ttl"))
                 .addProperty(format, EuropePublicationVocabulary.FILE_TYPE_RDF_TURTLE)
+                .addProperty(license, createResource("http://publications.europa.eu/resource/authority/licence/CC_BY_4_0"))
             )
             .addProperty(distribution, jenaModel.createResource(JSON_DISTRIBUTION_IRI)
                 .addProperty(accessURL, createResource("http://repo/cv/dist/json"))
                 .addProperty(downloadURL, createResource("http://repo/cv/dist/json/file.json"))
                 .addProperty(format, EuropePublicationVocabulary.FILE_TYPE_JSON)
+                .addProperty(license, createResource("http://publications.europa.eu/resource/authority/licence/CC_BY_4_0"))
             );
     }
 
