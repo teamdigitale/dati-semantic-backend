@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import it.gov.innovazione.ndc.model.harvester.HarvesterRunResult;
+
 import java.sql.ResultSet;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -132,6 +134,37 @@ public class HarvesterRunService {
                 .filter(harvesterRun -> isMoreRecentThan(harvesterRun, days));
     }
 
+    public HarvesterRunResult getRunsPaginated(int offset, int limit) {
+        Integer totalCount = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM HARVESTER_RUN", Integer.class);
+
+        String sqlQuery = "SELECT "
+                + "ID, "
+                + "CORRELATION_ID, "
+                + "REPOSITORY_ID, "
+                + "REPOSITORY_URL, "
+                + "INSTANCE, "
+                + "REVISION, "
+                + "REVISION_COMMITTED_AT, "
+                + "STARTED, "
+                + "STARTED_BY, "
+                + "FINISHED, "
+                + "STATUS, "
+                + "REASON, "
+                + "CONFORMANCE_REPORT "
+                + "FROM HARVESTER_RUN "
+                + "ORDER BY STARTED DESC "
+                + "LIMIT ? OFFSET ?";
+        List<HarvesterRun> data = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> mapRow(rs), limit, offset);
+
+        return HarvesterRunResult.builder()
+                .totalCount(totalCount != null ? totalCount : 0)
+                .limit(limit)
+                .offset(offset)
+                .data(data)
+                .build();
+    }
+
     public List<HarvesterRun> getAllRuns() {
         String sqlQuery = "SELECT "
                 + "ID, "
@@ -149,22 +182,29 @@ public class HarvesterRunService {
                 + "CONFORMANCE_REPORT "
                 + "FROM HARVESTER_RUN "
                 + "ORDER BY STARTED DESC";
-        return jdbcTemplate.query(sqlQuery, (rs, rowNum) ->
-                HarvesterRun.builder()
-                        .id(rs.getString("ID"))
-                        .correlationId(rs.getString("CORRELATION_ID"))
-                        .repositoryId(rs.getString("REPOSITORY_ID"))
-                        .repositoryUrl(rs.getString("REPOSITORY_URL"))
-                        .instance(rs.getString("INSTANCE"))
-                        .revision(rs.getString("REVISION"))
-                        .revisionCommittedAt(getInstant(rs, "REVISION_COMMITTED_AT"))
-                        .startedAt(getInstant(rs, "STARTED"))
-                        .startedBy(rs.getString("STARTED_BY"))
-                        .endedAt(getInstant(rs, "FINISHED"))
-                        .status(getStatusSafely(rs))
-                        .reason(rs.getString("REASON"))
-                        .conformanceReport(rs.getString("CONFORMANCE_REPORT"))
-                        .build());
+        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> mapRow(rs));
+    }
+
+    private HarvesterRun mapRow(ResultSet rs) {
+        try {
+            return HarvesterRun.builder()
+                    .id(rs.getString("ID"))
+                    .correlationId(rs.getString("CORRELATION_ID"))
+                    .repositoryId(rs.getString("REPOSITORY_ID"))
+                    .repositoryUrl(rs.getString("REPOSITORY_URL"))
+                    .instance(rs.getString("INSTANCE"))
+                    .revision(rs.getString("REVISION"))
+                    .revisionCommittedAt(getInstant(rs, "REVISION_COMMITTED_AT"))
+                    .startedAt(getInstant(rs, "STARTED"))
+                    .startedBy(rs.getString("STARTED_BY"))
+                    .endedAt(getInstant(rs, "FINISHED"))
+                    .status(getStatusSafely(rs))
+                    .reason(rs.getString("REASON"))
+                    .conformanceReport(rs.getString("CONFORMANCE_REPORT"))
+                    .build();
+        } catch (Exception e) {
+            throw new RuntimeException("Error mapping HarvesterRun row", e);
+        }
     }
 
     private HarvesterRun.Status getStatusSafely(ResultSet rs) {
@@ -203,6 +243,11 @@ public class HarvesterRunService {
                 && contains(threadName, harvesterRun.getRevision())
                 && contains(threadName, harvesterRun.getId())
                 && endsWithIgnoreCase(threadName, "RUNNING");
+    }
+
+    public long deleteRunsOlderThan(Instant threshold) {
+        String query = "DELETE FROM HARVESTER_RUN WHERE STARTED < ? AND STATUS <> 'RUNNING'";
+        return jdbcTemplate.update(query, java.sql.Timestamp.from(threshold));
     }
 
     private void delete(HarvesterRun harvesterRun) {
