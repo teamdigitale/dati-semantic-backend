@@ -767,7 +767,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-people/registry-office-registration-types",
@@ -778,7 +778,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-trasparency/transparency-subject",
@@ -789,7 +789,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-her/fields-of-research-development",
@@ -800,7 +800,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-organizations/ateco-2007",
@@ -811,7 +811,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/onto/HER",
@@ -822,7 +822,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[\"draft\"]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-people/person-title",
@@ -833,7 +833,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-universities/academic-disciplines",
@@ -844,7 +844,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/onto/MU",
@@ -855,7 +855,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[\"catalogued\",\"published\"]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/onto/COV",
@@ -866,7 +866,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[\"published\",\"catalogued\"]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-organizations/cofog-2009",
@@ -877,7 +877,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/onto/RPO",
@@ -888,7 +888,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[\"published\"]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/onto/ACCO",
@@ -899,7 +899,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[\"catalogued\",\"published\"]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-organizations/S13",
@@ -910,7 +910,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/onto/PARK",
@@ -921,7 +921,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[\"published\",\"catalogued\"]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/onto/FULL",
@@ -932,7 +932,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[\"catalogued\"]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/public-event-types",
@@ -943,7 +943,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-culture/subject-disciplines",
@@ -954,7 +954,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-accommodation-facilities/accommodation-star-rating",
@@ -965,7 +965,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/onto/ACO",
@@ -976,7 +976,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[\"published\"]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/onto/IoT",
@@ -987,7 +987,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[\"catalogued\",\"published\"]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/onto/Language",
@@ -998,7 +998,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[\"final draft\"]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-people/education-level",
@@ -1009,7 +1009,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/onto/Learning",
@@ -1020,7 +1020,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[\"draft\"]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-public-services/life-business-event/business-event",
@@ -1031,7 +1031,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/onto/CPEV",
@@ -1042,7 +1042,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[\"published\",\"catalogued\"]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/onto/PublicContract",
@@ -1053,7 +1053,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[\"final draft\"]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-universities/documents-titulus",
@@ -1064,7 +1064,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/poi-category-classification",
@@ -1075,7 +1075,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-indicators/indicator-types",
@@ -1086,7 +1086,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/onto/AccessCondition",
@@ -1097,7 +1097,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[\"initial draft\"]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-people/sex",
@@ -1108,7 +1108,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/theme-subtheme-mapping",
@@ -1119,7 +1119,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/onto/SM",
@@ -1130,7 +1130,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[\"published\",\"catalogued\"]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-people/marital-status-types",
@@ -1141,7 +1141,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/territorial-classifications/provinces",
@@ -1152,7 +1152,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/territorial-classifications/regions",
@@ -1163,7 +1163,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/onto/Indicator",
@@ -1174,7 +1174,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[\"initial draft\"]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-trasparency/transparency-obligation",
@@ -1185,7 +1185,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-people/registry-office-removal-types",
@@ -1196,7 +1196,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/onto/Route",
@@ -1207,7 +1207,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[\"initial draft\"]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-culture/cultural-interest-places",
@@ -1218,7 +1218,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/onto/CPSV",
@@ -1229,7 +1229,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[\"final draft\"]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/onto/POT",
@@ -1240,7 +1240,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[\"published\",\"catalogued\"]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/onto/NDC",
@@ -1251,7 +1251,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/onto/RO",
@@ -1262,7 +1262,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[\"published\",\"catalogued\"]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/onto/AtlasOfPaths",
@@ -1273,7 +1273,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[\"initial draft\"]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/territorial-classifications/geographical-distribution",
@@ -1284,7 +1284,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/onto/Project",
@@ -1295,7 +1295,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[\"draft\"]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-accommodation-facilities/accommodation-typology",
@@ -1306,7 +1306,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-public-services/interactivity-level",
@@ -1317,7 +1317,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/onto/CPV",
@@ -1328,7 +1328,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[\"published\",\"catalogued\"]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-public-services/authentication-type",
@@ -1339,7 +1339,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-transparency/transparency-titulus",
@@ -1350,7 +1350,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/onto/l0",
@@ -1361,7 +1361,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-organizations/legal-status",
@@ -1372,7 +1372,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-public-services/life-business-event/life-event",
@@ -1383,7 +1383,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-public-services/service-input-output",
@@ -1394,7 +1394,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-documents/government-documents-types",
@@ -1405,7 +1405,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-public-services/channel",
@@ -1416,7 +1416,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/territorial-classifications/countries/italy",
@@ -1427,7 +1427,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "http://dati.beniculturali.it/cis",
@@ -1438,7 +1438,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[\"catalogued\"]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/onto/ADMS",
@@ -1449,7 +1449,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[\"draft\"]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "http://dati.gov.it/onto/dcatapit",
@@ -1460,7 +1460,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[\"catalogued\",\"published\"]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/territorial-classifications/cities",
@@ -1471,7 +1471,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/onto/TI",
@@ -1482,7 +1482,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[\"published\",\"catalogued\"]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/onto/Transparency",
@@ -1493,7 +1493,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[\"draft\"]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-public-services/public-services-subject-matters",
@@ -1504,7 +1504,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-documents/municipal-notice-board",
@@ -1515,7 +1515,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/onto/CulturalHeritage",
@@ -1526,7 +1526,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[\"catalogued\"]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-universities/italian-academic-roles",
@@ -1537,7 +1537,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/onto/CLV",
@@ -1548,7 +1548,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[\"catalogued\",\"published\"]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-her/all-science-journal",
@@ -1559,7 +1559,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-people/parental-relationship-types",
@@ -1570,7 +1570,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/onto/POI",
@@ -1581,7 +1581,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[\"published\",\"catalogued\"]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/licences",
@@ -1592,7 +1592,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/italia/controlled-vocabulary/classifications-for-her/erc-panel-h2020-fp",
@@ -1603,7 +1603,7 @@
     "HAS_ERRORS": 0,
     "HAS_WARNINGS": 1,
     "STATUS": "[]",
-    "REPOSITORY_URL": "https://github.com/italia/daf-ontologie-vocabolari-controllati"
+    "REPOSITORY_URL": "https://github.com/italia/dati-semantic-assets"
   },
   {
     "RESOURCE_URI": "https://w3id.org/leo/onto/analysis",
