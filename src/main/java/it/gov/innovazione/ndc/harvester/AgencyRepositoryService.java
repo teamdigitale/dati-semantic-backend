@@ -82,6 +82,13 @@ public class AgencyRepositoryService {
         return cloneDir;
     }
 
+    public Path cloneRepoWithoutTracking(String repoUrl, String revision) throws IOException {
+        Path cloneDir = fileUtils.createTempDirectory(TEMP_DIR_PREFIX);
+        log.info("Cloning repo {} (no tracking) @ revision {}, at location {}", repoUrl, revision, cloneDir);
+        gitUtils.cloneRepoAndGetLastCommitDate(repoUrl, cloneDir.toFile(), null, revision);
+        return cloneDir;
+    }
+
     public List<CvPath> getControlledVocabularyPaths(Path clonedRepo) {
         return findPaths(clonedRepo, SemanticAssetType.CONTROLLED_VOCABULARY, controlledVocabularyFolderScanner);
     }

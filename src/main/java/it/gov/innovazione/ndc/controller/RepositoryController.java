@@ -186,23 +186,33 @@ public class RepositoryController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{id}/conformance")
+    @GetMapping("/{id}/validation-report")
     @Operation(
-            operationId = "getConformanceReport",
-            description = "Get the latest conformance report for a repository",
-            summary = "Get the latest conformance report for a repository")
-    public ResponseEntity<String> getConformanceReport(@PathVariable String id) {
+            operationId = "getValidationReport",
+            description = "Get the latest validation report for a repository",
+            summary = "Get the latest validation report for a repository")
+    public ResponseEntity<String> getValidationReport(@PathVariable String id) {
         Optional<String> report = harvesterRunService.getAllRuns().stream()
                 .filter(run -> run.getRepositoryId().equals(id))
-                .filter(run -> run.getConformanceReport() != null)
+                .filter(run -> run.getValidationReport() != null)
                 .max(Comparator.comparing(HarvesterRun::getStartedAt))
-                .map(HarvesterRun::getConformanceReport);
+                .map(HarvesterRun::getValidationReport);
 
         return report
                 .map(json -> ResponseEntity.ok()
                         .header("Content-Type", "application/json")
                         .body(json))
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @Deprecated
+    @GetMapping("/{id}/conformance")
+    @Operation(
+            operationId = "getConformanceReport",
+            description = "Get the latest conformance report (deprecated, use /validation-report)",
+            summary = "Get the latest conformance report (deprecated)")
+    public ResponseEntity<String> getConformanceReport(@PathVariable String id) {
+        return getValidationReport(id);
     }
 
     @Data

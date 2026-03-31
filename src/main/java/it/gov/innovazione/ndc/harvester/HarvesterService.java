@@ -8,6 +8,8 @@ import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContextUtils;
 import it.gov.innovazione.ndc.harvester.model.Instance;
 import it.gov.innovazione.ndc.harvester.model.conformance.ConformanceReport;
 import it.gov.innovazione.ndc.harvester.model.index.RightsHolder;
+import it.gov.innovazione.ndc.harvester.model.validation.ValidationReport;
+import it.gov.innovazione.ndc.harvester.model.validation.ValidationReportCollector;
 import it.gov.innovazione.ndc.harvester.service.HarvesterRunService;
 import it.gov.innovazione.ndc.harvester.service.RepositoryService;
 import it.gov.innovazione.ndc.harvester.service.RepositoryStructureValidator;
@@ -112,6 +114,7 @@ public class HarvesterService {
                 updateContext(path, instance);
                 runConformanceCheck(path);
                 harvestClonedRepo(normalisedRepo, path);
+                persistValidationReport(normalisedRepo, revision);
             } finally {
                 log.info("Cleaning up pending data for {}", path);
                 agencyRepositoryService.removeClonedRepo(path);
@@ -158,23 +161,33 @@ public class HarvesterService {
 
     private void runConformanceCheck(Path repoPath) {
         try {
-            String runId = HarvesterRun.getCurrentRunId();
-            if (runId == null) {
-                log.debug("No run ID in context, skipping conformance check");
-                return;
-            }
             repositoryStructureValidator.validate(repoPath).ifPresent(report -> {
-                try {
-                    String json = OBJECT_MAPPER.writeValueAsString(report);
-                    harvesterRunService.updateConformanceReport(runId, json);
-                    log.info("Conformance report saved for run {}: {} checks",
-                            runId, report.getChecks().size());
-                } catch (JsonProcessingException e) {
-                    log.error("Failed to serialize conformance report", e);
+                HarvestExecutionContext context = HarvestExecutionContextUtils.getContext();
+                if (context != null) {
+                    context.getValidationReportCollector().addRepositoryChecks(report);
                 }
+                log.info("Conformance check completed: {} checks", report.getChecks().size());
             });
         } catch (Exception e) {
             log.error("Conformance check failed, continuing with harvest", e);
+        }
+    }
+
+    private void persistValidationReport(Repository repository, String revision) {
+        try {
+            String runId = HarvesterRun.getCurrentRunId();
+            HarvestExecutionContext context = HarvestExecutionContextUtils.getContext();
+            if (runId == null || context == null) {
+                return;
+            }
+            ValidationReport report = context.getValidationReportCollector()
+                    .build(repository.getUrl(), revision);
+            String json = OBJECT_MAPPER.writeValueAsString(report);
+            harvesterRunService.updateValidationReport(runId, json);
+            log.info("Validation report saved for run {}: {} repository checks, {} asset checks",
+                    runId, report.getRepositoryChecks().size(), report.getAssetChecks().size());
+        } catch (Exception e) {
+            log.error("Failed to persist validation report", e);
         }
     }
 

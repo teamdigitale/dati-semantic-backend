@@ -1,5 +1,6 @@
 package it.gov.innovazione.ndc.harvester.pathprocessors;
 
+import it.gov.innovazione.ndc.harvester.SemanticAssetType;
 import it.gov.innovazione.ndc.harvester.exception.SinglePathProcessingException;
 import it.gov.innovazione.ndc.harvester.model.OntologyModel;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
@@ -50,6 +51,11 @@ class SemanticAssetPathProcessorTest {
         @Override
         protected void enrichModelBeforePersisting(OntologyModel model, SemanticAssetPath path) {
             modelEnricher.accept(model);
+        }
+
+        @Override
+        protected SemanticAssetType getAssetType() {
+            return SemanticAssetType.ONTOLOGY;
         }
     }
 

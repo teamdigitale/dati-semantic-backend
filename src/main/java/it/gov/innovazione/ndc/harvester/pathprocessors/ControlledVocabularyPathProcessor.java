@@ -3,6 +3,7 @@ package it.gov.innovazione.ndc.harvester.pathprocessors;
 import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticError;
 import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticInfo;
 
+import it.gov.innovazione.ndc.harvester.SemanticAssetType;
 import it.gov.innovazione.ndc.harvester.csv.CsvParser;
 import it.gov.innovazione.ndc.harvester.csv.CsvParser.CsvData;
 import it.gov.innovazione.ndc.harvester.model.ControlledVocabularyModel;
@@ -109,6 +110,11 @@ public class ControlledVocabularyPathProcessor extends BaseSemanticAssetPathProc
 
             tryToDropIndex(v, vocabId);
         });
+    }
+
+    @Override
+    protected SemanticAssetType getAssetType() {
+        return SemanticAssetType.CONTROLLED_VOCABULARY;
     }
 
     private void tryToDropIndex(SemanticAssetMetadata v, VocabularyIdentifier vocabId) {
