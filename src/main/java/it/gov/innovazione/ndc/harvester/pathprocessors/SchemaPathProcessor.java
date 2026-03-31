@@ -2,6 +2,7 @@ package it.gov.innovazione.ndc.harvester.pathprocessors;
 
 import it.gov.innovazione.ndc.harvester.SemanticAssetType;
 import it.gov.innovazione.ndc.harvester.model.SchemaModel;
+import it.gov.innovazione.ndc.harvester.model.SemanticAssetModelValidationContext;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetModelFactory;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
 import it.gov.innovazione.ndc.harvester.validation.RdfSyntaxValidator;
@@ -28,6 +29,11 @@ public class SchemaPathProcessor
     @Override
     protected SchemaModel loadModel(String ttlFile, String repoUrl) {
         return modelFactory.createSchema(ttlFile, repoUrl);
+    }
+
+    @Override
+    protected SemanticAssetModelValidationContext validateMetadataForReport(String ttlFile, String repoUrl) {
+        return modelFactory.createSchemaForValidation(ttlFile, repoUrl).validateMetadata();
     }
 
     @Override

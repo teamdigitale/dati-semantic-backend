@@ -10,6 +10,7 @@ import it.gov.innovazione.ndc.harvester.model.ControlledVocabularyModel;
 import it.gov.innovazione.ndc.harvester.model.CvPath;
 import it.gov.innovazione.ndc.harvester.model.HarvesterStatsHolder;
 import it.gov.innovazione.ndc.harvester.model.Instance;
+import it.gov.innovazione.ndc.harvester.model.SemanticAssetModelValidationContext;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetModelFactory;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.gov.innovazione.ndc.harvester.validation.RdfSyntaxValidator;
@@ -74,6 +75,11 @@ public class ControlledVocabularyPathProcessor extends BaseSemanticAssetPathProc
     @Override
     protected ControlledVocabularyModel loadModel(String ttlFile, String repoUrl) {
         return modelFactory.createControlledVocabulary(ttlFile, repoUrl);
+    }
+
+    @Override
+    protected SemanticAssetModelValidationContext validateMetadataForReport(String ttlFile, String repoUrl) {
+        return modelFactory.createControlledVocabularyForValidation(ttlFile, repoUrl).validateMetadata();
     }
 
     @Override

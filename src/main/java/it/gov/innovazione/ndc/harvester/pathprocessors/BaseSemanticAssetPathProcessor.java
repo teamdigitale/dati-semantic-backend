@@ -146,13 +146,18 @@ public abstract class BaseSemanticAssetPathProcessor<P extends SemanticAssetPath
         }
     }
 
-    private void collectMetadataResult(P path, M model) {
+    private void collectMetadataResult(P path, String repoUrl) {
         ValidationReportCollector collector = getCollector();
-        if (collector != null && model != null) {
-            SemanticAssetModelValidationContext ctx = model.getValidationContext();
+        if (collector == null) {
+            return;
+        }
+        try {
+            SemanticAssetModelValidationContext ctx = validateMetadataForReport(path.getTtlPath(), repoUrl);
             if (ctx != null && ctx.getIsValidation()) {
                 collector.addMetadataResult(relativizePath(path), ctx);
             }
+        } catch (Exception e) {
+            log.debug("Cannot collect validation report metadata for {}: {}", path, e.getMessage());
         }
     }
 
@@ -171,6 +176,8 @@ public abstract class BaseSemanticAssetPathProcessor<P extends SemanticAssetPath
 
     protected abstract SemanticAssetType getAssetType();
 
+    protected abstract SemanticAssetModelValidationContext validateMetadataForReport(String ttlFile, String repoUrl);
+
     @Override
     public HarvesterStatsHolder process(String repoUrl, P path) {
         try {
@@ -185,7 +192,7 @@ public abstract class BaseSemanticAssetPathProcessor<P extends SemanticAssetPath
             log.info("Found resource {}", resource);
 
             HarvesterStatsHolder harvesterStatsHolder = processWithModel(repoUrl, path, model);
-            collectMetadataResult(path, model);
+            collectMetadataResult(path, repoUrl);
             log.info("Path {} processed", path);
 
             return harvesterStatsHolder;
