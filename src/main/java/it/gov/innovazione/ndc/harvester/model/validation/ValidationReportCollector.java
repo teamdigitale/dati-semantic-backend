@@ -21,8 +21,11 @@ public class ValidationReportCollector {
 
     @Getter
     private final AtomicInteger processedAssets = new AtomicInteger(0);
-    @Getter
     private volatile int totalAssets = -1;
+
+    public synchronized int getTotalAssets() {
+        return totalAssets;
+    }
 
     public synchronized void setTotalAssets(int total) {
         this.totalAssets = total;
