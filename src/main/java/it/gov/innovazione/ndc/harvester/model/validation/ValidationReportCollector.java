@@ -6,6 +6,7 @@ import it.gov.innovazione.ndc.harvester.model.conformance.ConformanceReport;
 import it.gov.innovazione.ndc.harvester.validation.RdfSyntaxValidationResult;
 import it.gov.innovazione.ndc.validator.model.ValidationOutcome;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Slf4j
 public class ValidationReportCollector {
 
     private final List<ValidationIssue> repositoryChecks = new ArrayList<>();
@@ -78,6 +80,8 @@ public class ValidationReportCollector {
         }
         AssetEntry entry = assetEntries.get(relativePath);
         if (entry == null) {
+            log.warn("Metadata result for unknown asset path '{}', skipping. Known paths: {}",
+                    relativePath, assetEntries.keySet());
             return;
         }
         for (ValidationOutcome error : ctx.getErrors()) {

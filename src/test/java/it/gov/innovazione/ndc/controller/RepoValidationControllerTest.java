@@ -107,6 +107,22 @@ class RepoValidationControllerTest {
     }
 
     @Test
+    void shouldReturn400ForInvalidOwner() {
+        ResponseEntity<ValidationJobSubmittedDto> response =
+                controller.submitValidation("foo/bar", "repo", null);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void shouldReturn400ForInvalidRepo() {
+        ResponseEntity<ValidationJobSubmittedDto> response =
+                controller.submitValidation("owner", "../etc/passwd", null);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
     void shouldAcceptRevisionFromPathVariant() {
         when(repoValidationService.tryAcquire()).thenReturn(true);
 

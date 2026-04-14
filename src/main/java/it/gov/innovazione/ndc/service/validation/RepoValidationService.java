@@ -35,8 +35,20 @@ public class RepoValidationService {
     private final RepositoryStructureValidator repositoryStructureValidator;
     private final SemanticAssetModelFactory modelFactory;
 
+    /**
+     * Attempt to acquire a validation permit. Must be called before
+     * {@link #executeValidation}. The caller is responsible for calling
+     * {@link #releaseSemaphore()} if the job is NOT submitted after a
+     * successful acquire (e.g. on unexpected error between acquire and submit).
+     * When {@code executeValidation} runs, it always releases the permit
+     * in its {@code finally} block.
+     */
     public boolean tryAcquire() {
         return concurrencyLimiter.tryAcquire();
+    }
+
+    public void releaseSemaphore() {
+        concurrencyLimiter.release();
     }
 
     @Async

@@ -18,11 +18,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/validate/repo")
 @RequiredArgsConstructor
 public class RepoValidationController {
+
+    private static final Pattern GITHUB_NAME_PATTERN = Pattern.compile("[a-zA-Z0-9._-]+");
 
     private final RepoValidationService repoValidationService;
     private final ValidationJobStore validationJobStore;
@@ -55,6 +58,11 @@ public class RepoValidationController {
             String owner,
             String repo,
             String revision) {
+        if (!GITHUB_NAME_PATTERN.matcher(owner).matches()
+                || !GITHUB_NAME_PATTERN.matcher(repo).matches()) {
+            return ResponseEntity.badRequest().build();
+        }
+
         if (!repoValidationService.tryAcquire()) {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
         }
