@@ -1,11 +1,17 @@
 package it.gov.innovazione.ndc.harvester.pathprocessors;
 
+import it.gov.innovazione.ndc.harvester.SemanticAssetType;
+import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContext;
+import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContextUtils;
 import it.gov.innovazione.ndc.harvester.exception.SinglePathProcessingException;
 import it.gov.innovazione.ndc.harvester.model.OntologyModel;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
+import it.gov.innovazione.ndc.harvester.model.SemanticAssetModelValidationContext;
 import it.gov.innovazione.ndc.harvester.model.exception.InvalidModelException;
+import it.gov.innovazione.ndc.harvester.model.Instance;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.gov.innovazione.ndc.harvester.service.SemanticContentStatsService;
+import it.gov.innovazione.ndc.model.harvester.Repository;
 import it.gov.innovazione.ndc.harvester.validation.RdfSyntaxValidationResult;
 import it.gov.innovazione.ndc.harvester.validation.RdfSyntaxValidator;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
@@ -50,6 +56,16 @@ class SemanticAssetPathProcessorTest {
         @Override
         protected void enrichModelBeforePersisting(OntologyModel model, SemanticAssetPath path) {
             modelEnricher.accept(model);
+        }
+
+        @Override
+        protected SemanticAssetModelValidationContext validateMetadataForReport(String ttlFile, String repoUrl) {
+            return SemanticAssetModelValidationContext.getForValidation();
+        }
+
+        @Override
+        protected SemanticAssetType getAssetType() {
+            return SemanticAssetType.ONTOLOGY;
         }
     }
 
@@ -225,6 +241,37 @@ class SemanticAssetPathProcessorTest {
 
         processor.process(repoUrl, path);
 
+        verify(metadataRepository).save(metadata);
+        verify(tripleStoreRepository).save(repoUrl, model);
+    }
+
+    @Test
+    void shouldInvokeShadowValidationWithoutAffectingPersistenceFlow() {
+        final String repoUrl = "https://github.com/italia/daf-ontologie-vocabolari-controllati";
+        String ttlFile = "somefile.ttl";
+        TestSemanticAssetPathProcessor processor =
+            spy(new TestSemanticAssetPathProcessor(tripleStoreRepository, metadataRepository, rdfSyntaxValidator));
+        SemanticAssetPath path = SemanticAssetPath.of(ttlFile);
+        SemanticAssetMetadata metadata = SemanticAssetMetadata.builder().build();
+        when(rdfSyntaxValidator.validateTurtle(anyString())).thenReturn(VALID_RESULT);
+        when(modelDecorator.getRdfModel()).thenReturn(model);
+        when(modelDecorator.extractMetadata()).thenReturn(metadata);
+
+        HarvestExecutionContextUtils.setContext(HarvestExecutionContext.builder()
+                .repository(Repository.builder().id("repo-id").url(repoUrl).active(true).build())
+                .runId("run-id")
+                .correlationId("corr-id")
+                .currentUserId("user")
+                .rootPath("")
+                .instance(Instance.PRIMARY)
+                .build());
+        try {
+            processor.process(repoUrl, path);
+        } finally {
+            HarvestExecutionContextUtils.clearContext();
+        }
+
+        verify(processor).validateMetadataForReport(ttlFile, repoUrl);
         verify(metadataRepository).save(metadata);
         verify(tripleStoreRepository).save(repoUrl, model);
     }

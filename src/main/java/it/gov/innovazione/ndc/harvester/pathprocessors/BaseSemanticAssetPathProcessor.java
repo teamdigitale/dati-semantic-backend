@@ -7,6 +7,7 @@ import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSeman
 import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticWarn;
 import static java.util.stream.Collectors.toList;
 
+import it.gov.innovazione.ndc.harvester.SemanticAssetType;
 import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContext;
 import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContextUtils;
 import it.gov.innovazione.ndc.harvester.exception.SinglePathProcessingException;
@@ -14,6 +15,7 @@ import it.gov.innovazione.ndc.harvester.model.HarvesterStatsHolder;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetModel;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetModelValidationContext;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
+import it.gov.innovazione.ndc.harvester.model.validation.ValidationReportCollector;
 import it.gov.innovazione.ndc.harvester.model.extractors.RightsHolderExtractor;
 import it.gov.innovazione.ndc.harvester.model.index.NodeSummary;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
@@ -98,6 +100,8 @@ public abstract class BaseSemanticAssetPathProcessor<P extends SemanticAssetPath
     private void validateTurtleSyntax(P path) {
         RdfSyntaxValidationResult result = rdfSyntaxValidator.validateTurtle(path.getTtlPath());
 
+        collectSyntaxResult(path, result);
+
         if (result.hasWarnings()) {
             logSemanticWarn(LoggingContext.builder()
                     .message("Turtle syntax warnings for " + path)
@@ -114,6 +118,7 @@ public abstract class BaseSemanticAssetPathProcessor<P extends SemanticAssetPath
                     .stage(HarvesterStage.SYNTAX_VALIDATION)
                     .harvesterStatus(HarvesterRun.Status.RUNNING)
                     .build());
+            collectAssetSkipped(path);
             throw new SinglePathProcessingException(
                     String.format("Turtle syntax validation failed for '%s': %s", path, result.getErrorsSummary()),
                     false);
@@ -125,6 +130,53 @@ public abstract class BaseSemanticAssetPathProcessor<P extends SemanticAssetPath
                 .harvesterStatus(HarvesterRun.Status.RUNNING)
                 .build());
     }
+
+    private void collectSyntaxResult(P path, RdfSyntaxValidationResult result) {
+        ValidationReportCollector collector = getCollector();
+        if (collector != null) {
+            String relativePath = relativizePath(path);
+            collector.addSyntaxResult(relativePath, getAssetType(), result);
+        }
+    }
+
+    private void collectAssetSkipped(P path) {
+        ValidationReportCollector collector = getCollector();
+        if (collector != null) {
+            collector.markAssetSkipped(relativizePath(path));
+        }
+    }
+
+    private void collectMetadataResult(P path, String repoUrl) {
+        ValidationReportCollector collector = getCollector();
+        if (collector == null) {
+            return;
+        }
+        try {
+            SemanticAssetModelValidationContext ctx = validateMetadataForReport(path.getTtlPath(), repoUrl);
+            if (ctx != null && ctx.getIsValidation()) {
+                collector.addMetadataResult(relativizePath(path), ctx);
+            }
+        } catch (Exception e) {
+            log.debug("Cannot collect validation report metadata for {}: {}", path, e.getMessage());
+        }
+    }
+
+    private ValidationReportCollector getCollector() {
+        HarvestExecutionContext context = HarvestExecutionContextUtils.getContext();
+        return context != null ? context.getValidationReportCollector() : null;
+    }
+
+    private String relativizePath(P path) {
+        HarvestExecutionContext context = HarvestExecutionContextUtils.getContext();
+        if (context != null && context.getRootPath() != null) {
+            return path.getTtlPath().replace(context.getRootPath() + "/", "");
+        }
+        return path.getTtlPath();
+    }
+
+    protected abstract SemanticAssetType getAssetType();
+
+    protected abstract SemanticAssetModelValidationContext validateMetadataForReport(String ttlFile, String repoUrl);
 
     @Override
     public HarvesterStatsHolder process(String repoUrl, P path) {
@@ -140,6 +192,7 @@ public abstract class BaseSemanticAssetPathProcessor<P extends SemanticAssetPath
             log.info("Found resource {}", resource);
 
             HarvesterStatsHolder harvesterStatsHolder = processWithModel(repoUrl, path, model);
+            collectMetadataResult(path, repoUrl);
             log.info("Path {} processed", path);
 
             return harvesterStatsHolder;

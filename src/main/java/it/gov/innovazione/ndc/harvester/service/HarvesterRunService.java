@@ -47,7 +47,7 @@ public class HarvesterRunService {
                 + "FINISHED, "
                 + "STATUS, "
                 + "REASON, "
-                + "CONFORMANCE_REPORT) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                + "VALIDATION_REPORT) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         return jdbcTemplate.update(query,
                 harvesterRun.getId(),
                 harvesterRun.getCorrelationId(),
@@ -61,7 +61,7 @@ public class HarvesterRunService {
                 harvesterRun.getEndedAt(),
                 harvesterRun.getStatus().toString(),
                 harvesterRun.getReason(),
-                harvesterRun.getConformanceReport());
+                harvesterRun.getValidationReport());
     }
 
     public Optional<HarvesterRun> isHarvestingInProgress(String runId, Repository repository) {
@@ -111,11 +111,9 @@ public class HarvesterRunService {
                 harvesterRun.getId());
     }
 
-    public int updateConformanceReport(String runId, String conformanceReportJson) {
-        String query = "UPDATE HARVESTER_RUN SET "
-                + "CONFORMANCE_REPORT = ? "
-                + "WHERE ID = ?";
-        return jdbcTemplate.update(query, conformanceReportJson, runId);
+    public int updateValidationReport(String runId, String validationReportJson) {
+        String query = "UPDATE HARVESTER_RUN SET VALIDATION_REPORT = ? WHERE ID = ?";
+        return jdbcTemplate.update(query, validationReportJson, runId);
     }
 
     public int updateHarvesterRunCommittedAt(HarvesterRun harvesterRun) {
@@ -146,7 +144,7 @@ public class HarvesterRunService {
                 + "FINISHED, "
                 + "STATUS, "
                 + "REASON, "
-                + "CONFORMANCE_REPORT "
+                + "VALIDATION_REPORT "
                 + "FROM HARVESTER_RUN "
                 + "ORDER BY STARTED DESC";
         return jdbcTemplate.query(sqlQuery, (rs, rowNum) ->
@@ -163,7 +161,7 @@ public class HarvesterRunService {
                         .endedAt(getInstant(rs, "FINISHED"))
                         .status(getStatusSafely(rs))
                         .reason(rs.getString("REASON"))
-                        .conformanceReport(rs.getString("CONFORMANCE_REPORT"))
+                        .validationReport(rs.getString("VALIDATION_REPORT"))
                         .build());
     }
 

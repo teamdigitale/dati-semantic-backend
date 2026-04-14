@@ -3,12 +3,14 @@ package it.gov.innovazione.ndc.harvester.pathprocessors;
 import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticError;
 import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticInfo;
 
+import it.gov.innovazione.ndc.harvester.SemanticAssetType;
 import it.gov.innovazione.ndc.harvester.csv.CsvParser;
 import it.gov.innovazione.ndc.harvester.csv.CsvParser.CsvData;
 import it.gov.innovazione.ndc.harvester.model.ControlledVocabularyModel;
 import it.gov.innovazione.ndc.harvester.model.CvPath;
 import it.gov.innovazione.ndc.harvester.model.HarvesterStatsHolder;
 import it.gov.innovazione.ndc.harvester.model.Instance;
+import it.gov.innovazione.ndc.harvester.model.SemanticAssetModelValidationContext;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetModelFactory;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
 import it.gov.innovazione.ndc.harvester.validation.RdfSyntaxValidator;
@@ -76,6 +78,11 @@ public class ControlledVocabularyPathProcessor extends BaseSemanticAssetPathProc
     }
 
     @Override
+    protected SemanticAssetModelValidationContext validateMetadataForReport(String ttlFile, String repoUrl) {
+        return modelFactory.createControlledVocabularyForValidation(ttlFile, repoUrl).validateMetadata();
+    }
+
+    @Override
     protected void enrichModelBeforePersisting(ControlledVocabularyModel model, CvPath path) {
         path.getCsvPath().ifPresent(p -> model.addNdcDataServiceProperties(baseUrl));
     }
@@ -109,6 +116,11 @@ public class ControlledVocabularyPathProcessor extends BaseSemanticAssetPathProc
 
             tryToDropIndex(v, vocabId);
         });
+    }
+
+    @Override
+    protected SemanticAssetType getAssetType() {
+        return SemanticAssetType.CONTROLLED_VOCABULARY;
     }
 
     private void tryToDropIndex(SemanticAssetMetadata v, VocabularyIdentifier vocabId) {

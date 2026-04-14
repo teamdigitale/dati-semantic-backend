@@ -1,6 +1,8 @@
 package it.gov.innovazione.ndc.harvester.pathprocessors;
 
+import it.gov.innovazione.ndc.harvester.SemanticAssetType;
 import it.gov.innovazione.ndc.harvester.model.OntologyModel;
+import it.gov.innovazione.ndc.harvester.model.SemanticAssetModelValidationContext;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetModelFactory;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetPath;
 import it.gov.innovazione.ndc.harvester.validation.RdfSyntaxValidator;
@@ -24,5 +26,15 @@ public class OntologyPathProcessor extends BaseSemanticAssetPathProcessor<Semant
     @Override
     protected OntologyModel loadModel(String ttlFile, String repoUrl) {
         return modelFactory.createOntology(ttlFile, repoUrl);
+    }
+
+    @Override
+    protected SemanticAssetModelValidationContext validateMetadataForReport(String ttlFile, String repoUrl) {
+        return modelFactory.createOntologyForValidation(ttlFile, repoUrl).validateMetadata();
+    }
+
+    @Override
+    protected SemanticAssetType getAssetType() {
+        return SemanticAssetType.ONTOLOGY;
     }
 }

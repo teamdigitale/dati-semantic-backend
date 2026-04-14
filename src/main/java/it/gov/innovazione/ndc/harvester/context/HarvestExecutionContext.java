@@ -2,6 +2,7 @@ package it.gov.innovazione.ndc.harvester.context;
 
 import it.gov.innovazione.ndc.harvester.model.Instance;
 import it.gov.innovazione.ndc.harvester.model.index.RightsHolder;
+import it.gov.innovazione.ndc.harvester.model.validation.ValidationReportCollector;
 import it.gov.innovazione.ndc.model.harvester.Repository;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -36,6 +37,8 @@ public class HarvestExecutionContext {
     private final List<RightsHolder> rightsHolders = new ArrayList<>();
     @Singular
     private final List<HarvesterExecutionError> errors = new ArrayList<>();
+    @Builder.Default
+    private final ValidationReportCollector validationReportCollector = new ValidationReportCollector();
 
     public void addRightsHolder(RightsHolder agencyId) {
         rightsHolders.add(agencyId);

@@ -1,6 +1,7 @@
 package it.gov.innovazione.ndc.harvester.model;
 
 import it.gov.innovazione.ndc.harvester.model.exception.InvalidModelException;
+import it.gov.innovazione.ndc.harvester.model.Instance;
 import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import it.gov.innovazione.ndc.service.InstanceManager;
 import it.gov.innovazione.ndc.service.logging.HarvesterStage;
@@ -39,6 +40,21 @@ public class SemanticAssetModelFactory {
     public SchemaModel createSchema(String ttlFile, String repoUrl) {
         return loadAndBuild(ttlFile,
                 (coreModel, source) -> new SchemaModel(coreModel, source, repoUrl, instanceManager.getNextOnlineInstance(repoUrl)));
+    }
+
+    public OntologyModel createOntologyForValidation(String ttlFile, String repoUrl) {
+        return loadAndBuild(ttlFile,
+                (coreModel, source) -> OntologyModel.forValidation(coreModel, source, repoUrl, Instance.PRIMARY));
+    }
+
+    public ControlledVocabularyModel createControlledVocabularyForValidation(String ttlFile, String repoUrl) {
+        return loadAndBuild(ttlFile,
+                (coreModel, source) -> ControlledVocabularyModel.forValidation(coreModel, source, repoUrl, Instance.PRIMARY));
+    }
+
+    public SchemaModel createSchemaForValidation(String ttlFile, String repoUrl) {
+        return loadAndBuild(ttlFile,
+                (coreModel, source) -> SchemaModel.forValidation(coreModel, source, repoUrl, Instance.PRIMARY));
     }
 
     private <T extends SemanticAssetModel> T loadAndBuild(String source, ModelConstructor<T> c) {
