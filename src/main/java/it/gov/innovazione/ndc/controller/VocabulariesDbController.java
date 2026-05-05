@@ -52,7 +52,7 @@ public class VocabulariesDbController {
         }
 
         long lastModifiedMillis = Files.getLastModifiedTime(path).toMillis();
-        String etag = "\"" + Sha256Hasher.hashFile(path) + "\"";
+        String etag = "\"" + computeEtag(path) + "\"";
 
         if (matchesIfNoneMatch(request, etag) || isNotModifiedSince(request, lastModifiedMillis)) {
             return ResponseEntity.status(HttpStatus.NOT_MODIFIED)
@@ -70,6 +70,24 @@ public class VocabulariesDbController {
                 .lastModified(lastModifiedMillis)
                 .cacheControl(cacheControl())
                 .body(body);
+    }
+
+    /**
+     * Read the precomputed aggregate hash from the sidecar file written by
+     * {@code VocabulariesDbAggregationService}. Falls back to hashing the
+     * aggregate file when the sidecar is missing (e.g. file dropped in place
+     * manually or upgrade path), so the endpoint stays usable.
+     */
+    private String computeEtag(Path aggregateDb) throws IOException {
+        Path sidecar = Paths.get(aggregateDb.toString() + ".aggregate-hash");
+        if (Files.isRegularFile(sidecar)) {
+            String content = Files.readString(sidecar).trim();
+            if (!content.isEmpty()) {
+                return content;
+            }
+        }
+        log.debug("Aggregate-hash sidecar missing or empty at {}; falling back to file digest", sidecar);
+        return Sha256Hasher.hashFile(aggregateDb);
     }
 
     private CacheControl cacheControl() {

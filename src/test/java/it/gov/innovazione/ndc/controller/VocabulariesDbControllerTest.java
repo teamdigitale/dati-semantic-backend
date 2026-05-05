@@ -113,16 +113,47 @@ class VocabulariesDbControllerTest {
     }
 
     @Test
-    void etagChangesWhenFileContentChanges(@TempDir Path tempDir) throws IOException {
+    void etagComesFromSidecarWhenAvailable(@TempDir Path tempDir) throws IOException {
+        Path file = tempDir.resolve("vocabularies.db");
+        Files.write(file, "fake-sqlite".getBytes(StandardCharsets.UTF_8));
+        Path sidecar = tempDir.resolve("vocabularies.db.aggregate-hash");
+        Files.writeString(sidecar, "deadbeefcafe\n");
+
+        VocabulariesDbController controller = new VocabulariesDbController(file.toString(), CACHE_MAX_AGE);
+        String etag = controller.serve(new MockHttpServletRequest()).getHeaders().getETag();
+
+        assertThat(etag).isEqualTo("\"deadbeefcafe\"");
+    }
+
+    @Test
+    void etagFollowsSidecarUpdates(@TempDir Path tempDir) throws IOException {
         Path file = tempDir.resolve("vocabularies.db");
         Files.write(file, "v1".getBytes(StandardCharsets.UTF_8));
+        Path sidecar = tempDir.resolve("vocabularies.db.aggregate-hash");
+        Files.writeString(sidecar, "hash-v1");
 
         VocabulariesDbController controller = new VocabulariesDbController(file.toString(), CACHE_MAX_AGE);
         String first = controller.serve(new MockHttpServletRequest()).getHeaders().getETag();
 
-        Files.write(file, "v2-changed".getBytes(StandardCharsets.UTF_8));
+        Files.writeString(sidecar, "hash-v2");
         String second = controller.serve(new MockHttpServletRequest()).getHeaders().getETag();
 
-        assertThat(first).isNotEqualTo(second);
+        assertThat(first).isEqualTo("\"hash-v1\"");
+        assertThat(second).isEqualTo("\"hash-v2\"");
+    }
+
+    @Test
+    void etagFallsBackToFileSha256WhenSidecarMissing(@TempDir Path tempDir) throws IOException {
+        Path file = tempDir.resolve("vocabularies.db");
+        Files.write(file, "fake-sqlite".getBytes(StandardCharsets.UTF_8));
+
+        VocabulariesDbController controller = new VocabulariesDbController(file.toString(), CACHE_MAX_AGE);
+        String etag = controller.serve(new MockHttpServletRequest()).getHeaders().getETag();
+
+        // Bare hex sha256 of "fake-sqlite", quoted by the controller.
+        assertThat(etag)
+                .startsWith("\"")
+                .endsWith("\"")
+                .matches("^\"[0-9a-f]{64}\"$");
     }
 }
