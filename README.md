@@ -6,143 +6,143 @@
 
 # National Data Catalog (NDC) — Backend
 
-Backend del **National Data Catalog (NDC) for Semantic Interoperability**, componente della **PDND** (Piattaforma Digitale Nazionale Dati). Il servizio espone un catalogo nazionale degli asset semantici (ontologie, vocabolari controllati, schemi) prodotti dalle Pubbliche Amministrazioni italiane, con harvesting automatico dai repository pubblici, indicizzazione, ricerca, validazione e API di consultazione.
+Backend of the **National Data Catalog (NDC) for Semantic Interoperability**, a component of the **PDND** (*Piattaforma Digitale Nazionale Dati*, Italy's National Digital Data Platform). The service exposes a national catalog of semantic assets — ontologies, controlled vocabularies, schemas — produced by the Italian Public Administration, with automatic harvesting from public repositories, indexing, search, validation, and consultation APIs.
 
-Il backend si compone di:
+The backend is composed of:
 
-- un **harvester** che esplora periodicamente i repository pubblicati dai partecipanti al catalogo, scaricando il materiale semantico e popolando indici e database;
-- un **triple store** (Virtuoso) interrogabile via SPARQL, dove il materiale RDF viene caricato per grafo;
-- un **indice di ricerca** (Elasticsearch) per le ricerche full-text e semantiche;
-- una **API REST** (OpenAPI) per ricerca, dettaglio asset, vocabolari controllati, validazione on-demand, dashboard e gestione operativa.
+- a **harvester** that periodically crawls the repositories published by catalog participants, downloading the semantic material and populating indexes and databases;
+- a **triple store** (Virtuoso) queryable via SPARQL, where RDF material is loaded per graph;
+- a **search index** (Elasticsearch) for full-text and semantic searches;
+- a **REST API** (OpenAPI) for search, asset details, controlled vocabularies, on-demand validation, dashboards, and operational management.
 
 ---
 
-## Indice
+## Table of contents
 
-- [Stack tecnologico](#stack-tecnologico)
-- [Prerequisiti](#prerequisiti)
-- [Avvio rapido](#avvio-rapido)
-- [Configurazione](#configurazione)
-- [Comandi principali](#comandi-principali)
+- [Tech stack](#tech-stack)
+- [Prerequisites](#prerequisites)
+- [Quick start](#quick-start)
+- [Configuration](#configuration)
+- [Common commands](#common-commands)
 - [API](#api)
-- [Validazione asset](#validazione-asset)
+- [Asset validation](#asset-validation)
 - [Harvesting](#harvesting)
-- [Container e deploy](#container-e-deploy)
-- [Qualità del codice e sicurezza](#qualità-del-codice-e-sicurezza)
-- [Contribuire](#contribuire)
-- [Licenza](#licenza)
+- [Container and deployment](#container-and-deployment)
+- [Code quality and security](#code-quality-and-security)
+- [Contributing](#contributing)
+- [License](#license)
 
 ---
 
-## Stack tecnologico
+## Tech stack
 
-| Componente | Versione | Note |
+| Component | Version | Notes |
 | :-- | :-- | :-- |
 | Java | 17 | JDK 17 (CI), runtime distroless `gcr.io/distroless/java17-debian11:nonroot` |
 | Spring Boot | 3.5.8 | Web, Data JPA, Data Elasticsearch, Security, Validation, Mail, Actuator |
-| Apache Jena | 5.5.0 | Parsing/serializzazione RDF, RIOT, query builder |
-| Elasticsearch | 8.14.3 | Indice di ricerca full-text e semantico |
-| OpenLink Virtuoso | `tenforce/virtuoso` | Triple store SPARQL |
-| MySQL | 9.0 | Metadata harvester (job, run, configurazioni, eventi) |
-| Flyway | core + mysql | Migrazioni schema |
+| Apache Jena | 5.5.0 | RDF parsing/serialization, RIOT, query builder |
+| Elasticsearch | 8.14.3 | Full-text and semantic search index |
+| OpenLink Virtuoso | `tenforce/virtuoso` | SPARQL triple store |
+| MySQL | 9.0 | Harvester metadata (jobs, runs, configuration, events) |
+| Flyway | core + mysql | Schema migrations |
 | Gradle | wrapper | Build, test, lint, scan |
-| OpenAPI Generator | 7.7.0 | Generazione interfacce dallo `openapi.yaml` |
-| MapStruct, Lombok | — | Mapping DTO ↔ entity, boilerplate |
-| Jib | 3.4.3 | Build immagine container senza Dockerfile |
-| OWASP dependency-check | 12.2.2 | Scan vulnerabilità dipendenze |
-| SpotBugs, Checkstyle, JaCoCo | — | Analisi statica e coverage |
+| OpenAPI Generator | 7.7.0 | Generates interfaces from `openapi.yaml` |
+| MapStruct, Lombok | — | DTO ↔ entity mapping, boilerplate reduction |
+| Jib | 3.4.3 | Container image builds without a Dockerfile |
+| OWASP dependency-check | 12.2.2 | Dependency vulnerability scanning |
+| SpotBugs, Checkstyle, JaCoCo | — | Static analysis and coverage |
 
 ---
 
-## Prerequisiti
+## Prerequisites
 
-- **JDK 17** (Eclipse Temurin consigliato)
-- **Docker** + **Docker Compose** (per le dipendenze locali: Virtuoso, Elasticsearch, MySQL)
-- *(Opzionale)* **[just](https://github.com/casey/just)** per i comandi a riga singola (`justfile` incluso nel repo)
-- *(Opzionale)* **GitHub Personal Access Token** se si supera il rate limit anonimo dell'API GitHub durante l'harvesting (vedi [Configurazione](#configurazione))
+- **JDK 17** (Eclipse Temurin recommended)
+- **Docker** + **Docker Compose** (for local dependencies: Virtuoso, Elasticsearch, MySQL)
+- *(Optional)* **[just](https://github.com/casey/just)** for one-line commands (`justfile` included in the repo)
+- *(Optional)* **GitHub Personal Access Token** if you exceed the anonymous GitHub API rate limit during harvesting (see [Configuration](#configuration))
 
 ---
 
-## Avvio rapido
+## Quick start
 
-Da una shell nella root del repo:
+From a shell at the repository root:
 
 ```bash
-# 1. Avvia le dipendenze locali (Virtuoso, Elasticsearch, MySQL)
+# 1. Start local dependencies (Virtuoso, Elasticsearch, MySQL)
 just stack
-# in alternativa: docker compose up -d
+# or: docker compose up -d
 
-# 2. Build dell'applicazione (senza test)
+# 2. Build the application (without tests)
 just build
-# in alternativa: ./gradlew clean build -x test
+# or: ./gradlew clean build -x test
 
-# 3. Avvia il backend (profilo "local" attivo per default)
+# 3. Start the backend (the "local" profile is active by default)
 just run
-# in alternativa: ./gradlew bootRun
+# or: ./gradlew bootRun
 ```
 
-Il servizio è raggiungibile su `http://localhost:8080`. Documentazione OpenAPI/Swagger UI: `http://localhost:8080/swagger-ui/index.html` (specifica grezza su `/api/v3/api-docs`).
+The service is reachable at `http://localhost:8080`. OpenAPI/Swagger UI: `http://localhost:8080/swagger-ui/index.html` (raw spec at `/api/v3/api-docs`).
 
-Credenziali di sviluppo (Basic Auth) per gli endpoint protetti dell'harvester:
+Development credentials (Basic Auth) for the harvester's protected endpoints:
 
-- utente: `harv-user`
+- user: `harv-user`
 - password: `harv-password`
 
-(Configurabili tramite `HARVESTER_USER` / `HARVESTER_PASSWORD`.)
+(Override via `HARVESTER_USER` / `HARVESTER_PASSWORD`.)
 
 ---
 
-## Configurazione
+## Configuration
 
-Il profilo `local` è attivo per default (`spring.profiles.active=local`). Le proprietà principali sono in `src/main/resources/application.properties`; di seguito le variabili d'ambiente più rilevanti.
+The `local` profile is active by default (`spring.profiles.active=local`). Main properties live in `src/main/resources/application.properties`; the most relevant environment variables are listed below.
 
-### Datasource e dipendenze esterne
+### Datasource and external dependencies
 
-| Variabile | Default | Descrizione |
+| Variable | Default | Description |
 | :-- | :-- | :-- |
-| `SPRING_DATASOURCE_URL` | `jdbc:mysql://localhost:3306/dev_ndc_harvest` | JDBC URL MySQL |
-| `SPRING_DATASOURCE_USERNAME` / `_PASSWORD` | `root` / `example` | Credenziali MySQL |
-| `ELASTICSEARCH_HOST` / `_PORT` / `_SCHEME` | `localhost` / `9200` / `https` | Endpoint Elasticsearch |
-| `ELASTICSEARCH_USERNAME` / `_PASSWORD` | `elastic` / `changeme` | Credenziali Elasticsearch |
-| `VIRTUOSO_SPARQL` | — | Endpoint SPARQL Virtuoso (es. `http://localhost:8890/sparql`) |
-| `VIRTUOSO_SPARQL_GRAPH_STORE` | — | Endpoint SPARQL Graph Store |
-| `VIRTUOSO_USERNAME` / `_PASSWORD` | `dba` / `dba` | Credenziali Virtuoso |
+| `SPRING_DATASOURCE_URL` | `jdbc:mysql://localhost:3306/dev_ndc_harvest` | MySQL JDBC URL |
+| `SPRING_DATASOURCE_USERNAME` / `_PASSWORD` | `root` / `example` | MySQL credentials |
+| `ELASTICSEARCH_HOST` / `_PORT` / `_SCHEME` | `localhost` / `9200` / `https` | Elasticsearch endpoint |
+| `ELASTICSEARCH_USERNAME` / `_PASSWORD` | `elastic` / `changeme` | Elasticsearch credentials |
+| `VIRTUOSO_SPARQL` | — | Virtuoso SPARQL endpoint (e.g. `http://localhost:8890/sparql`) |
+| `VIRTUOSO_SPARQL_GRAPH_STORE` | — | SPARQL Graph Store endpoint |
+| `VIRTUOSO_USERNAME` / `_PASSWORD` | `dba` / `dba` | Virtuoso credentials |
 
 ### Harvesting
 
-| Variabile | Default | Descrizione |
+| Variable | Default | Description |
 | :-- | :-- | :-- |
-| `HARVESTER_USER` / `HARVESTER_PASSWORD` | `harv-user` / `harv-password` | Basic Auth per endpoint operativi |
-| `HARVESTER_REPOSITORIES` | — | Elenco URL repo da harvestare (separati da virgola) |
-| `HARVESTER_ENDPOINT_ENABLED` | — | Abilita gli endpoint di trigger harvesting |
-| `harvester.folder.skip-words` | `scriptR2RML,sparql,deprecated` | Cartelle da ignorare (match per `contains`, min 3 char) |
-| `harvester.ontology.scanner.skip-words` | `aligns,example` | Skip ontologie |
-| `harvester.controlled-vocabulary.scanner.skip-words` | `transparency-obligation-organization,transparency-obligation-administration` | Skip vocabolari |
-| `GITHUB_PERSONAL_ACCESS_TOKEN` | — | PAT GitHub per superare il rate limit dell'API pubblica (lettura cookiecutter, ecc.) |
+| `HARVESTER_USER` / `HARVESTER_PASSWORD` | `harv-user` / `harv-password` | Basic Auth for operational endpoints |
+| `HARVESTER_REPOSITORIES` | — | Comma-separated list of repository URLs to harvest |
+| `HARVESTER_ENDPOINT_ENABLED` | — | Enables harvest trigger endpoints |
+| `harvester.folder.skip-words` | `scriptR2RML,sparql,deprecated` | Folders to skip (`contains` match, min 3 chars) |
+| `harvester.ontology.scanner.skip-words` | `aligns,example` | Ontologies to skip |
+| `harvester.controlled-vocabulary.scanner.skip-words` | `transparency-obligation-organization,transparency-obligation-administration` | Controlled vocabularies to skip |
+| `GITHUB_PERSONAL_ACCESS_TOKEN` | — | GitHub PAT to bypass the public API rate limit (cookiecutter lookup, etc.) |
 
-### Conformance check (cookiecutter)
+### Repository conformance check (cookiecutter)
 
-Verifica che ogni repository harvested aderisca al template ufficiale [`teamdigitale/dati-semantic-cookiecutter`](https://github.com/teamdigitale/dati-semantic-cookiecutter).
+Verifies that every harvested repository conforms to the official template [`teamdigitale/dati-semantic-cookiecutter`](https://github.com/teamdigitale/dati-semantic-cookiecutter).
 
-| Variabile | Default |
+| Variable | Default |
 | :-- | :-- |
 | `HARVESTER_CONFORMANCE_ENABLED` | `true` |
 | `HARVESTER_CONFORMANCE_COOKIECUTTER_REPO` | `teamdigitale/dati-semantic-cookiecutter` |
 | `HARVESTER_CONFORMANCE_COOKIECUTTER_BRANCH` | `main` |
 
-### Aggregazione vocabolari (CSV APIs)
+### Vocabulary aggregation (CSV APIs)
 
-L'harvester aggrega periodicamente i database SQLite dei vocabolari in un singolo file `vocabularies.db` esposto su HTTP.
+The harvester periodically aggregates per-vocabulary SQLite databases into a single `vocabularies.db` file served over HTTP.
 
-| Variabile | Default |
+| Variable | Default |
 | :-- | :-- |
 | `HARVESTER_AGGREGATE_DB_PATH` | `/tmp/ndc-vocabularies.db` |
 | `HARVESTER_AGGREGATE_DB_WORK_DIR` | `/tmp/ndc-csvapis-work` |
-| `HARVESTER_AGGREGATE_DB_CACHE_MAX_AGE` | `86400` (secondi) |
+| `HARVESTER_AGGREGATE_DB_CACHE_MAX_AGE` | `86400` (seconds) |
 
 ### Mailer (alerting)
 
-| Variabile | Default |
+| Variable | Default |
 | :-- | :-- |
 | `ALERTER_MAIL_SENDER` | `servicedesk-schema@istat.it` |
 | `ALERTER_MAIL_SENDER_FIXED_DELAY` | `1800000` ms (30 min) |
@@ -150,157 +150,157 @@ L'harvester aggrega periodicamente i database SQLite dei vocabolari in un singol
 | `ALERTER_SMTP_USER` / `_PASSWORD` | `servicedesk-schema@istat.it` / — |
 | `ALERTER_SMTP_AUTH` / `_STARTTLS` / `_SSL` | `true` / `true` / `false` |
 
-L'elenco completo delle proprietà è in `src/main/resources/application.properties`.
+The complete property list lives in `src/main/resources/application.properties`.
 
 ---
 
-## Comandi principali
+## Common commands
 
-Il progetto include un [`justfile`](./justfile) per i comandi più comuni:
+The project ships with a [`justfile`](./justfile) for the most frequent commands:
 
 ```bash
-just                  # elenca i target disponibili
-just stack            # avvia Virtuoso, Elasticsearch, MySQL via docker compose
-just down             # ferma le dipendenze
-just logs             # tail dei log delle dipendenze
-just clean            # ./gradlew clean + reset volumi Docker
-just build            # build senza test
-just test             # unit test
-just integration-test # test di integrazione (Testcontainers)
-just check            # tutte le task di verifica
+just                  # list available targets
+just stack            # start Virtuoso, Elasticsearch, MySQL via docker compose
+just down             # stop the dependencies
+just logs             # tail the dependency logs
+just clean            # ./gradlew clean + reset Docker volumes
+just build            # build without tests
+just test             # unit tests
+just integration-test # integration tests (Testcontainers)
+just check            # all verification tasks
 just lint             # checkstyle + spotbugs
-just coverage         # JaCoCo + verifica soglie
-just run              # avvia il backend (bootRun)
-just openapi          # rigenera i sorgenti OpenAPI
-just docker-build     # build immagine container locale (Jib)
+just coverage         # JaCoCo + threshold verification
+just run              # start the backend (bootRun)
+just openapi          # regenerate OpenAPI sources
+just docker-build     # build a local container image (Jib)
 just dep-check        # OWASP dependency-check
 ```
 
-In alternativa, tutti i comandi sono invocabili direttamente con `./gradlew <task>` (vedi `build.gradle`).
+All commands can equivalently be invoked via `./gradlew <task>` (see `build.gradle`).
 
 ---
 
 ## API
 
-La specifica OpenAPI è in [`src/main/resources/public/openapi.yaml`](./src/main/resources/public/openapi.yaml). Una volta avviato il backend la Swagger UI è disponibile su `http://localhost:8080/swagger-ui/index.html`.
+The OpenAPI specification lives at [`src/main/resources/public/openapi.yaml`](./src/main/resources/public/openapi.yaml). Once the backend is running, Swagger UI is available at `http://localhost:8080/swagger-ui/index.html`.
 
-### Endpoint pubblici principali
+### Main public endpoints
 
-| Metodo | Path | Scopo |
+| Method | Path | Purpose |
 | :-- | :-- | :-- |
-| `GET` | `/status` | Health/status applicativo |
-| `GET` | `/semantic-assets` | Ricerca asset (filtri, paginazione) |
-| `GET` | `/semantic-assets/by-iri` | Dettaglio asset per IRI |
-| `GET` | `/vocabularies` | Lista vocabolari controllati |
-| `GET` | `/vocabularies/{agencyId}/{keyConceptId}` | Dati di un vocabolario |
-| `GET` | `/vocabularies/{agencyId}/{keyConceptId}/{id}` | Singolo elemento |
-| `GET` | `/check-url` | Verifica raggiungibilità URL |
+| `GET` | `/status` | Application health/status |
+| `GET` | `/semantic-assets` | Asset search (filters, pagination) |
+| `GET` | `/semantic-assets/by-iri` | Asset details by IRI |
+| `GET` | `/vocabularies` | List of controlled vocabularies |
+| `GET` | `/vocabularies/{agencyId}/{keyConceptId}` | Vocabulary data |
+| `GET` | `/vocabularies/{agencyId}/{keyConceptId}/{id}` | Single vocabulary item |
+| `GET` | `/check-url` | URL reachability check |
 
-### Endpoint di validazione (vedi [Validazione asset](#validazione-asset))
+### Validation endpoints (see [Asset validation](#asset-validation))
 
-| Metodo | Path | Scopo |
+| Method | Path | Purpose |
 | :-- | :-- | :-- |
-| `POST` | `/validate` | Validazione one-shot di un asset |
-| `POST` | `/validate/syntax` | Validazione sintattica RDF (Turtle) |
-| `POST` | `/validate/repo/{owner}/{repo}` | Avvia job di validazione su repo GitHub |
-| `POST` | `/validate/repo/{owner}/{repo}/{revision}` | Idem, su revisione specifica |
-| `GET` | `/validate/repo/{validationId}` | Stato del job di validazione |
+| `POST` | `/validate` | One-shot asset validation |
+| `POST` | `/validate/syntax` | RDF (Turtle) syntax validation |
+| `POST` | `/validate/repo/{owner}/{repo}` | Submit a repository validation job |
+| `POST` | `/validate/repo/{owner}/{repo}/{revision}` | Same, on a specific revision |
+| `GET` | `/validate/repo/{validationId}` | Validation job status |
 
-### Endpoint operativi (Basic Auth)
+### Operational endpoints (Basic Auth)
 
-| Metodo | Path | Scopo |
+| Method | Path | Purpose |
 | :-- | :-- | :-- |
-| `POST` | `/harvest` | Trigger harvest (richiede `HARVESTER_ENDPOINT_ENABLED=true`) |
-| `GET` | `/harvest/running` | Stato job di harvesting |
-| `GET` | `/harvest/vocabularies.db` | Download del DB SQLite aggregato dei vocabolari |
-| `GET/POST` | `/config/repository` | Gestione repository censiti |
-| `GET/POST` | `/config/{repoId}/{configKey}` | Configurazione per repo |
-| `GET/POST` | `/dashboard/...` | Dati di dashboard (raw, aggregati per tempo/conteggio) |
-| `*` | `/event`, `/profile`, `/user` | Eventi, profili, utenti |
+| `POST` | `/harvest` | Trigger harvest (requires `HARVESTER_ENDPOINT_ENABLED=true`) |
+| `GET` | `/harvest/running` | Harvest job status |
+| `GET` | `/harvest/vocabularies.db` | Download the aggregated vocabularies SQLite DB |
+| `GET/POST` | `/config/repository` | Manage registered repositories |
+| `GET/POST` | `/config/{repoId}/{configKey}` | Per-repo configuration |
+| `GET/POST` | `/dashboard/...` | Dashboard data (raw, time/count aggregates) |
+| `*` | `/event`, `/profile`, `/user` | Events, profiles, users |
 
 ---
 
-## Validazione asset
+## Asset validation
 
-Il backend espone una pipeline di validazione attivabile sia in fase di harvesting sia on-demand:
+The backend exposes a validation pipeline triggered both during harvesting and on demand:
 
-- **Validazione sintattica (RDF/Turtle)** — Apache Jena RIOT in modalità streaming (zero allocazione di Model). Errori e warning sono restituiti con `line`/`col`/`message` strutturati. Endpoint: `POST /validate/syntax`.
-- **Validazione metadati DCAT-AP_IT** — controllo presenza di `dct:license` (ERROR), `adms:status` valido (WARNING), e altri metadati obbligatori sulle distribuzioni.
-- **Conformance del repository** — verifica che il repo aderisca al template [`teamdigitale/dati-semantic-cookiecutter`](https://github.com/teamdigitale/dati-semantic-cookiecutter): presenza di workflow CI, `.pre-commit-config.yaml`, struttura cartelle attesa. Esito persistito su `HARVESTER_RUN.CONFORMANCE_REPORT`.
-- **Validazione asincrona di un repository** — `POST /validate/repo/{owner}/{repo}` accetta un job, restituisce un `validationId`, e il client può fare polling su `GET /validate/repo/{validationId}` fino a stato `COMPLETED` o `FAILED`. Vedi `just validate-repo-wait` per un esempio end-to-end.
+- **Syntax validation (RDF/Turtle)** — Apache Jena RIOT in streaming mode (zero `Model` allocation). Errors and warnings are returned as structured `line`/`col`/`message` entries. Endpoint: `POST /validate/syntax`.
+- **DCAT-AP_IT metadata validation** — checks for `dct:license` (ERROR), valid `adms:status` (WARNING), and other mandatory metadata on distributions.
+- **Repository conformance** — verifies the repository conforms to the [`teamdigitale/dati-semantic-cookiecutter`](https://github.com/teamdigitale/dati-semantic-cookiecutter) template: presence of CI workflows, `.pre-commit-config.yaml`, expected folder structure. Outcome persisted on `HARVESTER_RUN.CONFORMANCE_REPORT`.
+- **Asynchronous repository validation** — `POST /validate/repo/{owner}/{repo}` accepts a job and returns a `validationId`; the client polls `GET /validate/repo/{validationId}` until status is `COMPLETED` or `FAILED`. See `just validate-repo-wait` for an end-to-end example.
 
-Tutti gli esiti convergono in un `ValidationReport` unificato consultabile dagli endpoint sopra.
+All outcomes converge into a unified `ValidationReport` returned by the endpoints above.
 
 ---
 
 ## Harvesting
 
-L'harvester clona ogni repository censito (via JGit) ed esegue una sequenza di stage tracciati nei log:
+The harvester clones each registered repository (via JGit) and runs a sequence of stages tracked in the logs:
 
-1. **Clone / fetch** del repository (con supporto a branch e revisione).
-2. **`SYNTAX_VALIDATION`** — parsing RDF; gli asset con sintassi non valida sono skippati senza interrompere l'harvest.
-3. **Scansione folder/ontology/vocabulary** — applicando le `skip-words` configurate.
-4. **`CONFORMANCE_CHECK`** — verifica template cookiecutter (lazy-loading dei file di riferimento via GitHub API, opzionalmente con PAT).
-5. **Caricamento RDF** in Virtuoso (per grafo) e indicizzazione in Elasticsearch.
-6. **Aggregazione `vocabularies.db`** — al termine di ogni run viene rigenerato il DB SQLite aggregato dei vocabolari (ETag persistito su sidecar `.aggregate-hash`).
-7. **Persistenza dell'esito** su MySQL (`HARVESTER_RUN`) e generazione del `ValidationReport`.
+1. **Clone / fetch** of the repository (with branch and revision support).
+2. **`SYNTAX_VALIDATION`** — RDF parsing; assets with invalid syntax are skipped without aborting the harvest run.
+3. **Folder/ontology/vocabulary scan** — applying the configured `skip-words`.
+4. **`CONFORMANCE_CHECK`** — cookiecutter template verification (lazy-loading reference files via the GitHub API, optionally with a PAT).
+5. **RDF load** into Virtuoso (per graph) and indexing into Elasticsearch.
+6. **`vocabularies.db` aggregation** — the aggregated SQLite DB of vocabularies is regenerated at the end of every run (ETag persisted in the `.aggregate-hash` sidecar).
+7. **Outcome persistence** on MySQL (`HARVESTER_RUN`) and `ValidationReport` generation.
 
-I repository sono censiti in MySQL e gestibili via `/config/repository`. Il trigger manuale è esposto su `POST /harvest` (richiede Basic Auth e `HARVESTER_ENDPOINT_ENABLED=true`).
+Repositories are registered in MySQL and managed via `/config/repository`. Manual triggering is exposed at `POST /harvest` (Basic Auth required, plus `HARVESTER_ENDPOINT_ENABLED=true`).
 
 ---
 
-## Container e deploy
+## Container and deployment
 
-L'immagine container è prodotta con [Jib](https://github.com/GoogleContainerTools/jib) (nessun `Dockerfile` necessario):
+The container image is produced with [Jib](https://github.com/GoogleContainerTools/jib) (no `Dockerfile` required):
 
 ```bash
 just docker-build
-# in alternativa: ./gradlew jibDockerBuild
+# or: ./gradlew jibDockerBuild
 ```
 
-L'immagine base è `gcr.io/distroless/java17-debian11:nonroot`. Il servizio espone le porte `8080` (HTTP) e `8081` (management actuator).
+The base image is `gcr.io/distroless/java17-debian11:nonroot`. The service exposes ports `8080` (HTTP) and `8081` (management actuator).
 
-Per lo **stack completo in container** (backend + dipendenze) la sezione `backend` di [`docker-compose.yaml`](./docker-compose.yaml) è commentata e può essere abilitata dopo aver costruito l'immagine; le variabili d'ambiente principali sono già documentate inline.
+For a **fully containerized stack** (backend + dependencies) the `backend` section in [`docker-compose.yaml`](./docker-compose.yaml) is commented out and can be enabled once the image is built; the main environment variables are documented inline.
 
-Il deploy in produzione è gestito via **Kubernetes** (vedi [`teamdigitale/dati-semantic-kubernetes`](https://github.com/teamdigitale/dati-semantic-kubernetes)).
-
----
-
-## Qualità del codice e sicurezza
-
-- **Checkstyle** — configurazione in [`config/checkstyle/`](./config/checkstyle/), eseguita su `main`, `test`, `integration` (`just lint`).
-- **SpotBugs** — analisi statica; eseguita insieme a Checkstyle.
-- **JaCoCo** — coverage con verifica soglie (`just coverage`).
-- **OWASP dependency-check** — scan vulnerabilità delle dipendenze (`just dep-check`).
-- **GitHub Dependabot** — abilitato a livello di organizzazione `teamdigitale`.
-- **Pre-commit hooks** — Gradle checkstyle + spotbugs sono invocati automaticamente; vedi `scripts/`.
-
-I report di analisi finiscono in `build/reports/`.
+Production deployment is managed via **Kubernetes** (see [`teamdigitale/dati-semantic-kubernetes`](https://github.com/teamdigitale/dati-semantic-kubernetes)).
 
 ---
 
-## Contribuire
+## Code quality and security
 
-Prima di aprire una PR:
+- **Checkstyle** — config in [`config/checkstyle/`](./config/checkstyle/), runs on `main`, `test`, `integration` (`just lint`).
+- **SpotBugs** — static analysis; runs alongside Checkstyle.
+- **JaCoCo** — coverage with threshold verification (`just coverage`).
+- **OWASP dependency-check** — dependency vulnerability scanning (`just dep-check`).
+- **GitHub Dependabot** — enabled at the `teamdigitale` organization level.
+- **Pre-commit hooks** — Gradle checkstyle + spotbugs are invoked automatically; see `scripts/`.
 
-1. Leggi la [Code of Conduct](./CODE_OF_CONDUCT.md) e il [CONTRIBUTING](./CONTRIBUTING.md).
-2. Crea un branch dal `main` con prefisso `feat-*`, `fix-*` o `docs-*`.
-3. Esegui localmente `just check` (lint + test).
-4. Apri la PR verso `main`. Le verifiche CI sono obbligatorie.
-
-Per **discussioni e supporto**:
-
-- canale Slack [#design](https://developersitalia.slack.com/messages/C7VPAUVB3/) di Developers Italia
-- categoria [dati](https://forum.italia.it/c/dati/33) sul forum.italia.it
-
-### Documentazione aggiuntiva
-
-- Wiki ufficiale: <https://github.com/teamdigitale/dati-semantic-backend/wiki>
-- Demo harvesting su branch / revisione: [`demo-harvesting-branch-curl.md`](./demo-harvesting-branch-curl.md)
-- Roadmap features: [`FEATURES.md`](./FEATURES.md)
+Analysis reports are written under `build/reports/`.
 
 ---
 
-## Licenza
+## Contributing
 
-Questo progetto è rilasciato sotto licenza **GNU Affero General Public License v3.0 o successive**. Una copia della licenza è disponibile in [`LICENSE`](./LICENSE).
+Before opening a PR:
+
+1. Read the [Code of Conduct](./CODE_OF_CONDUCT.md) and the [CONTRIBUTING](./CONTRIBUTING.md) guide.
+2. Create a branch from `main` with a `feat-*`, `fix-*`, or `docs-*` prefix.
+3. Run `just check` locally (lint + tests).
+4. Open the PR against `main`. CI checks are mandatory.
+
+For **discussions and support**:
+
+- Slack channel [#design](https://developersitalia.slack.com/messages/C7VPAUVB3/) on Developers Italia
+- [dati](https://forum.italia.it/c/dati/33) category on forum.italia.it
+
+### Additional documentation
+
+- Official wiki: <https://github.com/teamdigitale/dati-semantic-backend/wiki>
+- Branch / revision harvesting demo: [`demo-harvesting-branch-curl.md`](./demo-harvesting-branch-curl.md)
+- Features roadmap: [`FEATURES.md`](./FEATURES.md)
+
+---
+
+## License
+
+This project is released under the **GNU Affero General Public License v3.0 or later**. A copy of the license is available in [`LICENSE`](./LICENSE).
