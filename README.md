@@ -250,7 +250,7 @@ The harvester clones each registered repository (via JGit) and runs a sequence o
 6. **`vocabularies.db` aggregation** — the aggregated SQLite DB of vocabularies is regenerated at the end of every run (ETag persisted in the `.aggregate-hash` sidecar).
 7. **Outcome persistence** on MySQL (`HARVESTER_RUN`) and `ValidationReport` generation.
 
-Repositories are registered in MySQL and managed via `/config/repository`. Manual triggering is exposed at `POST /harvest` (Basic Auth required, plus `HARVESTER_ENDPOINT_ENABLED=true`).
+Repositories are registered in MySQL and managed via `/config/repository`. Manual triggering is exposed at `POST /jobs/harvest` (Basic Auth required, plus `HARVESTER_ENDPOINT_ENABLED=true`).
 
 ---
 
@@ -301,8 +301,6 @@ For **discussions and support**:
 ### Additional documentation
 
 - Official wiki: <https://github.com/teamdigitale/dati-semantic-backend/wiki>
-- Branch / revision harvesting demo: [`demo-harvesting-branch-curl.md`](./demo-harvesting-branch-curl.md)
-- Features roadmap: [`FEATURES.md`](./FEATURES.md)
 
 ---
 
