@@ -6,6 +6,7 @@ import it.gov.innovazione.ndc.eventhandler.event.HarvesterStartedEvent;
 import it.gov.innovazione.ndc.harvester.HarvesterService;
 import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContext;
 import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContextUtils;
+import it.gov.innovazione.ndc.harvester.csvapis.VocabulariesDbAggregationService;
 import it.gov.innovazione.ndc.harvester.exception.HarvesterAlreadyExecutedException;
 import it.gov.innovazione.ndc.harvester.exception.HarvesterAlreadyInProgressException;
 import it.gov.innovazione.ndc.harvester.exception.HarvesterException;
@@ -54,6 +55,7 @@ public class SimpleHarvestRepositoryProcessor {
     private final HarvesterRunService harvesterRunService;
     private final NdcEventPublisher ndcEventPublisher;
     private final GithubService githubService;
+    private final VocabulariesDbAggregationService vocabulariesDbAggregationService;
 
     private final List<String> locks = new ArrayList<>();
     private final InstanceManager instanceManager;
@@ -142,6 +144,8 @@ public class SimpleHarvestRepositoryProcessor {
             verifyNoNdcIssuesInRepoIfNecessary(repository);
 
             harvesterService.harvest(repository, revision, instanceToHarvest);
+
+            vocabulariesDbAggregationService.aggregateIfNeeded();
 
             githubService.openIssueIfNecessary();
 

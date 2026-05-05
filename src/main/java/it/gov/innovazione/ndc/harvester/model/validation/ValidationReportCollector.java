@@ -102,6 +102,14 @@ public class ValidationReportCollector {
         }
     }
 
+    public synchronized void addAssetIssue(String relativePath, SemanticAssetType type, ValidationIssue issue) {
+        if (issue == null) {
+            return;
+        }
+        AssetEntry entry = getOrCreateEntry(relativePath, type);
+        entry.issues.add(issue);
+    }
+
     public synchronized void markAssetSkipped(String relativePath) {
         AssetEntry entry = assetEntries.get(relativePath);
         if (entry != null) {

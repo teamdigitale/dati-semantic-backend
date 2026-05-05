@@ -2,10 +2,15 @@ package it.gov.innovazione.ndc.harvester.pathprocessors;
 
 import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticError;
 import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticInfo;
+import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticWarn;
 
 import it.gov.innovazione.ndc.harvester.SemanticAssetType;
+import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContext;
+import it.gov.innovazione.ndc.harvester.context.HarvestExecutionContextUtils;
 import it.gov.innovazione.ndc.harvester.csv.CsvParser;
 import it.gov.innovazione.ndc.harvester.csv.CsvParser.CsvData;
+import it.gov.innovazione.ndc.harvester.csvapis.HarvestAssetStateService;
+import it.gov.innovazione.ndc.harvester.csvapis.Sha256Hasher;
 import it.gov.innovazione.ndc.harvester.model.ControlledVocabularyModel;
 import it.gov.innovazione.ndc.harvester.model.CvPath;
 import it.gov.innovazione.ndc.harvester.model.HarvesterStatsHolder;
@@ -13,6 +18,9 @@ import it.gov.innovazione.ndc.harvester.model.Instance;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetModelValidationContext;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetModelFactory;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
+import it.gov.innovazione.ndc.harvester.model.validation.ValidationIssue;
+import it.gov.innovazione.ndc.harvester.model.validation.ValidationIssueSeverity;
+import it.gov.innovazione.ndc.harvester.model.validation.ValidationReportCollector;
 import it.gov.innovazione.ndc.harvester.validation.RdfSyntaxValidator;
 import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
@@ -21,6 +29,8 @@ import it.gov.innovazione.ndc.service.VocabularyDataService;
 import it.gov.innovazione.ndc.service.VocabularyIdentifier;
 import it.gov.innovazione.ndc.service.logging.HarvesterStage;
 import it.gov.innovazione.ndc.service.logging.LoggingContext;
+import java.nio.file.Path;
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -33,17 +43,20 @@ public class ControlledVocabularyPathProcessor extends BaseSemanticAssetPathProc
     private final SemanticAssetModelFactory modelFactory;
     private final CsvParser csvParser;
     private final VocabularyDataService vocabularyDataService;
+    private final HarvestAssetStateService harvestAssetStateService;
     private final String baseUrl;
 
     public ControlledVocabularyPathProcessor(TripleStoreRepository tripleStoreRepository, SemanticAssetModelFactory modelFactory,
                                              CsvParser csvParser, VocabularyDataService vocabularyDataService,
                                              SemanticAssetMetadataRepository metadataRepository,
                                              RdfSyntaxValidator rdfSyntaxValidator,
+                                             HarvestAssetStateService harvestAssetStateService,
                                              @Value("${ndc.baseUrl}") String baseUrl) {
         super(tripleStoreRepository, metadataRepository, rdfSyntaxValidator);
         this.modelFactory = modelFactory;
         this.csvParser = csvParser;
         this.vocabularyDataService = vocabularyDataService;
+        this.harvestAssetStateService = harvestAssetStateService;
         this.baseUrl = baseUrl;
     }
 
@@ -69,7 +82,37 @@ public class ControlledVocabularyPathProcessor extends BaseSemanticAssetPathProc
             parseAndIndexCsv(vocabularyIdentifier, p);
         });
 
+        if (path.getDbPath().isPresent()) {
+            recordApiStoreDbDiscovery(repoUrl, path.getDbPath().get(), model);
+        } else {
+            emitMissingApiStoreDbIssue(path);
+        }
+
         return harvesterStatsHolder;
+    }
+
+    private void emitMissingApiStoreDbIssue(CvPath path) {
+        HarvestExecutionContext context = HarvestExecutionContextUtils.getContext();
+        if (context == null) {
+            return;
+        }
+        ValidationReportCollector collector = context.getValidationReportCollector();
+        if (collector == null) {
+            return;
+        }
+        String rootPath = context.getRootPath();
+        String relativePath = (rootPath != null)
+                ? path.getTtlPath().replace(rootPath + "/", "")
+                : path.getTtlPath();
+        collector.addAssetIssue(relativePath, getAssetType(), ValidationIssue.builder()
+                .code("publish_api_workflow_missing")
+                .severity(ValidationIssueSeverity.IMPROVEMENT)
+                .name("apistore.db.missing")
+                .category("publication")
+                .message("APIStore .db not found next to the .ttl. Adopt the publish-api.yml "
+                        + "workflow from teamdigitale/dati-semantic-csv-apis so that the .db is "
+                        + "committed alongside the vocabulary TTL.")
+                .build());
     }
 
     @Override
@@ -90,6 +133,41 @@ public class ControlledVocabularyPathProcessor extends BaseSemanticAssetPathProc
     private void parseAndIndexCsv(VocabularyIdentifier vocabularyIdentifier, String csvPath) {
         CsvData flatData = csvParser.loadCsvDataFromFile(csvPath);
         vocabularyDataService.indexData(vocabularyIdentifier, flatData);
+    }
+
+    private void recordApiStoreDbDiscovery(String repoUrl, String dbPath, ControlledVocabularyModel model) {
+        HarvestExecutionContext context = HarvestExecutionContextUtils.getContext();
+        if (context == null) {
+            log.warn("No harvest execution context available; skipping APIStore .db registration for {}", dbPath);
+            return;
+        }
+        try {
+            String runId = context.getRunId();
+            String agencyId = model.getAgencyId().getIdentifier();
+            String keyConcept = model.getKeyConcept();
+            Path sourceDbFile = Path.of(dbPath);
+            String hash = Sha256Hasher.hashFile(sourceDbFile);
+            harvestAssetStateService.recordDbDetected(
+                    runId, repoUrl, agencyId, keyConcept, hash, sourceDbFile, Instant.now());
+            logSemanticInfo(LoggingContext.builder()
+                    .stage(HarvesterStage.PROCESS_RESOURCE)
+                    .harvesterStatus(HarvesterRun.Status.RUNNING)
+                    .message("Registered APIStore .db for " + agencyId + "/" + keyConcept)
+                    .additionalInfo("dbPath", dbPath)
+                    .additionalInfo("sourceDbHash", hash)
+                    .additionalInfo("agencyId", agencyId)
+                    .additionalInfo("keyConcept", keyConcept)
+                    .build());
+        } catch (Exception e) {
+            log.error("Failed to register APIStore .db at {}", dbPath, e);
+            logSemanticWarn(LoggingContext.builder()
+                    .stage(HarvesterStage.PROCESS_RESOURCE)
+                    .harvesterStatus(HarvesterRun.Status.RUNNING)
+                    .message("Failed to register APIStore .db for " + dbPath)
+                    .details(e.getMessage())
+                    .additionalInfo("dbPath", dbPath)
+                    .build());
+        }
     }
 
     public void dropCsvIndicesForRepo(String repoUrl, Instance instance) {
