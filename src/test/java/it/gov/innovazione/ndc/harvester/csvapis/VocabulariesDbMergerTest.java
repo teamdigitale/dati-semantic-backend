@@ -136,9 +136,14 @@ class VocabulariesDbMergerTest {
                                         String dataTable,
                                         List<DataRow> rows) throws IOException, SQLException {
         java.nio.file.Files.deleteIfExists(file);
+        // Schema replicates upstream tools/store/__init__.py:
+        // _metadata has vocabulary_uuid TEXT PRIMARY KEY (sha256 of agency|concept)
+        // plus a UNIQUE INDEX on (agency_id, key_concept).
+        String vocabularyUuid = pseudoUuid(agencyId, keyConcept);
         try (Connection conn = openSource(file)) {
             try (Statement st = conn.createStatement()) {
                 st.execute("CREATE TABLE _metadata ("
+                        + "vocabulary_uuid TEXT PRIMARY KEY, "
                         + "vocabulary_uri TEXT NOT NULL, "
                         + "agency_id TEXT NOT NULL, "
                         + "key_concept TEXT NOT NULL, "
@@ -150,13 +155,14 @@ class VocabulariesDbMergerTest {
                         + "id TEXT PRIMARY KEY, label TEXT NOT NULL)");
             }
             try (PreparedStatement ps = conn.prepareStatement(
-                    "INSERT INTO _metadata(vocabulary_uri, agency_id, key_concept, openapi, catalog) "
-                            + "VALUES (?, ?, ?, ?, ?)")) {
-                ps.setString(1, vocabularyUri);
-                ps.setString(2, agencyId);
-                ps.setString(3, keyConcept);
-                ps.setString(4, openapiJson);
-                ps.setString(5, catalogJson);
+                    "INSERT INTO _metadata(vocabulary_uuid, vocabulary_uri, agency_id, key_concept, openapi, catalog) "
+                            + "VALUES (?, ?, ?, ?, ?, ?)")) {
+                ps.setString(1, vocabularyUuid);
+                ps.setString(2, vocabularyUri);
+                ps.setString(3, agencyId);
+                ps.setString(4, keyConcept);
+                ps.setString(5, openapiJson);
+                ps.setString(6, catalogJson);
                 ps.executeUpdate();
             }
             try (PreparedStatement ps = conn.prepareStatement(
@@ -167,6 +173,24 @@ class VocabulariesDbMergerTest {
                     ps.executeUpdate();
                 }
             }
+        }
+    }
+
+    private static String pseudoUuid(String agencyId, String keyConcept) {
+        // Mirrors upstream build_vocabulary_uuid: sha256("agency_id|key_concept")
+        // with normalized inputs (lowercase agency, trimmed concept).
+        try {
+            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] hash = md.digest(
+                    (agencyId.toLowerCase() + "|" + keyConcept.trim())
+                            .getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder(hash.length * 2);
+            for (byte b : hash) {
+                sb.append(String.format("%02x", b & 0xff));
+            }
+            return sb.toString();
+        } catch (java.security.NoSuchAlgorithmException e) {
+            throw new IllegalStateException(e);
         }
     }
 
