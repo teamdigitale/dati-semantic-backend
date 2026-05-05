@@ -210,13 +210,18 @@ The OpenAPI specification lives at [`src/main/resources/public/openapi.yaml`](./
 
 | Method | Path | Purpose |
 | :-- | :-- | :-- |
-| `POST` | `/harvest` | Trigger harvest (requires `HARVESTER_ENDPOINT_ENABLED=true`) |
-| `GET` | `/harvest/running` | Harvest job status |
+| `POST` | `/jobs/harvest` | Trigger harvest (requires `HARVESTER_ENDPOINT_ENABLED=true`) |
+| `GET` | `/jobs/harvest/run` | List harvest job runs |
+| `GET` | `/jobs/harvest/running` | Currently running harvest jobs |
+| `POST` | `/jobs/clear` | Clear data for a given repository URL |
 | `GET` | `/harvest/vocabularies.db` | Download the aggregated vocabularies SQLite DB |
 | `GET/POST` | `/config/repository` | Manage registered repositories |
-| `GET/POST` | `/config/{repoId}/{configKey}` | Per-repo configuration |
+| `GET` | `/config/repository/{id}/validation-report` | Validation report for a repository |
+| `GET` | `/config/repository/{id}/conformance` | Cookiecutter conformance report |
+| `GET/POST` | `/config/{repoId}` | List/set per-repo configuration entries |
+| `PUT/DELETE` | `/config/{repoId}/{configKey}` | Update/delete a single config entry |
 | `GET/POST` | `/dashboard/...` | Dashboard data (raw, time/count aggregates) |
-| `*` | `/event`, `/profile`, `/user` | Events, profiles, users |
+| `*` | `/event`, `/profile`, `/user` | Alerter events, profiles, and users |
 
 ---
 
@@ -273,7 +278,7 @@ Production deployment is managed via **Kubernetes** (see [`teamdigitale/dati-sem
 - **JaCoCo** — coverage with threshold verification (`just coverage`).
 - **OWASP dependency-check** — dependency vulnerability scanning (`just dep-check`).
 - **GitHub Dependabot** — enabled at the `teamdigitale` organization level.
-- **Pre-commit hooks** — Gradle checkstyle + spotbugs are invoked automatically; see `scripts/`.
+- **Pre-commit hook** — Gradle checkstyle + spotbugs are invoked automatically; see [`config/hooks/pre-commit`](./config/hooks/pre-commit).
 
 Analysis reports are written under `build/reports/`.
 
