@@ -1,6 +1,7 @@
 package it.gov.innovazione.ndc.harvester.csvapis;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -24,6 +25,7 @@ import java.util.List;
  * tables, then build the {@code _metadata_fts} FTS5 trigram index over the
  * aggregated metadata.
  */
+@Component
 @Slf4j
 public class VocabulariesDbMerger {
 

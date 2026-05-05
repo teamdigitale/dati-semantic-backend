@@ -224,7 +224,7 @@ class ControlledVocabularyPathProcessorTest {
 
             verify(harvestAssetStateService).recordDbDetected(
                     eq(runId), eq(REPO_URL), eq("agencyId"), eq("keyConcept"),
-                    eq(expectedHash), any(Instant.class));
+                    eq(expectedHash), eq(dbFile), any(Instant.class));
         }
 
         @Test

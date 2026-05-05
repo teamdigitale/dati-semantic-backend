@@ -114,8 +114,10 @@ public class ControlledVocabularyPathProcessor extends BaseSemanticAssetPathProc
             String runId = context.getRunId();
             String agencyId = model.getAgencyId().getIdentifier();
             String keyConcept = model.getKeyConcept();
-            String hash = Sha256Hasher.hashFile(Path.of(dbPath));
-            harvestAssetStateService.recordDbDetected(runId, repoUrl, agencyId, keyConcept, hash, Instant.now());
+            Path sourceDbFile = Path.of(dbPath);
+            String hash = Sha256Hasher.hashFile(sourceDbFile);
+            harvestAssetStateService.recordDbDetected(
+                    runId, repoUrl, agencyId, keyConcept, hash, sourceDbFile, Instant.now());
             logSemanticInfo(LoggingContext.builder()
                     .stage(HarvesterStage.PROCESS_RESOURCE)
                     .harvesterStatus(HarvesterRun.Status.RUNNING)
