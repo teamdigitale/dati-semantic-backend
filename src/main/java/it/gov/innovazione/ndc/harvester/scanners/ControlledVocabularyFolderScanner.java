@@ -55,17 +55,30 @@ public class ControlledVocabularyFolderScanner implements FolderScanner<CvPath> 
         String ttlPath = maybeTtl.get().toString();
 
         Optional<Path> maybeCsv = findAtMostOne(folder, ".csv", "flattened controlled vocabulary");
+        Optional<Path> maybeDb = findAtMostOne(folder, ".db", "vocabulary apistore database");
+        String csvPath = maybeCsv.map(Path::toString).orElse(null);
+        String dbPath = maybeDb.map(Path::toString).orElse(null);
+
+        if (maybeDb.isPresent()) {
+            logSemanticInfo(LoggingContext.builder()
+                    .stage(HarvesterStage.PATH_SCANNING)
+                    .harvesterStatus(HarvesterRun.Status.RUNNING)
+                    .additionalInfo("folder", folder.toString())
+                    .additionalInfo("dbPath", dbPath)
+                    .additionalInfo("ttlPath", ttlPath)
+                    .message("Found APIStore .db file associated to TTL file")
+                    .build());
+        }
 
         if (maybeCsv.isPresent()) {
             logSemanticInfo(LoggingContext.builder()
                     .stage(HarvesterStage.PATH_SCANNING)
                     .harvesterStatus(HarvesterRun.Status.RUNNING)
                     .additionalInfo("folder", folder.toString())
-                    .additionalInfo("csvPath", maybeCsv.get().toString())
+                    .additionalInfo("csvPath", csvPath)
                     .additionalInfo("ttlPath", ttlPath)
                     .message("Found CSV file associated to TTL file")
                     .build());
-            return List.of(CvPath.of(ttlPath, maybeCsv.get().toString()));
         } else {
             logSemanticInfo(LoggingContext.builder()
                     .stage(HarvesterStage.PATH_SCANNING)
@@ -75,8 +88,9 @@ public class ControlledVocabularyFolderScanner implements FolderScanner<CvPath> 
                     .message("No CSV file associated to TTL file")
                     .build());
             log.info("No CSV file associated to {} in {}", ttlPath, folder);
-            return List.of(CvPath.of(ttlPath, null));
         }
+
+        return List.of(CvPath.of(ttlPath, csvPath, dbPath));
     }
 
     private boolean fileNameDoesNotContainSkipWords(Path path) {

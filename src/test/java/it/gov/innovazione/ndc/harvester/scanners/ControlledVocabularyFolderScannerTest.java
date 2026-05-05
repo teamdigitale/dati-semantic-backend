@@ -75,4 +75,30 @@ class ControlledVocabularyFolderScannerTest extends BaseFolderScannerTest {
         assertThatThrownBy(() -> scanner.scanFolder(folder))
             .isInstanceOf(InvalidAssetFolderException.class);
     }
+
+    @Test
+    void shouldFindTtlCsvAndDb() throws IOException {
+        mockFolderToContain("cv.ttl", "cv.csv", "cv.db");
+
+        List<CvPath> cvPaths = scanner.scanFolder(folder);
+
+        assertThat(cvPaths).containsOnly(new CvPath("cv.ttl", "cv.csv", "cv.db"));
+    }
+
+    @Test
+    void shouldFindTtlAndDbWithoutCsv() throws IOException {
+        mockFolderToContain("cv.ttl", "cv.db");
+
+        List<CvPath> cvPaths = scanner.scanFolder(folder);
+
+        assertThat(cvPaths).containsOnly(new CvPath("cv.ttl", null, "cv.db"));
+    }
+
+    @Test
+    void shouldComplainForControlledVocabularyFolderWithMultipleDbFiles() throws IOException {
+        mockFolderToContain("the-real-cv.ttl", "the-real-cv.db", "the-experimental-cv.db");
+
+        assertThatThrownBy(() -> scanner.scanFolder(folder))
+            .isInstanceOf(InvalidAssetFolderException.class);
+    }
 }
