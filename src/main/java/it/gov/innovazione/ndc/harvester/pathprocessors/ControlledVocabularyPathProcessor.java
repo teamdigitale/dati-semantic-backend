@@ -18,6 +18,9 @@ import it.gov.innovazione.ndc.harvester.model.Instance;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetModelValidationContext;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetModelFactory;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
+import it.gov.innovazione.ndc.harvester.model.validation.ValidationIssue;
+import it.gov.innovazione.ndc.harvester.model.validation.ValidationIssueSeverity;
+import it.gov.innovazione.ndc.harvester.model.validation.ValidationReportCollector;
 import it.gov.innovazione.ndc.harvester.validation.RdfSyntaxValidator;
 import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import it.gov.innovazione.ndc.repository.SemanticAssetMetadataRepository;
@@ -79,9 +82,37 @@ public class ControlledVocabularyPathProcessor extends BaseSemanticAssetPathProc
             parseAndIndexCsv(vocabularyIdentifier, p);
         });
 
-        path.getDbPath().ifPresent(dbPath -> recordApiStoreDbDiscovery(repoUrl, dbPath, model));
+        if (path.getDbPath().isPresent()) {
+            recordApiStoreDbDiscovery(repoUrl, path.getDbPath().get(), model);
+        } else {
+            emitMissingApiStoreDbIssue(path);
+        }
 
         return harvesterStatsHolder;
+    }
+
+    private void emitMissingApiStoreDbIssue(CvPath path) {
+        HarvestExecutionContext context = HarvestExecutionContextUtils.getContext();
+        if (context == null) {
+            return;
+        }
+        ValidationReportCollector collector = context.getValidationReportCollector();
+        if (collector == null) {
+            return;
+        }
+        String rootPath = context.getRootPath();
+        String relativePath = (rootPath != null)
+                ? path.getTtlPath().replace(rootPath + "/", "")
+                : path.getTtlPath();
+        collector.addAssetIssue(relativePath, getAssetType(), ValidationIssue.builder()
+                .code("publish_api_workflow_missing")
+                .severity(ValidationIssueSeverity.IMPROVEMENT)
+                .name("apistore.db.missing")
+                .category("publication")
+                .message("APIStore .db not found next to the .ttl. Adopt the publish-api.yml "
+                        + "workflow from teamdigitale/dati-semantic-csv-apis so that the .db is "
+                        + "committed alongside the vocabulary TTL.")
+                .build());
     }
 
     @Override

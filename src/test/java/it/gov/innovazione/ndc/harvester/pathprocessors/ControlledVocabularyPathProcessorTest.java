@@ -12,6 +12,10 @@ import it.gov.innovazione.ndc.harvester.model.Instance;
 import it.gov.innovazione.ndc.harvester.model.SemanticAssetModelFactory;
 import it.gov.innovazione.ndc.harvester.model.index.RightsHolder;
 import it.gov.innovazione.ndc.harvester.model.index.SemanticAssetMetadata;
+import it.gov.innovazione.ndc.harvester.model.validation.AssetValidationReport;
+import it.gov.innovazione.ndc.harvester.model.validation.ValidationIssue;
+import it.gov.innovazione.ndc.harvester.model.validation.ValidationIssueSeverity;
+import it.gov.innovazione.ndc.harvester.model.validation.ValidationReport;
 import it.gov.innovazione.ndc.harvester.service.SemanticContentStatsService;
 import it.gov.innovazione.ndc.harvester.validation.RdfSyntaxValidationResult;
 import it.gov.innovazione.ndc.harvester.validation.RdfSyntaxValidator;
@@ -37,6 +41,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -240,6 +246,69 @@ class ControlledVocabularyPathProcessorTest {
             pathProcessor.process(REPO_URL, path);
 
             verifyNoInteractions(harvestAssetStateService);
+        }
+
+        @Test
+        void shouldEmitImprovementIssueWhenDbIsMissing() throws IOException {
+            String ttlFile = tempDir.resolve("cv.ttl").toString();
+            CvPath path = CvPath.of(ttlFile, null);
+
+            HarvestExecutionContextUtils.setContext(HarvestExecutionContext.builder()
+                    .repository(Repository.builder().id("repo-id").url(REPO_URL).active(true).build())
+                    .runId("run-id")
+                    .correlationId("corr-id")
+                    .currentUserId("user")
+                    .rootPath(tempDir.toString())
+                    .instance(Instance.PRIMARY)
+                    .build());
+
+            when(rdfSyntaxValidator.validateTurtle(anyString())).thenReturn(RdfSyntaxValidationResult.builder().build());
+            when(semanticAssetModelFactory.createControlledVocabulary(ttlFile, REPO_URL)).thenReturn(cvModel);
+            when(cvModel.getRdfModel()).thenReturn(jenaModel);
+            when(cvModel.extractMetadata()).thenReturn(SemanticAssetMetadata.builder().build());
+
+            pathProcessor.process(REPO_URL, path);
+
+            verifyNoInteractions(harvestAssetStateService);
+            ValidationReport report = HarvestExecutionContextUtils.getContext()
+                    .getValidationReportCollector().build(REPO_URL, "rev");
+            AssetValidationReport assetReport = report.getAssetChecks().get(0);
+            assertThat(assetReport.getAssetPath()).isEqualTo("cv.ttl");
+            assertThat(assetReport.getIssues())
+                    .extracting(ValidationIssue::getCode, ValidationIssue::getSeverity)
+                    .contains(tuple("publish_api_workflow_missing", ValidationIssueSeverity.IMPROVEMENT));
+        }
+
+        @Test
+        void shouldNotEmitIssueWhenDbIsPresent() throws IOException {
+            Path dbFile = tempDir.resolve("cv.db");
+            Files.write(dbFile, new byte[]{0x42});
+            String ttlFile = tempDir.resolve("cv.ttl").toString();
+            CvPath path = CvPath.of(ttlFile, null, dbFile.toString());
+
+            HarvestExecutionContextUtils.setContext(HarvestExecutionContext.builder()
+                    .repository(Repository.builder().id("repo-id").url(REPO_URL).active(true).build())
+                    .runId("run-id")
+                    .correlationId("corr-id")
+                    .currentUserId("user")
+                    .rootPath(tempDir.toString())
+                    .instance(Instance.PRIMARY)
+                    .build());
+
+            when(rdfSyntaxValidator.validateTurtle(anyString())).thenReturn(RdfSyntaxValidationResult.builder().build());
+            when(semanticAssetModelFactory.createControlledVocabulary(ttlFile, REPO_URL)).thenReturn(cvModel);
+            when(cvModel.getRdfModel()).thenReturn(jenaModel);
+            when(cvModel.getKeyConcept()).thenReturn("kc");
+            when(cvModel.getAgencyId()).thenReturn(RightsHolder.builder().identifier("ag").build());
+            when(cvModel.extractMetadata()).thenReturn(SemanticAssetMetadata.builder().build());
+
+            pathProcessor.process(REPO_URL, path);
+
+            ValidationReport report = HarvestExecutionContextUtils.getContext()
+                    .getValidationReportCollector().build(REPO_URL, "rev");
+            assertThat(report.getAssetChecks().get(0).getIssues())
+                    .extracting(ValidationIssue::getCode)
+                    .doesNotContain("publish_api_workflow_missing");
         }
 
         @Test
