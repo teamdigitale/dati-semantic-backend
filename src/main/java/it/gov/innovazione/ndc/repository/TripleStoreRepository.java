@@ -9,12 +9,19 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.atlas.web.HttpException;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.QueryFactory;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.update.UpdateExecution;
 import org.springframework.stereotype.Repository;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logInfrastructureError;
 import static it.gov.innovazione.ndc.service.logging.NDCHarvesterLogger.logSemanticError;
@@ -155,6 +162,41 @@ public class TripleStoreRepository {
             }
             throw new TripleStoreRepositoryException(format("Could not execute select - '%s'", selectBuilder), e);
         }
+    }
+
+    public Model construct(String sparqlQuery) {
+        try (RDFConnection connection = virtuosoClient.getConnection()) {
+            Query query = QueryFactory.create(sparqlQuery);
+            return connection.queryConstruct(query);
+        } catch (Exception e) {
+            log.error("Could not execute CONSTRUCT: {}", sparqlQuery, e);
+            throw new TripleStoreRepositoryException(format("Could not execute CONSTRUCT - '%s'", sparqlQuery), e);
+        }
+    }
+
+    public List<String> selectStrings(String sparqlQuery, String varName) {
+        try (RDFConnection connection = virtuosoClient.getConnection()) {
+            Query query = QueryFactory.create(sparqlQuery);
+            List<String> values = new ArrayList<>();
+            try (QueryExecution qe = connection.query(query)) {
+                ResultSet rs = qe.execSelect();
+                while (rs.hasNext()) {
+                    QuerySolution sol = rs.next();
+                    RDFNode node = sol.get(varName);
+                    if (node != null) {
+                        values.add(node.isURIResource() ? node.asResource().getURI() : node.toString());
+                    }
+                }
+            }
+            return values;
+        } catch (Exception e) {
+            log.error("Could not execute SELECT: {}", sparqlQuery, e);
+            throw new TripleStoreRepositoryException(format("Could not execute SELECT - '%s'", sparqlQuery), e);
+        }
+    }
+
+    public Model emptyModel() {
+        return ModelFactory.createDefaultModel();
     }
 
     public void clearTempGraphIfExists(String repoUrl) {
