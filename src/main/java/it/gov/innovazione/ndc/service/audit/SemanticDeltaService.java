@@ -9,6 +9,9 @@ import it.gov.innovazione.ndc.repository.TripleStoreRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.rdf.model.StmtIterator;
 import org.springframework.stereotype.Service;
 
 import java.net.MalformedURLException;
@@ -93,11 +96,11 @@ public class SemanticDeltaService {
             if (!onlineIris.contains(iri)) {
                 continue;
             }
-            Model tmpModel = describeAsset(tmpGraph, iri);
-            Model onlineModel = describeAsset(onlineGraph, iri);
+            Model tmpModel = stripBlankNodes(describeAsset(tmpGraph, iri));
+            Model onlineModel = stripBlankNodes(describeAsset(onlineGraph, iri));
             Model added = tmpModel.difference(onlineModel);
             Model removed = onlineModel.difference(tmpModel);
-            Optional<String> summary = classifier.classifyModified(iri, added, removed);
+            Optional<String> summary = classifier.classifyModified(iri, added, removed, tmpModel, onlineModel);
             if (summary.isEmpty()) {
                 continue;
             }
@@ -148,6 +151,19 @@ public class SemanticDeltaService {
                 .summaryJson(summary)
                 .createdAt(Instant.now())
                 .build();
+    }
+
+    private static Model stripBlankNodes(Model model) {
+        Model result = ModelFactory.createDefaultModel();
+        StmtIterator it = model.listStatements();
+        while (it.hasNext()) {
+            Statement st = it.nextStatement();
+            if (st.getSubject().isAnon() || st.getObject().isAnon()) {
+                continue;
+            }
+            result.add(st);
+        }
+        return result;
     }
 
     private static String normalize(String url) {

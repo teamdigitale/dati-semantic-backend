@@ -12,13 +12,16 @@ public interface AssetDeltaClassifier {
     /**
      * Classifies added/removed triples into a structured summary JSON for a single asset.
      *
-     * @param assetIri  IRI of the asset being classified
-     * @param added     triples present in TMP but not in ONLINE
-     * @param removed   triples present in ONLINE but not in TMP
+     * @param assetIri    IRI of the asset being classified
+     * @param added       triples present in TMP but not in ONLINE
+     * @param removed     triples present in ONLINE but not in TMP
+     * @param tmpModel    full snapshot of the asset triples in TMP (for type lookups)
+     * @param onlineModel full snapshot of the asset triples in ONLINE (for type lookups)
      * @return summary JSON for the MODIFIED row, or empty if both inputs are empty
      *         (in which case the asset is considered UNCHANGED and no row should be written)
      */
-    Optional<String> classifyModified(String assetIri, Model added, Model removed);
+    Optional<String> classifyModified(String assetIri, Model added, Model removed,
+                                       Model tmpModel, Model onlineModel);
 
     /**
      * Synthetic summary for a newly added asset. Counts top-level elements.

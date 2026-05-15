@@ -33,13 +33,21 @@ public class OntologyDeltaClassifier implements AssetDeltaClassifier {
     }
 
     @Override
-    public Optional<String> classifyModified(String assetIri, Model added, Model removed) {
+    public Optional<String> classifyModified(String assetIri, Model added, Model removed,
+                                              Model tmpModel, Model onlineModel) {
         if (added.isEmpty() && removed.isEmpty()) {
             return Optional.empty();
         }
 
         Buckets a = bucketsOf(added);
         Buckets r = bucketsOf(removed);
+        // Full sets of classes/properties known to either side (used to classify modified-only subjects)
+        Buckets full = bucketsOf(tmpModel);
+        Buckets onlineFull = bucketsOf(onlineModel);
+        Set<String> allClasses = new LinkedHashSet<>(full.classes);
+        allClasses.addAll(onlineFull.classes);
+        Set<String> allProperties = new LinkedHashSet<>(full.properties);
+        allProperties.addAll(onlineFull.properties);
 
         Set<String> classesAdded = new LinkedHashSet<>(a.classes);
         classesAdded.removeAll(r.classes);
@@ -61,12 +69,12 @@ public class OntologyDeltaClassifier implements AssetDeltaClassifier {
         Map<String, Object> classes = new LinkedHashMap<>();
         classes.put("added", classesAdded);
         classes.put("removed", classesRemoved);
-        classes.put("modified", buildModified(labelChanged, commentChanged, a.classes, r.classes));
+        classes.put("modified", buildModified(labelChanged, commentChanged, classesAdded, classesRemoved, allClasses));
 
         Map<String, Object> properties = new LinkedHashMap<>();
         properties.put("added", propsAdded);
         properties.put("removed", propsRemoved);
-        properties.put("modified", buildModified(labelChanged, commentChanged, a.properties, r.properties));
+        properties.put("modified", buildModified(labelChanged, commentChanged, propsAdded, propsRemoved, allProperties));
 
         Map<String, Object> tripleStats = new LinkedHashMap<>();
         tripleStats.put("added", added.size());
@@ -96,16 +104,16 @@ public class OntologyDeltaClassifier implements AssetDeltaClassifier {
 
     private static java.util.List<Map<String, Object>> buildModified(
             Set<String> labelChanged, Set<String> commentChanged,
-            Set<String> addedTypeSet, Set<String> removedTypeSet) {
+            Set<String> addedTypeSet, Set<String> removedTypeSet,
+            Set<String> bucketUniverse) {
         Set<String> candidates = new LinkedHashSet<>();
         candidates.addAll(labelChanged);
         candidates.addAll(commentChanged);
-        // include only subjects that survive (not added or removed), to avoid double counting
-        Set<String> stillExisting = new LinkedHashSet<>(candidates);
-        stillExisting.removeAll(addedTypeSet);
-        stillExisting.removeAll(removedTypeSet);
+        candidates.retainAll(bucketUniverse);
+        candidates.removeAll(addedTypeSet);
+        candidates.removeAll(removedTypeSet);
 
-        return stillExisting.stream()
+        return candidates.stream()
                 .map(iri -> {
                     Map<String, Object> entry = new LinkedHashMap<>();
                     entry.put("iri", iri);
