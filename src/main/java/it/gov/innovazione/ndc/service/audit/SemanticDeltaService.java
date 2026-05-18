@@ -70,15 +70,16 @@ public class SemanticDeltaService {
         log.debug("Type {}: tmp={} assets, online={} assets", type, tmpIris.size(), onlineIris.size());
 
         List<ResourceDelta> rows = new ArrayList<>();
+        Model emptyModel = tripleStoreRepository.emptyModel();
 
         // ADDED: in tmp but not in online
         for (String iri : tmpIris) {
             if (onlineIris.contains(iri)) {
                 continue;
             }
-            Model assetModel = describeAsset(tmpGraph, iri);
-            String summary = classifier.summarizeAdded(iri, assetModel);
-            rows.add(buildRow(runId, iri, type, ChangeKind.ADDED, summary));
+            Model assetModel = stripBlankNodes(describeAsset(tmpGraph, iri));
+            classifier.classify(iri, assetModel, emptyModel, assetModel, emptyModel)
+                    .ifPresent(s -> rows.add(buildRow(runId, iri, type, ChangeKind.ADDED, s)));
         }
 
         // REMOVED: in online but not in tmp
@@ -86,9 +87,9 @@ public class SemanticDeltaService {
             if (tmpIris.contains(iri)) {
                 continue;
             }
-            Model assetModel = describeAsset(onlineGraph, iri);
-            String summary = classifier.summarizeRemoved(iri, assetModel);
-            rows.add(buildRow(runId, iri, type, ChangeKind.REMOVED, summary));
+            Model assetModel = stripBlankNodes(describeAsset(onlineGraph, iri));
+            classifier.classify(iri, emptyModel, assetModel, emptyModel, assetModel)
+                    .ifPresent(s -> rows.add(buildRow(runId, iri, type, ChangeKind.REMOVED, s)));
         }
 
         // MODIFIED: in both, but with triple differences
@@ -100,7 +101,7 @@ public class SemanticDeltaService {
             Model onlineModel = stripBlankNodes(describeAsset(onlineGraph, iri));
             Model added = tmpModel.difference(onlineModel);
             Model removed = onlineModel.difference(tmpModel);
-            Optional<String> summary = classifier.classifyModified(iri, added, removed, tmpModel, onlineModel);
+            Optional<String> summary = classifier.classify(iri, added, removed, tmpModel, onlineModel);
             if (summary.isEmpty()) {
                 continue;
             }

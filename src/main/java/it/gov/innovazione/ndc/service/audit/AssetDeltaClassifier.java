@@ -10,28 +10,24 @@ public interface AssetDeltaClassifier {
     boolean supports(SemanticAssetType type);
 
     /**
-     * Classifies added/removed triples into a structured summary JSON for a single asset.
+     * Builds a structured summary JSON for an asset, in a shape that is identical
+     * across ADDED / REMOVED / MODIFIED change kinds.
+     *
+     * <p>The caller chooses what to pass as {@code added}/{@code removed} based on the change kind:
+     * <ul>
+     *   <li>ADDED: {@code added} = full asset model from TMP, {@code removed} = empty model</li>
+     *   <li>REMOVED: {@code added} = empty model, {@code removed} = full asset model from ONLINE</li>
+     *   <li>MODIFIED: {@code added} = tmpModel \ onlineModel, {@code removed} = onlineModel \ tmpModel</li>
+     * </ul>
      *
      * @param assetIri    IRI of the asset being classified
-     * @param added       triples present in TMP but not in ONLINE
-     * @param removed     triples present in ONLINE but not in TMP
-     * @param tmpModel    full snapshot of the asset triples in TMP (for type lookups)
-     * @param onlineModel full snapshot of the asset triples in ONLINE (for type lookups)
-     * @return summary JSON for the MODIFIED row, or empty if both inputs are empty
-     *         (in which case the asset is considered UNCHANGED and no row should be written)
+     * @param added       triples to attribute to the "added" side
+     * @param removed     triples to attribute to the "removed" side
+     * @param tmpModel    full snapshot of the asset in TMP (empty for REMOVED)
+     * @param onlineModel full snapshot of the asset in ONLINE (empty for ADDED)
+     * @return summary JSON, or empty if both {@code added} and {@code removed} are empty
+     *         (in which case the asset is considered UNCHANGED and no row should be written).
      */
-    Optional<String> classifyModified(String assetIri, Model added, Model removed,
-                                       Model tmpModel, Model onlineModel);
-
-    /**
-     * Synthetic summary for a newly added asset. Counts top-level elements.
-     */
-    String summarizeAdded(String assetIri, Model assetModel);
-
-    /**
-     * Optional snapshot summary for a removed asset. Default: null (no summary).
-     */
-    default String summarizeRemoved(String assetIri, Model lastKnownModel) {
-        return null;
-    }
+    Optional<String> classify(String assetIri, Model added, Model removed,
+                               Model tmpModel, Model onlineModel);
 }

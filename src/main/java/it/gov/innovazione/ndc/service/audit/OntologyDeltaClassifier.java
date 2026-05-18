@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.innovazione.ndc.harvester.SemanticAssetType;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
@@ -15,8 +16,10 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -33,48 +36,38 @@ public class OntologyDeltaClassifier implements AssetDeltaClassifier {
     }
 
     @Override
-    public Optional<String> classifyModified(String assetIri, Model added, Model removed,
-                                              Model tmpModel, Model onlineModel) {
+    public Optional<String> classify(String assetIri, Model added, Model removed,
+                                      Model tmpModel, Model onlineModel) {
         if (added.isEmpty() && removed.isEmpty()) {
             return Optional.empty();
         }
 
-        Buckets a = bucketsOf(added);
-        Buckets r = bucketsOf(removed);
-        // Full sets of classes/properties known to either side (used to classify modified-only subjects)
-        Buckets full = bucketsOf(tmpModel);
-        Buckets onlineFull = bucketsOf(onlineModel);
-        Set<String> allClasses = new LinkedHashSet<>(full.classes);
-        allClasses.addAll(onlineFull.classes);
-        Set<String> allProperties = new LinkedHashSet<>(full.properties);
-        allProperties.addAll(onlineFull.properties);
+        Buckets addedBuckets = bucketsOf(added);
+        Buckets removedBuckets = bucketsOf(removed);
+        Buckets tmpBuckets = bucketsOf(tmpModel);
+        Buckets onlineBuckets = bucketsOf(onlineModel);
 
-        Set<String> classesAdded = new LinkedHashSet<>(a.classes);
-        classesAdded.removeAll(r.classes);
-        Set<String> classesRemoved = new LinkedHashSet<>(r.classes);
-        classesRemoved.removeAll(a.classes);
+        Set<String> commonClasses = intersect(tmpBuckets.classes, onlineBuckets.classes);
+        Set<String> commonProperties = intersect(tmpBuckets.properties, onlineBuckets.properties);
 
-        Set<String> propsAdded = new LinkedHashSet<>(a.properties);
-        propsAdded.removeAll(r.properties);
-        Set<String> propsRemoved = new LinkedHashSet<>(r.properties);
-        propsRemoved.removeAll(a.properties);
+        Set<String> classesAdded = difference(addedBuckets.classes, removedBuckets.classes);
+        Set<String> classesRemoved = difference(removedBuckets.classes, addedBuckets.classes);
 
-        Set<String> labelChanged = new LinkedHashSet<>(a.labelSubjects);
-        labelChanged.retainAll(r.labelSubjects);
-        Set<String> commentChanged = new LinkedHashSet<>(a.commentSubjects);
-        commentChanged.retainAll(r.commentSubjects);
+        Set<String> propsAdded = difference(addedBuckets.properties, removedBuckets.properties);
+        Set<String> propsRemoved = difference(removedBuckets.properties, addedBuckets.properties);
 
-        Set<String> deprecated = new LinkedHashSet<>(a.deprecated);
+        List<Map<String, Object>> classesModified = buildModified(commonClasses, added, removed);
+        List<Map<String, Object>> propertiesModified = buildModified(commonProperties, added, removed);
 
         Map<String, Object> classes = new LinkedHashMap<>();
         classes.put("added", classesAdded);
         classes.put("removed", classesRemoved);
-        classes.put("modified", buildModified(labelChanged, commentChanged, classesAdded, classesRemoved, allClasses));
+        classes.put("modified", classesModified);
 
         Map<String, Object> properties = new LinkedHashMap<>();
         properties.put("added", propsAdded);
         properties.put("removed", propsRemoved);
-        properties.put("modified", buildModified(labelChanged, commentChanged, propsAdded, propsRemoved, allProperties));
+        properties.put("modified", propertiesModified);
 
         Map<String, Object> tripleStats = new LinkedHashMap<>();
         tripleStats.put("added", added.size());
@@ -83,45 +76,65 @@ public class OntologyDeltaClassifier implements AssetDeltaClassifier {
         Map<String, Object> summary = new LinkedHashMap<>();
         summary.put("classes", classes);
         summary.put("properties", properties);
-        summary.put("deprecated", deprecated);
+        summary.put("deprecated", new LinkedHashSet<>(addedBuckets.deprecated));
         summary.put("tripleStats", tripleStats);
 
         return Optional.of(toJson(summary));
     }
 
-    @Override
-    public String summarizeAdded(String assetIri, Model assetModel) {
-        Buckets b = bucketsOf(assetModel);
-        Map<String, Object> summary = new LinkedHashMap<>();
-        summary.put("classesCount", b.classes.size());
-        summary.put("propertiesCount", b.properties.size());
-        Map<String, Object> tripleStats = new LinkedHashMap<>();
-        tripleStats.put("added", assetModel.size());
-        tripleStats.put("removed", 0L);
-        summary.put("tripleStats", tripleStats);
-        return toJson(summary);
+    private static List<Map<String, Object>> buildModified(Set<String> commonIris, Model added, Model removed) {
+        List<Map<String, Object>> out = new ArrayList<>();
+        for (String iri : commonIris) {
+            Resource subj = added.getResource(iri);
+            List<Map<String, Object>> triplesAdded = collectTriples(added, iri);
+            List<Map<String, Object>> triplesRemoved = collectTriples(removed, iri);
+            if (triplesAdded.isEmpty() && triplesRemoved.isEmpty()) {
+                continue;
+            }
+            Map<String, Object> entry = new LinkedHashMap<>();
+            entry.put("iri", iri);
+            entry.put("triplesAdded", triplesAdded);
+            entry.put("triplesRemoved", triplesRemoved);
+            out.add(entry);
+        }
+        return out;
     }
 
-    private static java.util.List<Map<String, Object>> buildModified(
-            Set<String> labelChanged, Set<String> commentChanged,
-            Set<String> addedTypeSet, Set<String> removedTypeSet,
-            Set<String> bucketUniverse) {
-        Set<String> candidates = new LinkedHashSet<>();
-        candidates.addAll(labelChanged);
-        candidates.addAll(commentChanged);
-        candidates.retainAll(bucketUniverse);
-        candidates.removeAll(addedTypeSet);
-        candidates.removeAll(removedTypeSet);
+    private static List<Map<String, Object>> collectTriples(Model model, String subjectIri) {
+        Resource subj = model.getResource(subjectIri);
+        List<Map<String, Object>> out = new ArrayList<>();
+        StmtIterator it = model.listStatements(subj, null, (RDFNode) null);
+        while (it.hasNext()) {
+            Statement st = it.nextStatement();
+            out.add(serializeTriple(st));
+        }
+        return out;
+    }
 
-        return candidates.stream()
-                .map(iri -> {
-                    Map<String, Object> entry = new LinkedHashMap<>();
-                    entry.put("iri", iri);
-                    entry.put("labelChanged", labelChanged.contains(iri));
-                    entry.put("commentChanged", commentChanged.contains(iri));
-                    return entry;
-                })
-                .toList();
+    private static Map<String, Object> serializeTriple(Statement st) {
+        Map<String, Object> triple = new LinkedHashMap<>();
+        triple.put("p", st.getPredicate().getURI());
+        RDFNode o = st.getObject();
+        Map<String, Object> object = new LinkedHashMap<>();
+        if (o.isURIResource()) {
+            object.put("type", "uri");
+            object.put("value", o.asResource().getURI());
+        } else if (o.isLiteral()) {
+            Literal lit = o.asLiteral();
+            object.put("type", "literal");
+            object.put("value", lit.getLexicalForm());
+            String lang = lit.getLanguage();
+            if (lang != null && !lang.isEmpty()) {
+                object.put("lang", lang);
+            } else if (lit.getDatatypeURI() != null) {
+                object.put("datatype", lit.getDatatypeURI());
+            }
+        } else {
+            object.put("type", "bnode");
+            object.put("value", o.toString());
+        }
+        triple.put("o", object);
+        return triple;
     }
 
     private static Buckets bucketsOf(Model model) {
@@ -148,12 +161,6 @@ public class OntologyDeltaClassifier implements AssetDeltaClassifier {
                     b.properties.add(subjectIri);
                 }
             }
-            if (RDFS.label.equals(p)) {
-                b.labelSubjects.add(subjectIri);
-            }
-            if (RDFS.comment.equals(p)) {
-                b.commentSubjects.add(subjectIri);
-            }
             if (OWL.deprecated.equals(p) && o.isLiteral() && asBoolean(o)) {
                 b.deprecated.add(subjectIri);
             }
@@ -169,6 +176,18 @@ public class OntologyDeltaClassifier implements AssetDeltaClassifier {
         }
     }
 
+    private static Set<String> intersect(Set<String> a, Set<String> b) {
+        Set<String> out = new LinkedHashSet<>(a);
+        out.retainAll(b);
+        return out;
+    }
+
+    private static Set<String> difference(Set<String> a, Set<String> b) {
+        Set<String> out = new LinkedHashSet<>(a);
+        out.removeAll(b);
+        return out;
+    }
+
     private static String toJson(Object value) {
         try {
             return JSON.writeValueAsString(value);
@@ -181,8 +200,6 @@ public class OntologyDeltaClassifier implements AssetDeltaClassifier {
     private static final class Buckets {
         final Set<String> classes = new LinkedHashSet<>();
         final Set<String> properties = new LinkedHashSet<>();
-        final Set<String> labelSubjects = new LinkedHashSet<>();
-        final Set<String> commentSubjects = new LinkedHashSet<>();
         final Set<String> deprecated = new LinkedHashSet<>();
     }
 }
