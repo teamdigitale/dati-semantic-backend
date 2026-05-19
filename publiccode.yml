@@ -15,28 +15,18 @@ description:
       - indexing
     genericName: dati-semantic-backend
     longDescription: |
-      Questo repository contiene il software di backend per il National Data
+      Questo repository contiene il software di backend per il catalogo nazionale per la semantica dei dati schema.gov.it
 
-      Catalog for Semantic Interoperability.
+      Il catalogo contribuisce a standardizzare e uniformare la descrizione degli e-service della Piattaforma Digitale Nazionale Dati e i payload scambiati attraverso le stesse.
 
+      Il catalogo contiene le ontologie e i vocabolari controllati e scemi di dati attraverso i quali è
 
-
-      Il catalogo contribuisce a standardizzare e uniformare la descrizione
-
-      delle API della PDND e i payload scambiati attraverso le stesse.
-
-
-
-      Contiene le ontologie e i vocabolari controllati attraverso i quali è
-
-      possibile da un lato definire in modo non ambiguo i dati scambiati dalle
-
-      API, dall'altro limitare i valori possibili dei campi che fanno
+      possibile da un lato definire in modo non ambiguo i dati scambiati dagli e-service, dall'altro limitare i valori possibili dei campi che fanno
 
       riferimento ad elenchi specifici, in modo che non siano possibili errori
 
       di trascrizione o interpretazione degli stessi.
-    shortDescription: Backend per il repository semantico del NDC
+    shortDescription: Backend per il repository semantico del catalogo nazionale per la semantica dei dati
 developmentStatus: beta
 intendedAudience:
   scope:
@@ -66,13 +56,13 @@ localisation:
 maintenance:
   contacts:
     - affiliation: ISTAT
-      email: polizzi@istat.it
-      name: Marco Polizzi
+      email: info@schema.gov.it
+      name: 
   contractors:
     - name: ISTAT
       until: '2026-12-31'
   type: contract
-name: NDC Semantic backend
+name: schema.gov.it Semantic backend
 platforms:
   - linux
   - web
