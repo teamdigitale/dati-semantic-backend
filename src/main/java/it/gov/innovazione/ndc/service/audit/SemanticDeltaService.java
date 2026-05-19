@@ -31,7 +31,13 @@ import static it.gov.innovazione.ndc.repository.TripleStoreRepository.TMP_GRAPH_
 @RequiredArgsConstructor
 public class SemanticDeltaService {
 
-    private static final SemanticAssetType[] SUPPORTED_TYPES = {SemanticAssetType.ONTOLOGY};
+    private static final SemanticAssetType[] SUPPORTED_TYPES = {
+            SemanticAssetType.ONTOLOGY,
+            SemanticAssetType.CONTROLLED_VOCABULARY,
+            SemanticAssetType.SCHEMA
+    };
+
+    private static final String SKOS_CONCEPT_SCHEME = "http://www.w3.org/2004/02/skos/core#ConceptScheme";
 
     private final TripleStoreRepository tripleStoreRepository;
     private final ResourceDeltaRepository resourceDeltaRepository;
@@ -113,15 +119,29 @@ public class SemanticDeltaService {
     }
 
     private List<String> listAssetIris(String graphIri, SemanticAssetType type) {
-        String sparql = String.format(
-                "SELECT DISTINCT ?asset WHERE { GRAPH <%s> { ?asset a <%s> } }",
-                graphIri, type.getTypeIri());
+        String sparql = buildListQuery(graphIri, type);
         try {
             return tripleStoreRepository.selectStrings(sparql, "asset");
         } catch (Exception e) {
             log.warn("Could not list assets from graph {} (probably non-existent): {}", graphIri, e.getMessage());
             return List.of();
         }
+    }
+
+    private static String buildListQuery(String graphIri, SemanticAssetType type) {
+        return switch (type) {
+            case ONTOLOGY -> String.format(
+                    "SELECT DISTINCT ?asset WHERE { GRAPH <%s> { ?asset a <%s> } }",
+                    graphIri, type.getTypeIri());
+            case CONTROLLED_VOCABULARY -> String.format(
+                    "SELECT DISTINCT ?asset WHERE { GRAPH <%s> { "
+                            + "?asset a <%s> . ?asset a <%s> } }",
+                    graphIri, type.getTypeIri(), SKOS_CONCEPT_SCHEME);
+            case SCHEMA -> String.format(
+                    "SELECT DISTINCT ?asset WHERE { GRAPH <%s> { "
+                            + "?asset a <%s> . FILTER NOT EXISTS { ?asset a <%s> } } }",
+                    graphIri, type.getTypeIri(), SKOS_CONCEPT_SCHEME);
+        };
     }
 
     private Model describeAsset(String graphIri, String assetIri) {
