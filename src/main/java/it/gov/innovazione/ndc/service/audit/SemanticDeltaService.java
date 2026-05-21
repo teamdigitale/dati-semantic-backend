@@ -147,13 +147,16 @@ public class SemanticDeltaService {
     private Model describeAsset(String graphIri, String assetIri) {
         String sparql = String.format(
                 "CONSTRUCT { ?s ?p ?o } WHERE { "
-                        + "GRAPH <%s> { "
+                        + "GRAPH <%1$s> { "
                         + "  ?s ?p ?o . "
-                        + "  FILTER( ?s = <%s> "
-                        + "    || STRSTARTS(STR(?s), \"%s\") "
-                        + "    || EXISTS { ?s <http://www.w3.org/2000/01/rdf-schema#isDefinedBy> <%s> } ) "
+                        + "  FILTER(isIRI(?s)) . "
+                        + "  { FILTER(?s = <%2$s>) } "
+                        + "  UNION { FILTER(STRSTARTS(STR(?s), \"%2$s\")) } "
+                        + "  UNION { ?s <http://www.w3.org/2000/01/rdf-schema#isDefinedBy> <%2$s> } "
+                        + "  UNION { ?s ?inLink <%2$s> } "
+                        + "  UNION { <%2$s> ?outLink ?s } "
                         + "} }",
-                graphIri, assetIri, assetIri, assetIri);
+                graphIri, assetIri);
         try {
             return tripleStoreRepository.construct(sparql);
         } catch (Exception e) {
