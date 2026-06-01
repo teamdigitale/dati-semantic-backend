@@ -10,7 +10,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
@@ -24,6 +26,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
@@ -143,10 +146,17 @@ public class OAuth2ResourceServerSecurityConfiguration {
     /**
      * Estrae i ruoli Keycloak da {@code realm_access.roles} e li converte in
      * authorities Spring {@code ROLE_NDC_<UPPER>}. Es. "ndc-admin" -> "ROLE_NDC_ADMIN".
+     *
+     * <p>Principal name: fallback in cascata {@code preferred_username} -> {@code azp}
+     * -> {@code sub}. Gli utenti umani hanno {@code preferred_username}; i service
+     * account possono averlo nullo (depend dal realm mapper) e in quel caso usiamo
+     * il client id ({@code azp}). Last resort: il subject. Senza questo fallback,
+     * {@code Principal.getName()} potrebbe essere null e gli INSERT su colonne
+     * audit NOT NULL (es. {@code HARVESTER_RUN.STARTED_BY}) falliscono in silenzio.
      */
-    JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+    Converter<Jwt, AbstractAuthenticationToken> jwtAuthenticationConverter() {
+        JwtAuthenticationConverter delegate = new JwtAuthenticationConverter();
+        delegate.setJwtGrantedAuthoritiesConverter(jwt -> {
             Collection<GrantedAuthority> authorities = new ArrayList<>();
             for (String role : extractRealmRoles(jwt)) {
                 authorities.add(new SimpleGrantedAuthority(
@@ -154,11 +164,18 @@ public class OAuth2ResourceServerSecurityConfiguration {
             }
             return authorities;
         });
-        // Usa preferred_username (es. "mario.rossi") come Principal.getName()
-        // invece del default "sub" (UUID Keycloak). Serve per audit leggibili
-        // e per popolare colonne CREATED_BY/OWNER/UPDATED_BY del DB.
-        converter.setPrincipalClaimName("preferred_username");
-        return converter;
+        delegate.setPrincipalClaimName("preferred_username");
+        return jwt -> {
+            AbstractAuthenticationToken token = delegate.convert(jwt);
+            String name = jwt.getClaimAsString("preferred_username");
+            if (name == null || name.isBlank()) {
+                name = jwt.getClaimAsString("azp");
+            }
+            if (name == null || name.isBlank()) {
+                name = jwt.getSubject();
+            }
+            return new JwtAuthenticationToken(jwt, token.getAuthorities(), name);
+        };
     }
 
     @SuppressWarnings("unchecked")
