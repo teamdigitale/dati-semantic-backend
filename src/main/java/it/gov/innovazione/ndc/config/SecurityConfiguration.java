@@ -4,6 +4,7 @@ package it.gov.innovazione.ndc.config;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -15,9 +16,17 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
+/**
+ * Configurazione Basic auth (legacy).
+ *
+ * <p>Attiva quando {@code harvester.security.mode=basic} (default).
+ * Per OAuth2 Resource Server (Keycloak), impostare
+ * {@code harvester.security.mode=oauth2} e vedere {@link OAuth2ResourceServerSecurityConfiguration}.
+ */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "harvester.security", name = "mode", havingValue = "basic", matchIfMissing = true)
 public class SecurityConfiguration {
 
     @Value("#{'${harvester.auth.user:admin}'}")
