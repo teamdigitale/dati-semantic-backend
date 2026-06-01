@@ -5,9 +5,45 @@ set shell := ["bash", "-euo", "pipefail", "-c"]
 default:
     @just --list
 
-# Start local dependencies
-stack:
+# Avvia MySQL/Virtuoso/Elasticsearch e attende che siano ready (warn su Keycloak 8082)
+infra-up:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "[infra] docker compose up -d (MySQL, Virtuoso, Elasticsearch)"
     docker compose up -d
+
+    echo "[infra] attendo MySQL 3306..."
+    # NB: il check TCP passa appena il container apre la porta, ma MySQL impiega
+    # qualche secondo in piu' a inizializzare e a rispondere al protocollo.
+    # mysqladmin ping verifica un vero handshake.
+    until docker compose exec -T mysql mysqladmin ping -h 127.0.0.1 -uroot -pexample --silent >/dev/null 2>&1; do sleep 1; done
+    echo "[mysql] ready"
+
+    echo "[infra] attendo Virtuoso 8890..."
+    until curl -sf http://localhost:8890/sparql -o /dev/null 2>/dev/null \
+       || curl -sf -u dba:dba http://localhost:8890/sparql-auth -o /dev/null 2>/dev/null \
+       || (echo > /dev/tcp/127.0.0.1/8890) >/dev/null 2>&1; do sleep 1; done
+    echo "[virtuoso] ready"
+
+    echo "[infra] attendo Elasticsearch 9200 (HTTPS, ES 8.x security ON)..."
+    # ES 8.x con security default risponde solo in TLS con certificato self-signed
+    # e richiede auth. Credenziali hardcoded dal docker-compose: elastic/changeme.
+    # -k per accettare il cert self-signed locale.
+    until curl -sf -k -u elastic:changeme \
+            "https://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=2s" \
+            -o /dev/null 2>/dev/null; do sleep 1; done
+    echo "[elasticsearch] ready"
+
+    echo "[infra] verifico Keycloak 8082 (gestito dal repo dati-semantic-admin)..."
+    if curl -sf http://localhost:8082/realms/ndc/.well-known/openid-configuration -o /dev/null 2>/dev/null; then
+        echo "[keycloak] ready"
+    else
+        echo "[keycloak] WARNING: non disponibile su 8082"
+        echo "[keycloak]   per OAuth2 avviare 'just kc-up' nel repo dati-semantic-admin"
+    fi
+
+# Alias storico (back-compat).
+stack: infra-up
 
 # Stop local dependencies
 down:
@@ -46,9 +82,14 @@ lint:
 coverage:
     ./gradlew test jacocoTestReport jacocoTestCoverageVerification
 
-# Run the application locally
-run:
-    ./gradlew bootRun
+# Run the application locally (profilo local + OAuth2 Resource Server).
+# Dipende da infra-up: aspetta MySQL/Virtuoso/ES ready prima di partire.
+run: infra-up
+    SPRING_PROFILES_ACTIVE=local HARVESTER_SECURITY_MODE=oauth2 ./gradlew bootRun
+
+# Variante: profilo local con auth Basic legacy (no Keycloak).
+run-basic: infra-up
+    SPRING_PROFILES_ACTIVE=local ./gradlew bootRun
 
 # Submit repository validation job
 validate-repo owner repo base_url="http://localhost:8080":

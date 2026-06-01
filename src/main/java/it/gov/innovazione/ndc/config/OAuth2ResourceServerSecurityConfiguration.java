@@ -154,6 +154,10 @@ public class OAuth2ResourceServerSecurityConfiguration {
             }
             return authorities;
         });
+        // Usa preferred_username (es. "mario.rossi") come Principal.getName()
+        // invece del default "sub" (UUID Keycloak). Serve per audit leggibili
+        // e per popolare colonne CREATED_BY/OWNER/UPDATED_BY del DB.
+        converter.setPrincipalClaimName("preferred_username");
         return converter;
     }
 
