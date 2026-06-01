@@ -14,6 +14,7 @@ import lombok.With;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static it.gov.innovazione.ndc.harvester.harvesters.utils.PathUtils.relativizeFile;
@@ -41,7 +42,14 @@ public class HarvestExecutionContext {
     private final ValidationReportCollector validationReportCollector = new ValidationReportCollector();
 
     public void addRightsHolder(RightsHolder agencyId) {
-        rightsHolders.add(agencyId);
+        if (agencyId == null) {
+            return;
+        }
+        boolean alreadyPresent = rightsHolders.stream()
+                .anyMatch(r -> Objects.equals(r.getIdentifier(), agencyId.getIdentifier()));
+        if (!alreadyPresent) {
+            rightsHolders.add(agencyId);
+        }
     }
 
     public void addHarvestingError(
