@@ -6,11 +6,13 @@ import it.gov.innovazione.ndc.model.harvester.Repository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 
 import java.sql.ResultSet;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -130,39 +132,73 @@ public class HarvesterRunService {
                 .filter(harvesterRun -> isMoreRecentThan(harvesterRun, days));
     }
 
+    private static final String HARVESTER_RUN_SELECT_COLUMNS = "ID, "
+            + "CORRELATION_ID, "
+            + "REPOSITORY_ID, "
+            + "REPOSITORY_URL, "
+            + "INSTANCE, "
+            + "REVISION, "
+            + "REVISION_COMMITTED_AT, "
+            + "STARTED, "
+            + "STARTED_BY, "
+            + "FINISHED, "
+            + "STATUS, "
+            + "REASON, "
+            + "VALIDATION_REPORT";
+
+    private final RowMapper<HarvesterRun> harvesterRunRowMapper = (rs, rowNum) ->
+            HarvesterRun.builder()
+                    .id(rs.getString("ID"))
+                    .correlationId(rs.getString("CORRELATION_ID"))
+                    .repositoryId(rs.getString("REPOSITORY_ID"))
+                    .repositoryUrl(rs.getString("REPOSITORY_URL"))
+                    .instance(rs.getString("INSTANCE"))
+                    .revision(rs.getString("REVISION"))
+                    .revisionCommittedAt(getInstant(rs, "REVISION_COMMITTED_AT"))
+                    .startedAt(getInstant(rs, "STARTED"))
+                    .startedBy(rs.getString("STARTED_BY"))
+                    .endedAt(getInstant(rs, "FINISHED"))
+                    .status(getStatusSafely(rs))
+                    .reason(rs.getString("REASON"))
+                    .validationReport(rs.getString("VALIDATION_REPORT"))
+                    .build();
+
     public List<HarvesterRun> getAllRuns() {
-        String sqlQuery = "SELECT "
-                + "ID, "
-                + "CORRELATION_ID, "
-                + "REPOSITORY_ID, "
-                + "REPOSITORY_URL, "
-                + "INSTANCE, "
-                + "REVISION, "
-                + "REVISION_COMMITTED_AT, "
-                + "STARTED, "
-                + "STARTED_BY, "
-                + "FINISHED, "
-                + "STATUS, "
-                + "REASON, "
-                + "VALIDATION_REPORT "
-                + "FROM HARVESTER_RUN "
+        String sqlQuery = "SELECT " + HARVESTER_RUN_SELECT_COLUMNS
+                + " FROM HARVESTER_RUN ORDER BY STARTED DESC";
+        return jdbcTemplate.query(sqlQuery, harvesterRunRowMapper);
+    }
+
+    /**
+     * Restituisce i run raggruppati per {@code CORRELATION_ID} con paginazione
+     * server-side sul batch (non sul singolo run). Lo step 1 estrae fino a
+     * {@code limit} correlation id distinti, saltandone {@code offset},
+     * ordinati per data del primo run desc (batch piu' recenti in cima); lo
+     * step 2 carica tutti i run di quei batch nello stesso formato di
+     * {@link #getAllRuns()}. Il chiamante decide la dimensione di pagina
+     * (avanzando {@code offset}) ed eventualmente la convenzione N+1 per
+     * derivare {@code hasNext} (chiedendo {@code limit = pageSize + 1}).
+     */
+    public List<HarvesterRun> getRunsByBatch(int offset, int limit) {
+        if (limit <= 0) {
+            return List.of();
+        }
+        int safeOffset = Math.max(0, offset);
+        String correlationIdQuery = "SELECT CORRELATION_ID FROM HARVESTER_RUN "
+                + "GROUP BY CORRELATION_ID "
+                + "ORDER BY MIN(STARTED) DESC "
+                + "LIMIT ? OFFSET ?";
+        List<String> correlationIds = jdbcTemplate.queryForList(
+                correlationIdQuery, String.class, limit, safeOffset);
+        if (correlationIds.isEmpty()) {
+            return List.of();
+        }
+        String placeholders = String.join(",", Collections.nCopies(correlationIds.size(), "?"));
+        String runsQuery = "SELECT " + HARVESTER_RUN_SELECT_COLUMNS
+                + " FROM HARVESTER_RUN "
+                + "WHERE CORRELATION_ID IN (" + placeholders + ") "
                 + "ORDER BY STARTED DESC";
-        return jdbcTemplate.query(sqlQuery, (rs, rowNum) ->
-                HarvesterRun.builder()
-                        .id(rs.getString("ID"))
-                        .correlationId(rs.getString("CORRELATION_ID"))
-                        .repositoryId(rs.getString("REPOSITORY_ID"))
-                        .repositoryUrl(rs.getString("REPOSITORY_URL"))
-                        .instance(rs.getString("INSTANCE"))
-                        .revision(rs.getString("REVISION"))
-                        .revisionCommittedAt(getInstant(rs, "REVISION_COMMITTED_AT"))
-                        .startedAt(getInstant(rs, "STARTED"))
-                        .startedBy(rs.getString("STARTED_BY"))
-                        .endedAt(getInstant(rs, "FINISHED"))
-                        .status(getStatusSafely(rs))
-                        .reason(rs.getString("REASON"))
-                        .validationReport(rs.getString("VALIDATION_REPORT"))
-                        .build());
+        return jdbcTemplate.query(runsQuery, harvesterRunRowMapper, correlationIds.toArray());
     }
 
     private HarvesterRun.Status getStatusSafely(ResultSet rs) {

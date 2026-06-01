@@ -13,8 +13,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -267,17 +271,52 @@ public class ActualConfigService extends ConfigService {
         }
     }
 
+    /**
+     * Scope di ciascuna chiave di configurazione: quali repoId la leggono
+     * effettivamente. GLOBAL = scope "ndc"; REPO = scope per-repository.
+     */
+    public enum Scope {
+        GLOBAL, REPO
+    }
+
+    /**
+     * Tipo logico del valore, esposto in metadata per consentire al FE di
+     * scegliere l'input adatto senza ricodificare la mappatura Parser->tipo.
+     */
+    public enum Type {
+        LONG, BOOLEAN, ENUM
+    }
+
     @Getter
     @RequiredArgsConstructor
     public enum ConfigKey {
-        MAX_FILE_SIZE_BYTES("The maximum file size in bytes of a file to be harvested", Validator.IS_LONG, Parser.TO_LONG),
-        GITHUB_ISSUER_ENABLED("Enable the GitHub issuer capability", Validator.IS_BOOLEAN, Parser.TO_BOOLEAN),
-        ALERTER_ENABLED("Enable the Alerter capability", Validator.IS_BOOLEAN, Parser.TO_BOOLEAN),
-        ACTIVE_INSTANCE("The atomic writer active instance", Validator.IS_INSTANCE, Parser.TO_INSTANCE);
+        MAX_FILE_SIZE_BYTES(
+                "The maximum file size in bytes of a file to be harvested",
+                Validator.IS_LONG, Parser.TO_LONG, Type.LONG,
+                EnumSet.of(Scope.GLOBAL, Scope.REPO), false, List.of()),
+        GITHUB_ISSUER_ENABLED(
+                "Enable the GitHub issuer capability",
+                Validator.IS_BOOLEAN, Parser.TO_BOOLEAN, Type.BOOLEAN,
+                EnumSet.of(Scope.GLOBAL, Scope.REPO), false, List.of()),
+        ALERTER_ENABLED(
+                "Enable the Alerter capability",
+                Validator.IS_BOOLEAN, Parser.TO_BOOLEAN, Type.BOOLEAN,
+                EnumSet.of(Scope.GLOBAL), false, List.of()),
+        // ACTIVE_INSTANCE e' gestita da DefaultInstanceManager.switchInstances dopo un harvest:
+        // scriverla a mano romperebbe il writer atomico. Esposta in lettura, bloccata in scrittura.
+        ACTIVE_INSTANCE(
+                "The atomic writer active instance",
+                Validator.IS_INSTANCE, Parser.TO_INSTANCE, Type.ENUM,
+                EnumSet.of(Scope.REPO), true,
+                Arrays.stream(Instance.values()).map(Enum::name).toList());
 
         private final String description;
         private final Validator validator;
         private final Parser parser;
+        private final Type type;
+        private final Set<Scope> scopes;
+        private final boolean readOnly;
+        private final List<String> allowedValues;
     }
 
     @Getter

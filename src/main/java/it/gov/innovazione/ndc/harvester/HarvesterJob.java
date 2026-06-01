@@ -37,7 +37,24 @@ public class HarvesterJob {
         String correlationId = UUID.randomUUID().toString();
         List<JobExecutionResponse> responses = new ArrayList<>();
         for (Repository repository : repositories) {
-            responses.add(harvest(repository, correlationId, force));
+            try {
+                responses.add(harvest(repository, correlationId, force));
+            } catch (Exception e) {
+                // Una singola failure (es. repo Git irraggiungibile) non deve
+                // abortire l'intero batch: la registriamo come JobExecutionResponse
+                // con status=FAILED e proseguiamo con i repo successivi.
+                log.error("Harvest avvio fallito per repo {} ({}): {}",
+                        repository.getId(), repository.getUrl(), e.getMessage(), e);
+                responses.add(JobExecutionResponse.builder()
+                        .correlationId(correlationId)
+                        .repositoryId(repository.getId())
+                        .repositoryUrl(repository.getUrl())
+                        .startedAt(Instant.now().toString())
+                        .forced(force)
+                        .status("FAILED")
+                        .error(e.getMessage())
+                        .build());
+            }
         }
         return responses;
     }
@@ -72,7 +89,8 @@ public class HarvesterJob {
                 .repositoryId(repository.getId())
                 .repositoryUrl(repository.getUrl())
                 .startedAt(Instant.now().toString())
-                .forced(force);
+                .forced(force)
+                .status("STARTED");
 
         revision = Optional.ofNullable(revision)
                 .filter(StringUtils::isNotBlank)
