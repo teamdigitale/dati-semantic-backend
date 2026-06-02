@@ -21,6 +21,22 @@ import java.util.stream.Stream;
 @With
 @Data
 public class LoggingContext {
+    /**
+     * Soglia oltre la quale il {@code .toString()} di un valore viene troncato con "..." nel log.
+     * Evita blob enormi tipo {@code SemanticAssetMetadata(...)} di Lombok @Data, mantenendo
+     * intatti URL, IRI, UUID e messaggi corti. Override via property
+     * {@code harvester.logging.max-value-length} su {@link #setMaxValueLength(int)}.
+     */
+    private static volatile int maxValueLength = 120;
+
+    public static void setMaxValueLength(int value) {
+        maxValueLength = value;
+    }
+
+    public static int getMaxValueLength() {
+        return maxValueLength;
+    }
+
     private static final Map<Integer, Pair<String, Function<LoggingContext, Object>>> contextMapper =
             Map.of(
                     2, Pair.of("RepoUrl", LoggingContext::getRepoUrl),
@@ -54,7 +70,7 @@ public class LoggingContext {
                                 additionalInfos.entrySet().stream())
                         .filter(pair -> Objects.nonNull(pair.getValue()))
                         .filter(pair -> StringUtils.isNoneBlank(pair.getValue().toString()))
-                        .map(e -> e.getKey() + ": " + e.getValue())
+                        .map(e -> e.getKey() + ": " + abbreviate(e.getValue()))
                         .collect(Collectors.joining(" "));
 
         String logHeaders =
@@ -69,6 +85,12 @@ public class LoggingContext {
                         .collect(Collectors.joining(" "));
 
         return logHeaders + " " + logMessage;
+    }
+
+    private static String abbreviate(Object value) {
+        String s = String.valueOf(value);
+        int max = maxValueLength;
+        return s.length() > max ? s.substring(0, max) + "..." : s;
     }
 
     public LoggingContext semantic() {
