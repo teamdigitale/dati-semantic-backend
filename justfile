@@ -82,14 +82,20 @@ lint:
 coverage:
     ./gradlew test jacocoTestReport jacocoTestCoverageVerification
 
-# Run the application locally (profilo local + OAuth2 Resource Server).
+# Run the application locally (profilo local, basic+oauth2 entrambi attivi).
 # Dipende da infra-up: aspetta MySQL/Virtuoso/ES ready prima di partire.
+# Il JwtDecoder fa discovery lazy alla prima richiesta JWT, quindi il BE
+# parte anche se Keycloak (su 8082, gestito dal repo dati-semantic-admin) non e' up.
 run: infra-up
-    SPRING_PROFILES_ACTIVE=local HARVESTER_SECURITY_MODE=oauth2 ./gradlew bootRun
-
-# Variante: profilo local con auth Basic legacy (no Keycloak).
-run-basic: infra-up
     SPRING_PROFILES_ACTIVE=local ./gradlew bootRun
+
+# Variante: profilo local con sola Basic auth (oauth2 disabilitato).
+run-basic: infra-up
+    SPRING_PROFILES_ACTIVE=local HARVESTER_SECURITY_OAUTH2_ENABLED=false ./gradlew bootRun
+
+# Variante: profilo local con solo OAuth2 (basic disabilitato).
+run-oauth2: infra-up
+    SPRING_PROFILES_ACTIVE=local HARVESTER_SECURITY_BASIC_ENABLED=false ./gradlew bootRun
 
 # Submit repository validation job
 validate-repo owner repo base_url="http://localhost:8080":

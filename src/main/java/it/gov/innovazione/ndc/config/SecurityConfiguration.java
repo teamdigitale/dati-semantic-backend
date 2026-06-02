@@ -1,10 +1,14 @@
 package it.gov.innovazione.ndc.config;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -32,18 +36,13 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 /**
  * Configurazione security: basic auth e/o OAuth2 Resource Server (Keycloak).
  *
- * <p>I due meccanismi sono governati da flag indipendenti:
+ * <p>I due meccanismi sono governati da flag indipendenti, entrambi default-on:
  * <ul>
- *   <li>{@code harvester.security.basic.enabled} — default {@code true} (back-compat)</li>
- *   <li>{@code harvester.security.oauth2.enabled} — default {@code false} (opt-in)</li>
+ *   <li>{@code harvester.security.basic.enabled} — default {@code true}</li>
+ *   <li>{@code harvester.security.oauth2.enabled} — default {@code true}</li>
  * </ul>
  *
  * <p>Possono essere attivi contemporaneamente: Spring registra sia
@@ -52,8 +51,16 @@ import java.util.Map;
  * Le due forme di credential viaggiano in pacchetti diversi e non si calpestano.
  *
  * <p>Per back-compat la legacy property {@code harvester.security.mode} (valori
- * {@code basic|oauth2}) viene letta come fallback per derivare i default dei due
- * flag. Deprecata: pianificata la rimozione dopo qualche release.
+ * {@code basic|oauth2}) resta letta come fallback per derivare i default:
+ * {@code mode=basic} -> oauth off, {@code mode=oauth2} -> basic off. Senza {@code mode}
+ * o con {@code mode=both}, entrambi i flag sono on. Deprecata: pianificata la rimozione.
+ *
+ * <h2>Lazy JwtDecoder</h2>
+ * Il {@link JwtDecoder} viene costruito alla prima richiesta JWT, non al boot. Questo
+ * permette al backend di partire anche senza Keycloak raggiungibile (utile in dev,
+ * dove il flag oauth2 e' default-on ma KC potrebbe non essere up). La prima richiesta
+ * Bearer paghera' il costo della discovery; basic auth continua a funzionare in ogni
+ * caso senza KC.
  *
  * <h2>Authorize chain</h2>
  * Quando solo {@code basic} e' attivo si usano i ruoli legacy ({@code HARVESTER}
@@ -76,17 +83,17 @@ public class SecurityConfiguration {
     private String basicPassword;
 
     /**
-     * Default-derivato da {@code mode}: basic e' attivo se mode != oauth2 (cioe' basic o assente).
-     * Override esplicito con {@code harvester.security.basic.enabled}.
+     * Default-on. Si disattiva esplicitamente con {@code harvester.security.basic.enabled=false}
+     * oppure via legacy {@code harvester.security.mode=oauth2}.
      */
-    @Value("${harvester.security.basic.enabled:#{'${harvester.security.mode:basic}' != 'oauth2'}}")
+    @Value("${harvester.security.basic.enabled:#{'${harvester.security.mode:both}' != 'oauth2'}}")
     private boolean basicEnabled;
 
     /**
-     * Default-derivato da {@code mode}: oauth2 e' attivo se mode == oauth2.
-     * Override esplicito con {@code harvester.security.oauth2.enabled}.
+     * Default-on. Si disattiva esplicitamente con {@code harvester.security.oauth2.enabled=false}
+     * oppure via legacy {@code harvester.security.mode=basic}.
      */
-    @Value("${harvester.security.oauth2.enabled:#{'${harvester.security.mode:basic}' == 'oauth2'}}")
+    @Value("${harvester.security.oauth2.enabled:#{'${harvester.security.mode:both}' != 'basic'}}")
     private boolean oauth2Enabled;
 
     @Value("${harvester.security.oauth2.issuer-uri:}")
@@ -106,15 +113,13 @@ public class SecurityConfiguration {
         }
         log.info("Security configured: basic={} oauth2={}", basicEnabled, oauth2Enabled);
 
-        http.csrf(CsrfConfigurer::disable)
-                .authorizeHttpRequests(this::configureAuthorize);
+        http.csrf(CsrfConfigurer::disable).authorizeHttpRequests(this::configureAuthorize);
 
         if (basicEnabled) {
             http.httpBasic(Customizer.withDefaults());
         }
         if (oauth2Enabled) {
-            http.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt
-                    .decoder(jwtDecoder())
+            http.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(lazyJwtDecoder())
                     .jwtAuthenticationConverter(jwtAuthenticationConverter())));
         }
         return http.build();
@@ -128,49 +133,85 @@ public class SecurityConfiguration {
     private void configureAuthorize(
             AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry req) {
         if (!oauth2Enabled) {
-            req.requestMatchers("/jobs/**", "/config/**").hasRole("HARVESTER")
-                    .anyRequest().permitAll();
+            req.requestMatchers("/jobs/**", "/config/**")
+                    .hasRole("HARVESTER")
+                    .anyRequest()
+                    .permitAll();
             return;
         }
-        String[] adminRoles = basicEnabled
-                ? new String[]{"NDC_ADMIN", "HARVESTER"}
-                : new String[]{"NDC_ADMIN"};
+        String[] adminRoles =
+                basicEnabled ? new String[] {"NDC_ADMIN", "HARVESTER"} : new String[] {"NDC_ADMIN"};
         String[] adminOrService = basicEnabled
-                ? new String[]{"NDC_ADMIN", "NDC_SERVICE", "HARVESTER"}
-                : new String[]{"NDC_ADMIN", "NDC_SERVICE"};
+                ? new String[] {"NDC_ADMIN", "NDC_SERVICE", "HARVESTER"}
+                : new String[] {"NDC_ADMIN", "NDC_SERVICE"};
         String[] adminOrViewer = basicEnabled
-                ? new String[]{"NDC_ADMIN", "NDC_VIEWER", "HARVESTER"}
-                : new String[]{"NDC_ADMIN", "NDC_VIEWER"};
+                ? new String[] {"NDC_ADMIN", "NDC_VIEWER", "HARVESTER"}
+                : new String[] {"NDC_ADMIN", "NDC_VIEWER"};
 
-        req.requestMatchers(HttpMethod.POST, "/jobs/clear").hasAnyRole(adminRoles)
-                .requestMatchers(HttpMethod.POST, "/jobs/harvest").hasAnyRole(adminOrService)
-                .requestMatchers(HttpMethod.DELETE, "/jobs/**").hasAnyRole(adminRoles)
-                .requestMatchers(HttpMethod.GET, "/jobs/**").hasAnyRole(adminOrViewer)
-                .requestMatchers(HttpMethod.POST, "/config/**").hasAnyRole(adminRoles)
-                .requestMatchers(HttpMethod.PUT, "/config/**").hasAnyRole(adminRoles)
-                .requestMatchers(HttpMethod.PATCH, "/config/**").hasAnyRole(adminRoles)
-                .requestMatchers(HttpMethod.DELETE, "/config/**").hasAnyRole(adminRoles)
-                .requestMatchers(HttpMethod.GET, "/config/**").hasAnyRole(adminOrViewer)
-                .anyRequest().permitAll();
+        req.requestMatchers(HttpMethod.POST, "/jobs/clear")
+                .hasAnyRole(adminRoles)
+                .requestMatchers(HttpMethod.POST, "/jobs/harvest")
+                .hasAnyRole(adminOrService)
+                .requestMatchers(HttpMethod.DELETE, "/jobs/**")
+                .hasAnyRole(adminRoles)
+                .requestMatchers(HttpMethod.GET, "/jobs/**")
+                .hasAnyRole(adminOrViewer)
+                .requestMatchers(HttpMethod.POST, "/config/**")
+                .hasAnyRole(adminRoles)
+                .requestMatchers(HttpMethod.PUT, "/config/**")
+                .hasAnyRole(adminRoles)
+                .requestMatchers(HttpMethod.PATCH, "/config/**")
+                .hasAnyRole(adminRoles)
+                .requestMatchers(HttpMethod.DELETE, "/config/**")
+                .hasAnyRole(adminRoles)
+                .requestMatchers(HttpMethod.GET, "/config/**")
+                .hasAnyRole(adminOrViewer)
+                .anyRequest()
+                .permitAll();
     }
 
-    /** User in-memory per basic auth. Esportato solo se basic e' attivo. */
+    /**
+     * User in-memory per basic auth. Sempre registrato come bean: Spring Security 6
+     * non installa httpBasic solo perche' esiste una UserDetailsService — serve la
+     * chiamata esplicita {@code http.httpBasic(...)} che facciamo solo se basic e' on.
+     * Quando basic e' off, questo bean resta inutilizzato (innocuo).
+     */
     @Bean
-    @ConditionalOnProperty(prefix = "harvester.security.basic", name = "enabled",
-            havingValue = "true", matchIfMissing = true)
     UserDetailsService users() {
-        return new InMemoryUserDetailsManager(
-                User.builder()
-                        .username(basicUser)
-                        .password("{noop}" + basicPassword)
-                        .roles("HARVESTER")
-                        .build());
+        return new InMemoryUserDetailsManager(User.builder()
+                .username(basicUser)
+                .password("{noop}" + basicPassword)
+                .roles("HARVESTER")
+                .build());
     }
 
-    @Bean
-    @ConditionalOnProperty(prefix = "harvester.security.oauth2", name = "enabled", havingValue = "true")
-    JwtDecoder jwtDecoder() {
-        NimbusJwtDecoder decoder = NimbusJwtDecoder.withIssuerLocation(issuerUri).build();
+    /**
+     * JwtDecoder con discovery deferita: il vero {@link NimbusJwtDecoder} viene
+     * costruito alla prima invocazione di {@link JwtDecoder#decode(String)}, non
+     * al boot. Cosi' il backend parte anche se Keycloak non e' raggiungibile.
+     */
+    private JwtDecoder lazyJwtDecoder() {
+        AtomicReference<JwtDecoder> ref = new AtomicReference<>();
+        Object lock = new Object();
+        return token -> {
+            JwtDecoder d = ref.get();
+            if (d == null) {
+                synchronized (lock) {
+                    d = ref.get();
+                    if (d == null) {
+                        d = buildEagerJwtDecoder();
+                        ref.set(d);
+                    }
+                }
+            }
+            return d.decode(token);
+        };
+    }
+
+    private JwtDecoder buildEagerJwtDecoder() {
+        log.info("Initializing JwtDecoder against issuer {}", issuerUri);
+        NimbusJwtDecoder decoder =
+                NimbusJwtDecoder.withIssuerLocation(issuerUri).build();
         decoder.setJwtValidator(new DelegatingOAuth2TokenValidator<>(
                 JwtValidators.createDefaultWithIssuer(issuerUri),
                 audienceValidator(acceptedAudiences),
@@ -184,10 +225,8 @@ public class SecurityConfiguration {
             if (aud != null && aud.stream().anyMatch(accepted::contains)) {
                 return OAuth2TokenValidatorResult.success();
             }
-            return OAuth2TokenValidatorResult.failure(new OAuth2Error(
-                    "invalid_audience",
-                    "Token audience " + aud + " not in accepted " + accepted,
-                    null));
+            return OAuth2TokenValidatorResult.failure(
+                    new OAuth2Error("invalid_audience", "Token audience " + aud + " not in accepted " + accepted, null));
         };
     }
 
@@ -195,14 +234,12 @@ public class SecurityConfiguration {
         return jwt -> {
             String azp = jwt.getClaimAsString("azp");
             if (azp == null) {
-                return OAuth2TokenValidatorResult.failure(new OAuth2Error(
-                        "invalid_azp", "Token missing required azp claim", null));
+                return OAuth2TokenValidatorResult.failure(
+                        new OAuth2Error("invalid_azp", "Token missing required azp claim", null));
             }
             if (!accepted.contains(azp)) {
-                return OAuth2TokenValidatorResult.failure(new OAuth2Error(
-                        "invalid_azp",
-                        "Token azp '" + azp + "' not in accepted " + accepted,
-                        null));
+                return OAuth2TokenValidatorResult.failure(
+                        new OAuth2Error("invalid_azp", "Token azp '" + azp + "' not in accepted " + accepted, null));
             }
             return OAuth2TokenValidatorResult.success();
         };
@@ -250,5 +287,4 @@ public class SecurityConfiguration {
         }
         return List.of();
     }
-
 }
