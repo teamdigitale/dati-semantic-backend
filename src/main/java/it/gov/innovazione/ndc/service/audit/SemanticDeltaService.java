@@ -129,22 +129,33 @@ public class SemanticDeltaService {
     }
 
     private static String buildListQuery(String graphIri, SemanticAssetType type) {
+        // FILTER(isIRI(?asset)) esclude i blank node: alcuni grafi (es.
+        // daf-ontologie-vocabolari-controllati) hanno owl:Restriction e classi anonime tipate come
+        // asset. Non sono asset "reali" e mandano in crash il describeAsset successivo: <_:hash>
+        // non e' sintassi SPARQL valida -> Virtuoso 500 e degenera in scan full-graph su grafi grossi.
         return switch (type) {
             case ONTOLOGY -> String.format(
-                    "SELECT DISTINCT ?asset WHERE { GRAPH <%s> { ?asset a <%s> } }",
+                    "SELECT DISTINCT ?asset WHERE { GRAPH <%s> { ?asset a <%s> . FILTER(isIRI(?asset)) } }",
                     graphIri, type.getTypeIri());
             case CONTROLLED_VOCABULARY -> String.format(
                     "SELECT DISTINCT ?asset WHERE { GRAPH <%s> { "
-                            + "?asset a <%s> . ?asset a <%s> } }",
+                            + "?asset a <%s> . ?asset a <%s> . FILTER(isIRI(?asset)) } }",
                     graphIri, type.getTypeIri(), SKOS_CONCEPT_SCHEME);
             case SCHEMA -> String.format(
                     "SELECT DISTINCT ?asset WHERE { GRAPH <%s> { "
-                            + "?asset a <%s> . FILTER NOT EXISTS { ?asset a <%s> } } }",
+                            + "?asset a <%s> . FILTER NOT EXISTS { ?asset a <%s> } . FILTER(isIRI(?asset)) } }",
                     graphIri, type.getTypeIri(), SKOS_CONCEPT_SCHEME);
         };
     }
 
     private Model describeAsset(String graphIri, String assetIri) {
+        // Guard-rail: se per qualche motivo un blank node sfugge alla query SELECT
+        // (driver Jena che fa toString() su BlankNodeId restituendo "_:hash"), evitiamo di
+        // mandare la CONSTRUCT che esploderebbe in Virtuoso.
+        if (assetIri == null || assetIri.startsWith("_:")) {
+            log.debug("Skipping describeAsset for blank-node identifier '{}'", assetIri);
+            return tripleStoreRepository.emptyModel();
+        }
         String sparql = String.format(
                 "CONSTRUCT { ?s ?p ?o } WHERE { "
                         + "GRAPH <%1$s> { "
