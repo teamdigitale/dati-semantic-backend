@@ -4,7 +4,6 @@
 # Bring up service using:
 #   docker-compose up
 #
-version: "3.8"
 services:
   virtuoso:
     image: tenforce/virtuoso

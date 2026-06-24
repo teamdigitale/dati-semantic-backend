@@ -66,6 +66,20 @@ public class HarvestJobController {
         return harvesterRunService.getAllRuns();
     }
 
+    @GetMapping("jobs/harvest/run/by-batch")
+    @Operation(
+            operationId = "getHarvestRunsByBatch",
+            description = "Get harvest runs paginated by correlation_id (one batch = the set of runs sharing the same correlation_id). "
+                    + "Body shape is identical to /jobs/harvest/run: a flat List<HarvesterRun>. "
+                    + "Pagination is on distinct correlation_id ordered by MIN(STARTED) DESC, using raw offset/limit "
+                    + "so callers can apply N+1 (request limit = pageSize + 1) to derive hasNext without a total count.",
+            summary = "Get harvest runs paginated by correlation batch")
+    public List<HarvesterRun> getRunsByBatch(
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "11") int limit) {
+        return harvesterRunService.getRunsByBatch(offset, limit);
+    }
+
     @GetMapping("jobs/harvest/running")
     @Operation(
             operationId = "getRunningInstances",

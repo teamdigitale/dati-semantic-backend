@@ -10,6 +10,8 @@ import it.gov.innovazione.ndc.harvester.service.HarvesterRunService;
 import it.gov.innovazione.ndc.harvester.service.RepositoryService;
 import it.gov.innovazione.ndc.model.harvester.HarvesterRun;
 import it.gov.innovazione.ndc.model.harvester.Repository;
+import it.gov.innovazione.ndc.service.RepositoryInspectionService;
+import it.gov.innovazione.ndc.service.RepositoryInspectionService.RepositoryInspection;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -46,6 +49,7 @@ public class RepositoryController {
     private final HarvesterService harvesterService;
     private final HarvesterRunService harvesterRunService;
     private final NdcEventPublisher eventPublisher;
+    private final RepositoryInspectionService repositoryInspectionService;
 
     @GetMapping
     @Operation(
@@ -54,6 +58,19 @@ public class RepositoryController {
             summary = "Get all repositories")
     public List<Repository> getAllRepositories() {
         return repositoryService.getActiveRepos();
+    }
+
+    @GetMapping("/inspect")
+    @Operation(
+            operationId = "inspectRepository",
+            description = "Inspect a GitHub repository URL before adding it to the system. "
+                    + "Uses anonymous git ls-remote to check existence/visibility (private repos look "
+                    + "the same as non-existent without credentials) and a shallow clone to detect the "
+                    + "directory layout (CURRENT = assets/, LEGACY = pre-2024 root folders, MIXED, NONE). "
+                    + "Source of truth for folder names is SemanticAssetType.",
+            summary = "Inspect a GitHub repository URL")
+    public RepositoryInspection inspect(@RequestParam String url) {
+        return repositoryInspectionService.inspect(url);
     }
 
     @PostMapping

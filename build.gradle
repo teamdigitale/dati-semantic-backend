@@ -33,6 +33,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-jdbc'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
 
@@ -204,7 +205,8 @@ jacocoTestCoverageVerification {
                     "it.gov.innovazione.ndc.service.SemanticAssetSearchService",
                     'it.gov.innovazione.ndc.harvester.service.CookiecutterReferenceService',
                     'it.gov.innovazione.ndc.repository.ResourceDeltaRepository*',
-                    'it.gov.innovazione.ndc.service.audit.SemanticDeltaService'
+                    'it.gov.innovazione.ndc.service.audit.SemanticDeltaService',
+                    'it.gov.innovazione.ndc.service.RepositoryInspectionService*'
             ]
         }
     }
