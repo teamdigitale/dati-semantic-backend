@@ -205,7 +205,8 @@ jacocoTestCoverageVerification {
                     "it.gov.innovazione.ndc.service.SemanticAssetSearchService",
                     'it.gov.innovazione.ndc.harvester.service.CookiecutterReferenceService',
                     'it.gov.innovazione.ndc.repository.ResourceDeltaRepository*',
-                    'it.gov.innovazione.ndc.service.audit.SemanticDeltaService'
+                    'it.gov.innovazione.ndc.service.audit.SemanticDeltaService',
+                    'it.gov.innovazione.ndc.service.RepositoryInspectionService*'
             ]
         }
     }
