@@ -89,7 +89,7 @@ class SemanticAssetPathProcessorTest {
 
     @Test
     void processingGoesThroughTwoCommonSteps() {
-        final String repoUrl = "https://github.com/italia/daf-ontologie-vocabolari-controllati";
+        final String repoUrl = "https://github.com/italia/dati-semantic-assets";
         String ttlFile = "somefile.ttl";
         TestSemanticAssetPathProcessor processor =
             new TestSemanticAssetPathProcessor(tripleStoreRepository, metadataRepository, rdfSyntaxValidator);
@@ -111,7 +111,7 @@ class SemanticAssetPathProcessorTest {
 
     @Test
     void ifModelCannotBeStoredShouldStopProcessingAndPropagate() {
-        final String repoUrl = "https://github.com/italia/daf-ontologie-vocabolari-controllati";
+        final String repoUrl = "https://github.com/italia/dati-semantic-assets";
         String ttlFile = "somefile.ttl";
         TestSemanticAssetPathProcessor processor =
             new TestSemanticAssetPathProcessor(tripleStoreRepository, metadataRepository, rdfSyntaxValidator);
@@ -134,7 +134,7 @@ class SemanticAssetPathProcessorTest {
 
     @Test
     void ifModelCannotBeLoadedShouldStopProcessingAndPropagate() {
-        final String repoUrl = "https://github.com/italia/daf-ontologie-vocabolari-controllati";
+        final String repoUrl = "https://github.com/italia/dati-semantic-assets";
         String ttlFile = "somefile.ttl";
         TestSemanticAssetPathProcessor processor =
             spy(new TestSemanticAssetPathProcessor(tripleStoreRepository, metadataRepository, rdfSyntaxValidator));
@@ -154,7 +154,7 @@ class SemanticAssetPathProcessorTest {
 
     @Test
     void ifMainResourceCannotBeExtractedShouldStopProcessingAndPropagate() {
-        final String repoUrl = "https://github.com/italia/daf-ontologie-vocabolari-controllati";
+        final String repoUrl = "https://github.com/italia/dati-semantic-assets";
         String ttlFile = "somefile.ttl";
         TestSemanticAssetPathProcessor processor =
             new TestSemanticAssetPathProcessor(tripleStoreRepository, metadataRepository, rdfSyntaxValidator);
@@ -174,7 +174,7 @@ class SemanticAssetPathProcessorTest {
 
     @Test
     void ifModelCannotBeEnrichedShouldStopProcessingAndPropagate() {
-        final String repoUrl = "https://github.com/italia/daf-ontologie-vocabolari-controllati";
+        final String repoUrl = "https://github.com/italia/dati-semantic-assets";
         String ttlFile = "somefile.ttl";
         TestSemanticAssetPathProcessor processor =
             new TestSemanticAssetPathProcessor(tripleStoreRepository, metadataRepository, rdfSyntaxValidator);
