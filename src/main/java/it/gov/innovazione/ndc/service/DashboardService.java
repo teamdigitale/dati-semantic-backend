@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static it.gov.innovazione.ndc.controller.PercentileStats.summarizingPercentiles;
+import static it.gov.innovazione.ndc.model.harvester.HarvesterRun.Status.SUCCESS;
 import static java.util.Comparator.comparing;
 import static java.util.function.BinaryOperator.maxBy;
 import static java.util.stream.Collectors.groupingBy;
@@ -138,9 +139,18 @@ public class DashboardService {
         return statsByDate;
     }
 
+    /**
+     * Only SUCCESS runs reach harvest()/saveStats() and therefore write SEMANTIC_CONTENT_STATS rows:
+     * a run ending UNCHANGED (or FAILURE, RUNNING, NDC_ISSUES_PRESENT) writes none. Without the status
+     * filter the latest run of a repository would shadow the last successful one as soon as a periodic
+     * harvest found nothing to do, and the snapshot would resolve to no stats at all, blanking the
+     * count dashboard. Same reasoning as LATEST_HARVESTER_RUN_BY_YEAR (see V16 migration) and as
+     * DashboardRepo.getRunById(), which the stats loaded here are already filtered by.
+     */
     private Map<Repository, HarvesterRun> getLatestRunsByRepoAt(LocalDate localDate) {
         Instant localDateInstant = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
         return dashboardRepo.getAllRuns().stream()
+                .filter(run -> SUCCESS.equals(run.getStatus()))
                 .filter(run -> run.getStartedAt().isBefore(localDateInstant))
                 .collect(toMap(run -> dashboardRepo.getRepoById().get(run.getRepositoryId()),
                         Function.identity(),
