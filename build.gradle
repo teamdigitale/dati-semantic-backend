@@ -61,7 +61,6 @@ dependencies {
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.11'
     implementation 'org.openapitools:jackson-databind-nullable:0.2.6'
 
-    implementation 'io.swagger.core.v3:swagger-annotations:2.2.30'
     implementation 'org.mapstruct:mapstruct:1.5.5.Final'
 
     implementation 'com.opencsv:opencsv:5.11.1'
@@ -104,7 +103,7 @@ test {
 
 jib {
     from {
-        image = 'gcr.io/distroless/java17-debian11:nonroot'
+        image = 'gcr.io/distroless/java17-debian12:nonroot'
     }
 }
 
