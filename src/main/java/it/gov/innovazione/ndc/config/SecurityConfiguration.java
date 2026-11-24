@@ -76,6 +76,9 @@ import org.springframework.security.web.SecurityFilterChain;
 @Slf4j
 public class SecurityConfiguration {
 
+    /** Gestione dell'alerter (utenti, profili, eventi): riservata agli admin. */
+    private static final String[] ALERTER_PATHS = {"/user/**", "/profile/**", "/event/**"};
+
     @Value("${harvester.auth.user:admin}")
     private String basicUser;
 
@@ -128,12 +131,15 @@ public class SecurityConfiguration {
     /**
      * Authorize rules. Matrice fine-grained quando oauth2 e' attivo; quando lo
      * e' anche basic, HARVESTER viene "innestato" tra i ruoli admin (back-compat).
-     * In modalita' basic-only si torna a HARVESTER gate-all su {@code /jobs/**} e {@code /config/**}.
+     * In modalita' basic-only si torna a HARVESTER gate-all su {@code /jobs/**}, {@code /config/**}
+     * e sugli endpoint dell'alerter.
      */
     private void configureAuthorize(
             AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry req) {
         if (!oauth2Enabled) {
             req.requestMatchers("/jobs/**", "/config/**")
+                    .hasRole("HARVESTER")
+                    .requestMatchers(ALERTER_PATHS)
                     .hasRole("HARVESTER")
                     .anyRequest()
                     .permitAll();
@@ -148,7 +154,9 @@ public class SecurityConfiguration {
                 ? new String[] {"NDC_ADMIN", "NDC_VIEWER", "HARVESTER"}
                 : new String[] {"NDC_ADMIN", "NDC_VIEWER"};
 
-        req.requestMatchers(HttpMethod.POST, "/jobs/clear")
+        req.requestMatchers(ALERTER_PATHS)
+                .hasAnyRole(adminRoles)
+                .requestMatchers(HttpMethod.POST, "/jobs/clear")
                 .hasAnyRole(adminRoles)
                 .requestMatchers(HttpMethod.POST, "/jobs/harvest")
                 .hasAnyRole(adminOrService)

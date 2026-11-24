@@ -85,6 +85,7 @@ dependencies {
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.mockito', module: 'mockito-core'
     }
+    testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'io.rest-assured:rest-assured:5.5.0'
     testImplementation 'io.rest-assured:json-path:5.5.0'
     testImplementation 'org.mockito:mockito-inline:3.9.0'
