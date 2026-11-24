@@ -394,6 +394,14 @@ public class RestApiIntegrationTests extends BaseIntegrationTest {
         return connection;
     }
 
+    @Test
+    void shouldServeOpenApiDocs() {
+        when().get(format("http://localhost:%d/v3/api-docs", port))
+                .then()
+                .statusCode(200)
+                .body("openapi", containsString("3."));
+    }
+
     private Response getSemanticAsset(String searchTerm, SemanticAssetType semanticAssetType,
                                       int limit) {
         return when().get(format("http://localhost:%d/semantic-assets?q=%s&type=%s&limit=%s", port,
