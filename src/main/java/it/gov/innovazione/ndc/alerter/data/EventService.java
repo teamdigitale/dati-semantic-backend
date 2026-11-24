@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
@@ -46,10 +47,9 @@ public class EventService extends EntityService<Event, EventDto> {
                 .collect(toList());
     }
 
+    @Transactional
     public long deleteOlderThanAndGetCount(Instant threshold) {
-        long count = repository.countByCreatedAtBefore(threshold);
-        repository.deleteByCreatedAtBefore(threshold);
-        return count;
+        return repository.deleteByCreatedAtBefore(threshold);
     }
 
     @Override
