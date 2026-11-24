@@ -63,8 +63,10 @@ import org.springframework.security.web.SecurityFilterChain;
  * caso senza KC.
  *
  * <h2>Authorize chain</h2>
- * Quando solo {@code basic} e' attivo si usano i ruoli legacy ({@code HARVESTER}
- * gate-all). Quando {@code oauth2} e' attivo si usa la matrice fine-grained
+ * Deny-by-default: pubblici solo gli endpoint elencati ({@link #PUBLIC_READ_PATHS},
+ * {@link #PUBLIC_VALIDATION_PATHS}, {@code /error}); ogni altra richiesta richiede
+ * autenticazione. Quando solo {@code basic} e' attivo si usano i ruoli legacy
+ * ({@code HARVESTER} su tutti gli endpoint non pubblici). Quando {@code oauth2} e' attivo si usa la matrice fine-grained
  * ({@code NDC_ADMIN}, {@code NDC_VIEWER}, {@code NDC_SERVICE}). Se entrambi sono
  * attivi, {@code HARVESTER} e' accettato ovunque sia accettato {@code NDC_ADMIN}
  * — cosi' tool/script esistenti che usano basic restano funzionanti durante la
@@ -78,6 +80,27 @@ public class SecurityConfiguration {
 
     /** Gestione dell'alerter (utenti, profili, eventi): riservata agli admin. */
     private static final String[] ALERTER_PATHS = {"/user/**", "/profile/**", "/event/**"};
+
+    /** Dashboard statistiche del pannello di amministrazione. */
+    private static final String[] DASHBOARD_PATHS = {"/dashboard/**"};
+
+    /** Consultazione pubblica (GET/HEAD): catalogo, vocabolari, stato, documentazione API, probe. */
+    private static final String[] PUBLIC_READ_PATHS = {
+        "/semantic-assets", "/semantic-assets/**",
+        "/vocabularies", "/vocabularies/**",
+        "/check-url",
+        "/status",
+        "/harvest/vocabularies.db",
+        "/v3/api-docs", "/v3/api-docs/**", "/v3/api-docs.yaml",
+        "/swagger-ui.html", "/swagger-ui/**",
+        "/actuator/health", "/actuator/health/**"
+    };
+
+    /** Validazione on-demand (GET/POST), usata dal frontend pubblico. */
+    private static final String[] PUBLIC_VALIDATION_PATHS = {"/validate", "/validate/**"};
+
+    /** Pagina di errore: senza permitAll le risposte di errore diventerebbero 401. */
+    private static final String ERROR_PATH = "/error";
 
     @Value("${harvester.auth.user:admin}")
     private String basicUser;
@@ -129,20 +152,17 @@ public class SecurityConfiguration {
     }
 
     /**
-     * Authorize rules. Matrice fine-grained quando oauth2 e' attivo; quando lo
-     * e' anche basic, HARVESTER viene "innestato" tra i ruoli admin (back-compat).
-     * In modalita' basic-only si torna a HARVESTER gate-all su {@code /jobs/**}, {@code /config/**}
-     * e sugli endpoint dell'alerter.
+     * Authorize rules, deny-by-default: sono pubblici solo gli endpoint elencati in
+     * {@link #permitPublicEndpoints}, tutto il resto richiede autenticazione.
+     * Matrice fine-grained quando oauth2 e' attivo; quando lo e' anche basic, HARVESTER
+     * viene "innestato" tra i ruoli admin (back-compat). In modalita' basic-only
+     * HARVESTER e' richiesto su tutti gli endpoint non pubblici.
      */
     private void configureAuthorize(
             AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry req) {
+        permitPublicEndpoints(req);
         if (!oauth2Enabled) {
-            req.requestMatchers("/jobs/**", "/config/**")
-                    .hasRole("HARVESTER")
-                    .requestMatchers(ALERTER_PATHS)
-                    .hasRole("HARVESTER")
-                    .anyRequest()
-                    .permitAll();
+            req.anyRequest().hasRole("HARVESTER");
             return;
         }
         String[] adminRoles =
@@ -174,7 +194,32 @@ public class SecurityConfiguration {
                 .hasAnyRole(adminRoles)
                 .requestMatchers(HttpMethod.GET, "/config/**")
                 .hasAnyRole(adminOrViewer)
+                .requestMatchers(HttpMethod.GET, DASHBOARD_PATHS)
+                .hasAnyRole(adminOrViewer)
+                // metodi non elencati sopra: solo admin
+                .requestMatchers("/jobs/**", "/config/**")
+                .hasAnyRole(adminRoles)
+                .requestMatchers(DASHBOARD_PATHS)
+                .hasAnyRole(adminRoles)
                 .anyRequest()
+                .authenticated();
+    }
+
+    /**
+     * Endpoint accessibili senza autenticazione, comuni a tutte le modalita'.
+     * Ogni nuovo endpoint e' protetto finche' non viene aggiunto qui.
+     */
+    private static void permitPublicEndpoints(
+            AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry req) {
+        req.requestMatchers(HttpMethod.GET, PUBLIC_READ_PATHS)
+                .permitAll()
+                .requestMatchers(HttpMethod.HEAD, PUBLIC_READ_PATHS)
+                .permitAll()
+                .requestMatchers(HttpMethod.GET, PUBLIC_VALIDATION_PATHS)
+                .permitAll()
+                .requestMatchers(HttpMethod.POST, PUBLIC_VALIDATION_PATHS)
+                .permitAll()
+                .requestMatchers(ERROR_PATH)
                 .permitAll();
     }
 
