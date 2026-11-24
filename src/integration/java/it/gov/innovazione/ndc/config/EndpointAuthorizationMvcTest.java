@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -138,7 +139,7 @@ class EndpointAuthorizationMvcTest {
             for (BeanDefinition definition : scanner.findCandidateComponents(BASE_PACKAGE)) {
                 // lazy: servono solo i tipi dei controller, non le istanze
                 ((AbstractBeanDefinition) definition).setLazyInit(true);
-                context.registerBeanDefinition(definition.getBeanClassName(), definition);
+                context.registerBeanDefinition(Objects.requireNonNull(definition.getBeanClassName()), definition);
             }
             context.refresh();
             RequestMappingHandlerMapping mapping = new RequestMappingHandlerMapping();
