@@ -289,7 +289,7 @@ public class RestApiIntegrationTests extends BaseIntegrationTest {
                 .body("limit", equalTo(5))
                 .body("data.size()", equalTo(0));
 
-        when().get(format("http://localhost:%d/agid/personTitle", port)).then()
+        when().get(format("http://localhost:%d/vocabularies/agid/personTitle", port)).then()
                 .statusCode(404);
     }
 

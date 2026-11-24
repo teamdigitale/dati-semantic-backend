@@ -112,7 +112,7 @@ The `local` profile is active by default (`spring.profiles.active=local`). Main 
 
 | Variable | Default | Description |
 | :-- | :-- | :-- |
-| `HARVESTER_USER` / `HARVESTER_PASSWORD` | `harv-user` / `harv-password` | Basic Auth for operational endpoints |
+| `HARVESTER_USER` / `HARVESTER_PASSWORD` | `harv-user` / `harv-password` | Basic Auth for protected endpoints |
 | `HARVESTER_REPOSITORIES` | — | Comma-separated list of repository URLs to harvest |
 | `HARVESTER_ENDPOINT_ENABLED` | — | Enables harvest trigger endpoints |
 | `harvester.folder.skip-words` | `scriptR2RML,sparql,deprecated` | Folders to skip (`contains` match, min 3 chars) |
@@ -184,17 +184,26 @@ All commands can equivalently be invoked via `./gradlew <task>` (see `build.grad
 
 The OpenAPI specification lives at [`src/main/resources/public/openapi.yaml`](./src/main/resources/public/openapi.yaml). Once the backend is running, Swagger UI is available at `http://localhost:8080/swagger-ui/index.html`.
 
-### Main public endpoints
+### Public endpoints
+
+No authentication required. Authorization is deny-by-default: any endpoint not listed in this section or in [Validation endpoints](#validation-endpoints-see-asset-validation) requires authentication (see [Protected endpoints](#protected-endpoints)).
 
 | Method | Path | Purpose |
 | :-- | :-- | :-- |
 | `GET` | `/status` | Application health/status |
 | `GET` | `/semantic-assets` | Asset search (filters, pagination) |
 | `GET` | `/semantic-assets/by-iri` | Asset details by IRI |
+| `GET` | `/semantic-assets/rights-holders` | Rights holders of the indexed assets |
+| `GET` | `/semantic-assets/stats` | Yearly asset statistics |
+| `GET` | `/semantic-assets/mlt` | Assets similar to a given one |
+| `GET` | `/semantic-assets/changelog` | Change history of an asset |
 | `GET` | `/vocabularies` | List of controlled vocabularies |
 | `GET` | `/vocabularies/{agencyId}/{keyConceptId}` | Vocabulary data |
 | `GET` | `/vocabularies/{agencyId}/{keyConceptId}/{id}` | Single vocabulary item |
+| `GET` | `/harvest/vocabularies.db` | Download the aggregated vocabularies SQLite DB |
 | `GET` | `/check-url` | URL reachability check |
+| `GET` | `/v3/api-docs`, `/swagger-ui/**` | OpenAPI document and Swagger UI |
+| `GET` | `/actuator/health/**` | Liveness/readiness probes |
 
 ### Validation endpoints (see [Asset validation](#asset-validation))
 
@@ -206,22 +215,33 @@ The OpenAPI specification lives at [`src/main/resources/public/openapi.yaml`](./
 | `POST` | `/validate/repo/{owner}/{repo}/{revision}` | Same, on a specific revision |
 | `GET` | `/validate/repo/{validationId}` | Validation job status |
 
-### Operational endpoints (Basic Auth)
+### Protected endpoints
 
-| Method | Path | Purpose |
-| :-- | :-- | :-- |
-| `POST` | `/jobs/harvest` | Trigger harvest (requires `HARVESTER_ENDPOINT_ENABLED=true`) |
-| `GET` | `/jobs/harvest/run` | List harvest job runs |
-| `GET` | `/jobs/harvest/running` | Currently running harvest jobs |
-| `POST` | `/jobs/clear` | Clear data for a given repository URL |
-| `GET` | `/harvest/vocabularies.db` | Download the aggregated vocabularies SQLite DB |
-| `GET/POST` | `/config/repository` | Manage registered repositories |
-| `GET` | `/config/repository/{id}/validation-report` | Validation report for a repository |
-| `GET` | `/config/repository/{id}/conformance` | Cookiecutter conformance report |
-| `GET/POST` | `/config/{repoId}` | List/set per-repo configuration entries |
-| `PUT/DELETE` | `/config/{repoId}/{configKey}` | Update/delete a single config entry |
-| `GET/POST` | `/dashboard/...` | Dashboard data (raw, time/count aggregates) |
-| `*` | `/event`, `/profile`, `/user` | Alerter events, profiles, and users |
+Protected endpoints accept two kinds of credentials:
+
+- **Basic Auth** — the user configured with `harvester.auth.user` / `harvester.auth.password` (role `HARVESTER`). When it is the only enabled mechanism, `HARVESTER` grants access to all protected endpoints; when OAuth2 is enabled too, it is accepted wherever `NDC_ADMIN` is.
+- **Bearer OAuth2 (JWT)** — tokens issued by the configured Keycloak realm; realm roles `ndc-admin`, `ndc-viewer`, `ndc-service` map to `NDC_ADMIN`, `NDC_VIEWER`, `NDC_SERVICE`.
+
+Roles required with OAuth2 enabled:
+
+| Method | Path | Purpose | Roles |
+| :-- | :-- | :-- | :-- |
+| `POST` | `/jobs/harvest` | Trigger harvest (requires `HARVESTER_ENDPOINT_ENABLED=true`) | admin, service |
+| `GET` | `/jobs/harvest/run`, `/jobs/harvest/run/by-batch` | List harvest job runs | admin, viewer |
+| `GET` | `/jobs/harvest/running` | Currently running harvest jobs | admin, viewer |
+| `DELETE` | `/jobs/harvest/run` | Cancel pending harvest runs | admin |
+| `POST` | `/jobs/clear` | Clear data for a given repository URL | admin |
+| `GET` | `/config/repository`, `/config/repository/inspect` | List/inspect registered repositories | admin, viewer |
+| `POST/PATCH/DELETE` | `/config/repository[/{id}]` | Manage registered repositories | admin |
+| `GET` | `/config/repository/{id}/validation-report` | Validation report for a repository | admin, viewer |
+| `GET` | `/config/repository/{id}/conformance` | Cookiecutter conformance report | admin, viewer |
+| `GET` | `/config/repository/{id}/runs/.../delta[/summary]` | Resource changes of a harvest run | admin, viewer |
+| `GET` | `/config/metadata`, `/config/{repoId}` | Config keys metadata, per-repo configuration | admin, viewer |
+| `POST/PUT/DELETE` | `/config/{repoId}[/{configKey}]` | Set/update/delete per-repo configuration | admin |
+| `GET` | `/dashboard/...` | Dashboard data (raw, time/count aggregates) | admin, viewer |
+| `*` | `/event`, `/profile`, `/user` | Alerter events, profiles, and users | admin |
+
+Methods not listed above on `/jobs/**`, `/config/**` and `/dashboard/**` require `NDC_ADMIN`; any other path requires an authenticated user.
 
 ---
 
@@ -250,7 +270,7 @@ The harvester clones each registered repository (via JGit) and runs a sequence o
 6. **`vocabularies.db` aggregation** — the aggregated SQLite DB of vocabularies is regenerated at the end of every run (ETag persisted in the `.aggregate-hash` sidecar).
 7. **Outcome persistence** on MySQL (`HARVESTER_RUN`) and `ValidationReport` generation.
 
-Repositories are registered in MySQL and managed via `/config/repository`. Manual triggering is exposed at `POST /jobs/harvest` (Basic Auth required, plus `HARVESTER_ENDPOINT_ENABLED=true`).
+Repositories are registered in MySQL and managed via `/config/repository`. Manual triggering is exposed at `POST /jobs/harvest` (authentication required, plus `HARVESTER_ENDPOINT_ENABLED=true`).
 
 ---
 
